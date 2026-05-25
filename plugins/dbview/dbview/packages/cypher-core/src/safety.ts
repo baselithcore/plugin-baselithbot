@@ -53,7 +53,7 @@ export class CypherSafetyValidator {
     const firstWord = tokens[0];
     if (!firstWord || !(ALLOWED_FIRST_KEYWORDS as readonly string[]).includes(firstWord)) {
       throw new UnsafeSqlError(
-        `Cypher must start with ${ALLOWED_FIRST_KEYWORDS.join('/')}; got '${firstWord ?? '<empty>'}'.`,
+        `Cypher must start with ${ALLOWED_FIRST_KEYWORDS.join('/')}; got '${firstWord ?? '<empty>'}'.`
       );
     }
 
@@ -95,7 +95,7 @@ export class CypherSafetyValidator {
         warnings
           .filter((w) => w.severity === 'error')
           .map((w) => w.message)
-          .join('; '),
+          .join('; ')
       );
     }
 
@@ -133,7 +133,7 @@ function assertProperTermination(query: string): void {
   if (/\bUNION\b/.test(upper)) return;
   if (/\bYIELD\b/.test(upper)) return;
   throw new UnsafeSqlError(
-    'Read query must end with RETURN (or UNION/YIELD). Trailing WITH/ORDER BY/LIMIT alone is invalid.',
+    'Read query must end with RETURN (or UNION/YIELD). Trailing WITH/ORDER BY/LIMIT alone is invalid.'
   );
 }
 
@@ -160,7 +160,7 @@ function assertNoUnknownProperties(query: string, schema: PropertyGraphSchema): 
   }
   if (unknown.size > 0) {
     throw new UnsafeSqlError(
-      `Property reference(s) not in schema: ${[...unknown].join(', ')}. Use only properties listed in the schema; do not invent (e.g. createdAt, updatedAt) when none exists.`,
+      `Property reference(s) not in schema: ${[...unknown].join(', ')}. Use only properties listed in the schema; do not invent (e.g. createdAt, updatedAt) when none exists.`
     );
   }
 }
@@ -176,7 +176,7 @@ function assertNoSchemaTypeLeak(query: string): void {
     const body = m[1] ?? '';
     if (TYPE_TOKEN.test(body)) {
       throw new UnsafeSqlError(
-        'Property map contains a schema type name (e.g. `{qty: INTEGER}`). Schema types are descriptive — use literal values or omit the filter.',
+        'Property map contains a schema type name (e.g. `{qty: INTEGER}`). Schema types are descriptive — use literal values or omit the filter.'
       );
     }
   }

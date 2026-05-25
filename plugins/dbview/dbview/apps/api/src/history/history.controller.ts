@@ -17,7 +17,7 @@ export class HistoryController {
   @Get()
   list(
     @Query(new ZodPipe(ListHistoryQuerySchema)) q: unknown,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): ListHistoryResponse {
     return this.svc.list(q as never, principal);
   }
@@ -26,7 +26,7 @@ export class HistoryController {
   toggleFavorite(
     @Param('id') id: string,
     @Body(new ZodPipe(ToggleFavoriteDtoSchema)) body: unknown,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): HistoryEntry {
     const { favorite } = body as { favorite: boolean };
     return this.svc.setFavorite(id, favorite, principal);
@@ -49,7 +49,7 @@ export class HistoryController {
   @Delete()
   clear(
     @CurrentUser() principal: AuthPrincipal,
-    @Query('connectionId') connectionId?: string,
+    @Query('connectionId') connectionId?: string
   ): { removed: number } {
     return this.svc.clear(principal, connectionId);
   }

@@ -17,7 +17,7 @@ const SCHEMA_LABEL = 'data_cloud';
 export class SalesforceDataCloudIntrospector {
   constructor(
     private readonly client: SalesforceDataCloudClient,
-    private readonly options: { excludePattern?: RegExp; concurrency?: number } = {},
+    private readonly options: { excludePattern?: RegExp; concurrency?: number } = {}
   ) {}
 
   async introspect(): Promise<SchemaGraph> {
@@ -29,7 +29,7 @@ export class SalesforceDataCloudIntrospector {
     if (missing.length > 0) {
       const concurrency = Math.max(1, this.options.concurrency ?? 8);
       const described = await runWithConcurrency(missing, concurrency, (e) =>
-        this.client.describeEntity(e.name),
+        this.client.describeEntity(e.name)
       );
       const byName = new Map(described.map((d) => [d.name, d]));
       for (let i = 0; i < entities.length; i++) {
@@ -42,7 +42,7 @@ export class SalesforceDataCloudIntrospector {
     const edges = collectEdges(entities, known);
     const fkColumnsByEntity = collectFkColumns(edges);
     const tables: TableNode[] = entities.map((e) =>
-      entityToTable(e, fkColumnsByEntity.get(e.name) ?? new Set()),
+      entityToTable(e, fkColumnsByEntity.get(e.name) ?? new Set())
     );
 
     return {
@@ -190,7 +190,7 @@ function humanType(t: string): string {
 async function runWithConcurrency<T, R>(
   items: T[],
   concurrency: number,
-  fn: (item: T) => Promise<R>,
+  fn: (item: T) => Promise<R>
 ): Promise<R[]> {
   const out: R[] = new Array(items.length);
   let next = 0;

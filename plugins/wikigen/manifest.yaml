@@ -1,78 +1,58 @@
 name: wikigen
 version: 0.1.0
-description: >-
-  White-label LLM wiki engine ported from llm-wiki-grafiphy. Domain-pack
-  driven RAG + ingest pipeline (PDF → wiki pages), Postgres + JWT auth,
-  RBAC with hierarchical roles + groups, optional knowledge graph
-  (FalkorDB), embedded Qdrant vectorstore, A2UI canvas widget, multi-tenant
-  session isolation. Bundles a React + Vite SPA under ui/.
+description: "White-label LLM wiki engine ported from llm-wiki-grafiphy. Domain-pack\
+  \ driven RAG + ingest pipeline (PDF \u2192 wiki pages), Postgres + JWT auth, RBAC\
+  \ with hierarchical roles + groups, optional knowledge graph (FalkorDB), embedded\
+  \ Qdrant vectorstore, A2UI canvas widget, multi-tenant session isolation. Bundles\
+  \ a React + Vite SPA under ui/."
 author: Giovanni Ippolito <g.ippolito@gdservices.tech>
 homepage: https://github.com/giovanni-ippolito/llm-wiki-grafiphy
 license: Proprietary
 category: Knowledge
 readiness: beta
-
 tags:
-  - rag
-  - wiki
-  - ingest
-  - knowledge-graph
-  - white-label
-  - multi-tenant
-
-# SHA-256 over the plugin's *.py/*.pyi tree (recomputed each release).
-# Generate locally with:
-#   python -c "from pathlib import Path; \
-#     from core.plugins.integrity import compute_plugin_hash; \
-#     print(compute_plugin_hash(Path('plugins/wikigen')))"
-integrity_sha256: 5732b27839c00412c4c3c1789c5782af0a021a0096ccecfe8b63b4653b2da6d8
-
-# Optional baselithcore plugin dependencies. Wikigen is self-contained:
-# all integrations live inside the plugin tree (alembic, llm_wiki,
-# domains, ui).
+- rag
+- wiki
+- ingest
+- knowledge-graph
+- white-label
+- multi-tenant
+integrity_sha256: 92f42144d212da79e3a09dfcbb91cc8a5640bee8c9bf2d64b5b7e5b67696dce7
 plugin_dependencies: {}
-
-# Core baselithcore deps already covered by the host pyproject:
-# fastapi, pydantic, httpx, jinja2, pyyaml, prometheus-client, psycopg.
-# The list below is the wikigen-specific surface (pin if missing in host).
 python_dependencies:
-  - qdrant-client>=1.12.0
-  - sentence-transformers>=2.7.0,<4.0
-  - openai>=1.40.0
-  - ollama>=0.3.0
-  - langchain-text-splitters>=0.2.0
-  - typer>=0.12.0
-  - rich>=13.7.0
-  - alembic>=1.13.0
-  - pyjwt>=2.8.0
-  - email-validator>=2.0.0
-  - python-multipart>=0.0.18
-
-# Wikigen exposes a knob-heavy env surface. Documented in .env.example
-# and docs/configuration.md. Only the most load-bearing keys are listed
-# here for UI/CLI surfacing.
+- qdrant-client>=1.12.0
+- sentence-transformers>=2.7.0,<4.0
+- openai>=1.40.0
+- ollama>=0.3.0
+- langchain-text-splitters>=0.2.0
+- typer>=0.12.0
+- rich>=13.7.0
+- alembic>=1.13.0
+- pyjwt>=2.8.0
+- email-validator>=2.0.0
+- python-multipart>=0.0.18
 environment_variables:
-  - name: APP_DOMAIN
-    description: Active domain pack (e.g. legal, medical, hr). Empty = setup mode.
-    required: false
-  - name: WIKI_ROOT
-    description: Vault path (markdown wiki + raw PDFs).
-    required: false
-  - name: LLM_VENDOR
-    description: LLM provider — `ollama` (default) or `openai`.
-    required: false
-  - name: POSTGRES_ENABLED
-    description: Enable auth + multi-tenant. Requires Postgres reachable at POSTGRES_URL.
-    required: false
-  - name: AUTH_REQUIRED
-    description: Reject anonymous requests. Requires SECRET_KEY (≥32 chars).
-    required: false
-  - name: SECRET_KEY
-    description: JWT HS256 signing key. Mandatory when AUTH_REQUIRED=true.
-    required: false
-  - name: GRAPH_DB_ENABLED
-    description: Enable FalkorDB knowledge-graph features.
-    required: false
-  - name: ADMIN_API_ENABLED
-    description: Mount /api/admin/* (wizard, scaffold, prompt synthesis).
-    required: false
+- name: APP_DOMAIN
+  description: Active domain pack (e.g. legal, medical, hr). Empty = setup mode.
+  required: false
+- name: WIKI_ROOT
+  description: Vault path (markdown wiki + raw PDFs).
+  required: false
+- name: LLM_VENDOR
+  description: "LLM provider \u2014 `ollama` (default) or `openai`."
+  required: false
+- name: POSTGRES_ENABLED
+  description: Enable auth + multi-tenant. Requires Postgres reachable at POSTGRES_URL.
+  required: false
+- name: AUTH_REQUIRED
+  description: "Reject anonymous requests. Requires SECRET_KEY (\u226532 chars)."
+  required: false
+- name: SECRET_KEY
+  description: JWT HS256 signing key. Mandatory when AUTH_REQUIRED=true.
+  required: false
+- name: GRAPH_DB_ENABLED
+  description: Enable FalkorDB knowledge-graph features.
+  required: false
+- name: ADMIN_API_ENABLED
+  description: Mount /api/admin/* (wizard, scaffold, prompt synthesis).
+  required: false

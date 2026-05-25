@@ -61,7 +61,7 @@ export function parseMongoEnvelope(raw: string): MongoEnvelope {
   if (typeof op !== 'string') throw new Error("Missing 'op' field.");
   if (!['collections', 'count', 'find', 'distinct', 'aggregate', 'indexes', 'stats'].includes(op)) {
     throw new Error(
-      `Unsupported op '${op}'. Allowed: collections, count, find, distinct, aggregate, indexes, stats.`,
+      `Unsupported op '${op}'. Allowed: collections, count, find, distinct, aggregate, indexes, stats.`
     );
   }
   return obj as unknown as MongoEnvelope;

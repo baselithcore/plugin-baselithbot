@@ -73,7 +73,10 @@ LOG_FORMAT_MODE = os.getenv("LOG_FORMAT", "text").strip().lower()
 LOG_LEVEL_FILE = os.getenv("LOG_LEVEL_FILE", "INFO").upper()
 
 # === Server FastAPI ===
-HOST = os.getenv("HOST", "0.0.0.0")
+# Default 0.0.0.0 perché il plugin gira tipicamente dentro un container
+# Docker: bindare 127.0.0.1 lo renderebbe irraggiungibile dal reverse-proxy
+# del host. Le restrizioni di rete sono compito del firewall/ingress.
+HOST = os.getenv("HOST", "0.0.0.0")  # nosec B104
 PORT = int(os.getenv("PORT", 8181))
 
 # === Database ===

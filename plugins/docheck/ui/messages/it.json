@@ -249,6 +249,103 @@
     "keysWarning": "Attenzione: senza backup chiave, integrità audit chain non verificabile dopo guasto disco.",
     "doneIntro": "Setup completato. Crea il primo utente admin con:"
   },
+  "superuserSetup": {
+    "hero": {
+      "badge": "doCheck · inizializzazione",
+      "title": "Crea il primo amministratore",
+      "body": "Nessun account configurato. Questa schermata è raggiungibile solo dal browser locale e crea l'amministratore che gestirà ogni utente successivo.",
+      "progressLabel": "Avanzamento"
+    },
+    "header": {
+      "title": "Crea il primo admin",
+      "subtitle": "una sola volta, solo loopback"
+    },
+    "sidebar": {
+      "title": "Amministratore iniziale",
+      "placeholder": "In configurazione",
+      "progress": "Avanzamento",
+      "loopback": {
+        "title": "Solo loopback",
+        "body": "L'endpoint accetta richieste solo da localhost. Per setup remoti usa le variabili d'ambiente prima del primo avvio."
+      }
+    },
+    "stepper": {
+      "aria": "Avanzamento setup",
+      "title": "Percorso guidato",
+      "step": "Step {current} di {total}"
+    },
+    "steps": {
+      "identity": { "label": "Identità", "hint": "Email e profilo" },
+      "security": { "label": "Sicurezza", "hint": "Password ≥12 char" },
+      "review": { "label": "Conferma", "hint": "Crea admin" }
+    },
+    "identity": {
+      "title": "Identità dell'amministratore",
+      "body": "Queste credenziali accedono al pannello di amministrazione. Email e password restano modificabili dopo il primo accesso.",
+      "email": "Email",
+      "displayName": "Nome visualizzato",
+      "displayNameHint": "Opzionale — se vuoto si usa la parte locale dell'email."
+    },
+    "security": {
+      "title": "Imposta la password",
+      "body": "Minimo {min} caratteri. Combina lettere, numeri e simboli per aumentare la robustezza. La password viene hashata con argon2id e non è mai salvata in chiaro.",
+      "password": "Password (min {min} caratteri)",
+      "confirm": "Conferma password",
+      "strength": {
+        "label": "Robustezza password",
+        "weak": "Debole",
+        "fair": "Sufficiente",
+        "good": "Buona",
+        "strong": "Forte"
+      }
+    },
+    "review": {
+      "title": "Conferma e crea",
+      "body": "Verifica i dati. Confermando verrai loggato automaticamente e l'endpoint di bootstrap sarà disabilitato. Gli ulteriori admin si gestiscono dalla pagina Utenti.",
+      "rows": {
+        "email": "Email",
+        "displayName": "Nome visualizzato",
+        "role": "Ruolo",
+        "roleValue": "admin",
+        "passwordStrength": "Robustezza password",
+        "source": "Origine",
+        "sourceValue": "web (loopback)",
+        "forcedChange": "Cambio password forzato",
+        "forcedChangeValue": "No"
+      },
+      "reminder": {
+        "title": "Promemoria.",
+        "body": "Conserva la password in un gestore sicuro: doCheck non può recuperarla. Per cambiarla usa il menu utente."
+      }
+    },
+    "footer": {
+      "back": "Indietro",
+      "next": "Avanti",
+      "create": "Crea admin",
+      "creating": "Creazione…",
+      "title": {
+        "identity": "Definisci l'identità dell'amministratore",
+        "security": "Imposta una password forte",
+        "review": "Conferma e crea l'admin"
+      },
+      "hint": {
+        "identity": "email, nome visualizzato",
+        "security": "min 12 char, mai loggata",
+        "review": "azione irreversibile dopo la creazione"
+      }
+    },
+    "cliHint": { "label": "Preferisci il terminale?" },
+    "errors": {
+      "invalidEmail": "Indirizzo email non valido.",
+      "passwordShort": "Password deve essere di almeno {min} caratteri.",
+      "passwordMismatch": "Le password non coincidono.",
+      "weakPassword": "Password troppo debole. Aggiungi numeri o simboli.",
+      "incomplete": "Completa tutti i passi prima di confermare.",
+      "forbidden": "Bootstrap non consentito: esiste già un admin oppure la richiesta non arriva da loopback.",
+      "validation": "Validazione fallita. Verifica email e password.",
+      "generic": "Errore imprevisto ({status})."
+    }
+  },
   "policies": {
     "scope": {
       "all": "Tutte",

@@ -1,0 +1,63 @@
+# Plugin-scoped .gitignore (activates on standalone extraction).
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+
+# Distribution / packaging
+build/
+dist/
+wheels/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+# Virtualenvs
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Runtime state
+storage/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+logs/
+*.log
+
+# Cryptographic material (Ed25519 signing keys — generated at first boot)
+*.key
+*.pem
+audit_ed25519.key
+
+# Next.js UI
+ui/node_modules/
+ui/.next/
+ui/out/
+ui/.turbo/
+ui/tsconfig.tsbuildinfo
+ui/dist/
+ui/playwright-report/
+ui/test-results/
+
+# Tooling caches
+.tsbuildinfo
+.eslintcache
+.DS_Store
+.vscode/
+.idea/

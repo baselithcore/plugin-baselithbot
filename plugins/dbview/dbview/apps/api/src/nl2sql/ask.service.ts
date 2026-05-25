@@ -33,7 +33,7 @@ export class Nl2QueryAskService {
     private readonly query: QueryService,
     private readonly connections: ConnectionsService,
     private readonly history: HistoryService,
-    private readonly schemaService: SchemaService,
+    private readonly schemaService: SchemaService
   ) {}
 
   async ask(req: Nl2QueryAskRequest, principal: AuthPrincipal): Promise<Nl2QueryAskResponse> {
@@ -49,7 +49,7 @@ export class Nl2QueryAskService {
         locale: req.locale,
         history: req.history,
       },
-      principal,
+      principal
     );
 
     let result: Nl2QueryAskResponse['result'] = null;
@@ -61,12 +61,12 @@ export class Nl2QueryAskService {
           query: translation.query,
           rowLimit: req.rowLimit,
         },
-        principal,
+        principal
       );
     } catch (err) {
       executionError = toAskError(err);
       this.logger.warn(
-        `ask execute-failed code=${executionError.code} msg=${executionError.message}`,
+        `ask execute-failed code=${executionError.code} msg=${executionError.message}`
       );
     }
 
@@ -80,7 +80,7 @@ export class Nl2QueryAskService {
     if (result === null && executionError && isFixableSqlError(executionError)) {
       const repairPrompt = buildRepairPrompt(req.prompt, translation.query, executionError.message);
       this.logger.log(
-        `ask repair-attempt code=${executionError.code} reason=${truncate(executionError.message, 120)}`,
+        `ask repair-attempt code=${executionError.code} reason=${truncate(executionError.message, 120)}`
       );
       try {
         const repaired = await this.nl2sql.translate(
@@ -97,7 +97,7 @@ export class Nl2QueryAskService {
             // would dilute the model's focus on the specific engine error.
             history: [],
           },
-          principal,
+          principal
         );
         try {
           const repairedResult = await this.query.execute(
@@ -106,7 +106,7 @@ export class Nl2QueryAskService {
               query: repaired.query,
               rowLimit: req.rowLimit,
             },
-            principal,
+            principal
           );
           translation = repaired;
           result = repairedResult;
@@ -118,7 +118,7 @@ export class Nl2QueryAskService {
           translation = repaired;
           executionError = toAskError(err);
           this.logger.warn(
-            `ask repair-failed code=${executionError.code} msg=${truncate(executionError.message, 120)}`,
+            `ask repair-failed code=${executionError.code} msg=${truncate(executionError.message, 120)}`
           );
         }
       } catch (err) {
@@ -133,7 +133,7 @@ export class Nl2QueryAskService {
       try {
         const adapter = instrumentLlmAdapter(
           createChatAdapter(req.provider, this.nl2sql.resolveAuth(req.provider, principal)),
-          'ask',
+          'ask'
         );
         const model = pickSummaryModel(req.provider, req.model, translation.model);
         // Ground follow-ups in the actual schema so the model cannot invent
@@ -142,7 +142,7 @@ export class Nl2QueryAskService {
           .getGraph(req.connectionId, principal)
           .catch(() => undefined);
         this.logger.log(
-          `ask summarize provider=${req.provider} model=${model} schema=${schema ? 'on' : 'off'}`,
+          `ask summarize provider=${req.provider} model=${model} schema=${schema ? 'on' : 'off'}`
         );
         const summarized = await summarizeResult(adapter, model, {
           userPrompt: req.prompt,
@@ -162,7 +162,7 @@ export class Nl2QueryAskService {
 
     const totalDurationMs = Date.now() - t0;
     this.logger.log(
-      `ask ok provider=${req.provider} model=${translation.model} rows=${result?.rowCount ?? 'n/a'} highlights=${highlights.length} followUps=${followUps.length} totalMs=${totalDurationMs}`,
+      `ask ok provider=${req.provider} model=${translation.model} rows=${result?.rowCount ?? 'n/a'} highlights=${highlights.length} followUps=${followUps.length} totalMs=${totalDurationMs}`
     );
 
     // Persist the turn for history/favorites. Non-blocking: record() swallows
@@ -190,7 +190,7 @@ export class Nl2QueryAskService {
         errorCode: executionError?.code ?? null,
         errorMessage: executionError?.message ?? null,
       },
-      principal.id,
+      principal.id
     );
 
     return {
@@ -215,7 +215,7 @@ export class Nl2QueryAskService {
 function pickSummaryModel(
   provider: LlmProvider,
   userModel: string | undefined,
-  translationModel: string,
+  translationModel: string
 ): string {
   const isChatCapable = (name: string | undefined): name is string => {
     if (!name) return false;
@@ -281,7 +281,7 @@ export function isFixableSqlError(err: { code: string; message: string }): boole
 export function buildRepairPrompt(
   originalPrompt: string,
   failedQuery: string,
-  errorMsg: string,
+  errorMsg: string
 ): string {
   return [
     originalPrompt,

@@ -51,6 +51,7 @@ class LogLevel(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     LOG_LEVEL_INFO: _ClassVar[LogLevel]
     LOG_LEVEL_WARN: _ClassVar[LogLevel]
     LOG_LEVEL_ERROR: _ClassVar[LogLevel]
+
 CAPABILITY_UNSPECIFIED: AgentCapability
 CAPABILITY_PROC_INVENTORY: AgentCapability
 CAPABILITY_PKG_INVENTORY: AgentCapability
@@ -84,7 +85,19 @@ LOG_LEVEL_WARN: LogLevel
 LOG_LEVEL_ERROR: LogLevel
 
 class AgentMessage(_message.Message):
-    __slots__ = ("seq", "nonce", "ts", "hello", "heartbeat", "telemetry", "command_result", "logs", "policy_ack", "rotation_request", "disconnect_notice")
+    __slots__ = (
+        "seq",
+        "nonce",
+        "ts",
+        "hello",
+        "heartbeat",
+        "telemetry",
+        "command_result",
+        "logs",
+        "policy_ack",
+        "rotation_request",
+        "disconnect_notice",
+    )
     SEQ_FIELD_NUMBER: _ClassVar[int]
     NONCE_FIELD_NUMBER: _ClassVar[int]
     TS_FIELD_NUMBER: _ClassVar[int]
@@ -107,10 +120,35 @@ class AgentMessage(_message.Message):
     policy_ack: PolicyAck
     rotation_request: RotationRequest
     disconnect_notice: DisconnectNotice
-    def __init__(self, seq: _Optional[int] = ..., nonce: _Optional[bytes] = ..., ts: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., hello: _Optional[_Union[AgentHello, _Mapping]] = ..., heartbeat: _Optional[_Union[Heartbeat, _Mapping]] = ..., telemetry: _Optional[_Union[TelemetryBatch, _Mapping]] = ..., command_result: _Optional[_Union[CommandResult, _Mapping]] = ..., logs: _Optional[_Union[LogBatch, _Mapping]] = ..., policy_ack: _Optional[_Union[PolicyAck, _Mapping]] = ..., rotation_request: _Optional[_Union[RotationRequest, _Mapping]] = ..., disconnect_notice: _Optional[_Union[DisconnectNotice, _Mapping]] = ...) -> None: ...
+    def __init__(
+        self,
+        seq: _Optional[int] = ...,
+        nonce: _Optional[bytes] = ...,
+        ts: _Optional[
+            _Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]
+        ] = ...,
+        hello: _Optional[_Union[AgentHello, _Mapping]] = ...,
+        heartbeat: _Optional[_Union[Heartbeat, _Mapping]] = ...,
+        telemetry: _Optional[_Union[TelemetryBatch, _Mapping]] = ...,
+        command_result: _Optional[_Union[CommandResult, _Mapping]] = ...,
+        logs: _Optional[_Union[LogBatch, _Mapping]] = ...,
+        policy_ack: _Optional[_Union[PolicyAck, _Mapping]] = ...,
+        rotation_request: _Optional[_Union[RotationRequest, _Mapping]] = ...,
+        disconnect_notice: _Optional[_Union[DisconnectNotice, _Mapping]] = ...,
+    ) -> None: ...
 
 class ServerMessage(_message.Message):
-    __slots__ = ("seq", "nonce", "ts", "hello", "heartbeat", "command", "policy", "rotation_grant", "disconnect")
+    __slots__ = (
+        "seq",
+        "nonce",
+        "ts",
+        "hello",
+        "heartbeat",
+        "command",
+        "policy",
+        "rotation_grant",
+        "disconnect",
+    )
     SEQ_FIELD_NUMBER: _ClassVar[int]
     NONCE_FIELD_NUMBER: _ClassVar[int]
     TS_FIELD_NUMBER: _ClassVar[int]
@@ -129,10 +167,30 @@ class ServerMessage(_message.Message):
     policy: PolicyUpdate
     rotation_grant: RotationGrant
     disconnect: Disconnect
-    def __init__(self, seq: _Optional[int] = ..., nonce: _Optional[bytes] = ..., ts: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., hello: _Optional[_Union[ServerHello, _Mapping]] = ..., heartbeat: _Optional[_Union[Heartbeat, _Mapping]] = ..., command: _Optional[_Union[Command, _Mapping]] = ..., policy: _Optional[_Union[PolicyUpdate, _Mapping]] = ..., rotation_grant: _Optional[_Union[RotationGrant, _Mapping]] = ..., disconnect: _Optional[_Union[Disconnect, _Mapping]] = ...) -> None: ...
+    def __init__(
+        self,
+        seq: _Optional[int] = ...,
+        nonce: _Optional[bytes] = ...,
+        ts: _Optional[
+            _Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]
+        ] = ...,
+        hello: _Optional[_Union[ServerHello, _Mapping]] = ...,
+        heartbeat: _Optional[_Union[Heartbeat, _Mapping]] = ...,
+        command: _Optional[_Union[Command, _Mapping]] = ...,
+        policy: _Optional[_Union[PolicyUpdate, _Mapping]] = ...,
+        rotation_grant: _Optional[_Union[RotationGrant, _Mapping]] = ...,
+        disconnect: _Optional[_Union[Disconnect, _Mapping]] = ...,
+    ) -> None: ...
 
 class AgentHello(_message.Message):
-    __slots__ = ("protocol_version", "daemon_version", "agent_uuid", "platform", "capabilities", "last_acked_server_seq")
+    __slots__ = (
+        "protocol_version",
+        "daemon_version",
+        "agent_uuid",
+        "platform",
+        "capabilities",
+        "last_acked_server_seq",
+    )
     PROTOCOL_VERSION_FIELD_NUMBER: _ClassVar[int]
     DAEMON_VERSION_FIELD_NUMBER: _ClassVar[int]
     AGENT_UUID_FIELD_NUMBER: _ClassVar[int]
@@ -145,10 +203,25 @@ class AgentHello(_message.Message):
     platform: Platform
     capabilities: _containers.RepeatedScalarFieldContainer[AgentCapability]
     last_acked_server_seq: int
-    def __init__(self, protocol_version: _Optional[int] = ..., daemon_version: _Optional[str] = ..., agent_uuid: _Optional[str] = ..., platform: _Optional[_Union[Platform, _Mapping]] = ..., capabilities: _Optional[_Iterable[_Union[AgentCapability, str]]] = ..., last_acked_server_seq: _Optional[int] = ...) -> None: ...
+    def __init__(
+        self,
+        protocol_version: _Optional[int] = ...,
+        daemon_version: _Optional[str] = ...,
+        agent_uuid: _Optional[str] = ...,
+        platform: _Optional[_Union[Platform, _Mapping]] = ...,
+        capabilities: _Optional[_Iterable[_Union[AgentCapability, str]]] = ...,
+        last_acked_server_seq: _Optional[int] = ...,
+    ) -> None: ...
 
 class ServerHello(_message.Message):
-    __slots__ = ("protocol_version_min", "capabilities", "heartbeat_interval", "telemetry_batch_max", "message_size_max_bytes", "tenant_id_echo")
+    __slots__ = (
+        "protocol_version_min",
+        "capabilities",
+        "heartbeat_interval",
+        "telemetry_batch_max",
+        "message_size_max_bytes",
+        "tenant_id_echo",
+    )
     PROTOCOL_VERSION_MIN_FIELD_NUMBER: _ClassVar[int]
     CAPABILITIES_FIELD_NUMBER: _ClassVar[int]
     HEARTBEAT_INTERVAL_FIELD_NUMBER: _ClassVar[int]
@@ -161,16 +234,36 @@ class ServerHello(_message.Message):
     telemetry_batch_max: int
     message_size_max_bytes: int
     tenant_id_echo: str
-    def __init__(self, protocol_version_min: _Optional[int] = ..., capabilities: _Optional[_Iterable[_Union[AgentCapability, str]]] = ..., heartbeat_interval: _Optional[_Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]] = ..., telemetry_batch_max: _Optional[int] = ..., message_size_max_bytes: _Optional[int] = ..., tenant_id_echo: _Optional[str] = ...) -> None: ...
+    def __init__(
+        self,
+        protocol_version_min: _Optional[int] = ...,
+        capabilities: _Optional[_Iterable[_Union[AgentCapability, str]]] = ...,
+        heartbeat_interval: _Optional[
+            _Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]
+        ] = ...,
+        telemetry_batch_max: _Optional[int] = ...,
+        message_size_max_bytes: _Optional[int] = ...,
+        tenant_id_echo: _Optional[str] = ...,
+    ) -> None: ...
 
 class Platform(_message.Message):
-    __slots__ = ("os", "os_version", "kernel_version", "arch", "hostname", "boot_id", "cpu_count", "mem_total_bytes")
+    __slots__ = (
+        "os",
+        "os_version",
+        "kernel_version",
+        "arch",
+        "hostname",
+        "boot_id",
+        "cpu_count",
+        "mem_total_bytes",
+    )
     class OS(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
         __slots__ = ()
         OS_UNSPECIFIED: _ClassVar[Platform.OS]
         OS_LINUX: _ClassVar[Platform.OS]
         OS_MACOS: _ClassVar[Platform.OS]
         OS_WINDOWS: _ClassVar[Platform.OS]
+
     OS_UNSPECIFIED: Platform.OS
     OS_LINUX: Platform.OS
     OS_MACOS: Platform.OS
@@ -191,16 +284,34 @@ class Platform(_message.Message):
     boot_id: str
     cpu_count: int
     mem_total_bytes: int
-    def __init__(self, os: _Optional[_Union[Platform.OS, str]] = ..., os_version: _Optional[str] = ..., kernel_version: _Optional[str] = ..., arch: _Optional[str] = ..., hostname: _Optional[str] = ..., boot_id: _Optional[str] = ..., cpu_count: _Optional[int] = ..., mem_total_bytes: _Optional[int] = ...) -> None: ...
+    def __init__(
+        self,
+        os: _Optional[_Union[Platform.OS, str]] = ...,
+        os_version: _Optional[str] = ...,
+        kernel_version: _Optional[str] = ...,
+        arch: _Optional[str] = ...,
+        hostname: _Optional[str] = ...,
+        boot_id: _Optional[str] = ...,
+        cpu_count: _Optional[int] = ...,
+        mem_total_bytes: _Optional[int] = ...,
+    ) -> None: ...
 
 class Heartbeat(_message.Message):
     __slots__ = ("health",)
     HEALTH_FIELD_NUMBER: _ClassVar[int]
     health: HealthSnapshot
-    def __init__(self, health: _Optional[_Union[HealthSnapshot, _Mapping]] = ...) -> None: ...
+    def __init__(
+        self, health: _Optional[_Union[HealthSnapshot, _Mapping]] = ...
+    ) -> None: ...
 
 class HealthSnapshot(_message.Message):
-    __slots__ = ("cpu_percent", "mem_rss_bytes", "disk_free_bytes", "telemetry_buffer_lag", "uptime")
+    __slots__ = (
+        "cpu_percent",
+        "mem_rss_bytes",
+        "disk_free_bytes",
+        "telemetry_buffer_lag",
+        "uptime",
+    )
     CPU_PERCENT_FIELD_NUMBER: _ClassVar[int]
     MEM_RSS_BYTES_FIELD_NUMBER: _ClassVar[int]
     DISK_FREE_BYTES_FIELD_NUMBER: _ClassVar[int]
@@ -211,7 +322,16 @@ class HealthSnapshot(_message.Message):
     disk_free_bytes: int
     telemetry_buffer_lag: int
     uptime: _duration_pb2.Duration
-    def __init__(self, cpu_percent: _Optional[float] = ..., mem_rss_bytes: _Optional[int] = ..., disk_free_bytes: _Optional[int] = ..., telemetry_buffer_lag: _Optional[int] = ..., uptime: _Optional[_Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+    def __init__(
+        self,
+        cpu_percent: _Optional[float] = ...,
+        mem_rss_bytes: _Optional[int] = ...,
+        disk_free_bytes: _Optional[int] = ...,
+        telemetry_buffer_lag: _Optional[int] = ...,
+        uptime: _Optional[
+            _Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]
+        ] = ...,
+    ) -> None: ...
 
 class TelemetryBatch(_message.Message):
     __slots__ = ("batch_id", "events")
@@ -219,7 +339,11 @@ class TelemetryBatch(_message.Message):
     EVENTS_FIELD_NUMBER: _ClassVar[int]
     batch_id: str
     events: _containers.RepeatedCompositeFieldContainer[TelemetryEvent]
-    def __init__(self, batch_id: _Optional[str] = ..., events: _Optional[_Iterable[_Union[TelemetryEvent, _Mapping]]] = ...) -> None: ...
+    def __init__(
+        self,
+        batch_id: _Optional[str] = ...,
+        events: _Optional[_Iterable[_Union[TelemetryEvent, _Mapping]]] = ...,
+    ) -> None: ...
 
 class TelemetryEvent(_message.Message):
     __slots__ = ("observed_at", "kind", "severity", "attributes", "correlation_id")
@@ -233,13 +357,24 @@ class TelemetryEvent(_message.Message):
     severity: Severity
     attributes: _struct_pb2.Struct
     correlation_id: str
-    def __init__(self, observed_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., kind: _Optional[str] = ..., severity: _Optional[_Union[Severity, str]] = ..., attributes: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., correlation_id: _Optional[str] = ...) -> None: ...
+    def __init__(
+        self,
+        observed_at: _Optional[
+            _Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]
+        ] = ...,
+        kind: _Optional[str] = ...,
+        severity: _Optional[_Union[Severity, str]] = ...,
+        attributes: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...,
+        correlation_id: _Optional[str] = ...,
+    ) -> None: ...
 
 class LogBatch(_message.Message):
     __slots__ = ("entries",)
     ENTRIES_FIELD_NUMBER: _ClassVar[int]
     entries: _containers.RepeatedCompositeFieldContainer[LogEntry]
-    def __init__(self, entries: _Optional[_Iterable[_Union[LogEntry, _Mapping]]] = ...) -> None: ...
+    def __init__(
+        self, entries: _Optional[_Iterable[_Union[LogEntry, _Mapping]]] = ...
+    ) -> None: ...
 
 class LogEntry(_message.Message):
     __slots__ = ("ts", "level", "target", "message", "fields", "trace_id")
@@ -255,10 +390,30 @@ class LogEntry(_message.Message):
     message: str
     fields: _struct_pb2.Struct
     trace_id: str
-    def __init__(self, ts: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., level: _Optional[_Union[LogLevel, str]] = ..., target: _Optional[str] = ..., message: _Optional[str] = ..., fields: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., trace_id: _Optional[str] = ...) -> None: ...
+    def __init__(
+        self,
+        ts: _Optional[
+            _Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]
+        ] = ...,
+        level: _Optional[_Union[LogLevel, str]] = ...,
+        target: _Optional[str] = ...,
+        message: _Optional[str] = ...,
+        fields: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...,
+        trace_id: _Optional[str] = ...,
+    ) -> None: ...
 
 class Command(_message.Message):
-    __slots__ = ("idempotency_key", "correlation_id", "deadline", "run_inventory", "run_local_scan", "hash_files", "collect_artifact", "apply_config", "self_update")
+    __slots__ = (
+        "idempotency_key",
+        "correlation_id",
+        "deadline",
+        "run_inventory",
+        "run_local_scan",
+        "hash_files",
+        "collect_artifact",
+        "apply_config",
+        "self_update",
+    )
     IDEMPOTENCY_KEY_FIELD_NUMBER: _ClassVar[int]
     CORRELATION_ID_FIELD_NUMBER: _ClassVar[int]
     DEADLINE_FIELD_NUMBER: _ClassVar[int]
@@ -277,7 +432,20 @@ class Command(_message.Message):
     collect_artifact: CollectArtifactCmd
     apply_config: ApplyConfigCmd
     self_update: SelfUpdateCmd
-    def __init__(self, idempotency_key: _Optional[str] = ..., correlation_id: _Optional[str] = ..., deadline: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., run_inventory: _Optional[_Union[RunInventoryCmd, _Mapping]] = ..., run_local_scan: _Optional[_Union[RunLocalScanCmd, _Mapping]] = ..., hash_files: _Optional[_Union[HashFilesCmd, _Mapping]] = ..., collect_artifact: _Optional[_Union[CollectArtifactCmd, _Mapping]] = ..., apply_config: _Optional[_Union[ApplyConfigCmd, _Mapping]] = ..., self_update: _Optional[_Union[SelfUpdateCmd, _Mapping]] = ...) -> None: ...
+    def __init__(
+        self,
+        idempotency_key: _Optional[str] = ...,
+        correlation_id: _Optional[str] = ...,
+        deadline: _Optional[
+            _Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]
+        ] = ...,
+        run_inventory: _Optional[_Union[RunInventoryCmd, _Mapping]] = ...,
+        run_local_scan: _Optional[_Union[RunLocalScanCmd, _Mapping]] = ...,
+        hash_files: _Optional[_Union[HashFilesCmd, _Mapping]] = ...,
+        collect_artifact: _Optional[_Union[CollectArtifactCmd, _Mapping]] = ...,
+        apply_config: _Optional[_Union[ApplyConfigCmd, _Mapping]] = ...,
+        self_update: _Optional[_Union[SelfUpdateCmd, _Mapping]] = ...,
+    ) -> None: ...
 
 class RunInventoryCmd(_message.Message):
     __slots__ = ("kinds",)
@@ -288,6 +456,7 @@ class RunInventoryCmd(_message.Message):
         KIND_PROCESSES: _ClassVar[RunInventoryCmd.Kind]
         KIND_USERS: _ClassVar[RunInventoryCmd.Kind]
         KIND_LISTENERS: _ClassVar[RunInventoryCmd.Kind]
+
     KIND_UNSPECIFIED: RunInventoryCmd.Kind
     KIND_PACKAGES: RunInventoryCmd.Kind
     KIND_PROCESSES: RunInventoryCmd.Kind
@@ -295,7 +464,9 @@ class RunInventoryCmd(_message.Message):
     KIND_LISTENERS: RunInventoryCmd.Kind
     KINDS_FIELD_NUMBER: _ClassVar[int]
     kinds: _containers.RepeatedScalarFieldContainer[RunInventoryCmd.Kind]
-    def __init__(self, kinds: _Optional[_Iterable[_Union[RunInventoryCmd.Kind, str]]] = ...) -> None: ...
+    def __init__(
+        self, kinds: _Optional[_Iterable[_Union[RunInventoryCmd.Kind, str]]] = ...
+    ) -> None: ...
 
 class RunLocalScanCmd(_message.Message):
     __slots__ = ("bundle_id", "argv", "limits")
@@ -305,7 +476,12 @@ class RunLocalScanCmd(_message.Message):
     bundle_id: str
     argv: _containers.RepeatedScalarFieldContainer[str]
     limits: ResourceLimits
-    def __init__(self, bundle_id: _Optional[str] = ..., argv: _Optional[_Iterable[str]] = ..., limits: _Optional[_Union[ResourceLimits, _Mapping]] = ...) -> None: ...
+    def __init__(
+        self,
+        bundle_id: _Optional[str] = ...,
+        argv: _Optional[_Iterable[str]] = ...,
+        limits: _Optional[_Union[ResourceLimits, _Mapping]] = ...,
+    ) -> None: ...
 
 class ResourceLimits(_message.Message):
     __slots__ = ("cpu_quota_us_per_sec", "mem_max_bytes", "pids_max", "wall_timeout")
@@ -317,7 +493,15 @@ class ResourceLimits(_message.Message):
     mem_max_bytes: int
     pids_max: int
     wall_timeout: _duration_pb2.Duration
-    def __init__(self, cpu_quota_us_per_sec: _Optional[int] = ..., mem_max_bytes: _Optional[int] = ..., pids_max: _Optional[int] = ..., wall_timeout: _Optional[_Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+    def __init__(
+        self,
+        cpu_quota_us_per_sec: _Optional[int] = ...,
+        mem_max_bytes: _Optional[int] = ...,
+        pids_max: _Optional[int] = ...,
+        wall_timeout: _Optional[
+            _Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]
+        ] = ...,
+    ) -> None: ...
 
 class HashFilesCmd(_message.Message):
     __slots__ = ("paths", "algorithm")
@@ -326,6 +510,7 @@ class HashFilesCmd(_message.Message):
         ALGORITHM_UNSPECIFIED: _ClassVar[HashFilesCmd.Algorithm]
         ALGORITHM_SHA256: _ClassVar[HashFilesCmd.Algorithm]
         ALGORITHM_BLAKE3: _ClassVar[HashFilesCmd.Algorithm]
+
     ALGORITHM_UNSPECIFIED: HashFilesCmd.Algorithm
     ALGORITHM_SHA256: HashFilesCmd.Algorithm
     ALGORITHM_BLAKE3: HashFilesCmd.Algorithm
@@ -333,7 +518,11 @@ class HashFilesCmd(_message.Message):
     ALGORITHM_FIELD_NUMBER: _ClassVar[int]
     paths: _containers.RepeatedScalarFieldContainer[str]
     algorithm: HashFilesCmd.Algorithm
-    def __init__(self, paths: _Optional[_Iterable[str]] = ..., algorithm: _Optional[_Union[HashFilesCmd.Algorithm, str]] = ...) -> None: ...
+    def __init__(
+        self,
+        paths: _Optional[_Iterable[str]] = ...,
+        algorithm: _Optional[_Union[HashFilesCmd.Algorithm, str]] = ...,
+    ) -> None: ...
 
 class CollectArtifactCmd(_message.Message):
     __slots__ = ("path", "max_bytes")
@@ -341,13 +530,17 @@ class CollectArtifactCmd(_message.Message):
     MAX_BYTES_FIELD_NUMBER: _ClassVar[int]
     path: str
     max_bytes: int
-    def __init__(self, path: _Optional[str] = ..., max_bytes: _Optional[int] = ...) -> None: ...
+    def __init__(
+        self, path: _Optional[str] = ..., max_bytes: _Optional[int] = ...
+    ) -> None: ...
 
 class ApplyConfigCmd(_message.Message):
     __slots__ = ("config",)
     CONFIG_FIELD_NUMBER: _ClassVar[int]
     config: _struct_pb2.Struct
-    def __init__(self, config: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...) -> None: ...
+    def __init__(
+        self, config: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...
+    ) -> None: ...
 
 class SelfUpdateCmd(_message.Message):
     __slots__ = ("target_version", "bundle_url", "bundle_sig")
@@ -357,10 +550,24 @@ class SelfUpdateCmd(_message.Message):
     target_version: str
     bundle_url: str
     bundle_sig: bytes
-    def __init__(self, target_version: _Optional[str] = ..., bundle_url: _Optional[str] = ..., bundle_sig: _Optional[bytes] = ...) -> None: ...
+    def __init__(
+        self,
+        target_version: _Optional[str] = ...,
+        bundle_url: _Optional[str] = ...,
+        bundle_sig: _Optional[bytes] = ...,
+    ) -> None: ...
 
 class CommandResult(_message.Message):
-    __slots__ = ("idempotency_key", "correlation_id", "status", "error_code", "error_message", "payload", "artifact", "elapsed")
+    __slots__ = (
+        "idempotency_key",
+        "correlation_id",
+        "status",
+        "error_code",
+        "error_message",
+        "payload",
+        "artifact",
+        "elapsed",
+    )
     class Status(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
         __slots__ = ()
         STATUS_UNSPECIFIED: _ClassVar[CommandResult.Status]
@@ -370,6 +577,7 @@ class CommandResult(_message.Message):
         STATUS_TIMEOUT: _ClassVar[CommandResult.Status]
         STATUS_REJECTED: _ClassVar[CommandResult.Status]
         STATUS_UNSUPPORTED: _ClassVar[CommandResult.Status]
+
     STATUS_UNSPECIFIED: CommandResult.Status
     STATUS_OK: CommandResult.Status
     STATUS_PARTIAL: CommandResult.Status
@@ -393,7 +601,19 @@ class CommandResult(_message.Message):
     payload: _struct_pb2.Struct
     artifact: ArtifactChunk
     elapsed: _duration_pb2.Duration
-    def __init__(self, idempotency_key: _Optional[str] = ..., correlation_id: _Optional[str] = ..., status: _Optional[_Union[CommandResult.Status, str]] = ..., error_code: _Optional[str] = ..., error_message: _Optional[str] = ..., payload: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., artifact: _Optional[_Union[ArtifactChunk, _Mapping]] = ..., elapsed: _Optional[_Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+    def __init__(
+        self,
+        idempotency_key: _Optional[str] = ...,
+        correlation_id: _Optional[str] = ...,
+        status: _Optional[_Union[CommandResult.Status, str]] = ...,
+        error_code: _Optional[str] = ...,
+        error_message: _Optional[str] = ...,
+        payload: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ...,
+        artifact: _Optional[_Union[ArtifactChunk, _Mapping]] = ...,
+        elapsed: _Optional[
+            _Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]
+        ] = ...,
+    ) -> None: ...
 
 class ArtifactChunk(_message.Message):
     __slots__ = ("artifact_id", "chunk_index", "chunk_total", "data", "sha256_hex")
@@ -407,7 +627,14 @@ class ArtifactChunk(_message.Message):
     chunk_total: int
     data: bytes
     sha256_hex: str
-    def __init__(self, artifact_id: _Optional[str] = ..., chunk_index: _Optional[int] = ..., chunk_total: _Optional[int] = ..., data: _Optional[bytes] = ..., sha256_hex: _Optional[str] = ...) -> None: ...
+    def __init__(
+        self,
+        artifact_id: _Optional[str] = ...,
+        chunk_index: _Optional[int] = ...,
+        chunk_total: _Optional[int] = ...,
+        data: _Optional[bytes] = ...,
+        sha256_hex: _Optional[str] = ...,
+    ) -> None: ...
 
 class PolicyUpdate(_message.Message):
     __slots__ = ("version", "bundle", "bundle_sig", "issued_at", "expires_at")
@@ -421,7 +648,18 @@ class PolicyUpdate(_message.Message):
     bundle_sig: bytes
     issued_at: _timestamp_pb2.Timestamp
     expires_at: _timestamp_pb2.Timestamp
-    def __init__(self, version: _Optional[int] = ..., bundle: _Optional[bytes] = ..., bundle_sig: _Optional[bytes] = ..., issued_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., expires_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    def __init__(
+        self,
+        version: _Optional[int] = ...,
+        bundle: _Optional[bytes] = ...,
+        bundle_sig: _Optional[bytes] = ...,
+        issued_at: _Optional[
+            _Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]
+        ] = ...,
+        expires_at: _Optional[
+            _Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]
+        ] = ...,
+    ) -> None: ...
 
 class PolicyAck(_message.Message):
     __slots__ = ("version", "applied", "error")
@@ -431,7 +669,12 @@ class PolicyAck(_message.Message):
     version: int
     applied: bool
     error: str
-    def __init__(self, version: _Optional[int] = ..., applied: bool = ..., error: _Optional[str] = ...) -> None: ...
+    def __init__(
+        self,
+        version: _Optional[int] = ...,
+        applied: bool = ...,
+        error: _Optional[str] = ...,
+    ) -> None: ...
 
 class RotationRequest(_message.Message):
     __slots__ = ("csr_pem", "old_cert_not_after")
@@ -439,7 +682,13 @@ class RotationRequest(_message.Message):
     OLD_CERT_NOT_AFTER_FIELD_NUMBER: _ClassVar[int]
     csr_pem: bytes
     old_cert_not_after: _timestamp_pb2.Timestamp
-    def __init__(self, csr_pem: _Optional[bytes] = ..., old_cert_not_after: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    def __init__(
+        self,
+        csr_pem: _Optional[bytes] = ...,
+        old_cert_not_after: _Optional[
+            _Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]
+        ] = ...,
+    ) -> None: ...
 
 class RotationGrant(_message.Message):
     __slots__ = ("new_cert_pem", "chain_pem", "not_after")
@@ -449,7 +698,14 @@ class RotationGrant(_message.Message):
     new_cert_pem: bytes
     chain_pem: bytes
     not_after: _timestamp_pb2.Timestamp
-    def __init__(self, new_cert_pem: _Optional[bytes] = ..., chain_pem: _Optional[bytes] = ..., not_after: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ...) -> None: ...
+    def __init__(
+        self,
+        new_cert_pem: _Optional[bytes] = ...,
+        chain_pem: _Optional[bytes] = ...,
+        not_after: _Optional[
+            _Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]
+        ] = ...,
+    ) -> None: ...
 
 class DisconnectNotice(_message.Message):
     __slots__ = ("reason", "message")
@@ -459,6 +715,7 @@ class DisconnectNotice(_message.Message):
         REASON_SHUTDOWN: _ClassVar[DisconnectNotice.Reason]
         REASON_UPGRADING: _ClassVar[DisconnectNotice.Reason]
         REASON_RECONFIG: _ClassVar[DisconnectNotice.Reason]
+
     REASON_UNSPECIFIED: DisconnectNotice.Reason
     REASON_SHUTDOWN: DisconnectNotice.Reason
     REASON_UPGRADING: DisconnectNotice.Reason
@@ -467,7 +724,11 @@ class DisconnectNotice(_message.Message):
     MESSAGE_FIELD_NUMBER: _ClassVar[int]
     reason: DisconnectNotice.Reason
     message: str
-    def __init__(self, reason: _Optional[_Union[DisconnectNotice.Reason, str]] = ..., message: _Optional[str] = ...) -> None: ...
+    def __init__(
+        self,
+        reason: _Optional[_Union[DisconnectNotice.Reason, str]] = ...,
+        message: _Optional[str] = ...,
+    ) -> None: ...
 
 class Disconnect(_message.Message):
     __slots__ = ("reason", "message", "retry_after")
@@ -479,6 +740,7 @@ class Disconnect(_message.Message):
         REASON_INCOMPATIBLE: _ClassVar[Disconnect.Reason]
         REASON_REVOKED: _ClassVar[Disconnect.Reason]
         REASON_TENANT_DISABLED: _ClassVar[Disconnect.Reason]
+
     REASON_UNSPECIFIED: Disconnect.Reason
     REASON_SERVER_SHUTDOWN: Disconnect.Reason
     REASON_RATE_LIMIT: Disconnect.Reason
@@ -491,4 +753,11 @@ class Disconnect(_message.Message):
     reason: Disconnect.Reason
     message: str
     retry_after: _duration_pb2.Duration
-    def __init__(self, reason: _Optional[_Union[Disconnect.Reason, str]] = ..., message: _Optional[str] = ..., retry_after: _Optional[_Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+    def __init__(
+        self,
+        reason: _Optional[_Union[Disconnect.Reason, str]] = ...,
+        message: _Optional[str] = ...,
+        retry_after: _Optional[
+            _Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]
+        ] = ...,
+    ) -> None: ...

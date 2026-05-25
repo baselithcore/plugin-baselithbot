@@ -4,109 +4,105 @@
 # source: agent.proto
 # Protobuf Python Version: 6.31.1
 """Generated protocol buffer code."""
+
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import runtime_version as _runtime_version
 from google.protobuf import symbol_database as _symbol_database
 from google.protobuf.internal import builder as _builder
+
 _runtime_version.ValidateProtobufRuntimeVersion(
-    _runtime_version.Domain.PUBLIC,
-    6,
-    31,
-    1,
-    '',
-    'agent.proto'
+    _runtime_version.Domain.PUBLIC, 6, 31, 1, "", "agent.proto"
 )
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
 
-from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
-from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
-from google.protobuf import duration_pb2 as google_dot_protobuf_dot_duration__pb2
-
-
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x61gent.proto\x12\x15\x62\x61selith.red_agent.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1egoogle/protobuf/duration.proto\"\xb7\x04\n\x0c\x41gentMessage\x12\x0b\n\x03seq\x18\x01 \x01(\x04\x12\r\n\x05nonce\x18\x02 \x01(\x0c\x12&\n\x02ts\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x32\n\x05hello\x18\n \x01(\x0b\x32!.baselith.red_agent.v1.AgentHelloH\x00\x12\x35\n\theartbeat\x18\x0b \x01(\x0b\x32 .baselith.red_agent.v1.HeartbeatH\x00\x12:\n\ttelemetry\x18\x0c \x01(\x0b\x32%.baselith.red_agent.v1.TelemetryBatchH\x00\x12>\n\x0e\x63ommand_result\x18\r \x01(\x0b\x32$.baselith.red_agent.v1.CommandResultH\x00\x12/\n\x04logs\x18\x0e \x01(\x0b\x32\x1f.baselith.red_agent.v1.LogBatchH\x00\x12\x36\n\npolicy_ack\x18\x0f \x01(\x0b\x32 .baselith.red_agent.v1.PolicyAckH\x00\x12\x42\n\x10rotation_request\x18\x10 \x01(\x0b\x32&.baselith.red_agent.v1.RotationRequestH\x00\x12\x44\n\x11\x64isconnect_notice\x18\x11 \x01(\x0b\x32\'.baselith.red_agent.v1.DisconnectNoticeH\x00\x42\t\n\x07payload\"\xad\x03\n\rServerMessage\x12\x0b\n\x03seq\x18\x01 \x01(\x04\x12\r\n\x05nonce\x18\x02 \x01(\x0c\x12&\n\x02ts\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x33\n\x05hello\x18\n \x01(\x0b\x32\".baselith.red_agent.v1.ServerHelloH\x00\x12\x35\n\theartbeat\x18\x0b \x01(\x0b\x32 .baselith.red_agent.v1.HeartbeatH\x00\x12\x31\n\x07\x63ommand\x18\x0c \x01(\x0b\x32\x1e.baselith.red_agent.v1.CommandH\x00\x12\x35\n\x06policy\x18\r \x01(\x0b\x32#.baselith.red_agent.v1.PolicyUpdateH\x00\x12>\n\x0erotation_grant\x18\x0e \x01(\x0b\x32$.baselith.red_agent.v1.RotationGrantH\x00\x12\x37\n\ndisconnect\x18\x0f \x01(\x0b\x32!.baselith.red_agent.v1.DisconnectH\x00\x42\t\n\x07payload\"\xe2\x01\n\nAgentHello\x12\x18\n\x10protocol_version\x18\x01 \x01(\r\x12\x16\n\x0e\x64\x61\x65mon_version\x18\x02 \x01(\t\x12\x12\n\nagent_uuid\x18\x03 \x01(\t\x12\x31\n\x08platform\x18\x04 \x01(\x0b\x32\x1f.baselith.red_agent.v1.Platform\x12<\n\x0c\x63\x61pabilities\x18\x05 \x03(\x0e\x32&.baselith.red_agent.v1.AgentCapability\x12\x1d\n\x15last_acked_server_seq\x18\x06 \x01(\x04\"\xf5\x01\n\x0bServerHello\x12\x1c\n\x14protocol_version_min\x18\x01 \x01(\r\x12<\n\x0c\x63\x61pabilities\x18\x02 \x03(\x0e\x32&.baselith.red_agent.v1.AgentCapability\x12\x35\n\x12heartbeat_interval\x18\x03 \x01(\x0b\x32\x19.google.protobuf.Duration\x12\x1b\n\x13telemetry_batch_max\x18\x04 \x01(\r\x12\x1e\n\x16message_size_max_bytes\x18\x05 \x01(\r\x12\x16\n\x0etenant_id_echo\x18\x06 \x01(\t\"\x89\x02\n\x08Platform\x12.\n\x02os\x18\x01 \x01(\x0e\x32\".baselith.red_agent.v1.Platform.OS\x12\x12\n\nos_version\x18\x02 \x01(\t\x12\x16\n\x0ekernel_version\x18\x03 \x01(\t\x12\x0c\n\x04\x61rch\x18\x04 \x01(\t\x12\x10\n\x08hostname\x18\x05 \x01(\t\x12\x0f\n\x07\x62oot_id\x18\x06 \x01(\t\x12\x11\n\tcpu_count\x18\x07 \x01(\x04\x12\x17\n\x0fmem_total_bytes\x18\x08 \x01(\x04\"D\n\x02OS\x12\x12\n\x0eOS_UNSPECIFIED\x10\x00\x12\x0c\n\x08OS_LINUX\x10\x01\x12\x0c\n\x08OS_MACOS\x10\x02\x12\x0e\n\nOS_WINDOWS\x10\x03\"B\n\tHeartbeat\x12\x35\n\x06health\x18\x01 \x01(\x0b\x32%.baselith.red_agent.v1.HealthSnapshot\"\x9e\x01\n\x0eHealthSnapshot\x12\x13\n\x0b\x63pu_percent\x18\x01 \x01(\x01\x12\x15\n\rmem_rss_bytes\x18\x02 \x01(\x04\x12\x17\n\x0f\x64isk_free_bytes\x18\x03 \x01(\x04\x12\x1c\n\x14telemetry_buffer_lag\x18\x04 \x01(\x04\x12)\n\x06uptime\x18\x05 \x01(\x0b\x32\x19.google.protobuf.Duration\"Y\n\x0eTelemetryBatch\x12\x10\n\x08\x62\x61tch_id\x18\x01 \x01(\t\x12\x35\n\x06\x65vents\x18\x02 \x03(\x0b\x32%.baselith.red_agent.v1.TelemetryEvent\"\xc7\x01\n\x0eTelemetryEvent\x12/\n\x0bobserved_at\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0c\n\x04kind\x18\x02 \x01(\t\x12\x31\n\x08severity\x18\x03 \x01(\x0e\x32\x1f.baselith.red_agent.v1.Severity\x12+\n\nattributes\x18\x04 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x16\n\x0e\x63orrelation_id\x18\x05 \x01(\t\"<\n\x08LogBatch\x12\x30\n\x07\x65ntries\x18\x01 \x03(\x0b\x32\x1f.baselith.red_agent.v1.LogEntry\"\xbe\x01\n\x08LogEntry\x12&\n\x02ts\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\x05level\x18\x02 \x01(\x0e\x32\x1f.baselith.red_agent.v1.LogLevel\x12\x0e\n\x06target\x18\x03 \x01(\t\x12\x0f\n\x07message\x18\x04 \x01(\t\x12\'\n\x06\x66ields\x18\x05 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x10\n\x08trace_id\x18\x06 \x01(\t\"\xf1\x03\n\x07\x43ommand\x12\x17\n\x0fidempotency_key\x18\x01 \x01(\t\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\t\x12,\n\x08\x64\x65\x61\x64line\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12?\n\rrun_inventory\x18\n \x01(\x0b\x32&.baselith.red_agent.v1.RunInventoryCmdH\x00\x12@\n\x0erun_local_scan\x18\x0b \x01(\x0b\x32&.baselith.red_agent.v1.RunLocalScanCmdH\x00\x12\x39\n\nhash_files\x18\x0c \x01(\x0b\x32#.baselith.red_agent.v1.HashFilesCmdH\x00\x12\x45\n\x10\x63ollect_artifact\x18\r \x01(\x0b\x32).baselith.red_agent.v1.CollectArtifactCmdH\x00\x12=\n\x0c\x61pply_config\x18\x0e \x01(\x0b\x32%.baselith.red_agent.v1.ApplyConfigCmdH\x00\x12;\n\x0bself_update\x18\x0f \x01(\x0b\x32$.baselith.red_agent.v1.SelfUpdateCmdH\x00\x42\x06\n\x04kind\"\xb6\x01\n\x0fRunInventoryCmd\x12:\n\x05kinds\x18\x01 \x03(\x0e\x32+.baselith.red_agent.v1.RunInventoryCmd.Kind\"g\n\x04Kind\x12\x14\n\x10KIND_UNSPECIFIED\x10\x00\x12\x11\n\rKIND_PACKAGES\x10\x01\x12\x12\n\x0eKIND_PROCESSES\x10\x02\x12\x0e\n\nKIND_USERS\x10\x03\x12\x12\n\x0eKIND_LISTENERS\x10\x04\"i\n\x0fRunLocalScanCmd\x12\x11\n\tbundle_id\x18\x01 \x01(\t\x12\x0c\n\x04\x61rgv\x18\x02 \x03(\t\x12\x35\n\x06limits\x18\x03 \x01(\x0b\x32%.baselith.red_agent.v1.ResourceLimits\"\x88\x01\n\x0eResourceLimits\x12\x1c\n\x14\x63pu_quota_us_per_sec\x18\x01 \x01(\x04\x12\x15\n\rmem_max_bytes\x18\x02 \x01(\x04\x12\x10\n\x08pids_max\x18\x03 \x01(\x04\x12/\n\x0cwall_timeout\x18\x04 \x01(\x0b\x32\x19.google.protobuf.Duration\"\xb3\x01\n\x0cHashFilesCmd\x12\r\n\x05paths\x18\x01 \x03(\t\x12@\n\talgorithm\x18\x02 \x01(\x0e\x32-.baselith.red_agent.v1.HashFilesCmd.Algorithm\"R\n\tAlgorithm\x12\x19\n\x15\x41LGORITHM_UNSPECIFIED\x10\x00\x12\x14\n\x10\x41LGORITHM_SHA256\x10\x01\x12\x14\n\x10\x41LGORITHM_BLAKE3\x10\x02\"5\n\x12\x43ollectArtifactCmd\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x11\n\tmax_bytes\x18\x02 \x01(\x04\"9\n\x0e\x41pplyConfigCmd\x12\'\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\x17.google.protobuf.Struct\"O\n\rSelfUpdateCmd\x12\x16\n\x0etarget_version\x18\x01 \x01(\t\x12\x12\n\nbundle_url\x18\x02 \x01(\t\x12\x12\n\nbundle_sig\x18\x03 \x01(\x0c\"\xd0\x03\n\rCommandResult\x12\x17\n\x0fidempotency_key\x18\x01 \x01(\t\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\t\x12;\n\x06status\x18\x03 \x01(\x0e\x32+.baselith.red_agent.v1.CommandResult.Status\x12\x12\n\nerror_code\x18\x04 \x01(\t\x12\x15\n\rerror_message\x18\x05 \x01(\t\x12(\n\x07payload\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x36\n\x08\x61rtifact\x18\x07 \x01(\x0b\x32$.baselith.red_agent.v1.ArtifactChunk\x12*\n\x07\x65lapsed\x18\x08 \x01(\x0b\x32\x19.google.protobuf.Duration\"\x97\x01\n\x06Status\x12\x16\n\x12STATUS_UNSPECIFIED\x10\x00\x12\r\n\tSTATUS_OK\x10\x01\x12\x12\n\x0eSTATUS_PARTIAL\x10\x02\x12\x11\n\rSTATUS_FAILED\x10\x03\x12\x12\n\x0eSTATUS_TIMEOUT\x10\x04\x12\x13\n\x0fSTATUS_REJECTED\x10\x05\x12\x16\n\x12STATUS_UNSUPPORTED\x10\x06\"p\n\rArtifactChunk\x12\x13\n\x0b\x61rtifact_id\x18\x01 \x01(\t\x12\x13\n\x0b\x63hunk_index\x18\x02 \x01(\r\x12\x13\n\x0b\x63hunk_total\x18\x03 \x01(\r\x12\x0c\n\x04\x64\x61ta\x18\x04 \x01(\x0c\x12\x12\n\nsha256_hex\x18\x05 \x01(\t\"\xa2\x01\n\x0cPolicyUpdate\x12\x0f\n\x07version\x18\x01 \x01(\x04\x12\x0e\n\x06\x62undle\x18\x02 \x01(\x0c\x12\x12\n\nbundle_sig\x18\x03 \x01(\x0c\x12-\n\tissued_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nexpires_at\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"<\n\tPolicyAck\x12\x0f\n\x07version\x18\x01 \x01(\x04\x12\x0f\n\x07\x61pplied\x18\x02 \x01(\x08\x12\r\n\x05\x65rror\x18\x03 \x01(\t\"Z\n\x0fRotationRequest\x12\x0f\n\x07\x63sr_pem\x18\x01 \x01(\x0c\x12\x36\n\x12old_cert_not_after\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"g\n\rRotationGrant\x12\x14\n\x0cnew_cert_pem\x18\x01 \x01(\x0c\x12\x11\n\tchain_pem\x18\x02 \x01(\x0c\x12-\n\tnot_after\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"\xc5\x01\n\x10\x44isconnectNotice\x12>\n\x06reason\x18\x01 \x01(\x0e\x32..baselith.red_agent.v1.DisconnectNotice.Reason\x12\x0f\n\x07message\x18\x02 \x01(\t\"`\n\x06Reason\x12\x16\n\x12REASON_UNSPECIFIED\x10\x00\x12\x13\n\x0fREASON_SHUTDOWN\x10\x01\x12\x14\n\x10REASON_UPGRADING\x10\x02\x12\x13\n\x0fREASON_RECONFIG\x10\x03\"\xa6\x02\n\nDisconnect\x12\x38\n\x06reason\x18\x01 \x01(\x0e\x32(.baselith.red_agent.v1.Disconnect.Reason\x12\x0f\n\x07message\x18\x02 \x01(\t\x12.\n\x0bretry_after\x18\x03 \x01(\x0b\x32\x19.google.protobuf.Duration\"\x9c\x01\n\x06Reason\x12\x16\n\x12REASON_UNSPECIFIED\x10\x00\x12\x1a\n\x16REASON_SERVER_SHUTDOWN\x10\x01\x12\x15\n\x11REASON_RATE_LIMIT\x10\x02\x12\x17\n\x13REASON_INCOMPATIBLE\x10\x03\x12\x12\n\x0eREASON_REVOKED\x10\x04\x12\x1a\n\x16REASON_TENANT_DISABLED\x10\x05*\xc5\x04\n\x0f\x41gentCapability\x12\x1a\n\x16\x43\x41PABILITY_UNSPECIFIED\x10\x00\x12\x1d\n\x19\x43\x41PABILITY_PROC_INVENTORY\x10\x01\x12\x1c\n\x18\x43\x41PABILITY_PKG_INVENTORY\x10\x02\x12\x18\n\x14\x43\x41PABILITY_FILE_HASH\x10\x03\x12\x19\n\x15\x43\x41PABILITY_NET_LISTEN\x10\x04\x12\x1d\n\x19\x43\x41PABILITY_USER_INVENTORY\x10\x05\x12\x18\n\x14\x43\x41PABILITY_EBPF_EXEC\x10\n\x12\x18\n\x14\x43\x41PABILITY_EBPF_OPEN\x10\x0b\x12\x1b\n\x17\x43\x41PABILITY_EBPF_CONNECT\x10\x0c\x12\x17\n\x13\x43\x41PABILITY_ESF_EXEC\x10\x14\x12\x17\n\x13\x43\x41PABILITY_ESF_FILE\x10\x15\x12\x1f\n\x1b\x43\x41PABILITY_SCAN_LOCAL_TRIVY\x10\x1e\x12\x1e\n\x1a\x43\x41PABILITY_SCAN_LOCAL_NMAP\x10\x1f\x12 \n\x1c\x43\x41PABILITY_SCAN_LOCAL_NUCLEI\x10 \x12!\n\x1d\x43\x41PABILITY_SCAN_LOCAL_SECRETS\x10!\x12\x1f\n\x1b\x43\x41PABILITY_SANDBOX_LANDLOCK\x10(\x12\x1e\n\x1a\x43\x41PABILITY_SANDBOX_SECCOMP\x10)\x12\x1f\n\x1b\x43\x41PABILITY_SANDBOX_SBX_EXEC\x10*\x12\x1a\n\x16\x43\x41PABILITY_SELF_UPDATE\x10\x32*\x88\x01\n\x08Severity\x12\x18\n\x14SEVERITY_UNSPECIFIED\x10\x00\x12\x11\n\rSEVERITY_INFO\x10\x01\x12\x10\n\x0cSEVERITY_LOW\x10\x02\x12\x13\n\x0fSEVERITY_MEDIUM\x10\x03\x12\x11\n\rSEVERITY_HIGH\x10\x04\x12\x15\n\x11SEVERITY_CRITICAL\x10\x05*\x8c\x01\n\x08LogLevel\x12\x19\n\x15LOG_LEVEL_UNSPECIFIED\x10\x00\x12\x13\n\x0fLOG_LEVEL_TRACE\x10\x01\x12\x13\n\x0fLOG_LEVEL_DEBUG\x10\x02\x12\x12\n\x0eLOG_LEVEL_INFO\x10\x03\x12\x12\n\x0eLOG_LEVEL_WARN\x10\x04\x12\x13\n\x0fLOG_LEVEL_ERROR\x10\x05\x32k\n\x0c\x41gentChannel\x12[\n\nOpenStream\x12#.baselith.red_agent.v1.AgentMessage\x1a$.baselith.red_agent.v1.ServerMessage(\x01\x30\x01\x42\x63\n\x17io.baselith.redagent.v1Z1github.com/baselithcore/redagent/proto/v1;agentv1\xaa\x02\x14\x42\x61selith.RedAgent.V1b\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
+    b'\n\x0b\x61gent.proto\x12\x15\x62\x61selith.red_agent.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1egoogle/protobuf/duration.proto"\xb7\x04\n\x0c\x41gentMessage\x12\x0b\n\x03seq\x18\x01 \x01(\x04\x12\r\n\x05nonce\x18\x02 \x01(\x0c\x12&\n\x02ts\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x32\n\x05hello\x18\n \x01(\x0b\x32!.baselith.red_agent.v1.AgentHelloH\x00\x12\x35\n\theartbeat\x18\x0b \x01(\x0b\x32 .baselith.red_agent.v1.HeartbeatH\x00\x12:\n\ttelemetry\x18\x0c \x01(\x0b\x32%.baselith.red_agent.v1.TelemetryBatchH\x00\x12>\n\x0e\x63ommand_result\x18\r \x01(\x0b\x32$.baselith.red_agent.v1.CommandResultH\x00\x12/\n\x04logs\x18\x0e \x01(\x0b\x32\x1f.baselith.red_agent.v1.LogBatchH\x00\x12\x36\n\npolicy_ack\x18\x0f \x01(\x0b\x32 .baselith.red_agent.v1.PolicyAckH\x00\x12\x42\n\x10rotation_request\x18\x10 \x01(\x0b\x32&.baselith.red_agent.v1.RotationRequestH\x00\x12\x44\n\x11\x64isconnect_notice\x18\x11 \x01(\x0b\x32\'.baselith.red_agent.v1.DisconnectNoticeH\x00\x42\t\n\x07payload"\xad\x03\n\rServerMessage\x12\x0b\n\x03seq\x18\x01 \x01(\x04\x12\r\n\x05nonce\x18\x02 \x01(\x0c\x12&\n\x02ts\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x33\n\x05hello\x18\n \x01(\x0b\x32".baselith.red_agent.v1.ServerHelloH\x00\x12\x35\n\theartbeat\x18\x0b \x01(\x0b\x32 .baselith.red_agent.v1.HeartbeatH\x00\x12\x31\n\x07\x63ommand\x18\x0c \x01(\x0b\x32\x1e.baselith.red_agent.v1.CommandH\x00\x12\x35\n\x06policy\x18\r \x01(\x0b\x32#.baselith.red_agent.v1.PolicyUpdateH\x00\x12>\n\x0erotation_grant\x18\x0e \x01(\x0b\x32$.baselith.red_agent.v1.RotationGrantH\x00\x12\x37\n\ndisconnect\x18\x0f \x01(\x0b\x32!.baselith.red_agent.v1.DisconnectH\x00\x42\t\n\x07payload"\xe2\x01\n\nAgentHello\x12\x18\n\x10protocol_version\x18\x01 \x01(\r\x12\x16\n\x0e\x64\x61\x65mon_version\x18\x02 \x01(\t\x12\x12\n\nagent_uuid\x18\x03 \x01(\t\x12\x31\n\x08platform\x18\x04 \x01(\x0b\x32\x1f.baselith.red_agent.v1.Platform\x12<\n\x0c\x63\x61pabilities\x18\x05 \x03(\x0e\x32&.baselith.red_agent.v1.AgentCapability\x12\x1d\n\x15last_acked_server_seq\x18\x06 \x01(\x04"\xf5\x01\n\x0bServerHello\x12\x1c\n\x14protocol_version_min\x18\x01 \x01(\r\x12<\n\x0c\x63\x61pabilities\x18\x02 \x03(\x0e\x32&.baselith.red_agent.v1.AgentCapability\x12\x35\n\x12heartbeat_interval\x18\x03 \x01(\x0b\x32\x19.google.protobuf.Duration\x12\x1b\n\x13telemetry_batch_max\x18\x04 \x01(\r\x12\x1e\n\x16message_size_max_bytes\x18\x05 \x01(\r\x12\x16\n\x0etenant_id_echo\x18\x06 \x01(\t"\x89\x02\n\x08Platform\x12.\n\x02os\x18\x01 \x01(\x0e\x32".baselith.red_agent.v1.Platform.OS\x12\x12\n\nos_version\x18\x02 \x01(\t\x12\x16\n\x0ekernel_version\x18\x03 \x01(\t\x12\x0c\n\x04\x61rch\x18\x04 \x01(\t\x12\x10\n\x08hostname\x18\x05 \x01(\t\x12\x0f\n\x07\x62oot_id\x18\x06 \x01(\t\x12\x11\n\tcpu_count\x18\x07 \x01(\x04\x12\x17\n\x0fmem_total_bytes\x18\x08 \x01(\x04"D\n\x02OS\x12\x12\n\x0eOS_UNSPECIFIED\x10\x00\x12\x0c\n\x08OS_LINUX\x10\x01\x12\x0c\n\x08OS_MACOS\x10\x02\x12\x0e\n\nOS_WINDOWS\x10\x03"B\n\tHeartbeat\x12\x35\n\x06health\x18\x01 \x01(\x0b\x32%.baselith.red_agent.v1.HealthSnapshot"\x9e\x01\n\x0eHealthSnapshot\x12\x13\n\x0b\x63pu_percent\x18\x01 \x01(\x01\x12\x15\n\rmem_rss_bytes\x18\x02 \x01(\x04\x12\x17\n\x0f\x64isk_free_bytes\x18\x03 \x01(\x04\x12\x1c\n\x14telemetry_buffer_lag\x18\x04 \x01(\x04\x12)\n\x06uptime\x18\x05 \x01(\x0b\x32\x19.google.protobuf.Duration"Y\n\x0eTelemetryBatch\x12\x10\n\x08\x62\x61tch_id\x18\x01 \x01(\t\x12\x35\n\x06\x65vents\x18\x02 \x03(\x0b\x32%.baselith.red_agent.v1.TelemetryEvent"\xc7\x01\n\x0eTelemetryEvent\x12/\n\x0bobserved_at\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x0c\n\x04kind\x18\x02 \x01(\t\x12\x31\n\x08severity\x18\x03 \x01(\x0e\x32\x1f.baselith.red_agent.v1.Severity\x12+\n\nattributes\x18\x04 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x16\n\x0e\x63orrelation_id\x18\x05 \x01(\t"<\n\x08LogBatch\x12\x30\n\x07\x65ntries\x18\x01 \x03(\x0b\x32\x1f.baselith.red_agent.v1.LogEntry"\xbe\x01\n\x08LogEntry\x12&\n\x02ts\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\x05level\x18\x02 \x01(\x0e\x32\x1f.baselith.red_agent.v1.LogLevel\x12\x0e\n\x06target\x18\x03 \x01(\t\x12\x0f\n\x07message\x18\x04 \x01(\t\x12\'\n\x06\x66ields\x18\x05 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x10\n\x08trace_id\x18\x06 \x01(\t"\xf1\x03\n\x07\x43ommand\x12\x17\n\x0fidempotency_key\x18\x01 \x01(\t\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\t\x12,\n\x08\x64\x65\x61\x64line\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12?\n\rrun_inventory\x18\n \x01(\x0b\x32&.baselith.red_agent.v1.RunInventoryCmdH\x00\x12@\n\x0erun_local_scan\x18\x0b \x01(\x0b\x32&.baselith.red_agent.v1.RunLocalScanCmdH\x00\x12\x39\n\nhash_files\x18\x0c \x01(\x0b\x32#.baselith.red_agent.v1.HashFilesCmdH\x00\x12\x45\n\x10\x63ollect_artifact\x18\r \x01(\x0b\x32).baselith.red_agent.v1.CollectArtifactCmdH\x00\x12=\n\x0c\x61pply_config\x18\x0e \x01(\x0b\x32%.baselith.red_agent.v1.ApplyConfigCmdH\x00\x12;\n\x0bself_update\x18\x0f \x01(\x0b\x32$.baselith.red_agent.v1.SelfUpdateCmdH\x00\x42\x06\n\x04kind"\xb6\x01\n\x0fRunInventoryCmd\x12:\n\x05kinds\x18\x01 \x03(\x0e\x32+.baselith.red_agent.v1.RunInventoryCmd.Kind"g\n\x04Kind\x12\x14\n\x10KIND_UNSPECIFIED\x10\x00\x12\x11\n\rKIND_PACKAGES\x10\x01\x12\x12\n\x0eKIND_PROCESSES\x10\x02\x12\x0e\n\nKIND_USERS\x10\x03\x12\x12\n\x0eKIND_LISTENERS\x10\x04"i\n\x0fRunLocalScanCmd\x12\x11\n\tbundle_id\x18\x01 \x01(\t\x12\x0c\n\x04\x61rgv\x18\x02 \x03(\t\x12\x35\n\x06limits\x18\x03 \x01(\x0b\x32%.baselith.red_agent.v1.ResourceLimits"\x88\x01\n\x0eResourceLimits\x12\x1c\n\x14\x63pu_quota_us_per_sec\x18\x01 \x01(\x04\x12\x15\n\rmem_max_bytes\x18\x02 \x01(\x04\x12\x10\n\x08pids_max\x18\x03 \x01(\x04\x12/\n\x0cwall_timeout\x18\x04 \x01(\x0b\x32\x19.google.protobuf.Duration"\xb3\x01\n\x0cHashFilesCmd\x12\r\n\x05paths\x18\x01 \x03(\t\x12@\n\talgorithm\x18\x02 \x01(\x0e\x32-.baselith.red_agent.v1.HashFilesCmd.Algorithm"R\n\tAlgorithm\x12\x19\n\x15\x41LGORITHM_UNSPECIFIED\x10\x00\x12\x14\n\x10\x41LGORITHM_SHA256\x10\x01\x12\x14\n\x10\x41LGORITHM_BLAKE3\x10\x02"5\n\x12\x43ollectArtifactCmd\x12\x0c\n\x04path\x18\x01 \x01(\t\x12\x11\n\tmax_bytes\x18\x02 \x01(\x04"9\n\x0e\x41pplyConfigCmd\x12\'\n\x06\x63onfig\x18\x01 \x01(\x0b\x32\x17.google.protobuf.Struct"O\n\rSelfUpdateCmd\x12\x16\n\x0etarget_version\x18\x01 \x01(\t\x12\x12\n\nbundle_url\x18\x02 \x01(\t\x12\x12\n\nbundle_sig\x18\x03 \x01(\x0c"\xd0\x03\n\rCommandResult\x12\x17\n\x0fidempotency_key\x18\x01 \x01(\t\x12\x16\n\x0e\x63orrelation_id\x18\x02 \x01(\t\x12;\n\x06status\x18\x03 \x01(\x0e\x32+.baselith.red_agent.v1.CommandResult.Status\x12\x12\n\nerror_code\x18\x04 \x01(\t\x12\x15\n\rerror_message\x18\x05 \x01(\t\x12(\n\x07payload\x18\x06 \x01(\x0b\x32\x17.google.protobuf.Struct\x12\x36\n\x08\x61rtifact\x18\x07 \x01(\x0b\x32$.baselith.red_agent.v1.ArtifactChunk\x12*\n\x07\x65lapsed\x18\x08 \x01(\x0b\x32\x19.google.protobuf.Duration"\x97\x01\n\x06Status\x12\x16\n\x12STATUS_UNSPECIFIED\x10\x00\x12\r\n\tSTATUS_OK\x10\x01\x12\x12\n\x0eSTATUS_PARTIAL\x10\x02\x12\x11\n\rSTATUS_FAILED\x10\x03\x12\x12\n\x0eSTATUS_TIMEOUT\x10\x04\x12\x13\n\x0fSTATUS_REJECTED\x10\x05\x12\x16\n\x12STATUS_UNSUPPORTED\x10\x06"p\n\rArtifactChunk\x12\x13\n\x0b\x61rtifact_id\x18\x01 \x01(\t\x12\x13\n\x0b\x63hunk_index\x18\x02 \x01(\r\x12\x13\n\x0b\x63hunk_total\x18\x03 \x01(\r\x12\x0c\n\x04\x64\x61ta\x18\x04 \x01(\x0c\x12\x12\n\nsha256_hex\x18\x05 \x01(\t"\xa2\x01\n\x0cPolicyUpdate\x12\x0f\n\x07version\x18\x01 \x01(\x04\x12\x0e\n\x06\x62undle\x18\x02 \x01(\x0c\x12\x12\n\nbundle_sig\x18\x03 \x01(\x0c\x12-\n\tissued_at\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12.\n\nexpires_at\x18\x05 \x01(\x0b\x32\x1a.google.protobuf.Timestamp"<\n\tPolicyAck\x12\x0f\n\x07version\x18\x01 \x01(\x04\x12\x0f\n\x07\x61pplied\x18\x02 \x01(\x08\x12\r\n\x05\x65rror\x18\x03 \x01(\t"Z\n\x0fRotationRequest\x12\x0f\n\x07\x63sr_pem\x18\x01 \x01(\x0c\x12\x36\n\x12old_cert_not_after\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp"g\n\rRotationGrant\x12\x14\n\x0cnew_cert_pem\x18\x01 \x01(\x0c\x12\x11\n\tchain_pem\x18\x02 \x01(\x0c\x12-\n\tnot_after\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp"\xc5\x01\n\x10\x44isconnectNotice\x12>\n\x06reason\x18\x01 \x01(\x0e\x32..baselith.red_agent.v1.DisconnectNotice.Reason\x12\x0f\n\x07message\x18\x02 \x01(\t"`\n\x06Reason\x12\x16\n\x12REASON_UNSPECIFIED\x10\x00\x12\x13\n\x0fREASON_SHUTDOWN\x10\x01\x12\x14\n\x10REASON_UPGRADING\x10\x02\x12\x13\n\x0fREASON_RECONFIG\x10\x03"\xa6\x02\n\nDisconnect\x12\x38\n\x06reason\x18\x01 \x01(\x0e\x32(.baselith.red_agent.v1.Disconnect.Reason\x12\x0f\n\x07message\x18\x02 \x01(\t\x12.\n\x0bretry_after\x18\x03 \x01(\x0b\x32\x19.google.protobuf.Duration"\x9c\x01\n\x06Reason\x12\x16\n\x12REASON_UNSPECIFIED\x10\x00\x12\x1a\n\x16REASON_SERVER_SHUTDOWN\x10\x01\x12\x15\n\x11REASON_RATE_LIMIT\x10\x02\x12\x17\n\x13REASON_INCOMPATIBLE\x10\x03\x12\x12\n\x0eREASON_REVOKED\x10\x04\x12\x1a\n\x16REASON_TENANT_DISABLED\x10\x05*\xc5\x04\n\x0f\x41gentCapability\x12\x1a\n\x16\x43\x41PABILITY_UNSPECIFIED\x10\x00\x12\x1d\n\x19\x43\x41PABILITY_PROC_INVENTORY\x10\x01\x12\x1c\n\x18\x43\x41PABILITY_PKG_INVENTORY\x10\x02\x12\x18\n\x14\x43\x41PABILITY_FILE_HASH\x10\x03\x12\x19\n\x15\x43\x41PABILITY_NET_LISTEN\x10\x04\x12\x1d\n\x19\x43\x41PABILITY_USER_INVENTORY\x10\x05\x12\x18\n\x14\x43\x41PABILITY_EBPF_EXEC\x10\n\x12\x18\n\x14\x43\x41PABILITY_EBPF_OPEN\x10\x0b\x12\x1b\n\x17\x43\x41PABILITY_EBPF_CONNECT\x10\x0c\x12\x17\n\x13\x43\x41PABILITY_ESF_EXEC\x10\x14\x12\x17\n\x13\x43\x41PABILITY_ESF_FILE\x10\x15\x12\x1f\n\x1b\x43\x41PABILITY_SCAN_LOCAL_TRIVY\x10\x1e\x12\x1e\n\x1a\x43\x41PABILITY_SCAN_LOCAL_NMAP\x10\x1f\x12 \n\x1c\x43\x41PABILITY_SCAN_LOCAL_NUCLEI\x10 \x12!\n\x1d\x43\x41PABILITY_SCAN_LOCAL_SECRETS\x10!\x12\x1f\n\x1b\x43\x41PABILITY_SANDBOX_LANDLOCK\x10(\x12\x1e\n\x1a\x43\x41PABILITY_SANDBOX_SECCOMP\x10)\x12\x1f\n\x1b\x43\x41PABILITY_SANDBOX_SBX_EXEC\x10*\x12\x1a\n\x16\x43\x41PABILITY_SELF_UPDATE\x10\x32*\x88\x01\n\x08Severity\x12\x18\n\x14SEVERITY_UNSPECIFIED\x10\x00\x12\x11\n\rSEVERITY_INFO\x10\x01\x12\x10\n\x0cSEVERITY_LOW\x10\x02\x12\x13\n\x0fSEVERITY_MEDIUM\x10\x03\x12\x11\n\rSEVERITY_HIGH\x10\x04\x12\x15\n\x11SEVERITY_CRITICAL\x10\x05*\x8c\x01\n\x08LogLevel\x12\x19\n\x15LOG_LEVEL_UNSPECIFIED\x10\x00\x12\x13\n\x0fLOG_LEVEL_TRACE\x10\x01\x12\x13\n\x0fLOG_LEVEL_DEBUG\x10\x02\x12\x12\n\x0eLOG_LEVEL_INFO\x10\x03\x12\x12\n\x0eLOG_LEVEL_WARN\x10\x04\x12\x13\n\x0fLOG_LEVEL_ERROR\x10\x05\x32k\n\x0c\x41gentChannel\x12[\n\nOpenStream\x12#.baselith.red_agent.v1.AgentMessage\x1a$.baselith.red_agent.v1.ServerMessage(\x01\x30\x01\x42\x63\n\x17io.baselith.redagent.v1Z1github.com/baselithcore/redagent/proto/v1;agentv1\xaa\x02\x14\x42\x61selith.RedAgent.V1b\x06proto3'
+)
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
-_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'agent_pb2', _globals)
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, "agent_pb2", _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
-  _globals['DESCRIPTOR']._loaded_options = None
-  _globals['DESCRIPTOR']._serialized_options = b'\n\027io.baselith.redagent.v1Z1github.com/baselithcore/redagent/proto/v1;agentv1\252\002\024Baselith.RedAgent.V1'
-  _globals['_AGENTCAPABILITY']._serialized_start=5468
-  _globals['_AGENTCAPABILITY']._serialized_end=6049
-  _globals['_SEVERITY']._serialized_start=6052
-  _globals['_SEVERITY']._serialized_end=6188
-  _globals['_LOGLEVEL']._serialized_start=6191
-  _globals['_LOGLEVEL']._serialized_end=6331
-  _globals['_AGENTMESSAGE']._serialized_start=134
-  _globals['_AGENTMESSAGE']._serialized_end=701
-  _globals['_SERVERMESSAGE']._serialized_start=704
-  _globals['_SERVERMESSAGE']._serialized_end=1133
-  _globals['_AGENTHELLO']._serialized_start=1136
-  _globals['_AGENTHELLO']._serialized_end=1362
-  _globals['_SERVERHELLO']._serialized_start=1365
-  _globals['_SERVERHELLO']._serialized_end=1610
-  _globals['_PLATFORM']._serialized_start=1613
-  _globals['_PLATFORM']._serialized_end=1878
-  _globals['_PLATFORM_OS']._serialized_start=1810
-  _globals['_PLATFORM_OS']._serialized_end=1878
-  _globals['_HEARTBEAT']._serialized_start=1880
-  _globals['_HEARTBEAT']._serialized_end=1946
-  _globals['_HEALTHSNAPSHOT']._serialized_start=1949
-  _globals['_HEALTHSNAPSHOT']._serialized_end=2107
-  _globals['_TELEMETRYBATCH']._serialized_start=2109
-  _globals['_TELEMETRYBATCH']._serialized_end=2198
-  _globals['_TELEMETRYEVENT']._serialized_start=2201
-  _globals['_TELEMETRYEVENT']._serialized_end=2400
-  _globals['_LOGBATCH']._serialized_start=2402
-  _globals['_LOGBATCH']._serialized_end=2462
-  _globals['_LOGENTRY']._serialized_start=2465
-  _globals['_LOGENTRY']._serialized_end=2655
-  _globals['_COMMAND']._serialized_start=2658
-  _globals['_COMMAND']._serialized_end=3155
-  _globals['_RUNINVENTORYCMD']._serialized_start=3158
-  _globals['_RUNINVENTORYCMD']._serialized_end=3340
-  _globals['_RUNINVENTORYCMD_KIND']._serialized_start=3237
-  _globals['_RUNINVENTORYCMD_KIND']._serialized_end=3340
-  _globals['_RUNLOCALSCANCMD']._serialized_start=3342
-  _globals['_RUNLOCALSCANCMD']._serialized_end=3447
-  _globals['_RESOURCELIMITS']._serialized_start=3450
-  _globals['_RESOURCELIMITS']._serialized_end=3586
-  _globals['_HASHFILESCMD']._serialized_start=3589
-  _globals['_HASHFILESCMD']._serialized_end=3768
-  _globals['_HASHFILESCMD_ALGORITHM']._serialized_start=3686
-  _globals['_HASHFILESCMD_ALGORITHM']._serialized_end=3768
-  _globals['_COLLECTARTIFACTCMD']._serialized_start=3770
-  _globals['_COLLECTARTIFACTCMD']._serialized_end=3823
-  _globals['_APPLYCONFIGCMD']._serialized_start=3825
-  _globals['_APPLYCONFIGCMD']._serialized_end=3882
-  _globals['_SELFUPDATECMD']._serialized_start=3884
-  _globals['_SELFUPDATECMD']._serialized_end=3963
-  _globals['_COMMANDRESULT']._serialized_start=3966
-  _globals['_COMMANDRESULT']._serialized_end=4430
-  _globals['_COMMANDRESULT_STATUS']._serialized_start=4279
-  _globals['_COMMANDRESULT_STATUS']._serialized_end=4430
-  _globals['_ARTIFACTCHUNK']._serialized_start=4432
-  _globals['_ARTIFACTCHUNK']._serialized_end=4544
-  _globals['_POLICYUPDATE']._serialized_start=4547
-  _globals['_POLICYUPDATE']._serialized_end=4709
-  _globals['_POLICYACK']._serialized_start=4711
-  _globals['_POLICYACK']._serialized_end=4771
-  _globals['_ROTATIONREQUEST']._serialized_start=4773
-  _globals['_ROTATIONREQUEST']._serialized_end=4863
-  _globals['_ROTATIONGRANT']._serialized_start=4865
-  _globals['_ROTATIONGRANT']._serialized_end=4968
-  _globals['_DISCONNECTNOTICE']._serialized_start=4971
-  _globals['_DISCONNECTNOTICE']._serialized_end=5168
-  _globals['_DISCONNECTNOTICE_REASON']._serialized_start=5072
-  _globals['_DISCONNECTNOTICE_REASON']._serialized_end=5168
-  _globals['_DISCONNECT']._serialized_start=5171
-  _globals['_DISCONNECT']._serialized_end=5465
-  _globals['_DISCONNECT_REASON']._serialized_start=5309
-  _globals['_DISCONNECT_REASON']._serialized_end=5465
-  _globals['_AGENTCHANNEL']._serialized_start=6333
-  _globals['_AGENTCHANNEL']._serialized_end=6440
+    _globals["DESCRIPTOR"]._loaded_options = None
+    _globals[
+        "DESCRIPTOR"
+    ]._serialized_options = b"\n\027io.baselith.redagent.v1Z1github.com/baselithcore/redagent/proto/v1;agentv1\252\002\024Baselith.RedAgent.V1"
+    _globals["_AGENTCAPABILITY"]._serialized_start = 5468
+    _globals["_AGENTCAPABILITY"]._serialized_end = 6049
+    _globals["_SEVERITY"]._serialized_start = 6052
+    _globals["_SEVERITY"]._serialized_end = 6188
+    _globals["_LOGLEVEL"]._serialized_start = 6191
+    _globals["_LOGLEVEL"]._serialized_end = 6331
+    _globals["_AGENTMESSAGE"]._serialized_start = 134
+    _globals["_AGENTMESSAGE"]._serialized_end = 701
+    _globals["_SERVERMESSAGE"]._serialized_start = 704
+    _globals["_SERVERMESSAGE"]._serialized_end = 1133
+    _globals["_AGENTHELLO"]._serialized_start = 1136
+    _globals["_AGENTHELLO"]._serialized_end = 1362
+    _globals["_SERVERHELLO"]._serialized_start = 1365
+    _globals["_SERVERHELLO"]._serialized_end = 1610
+    _globals["_PLATFORM"]._serialized_start = 1613
+    _globals["_PLATFORM"]._serialized_end = 1878
+    _globals["_PLATFORM_OS"]._serialized_start = 1810
+    _globals["_PLATFORM_OS"]._serialized_end = 1878
+    _globals["_HEARTBEAT"]._serialized_start = 1880
+    _globals["_HEARTBEAT"]._serialized_end = 1946
+    _globals["_HEALTHSNAPSHOT"]._serialized_start = 1949
+    _globals["_HEALTHSNAPSHOT"]._serialized_end = 2107
+    _globals["_TELEMETRYBATCH"]._serialized_start = 2109
+    _globals["_TELEMETRYBATCH"]._serialized_end = 2198
+    _globals["_TELEMETRYEVENT"]._serialized_start = 2201
+    _globals["_TELEMETRYEVENT"]._serialized_end = 2400
+    _globals["_LOGBATCH"]._serialized_start = 2402
+    _globals["_LOGBATCH"]._serialized_end = 2462
+    _globals["_LOGENTRY"]._serialized_start = 2465
+    _globals["_LOGENTRY"]._serialized_end = 2655
+    _globals["_COMMAND"]._serialized_start = 2658
+    _globals["_COMMAND"]._serialized_end = 3155
+    _globals["_RUNINVENTORYCMD"]._serialized_start = 3158
+    _globals["_RUNINVENTORYCMD"]._serialized_end = 3340
+    _globals["_RUNINVENTORYCMD_KIND"]._serialized_start = 3237
+    _globals["_RUNINVENTORYCMD_KIND"]._serialized_end = 3340
+    _globals["_RUNLOCALSCANCMD"]._serialized_start = 3342
+    _globals["_RUNLOCALSCANCMD"]._serialized_end = 3447
+    _globals["_RESOURCELIMITS"]._serialized_start = 3450
+    _globals["_RESOURCELIMITS"]._serialized_end = 3586
+    _globals["_HASHFILESCMD"]._serialized_start = 3589
+    _globals["_HASHFILESCMD"]._serialized_end = 3768
+    _globals["_HASHFILESCMD_ALGORITHM"]._serialized_start = 3686
+    _globals["_HASHFILESCMD_ALGORITHM"]._serialized_end = 3768
+    _globals["_COLLECTARTIFACTCMD"]._serialized_start = 3770
+    _globals["_COLLECTARTIFACTCMD"]._serialized_end = 3823
+    _globals["_APPLYCONFIGCMD"]._serialized_start = 3825
+    _globals["_APPLYCONFIGCMD"]._serialized_end = 3882
+    _globals["_SELFUPDATECMD"]._serialized_start = 3884
+    _globals["_SELFUPDATECMD"]._serialized_end = 3963
+    _globals["_COMMANDRESULT"]._serialized_start = 3966
+    _globals["_COMMANDRESULT"]._serialized_end = 4430
+    _globals["_COMMANDRESULT_STATUS"]._serialized_start = 4279
+    _globals["_COMMANDRESULT_STATUS"]._serialized_end = 4430
+    _globals["_ARTIFACTCHUNK"]._serialized_start = 4432
+    _globals["_ARTIFACTCHUNK"]._serialized_end = 4544
+    _globals["_POLICYUPDATE"]._serialized_start = 4547
+    _globals["_POLICYUPDATE"]._serialized_end = 4709
+    _globals["_POLICYACK"]._serialized_start = 4711
+    _globals["_POLICYACK"]._serialized_end = 4771
+    _globals["_ROTATIONREQUEST"]._serialized_start = 4773
+    _globals["_ROTATIONREQUEST"]._serialized_end = 4863
+    _globals["_ROTATIONGRANT"]._serialized_start = 4865
+    _globals["_ROTATIONGRANT"]._serialized_end = 4968
+    _globals["_DISCONNECTNOTICE"]._serialized_start = 4971
+    _globals["_DISCONNECTNOTICE"]._serialized_end = 5168
+    _globals["_DISCONNECTNOTICE_REASON"]._serialized_start = 5072
+    _globals["_DISCONNECTNOTICE_REASON"]._serialized_end = 5168
+    _globals["_DISCONNECT"]._serialized_start = 5171
+    _globals["_DISCONNECT"]._serialized_end = 5465
+    _globals["_DISCONNECT_REASON"]._serialized_start = 5309
+    _globals["_DISCONNECT_REASON"]._serialized_end = 5465
+    _globals["_AGENTCHANNEL"]._serialized_start = 6333
+    _globals["_AGENTCHANNEL"]._serialized_end = 6440
 # @@protoc_insertion_point(module_scope)

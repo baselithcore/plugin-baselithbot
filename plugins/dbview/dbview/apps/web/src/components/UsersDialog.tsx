@@ -180,7 +180,7 @@ function UserList({ onInvite, onEdit }: { onInvite: () => void; onEdit: (u: User
                       <span
                         className={cn(
                           'inline-flex items-center gap-1 text-[11px]',
-                          u.isActive ? 'text-emerald-400' : 'text-text-dim',
+                          u.isActive ? 'text-emerald-400' : 'text-text-dim'
                         )}
                       >
                         {u.isActive ? <CheckCircle2 className="w-3 h-3" /> : null}

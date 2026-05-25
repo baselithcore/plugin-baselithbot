@@ -17,14 +17,14 @@ import { Nl2QueryAskService } from './ask.service.js';
 export class Nl2SqlController {
   constructor(
     private readonly svc: Nl2SqlService,
-    private readonly ask: Nl2QueryAskService,
+    private readonly ask: Nl2QueryAskService
   ) {}
 
   @Post()
   @RateLimit({ limit: 20, windowSec: 60 })
   translate(
     @Body(new ZodPipe(Nl2SqlRequestSchema)) body: unknown,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): Promise<Nl2SqlResponse> {
     return this.svc.translate(body as never, principal);
   }
@@ -33,7 +33,7 @@ export class Nl2SqlController {
   @RateLimit({ limit: 20, windowSec: 60 })
   askEndpoint(
     @Body(new ZodPipe(Nl2QueryAskRequestSchema)) body: unknown,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): Promise<Nl2QueryAskResponse> {
     return this.ask.ask(body as never, principal);
   }

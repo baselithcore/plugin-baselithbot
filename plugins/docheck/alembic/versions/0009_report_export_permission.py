@@ -34,13 +34,13 @@ def upgrade() -> None:
     for role_id, resource, action in SEED:
         op.execute(
             "INSERT OR IGNORE INTO permissions (role_id, resource, action) "
-            f"VALUES ('{role_id}', '{resource}', '{action}');"
+            f"VALUES ('{role_id}', '{resource}', '{action}');"  # nosec B608
         )
 
 
 def downgrade() -> None:
     for role_id, resource, action in SEED:
-        op.execute(  # nosec B608 — static SEED values, safe from injection
+        op.execute(
             "DELETE FROM permissions WHERE role_id = "
-            f"'{role_id}' AND resource = '{resource}' AND action = '{action}';"
+            f"'{role_id}' AND resource = '{resource}' AND action = '{action}';"  # nosec B608
         )

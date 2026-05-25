@@ -63,7 +63,7 @@ export function TourSpotlight() {
 
   const popover = useMemo(
     () => placePopover(rect, step?.placement, viewport),
-    [rect, step?.placement, viewport],
+    [rect, step?.placement, viewport]
   );
 
   if (!tour || !step) return null;
@@ -192,7 +192,7 @@ export function TourSpotlight() {
         </motion.div>
       </motion.div>
     </AnimatePresence>,
-    document.body,
+    document.body
   );
 }
 

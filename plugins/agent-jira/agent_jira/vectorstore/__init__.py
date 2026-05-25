@@ -40,7 +40,9 @@ def search(*args: Any, **kwargs: Any):
 
 
 def create_collection(*args: Any, **kwargs: Any):
-    from agent_jira.vectorstore.qdrant_ops import create_collection as _create_collection
+    from agent_jira.vectorstore.qdrant_ops import (
+        create_collection as _create_collection,
+    )
 
     return _create_collection(*args, **kwargs)
 

@@ -28,7 +28,7 @@ export class SalesforceDataCloudSafetyValidator {
       rowLimit: number;
       knownTables: Set<string>;
       knownColumns: Map<string, Set<string>>;
-    },
+    }
   ): { sql: string; warnings: SafetyWarning[]; involvedTables: string[] } {
     return this.inner.validate(sql, {
       dialect: 'postgres',

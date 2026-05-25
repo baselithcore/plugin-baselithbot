@@ -46,14 +46,14 @@ describe('SalesforceDataCloudSafetyValidator', () => {
 
   it('rejects multiple statements', () => {
     expect(() => v('SELECT Id__c FROM Account__dlm; SELECT Id__c FROM Owner__dlm')).toThrow(
-      /Multiple statements/i,
+      /Multiple statements/i
     );
   });
 
   it('supports CTEs and joins', () => {
     const r = v(
       'WITH a AS (SELECT Id__c, OwnerId__c FROM Account__dlm) SELECT a.Id__c, o.Email__c FROM a JOIN Owner__dlm o ON a.OwnerId__c = o.Id__c',
-      25,
+      25
     );
     expect(r.sql).toContain('LIMIT 25');
   });

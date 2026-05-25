@@ -55,7 +55,7 @@ const graph: SchemaGraph = {
 function col(
   name: string,
   dataType: string,
-  flags: Partial<{ isPrimaryKey: boolean; isForeignKey: boolean; isUnique: boolean }> = {},
+  flags: Partial<{ isPrimaryKey: boolean; isForeignKey: boolean; isUnique: boolean }> = {}
 ) {
   return {
     name,
@@ -120,7 +120,7 @@ describe('SqlSafetyValidator — golden patterns', () => {
     it('window function', () => {
       const r = v.validate(
         'SELECT id, total, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY total DESC) AS rn FROM orders LIMIT 25',
-        opts(),
+        opts()
       );
       expect(r.warnings.some((w) => w.code === 'missing_limit')).toBe(false);
     });
@@ -136,7 +136,7 @@ describe('SqlSafetyValidator — golden patterns', () => {
 
     it('inner unknown table inside subquery still fails', () => {
       expect(() => v.validate('SELECT id FROM (SELECT id FROM nope) sub LIMIT 5', opts())).toThrow(
-        UnsafeSqlError,
+        UnsafeSqlError
       );
     });
   });
@@ -178,7 +178,7 @@ describe('SqlSafetyValidator — golden patterns', () => {
 
     it('rejects two statements joined by semicolon', () => {
       expect(() =>
-        v.validate('SELECT id FROM users LIMIT 1; SELECT id FROM orders LIMIT 1', opts()),
+        v.validate('SELECT id FROM users LIMIT 1; SELECT id FROM orders LIMIT 1', opts())
       ).toThrow(UnsafeSqlError);
     });
   });

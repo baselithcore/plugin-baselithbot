@@ -19,8 +19,25 @@ repos:
     rev: 1.8.3
     hooks:
       - id: bandit
-        args: ['-r', '-ll', '--skip', 'B101']
-        exclude: ^(templates|examples|tests|backstage-portal)/
+        # Skipped checks (rationale):
+        #  - B101: assert in tests (standard).
+        #  - B324: md5/sha1 used as cache-key digests only (not auth/integrity).
+        #  - B301/B403: internal cache round-trip on values we wrote ourselves
+        #    (never crosses a trust boundary); reviewed plugin-by-plugin.
+        #  - B608: f-string SQL with static table/column names; user input
+        #    flows through psycopg parameter binding, not the interpolation.
+        args: ['-r', '-ll', '--skip', 'B101,B301,B324,B403,B608']
+        # Skip plugin alembic migrations + plugin-local test suites
+        # (mirrors the repo-root tests/ exclude pattern).
+        exclude: |
+          (?x)^(
+            templates/
+            | examples/
+            | tests/
+            | backstage-portal/
+            | plugins/[^/]+/(alembic|tests)/
+            | plugins/[^/]+/[^/]+/(alembic|tests)/
+          )
 
   # -----------------------------------------
   # 🛠️ Built-in hooks
@@ -30,7 +47,16 @@ repos:
     hooks:
       - id: check-yaml
         args: ['--allow-multiple-documents']
-        exclude: ^(\.gitlab-ci\.yml|mkdocs-site/mkdocs\.yml|backstage-portal/.*\.yaml)$
+        # Helm templates use `{{ ... }}` Go template directives that
+        # break the YAML parser even though they render to valid YAML.
+        # Exclude every Helm chart's templates/ directory.
+        exclude: |
+          (?x)^(
+            \.gitlab-ci\.yml
+            | mkdocs-site/mkdocs\.yml
+            | backstage-portal/.*\.yaml
+            | .*/helm/.*/templates/.*\.ya?ml
+          )$
       - id: check-json
         exclude: ^backstage-portal/
       - id: end-of-file-fixer
@@ -126,7 +152,23 @@ repos:
       - id: prettier
         name: prettier-react
         files: \.(js|jsx|ts|tsx|json|css|scss|html)$
-        exclude: ^backstage-portal/
+        # Skip:
+        #  - backstage-portal/ (managed upstream)
+        #  - plugin built assets (vite emits hashed/minified bundles that
+        #    prettier would always rewrite on each rebuild, blocking commits)
+        #  - vendored / generated artifacts (dist/, build/, *.min.*, package-lock,
+        #    pnpm-lock, tsbuildinfo)
+        exclude: |
+          (?x)^(
+            backstage-portal/.*
+            | plugins/.*/static/.*
+            | plugins/.*/(?:dist|build)/.*
+            | plugins/.*/ui/dist/.*
+            | plugins/.*/node_modules/.*
+            | .*\.min\.(?:js|css)
+            | .*-lock\.json
+            | .*\.tsbuildinfo
+          )$
         args: ['--write']
 
   # -----------------------------------------

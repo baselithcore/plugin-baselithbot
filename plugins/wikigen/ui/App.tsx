@@ -3,7 +3,7 @@ import { AuthPage } from './components/AuthPage';
 import { AcceptInvite } from './components/AcceptInvite';
 import { AppHeader } from './components/AppHeader';
 import { AppToaster } from './components/AppToaster';
-import { BootstrapGate } from './components/BootstrapGate';
+import { SuperuserWizard } from './components/SuperuserWizard';
 import { ForcePasswordChange } from './components/ForcePasswordChange';
 import { CommandPalette } from './components/CommandPalette';
 import { Composer } from './components/Composer';
@@ -54,7 +54,7 @@ export function App() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [memoriesOpen, setMemoriesOpen] = useState(false);
   const { path: locationPath } = useLocation();
-  // Bootstrap gate: parte True. Il BootstrapGate verifica /auth/bootstrap/status
+  // Bootstrap gate: parte True. Il SuperuserWizard verifica /auth/bootstrap/status
   // e chiama onComplete (che setta False) sia se needs_bootstrap=false sia
   // dopo creazione superuser riuscita.
   const [bootstrapPending, setBootstrapPending] = useState(true);
@@ -232,14 +232,15 @@ export function App() {
   }
 
   // First-boot gate: se non c'è ancora alcun superuser, mostra il
-  // BootstrapGate PRIMA di auth/setup. Self-checking via
+  // SuperuserWizard PRIMA di auth/setup. Self-checking via
   // /auth/bootstrap/status — se already-bootstrapped chiama subito
   // onComplete e si auto-smonta. Pattern best practice 2026:
-  // Grafana / Vaultwarden first-time setup screen.
+  // Grafana / Vaultwarden first-time setup screen — multi-step con
+  // sidebar avanzamento e riepilogo prima della conferma.
   if (!user && bootstrapPending) {
     return (
       <>
-        <BootstrapGate onComplete={() => setBootstrapPending(false)} />
+        <SuperuserWizard onComplete={() => setBootstrapPending(false)} />
         <AppToaster styled={false} />
       </>
     );

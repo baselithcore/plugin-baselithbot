@@ -31,7 +31,7 @@ export class RemoteProviderService {
    */
   async test(
     provider: RemoteLlmProvider,
-    apiKey: string,
+    apiKey: string
   ): Promise<{ modelCount: number; latencyMs: number }> {
     const t0 = Date.now();
     const models = await this.listModels(provider, apiKey);
@@ -42,7 +42,7 @@ export class RemoteProviderService {
     const payload = await this.fetchJson(
       'https://api.openai.com/v1/models',
       { headers: { Authorization: `Bearer ${apiKey}` } },
-      'openai',
+      'openai'
     );
     const raw = ((payload as { data?: OpenAiModel[] }).data ?? []) as OpenAiModel[];
     return raw
@@ -54,7 +54,7 @@ export class RemoteProviderService {
           family: deriveOpenAiFamily(m.id),
           createdAt:
             typeof m.created === 'number' ? new Date(m.created * 1000).toISOString() : undefined,
-        }),
+        })
       );
   }
 
@@ -67,7 +67,7 @@ export class RemoteProviderService {
           'anthropic-version': ANTHROPIC_VERSION,
         },
       },
-      'anthropic',
+      'anthropic'
     );
     const raw = ((payload as { data?: AnthropicModel[] }).data ?? []) as AnthropicModel[];
     return raw
@@ -78,14 +78,14 @@ export class RemoteProviderService {
           displayName: m.display_name ?? m.id,
           family: deriveAnthropicFamily(m.id),
           createdAt: typeof m.created_at === 'string' ? m.created_at : undefined,
-        }),
+        })
       );
   }
 
   private async fetchJson(
     url: string,
     init: RequestInit,
-    provider: RemoteLlmProvider,
+    provider: RemoteLlmProvider
   ): Promise<unknown> {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);

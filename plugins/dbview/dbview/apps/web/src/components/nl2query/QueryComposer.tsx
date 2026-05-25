@@ -52,7 +52,7 @@ export function QueryComposer({
       <div
         className={cn(
           'rounded-lg border transition-colors',
-          'focus-within:border-accent/55 focus-within:ring-1 focus-within:ring-accent/30',
+          'focus-within:border-accent/55 focus-within:ring-1 focus-within:ring-accent/30'
         )}
         style={{
           background:
@@ -65,7 +65,7 @@ export function QueryComposer({
           aria-label={autoExecute ? 'Ask the assistant' : 'Describe a query to draft'}
           className={cn(
             'min-h-[92px] max-h-[220px] w-full resize-none bg-transparent px-3.5 pb-2.5 pt-3.5',
-            'text-[13px] leading-[1.55] outline-none placeholder:text-text-dim',
+            'text-[13px] leading-[1.55] outline-none placeholder:text-text-dim'
           )}
           placeholder={
             autoExecute
@@ -138,7 +138,7 @@ export function QueryComposer({
                 'transition-[background,color,filter,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]',
                 canSend
                   ? 'shadow-md hover:brightness-110 active:translate-y-px active:scale-95'
-                  : 'cursor-not-allowed',
+                  : 'cursor-not-allowed'
               )}
               style={{
                 background: canSend

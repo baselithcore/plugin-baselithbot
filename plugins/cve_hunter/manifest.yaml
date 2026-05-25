@@ -25,4 +25,4 @@ environment_variables:
 - CVE_HUNTER_TENANT_ID
 - CVE_HUNTER_ISOLATION_MODE
 - CVE_HUNTER_NAMESPACE
-integrity_sha256: fcb563f8f2d43c72285b6490cf12883e28ca6f5fc1ace66f5a19d701ba7245be
+integrity_sha256: ba13e585dab9466cfa1eca726bc61dc01ffc0f82345e34c7c3b09dfbf78eb6f3

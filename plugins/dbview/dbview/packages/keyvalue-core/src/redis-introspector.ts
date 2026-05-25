@@ -93,7 +93,7 @@ export class RedisIntrospector {
       };
     } catch (err) {
       throw new IntrospectionError(
-        `Redis introspection failed: ${(err as Error).message ?? String(err)}`,
+        `Redis introspection failed: ${(err as Error).message ?? String(err)}`
       );
     }
   }

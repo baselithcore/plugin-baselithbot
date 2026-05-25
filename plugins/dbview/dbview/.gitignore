@@ -2,13 +2,19 @@ node_modules
 dist
 .next
 .turbo
+.vite/
 coverage
+.eslintcache
+*.tsbuildinfo
 .env
 .env.local
 .env.*.local
 *.log
 .DS_Store
 .vscode
+.idea
+playwright-report/
+test-results/
 
 # Runtime data (DBVIEW_DATA_DIR) — connections, history, user uploads.
 # Contains encrypted secrets + user-uploaded DB blobs; never commit.

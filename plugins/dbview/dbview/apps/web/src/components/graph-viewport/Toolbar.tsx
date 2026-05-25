@@ -114,7 +114,7 @@ export function Toolbar({
         className={cn(
           'toolbar-surface gap-2 px-2.5 h-8 text-[12px] transition-shadow',
           'focus-within:ring-1 focus-within:ring-accent/45',
-          noMatches && 'ring-1 ring-rose-400/45',
+          noMatches && 'ring-1 ring-rose-400/45'
         )}
         style={{ width: 320, maxWidth: 'min(320px, calc(100vw - 48px))' }}
       >
@@ -125,7 +125,7 @@ export function Toolbar({
             className={cn(
               'w-3.5 h-3.5 shrink-0',
               hasQuery ? 'text-accent' : 'text-text-dim',
-              searchPending && 'animate-pulse',
+              searchPending && 'animate-pulse'
             )}
             aria-hidden
           />
@@ -161,7 +161,7 @@ export function Toolbar({
           className={cn(
             'chip h-5 px-1.5 text-[10px] font-mono shrink-0 transition-colors',
             !hasQuery && 'opacity-60',
-            noMatches && 'chip-danger',
+            noMatches && 'chip-danger'
           )}
           title={
             hasQuery
@@ -232,7 +232,7 @@ export function Toolbar({
           <button
             className={cn(
               'segmented-item font-mono text-[10px]',
-              dataMode === 'schema' && 'segmented-item-active',
+              dataMode === 'schema' && 'segmented-item-active'
             )}
             onClick={() => setDataMode('schema')}
             aria-pressed={dataMode === 'schema'}
@@ -244,7 +244,7 @@ export function Toolbar({
           <button
             className={cn(
               'segmented-item font-mono text-[10px]',
-              dataMode === 'data' && 'segmented-item-active',
+              dataMode === 'data' && 'segmented-item-active'
             )}
             onClick={() => setDataMode('data')}
             aria-pressed={dataMode === 'data'}
@@ -260,7 +260,7 @@ export function Toolbar({
           <button
             className={cn(
               'segmented-item font-mono text-[10px]',
-              !view3D && 'segmented-item-active',
+              !view3D && 'segmented-item-active'
             )}
             onClick={() => setView3D(false)}
             aria-pressed={!view3D}
@@ -272,7 +272,7 @@ export function Toolbar({
           <button
             className={cn(
               'segmented-item font-mono text-[10px]',
-              view3D && 'segmented-item-active',
+              view3D && 'segmented-item-active'
             )}
             onClick={() => setView3D(true)}
             aria-pressed={view3D}

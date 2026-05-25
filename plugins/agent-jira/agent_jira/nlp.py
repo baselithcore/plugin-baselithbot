@@ -12,7 +12,11 @@ except ModuleNotFoundError:  # pragma: no cover - gestito a runtime
     spacy = None  # type: ignore[assignment]
     Language = None  # type: ignore[assignment]
 
-from agent_jira.config import ENABLE_SPACY_DOCUMENTS, SPACY_FALLBACK_LANGUAGE, SPACY_MODEL
+from agent_jira.config import (
+    ENABLE_SPACY_DOCUMENTS,
+    SPACY_FALLBACK_LANGUAGE,
+    SPACY_MODEL,
+)
 
 
 def _log(message: str) -> None:

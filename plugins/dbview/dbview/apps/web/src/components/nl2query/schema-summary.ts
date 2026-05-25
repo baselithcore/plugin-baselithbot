@@ -45,11 +45,11 @@ export function summarizeSchema(schema: UnifiedSchema | undefined): SchemaSummar
   if (schema.kind === 'document') {
     const fields = schema.collections.reduce(
       (sum, collection) => sum + collection.fields.length,
-      0,
+      0
     );
     const indexes = schema.collections.reduce(
       (sum, collection) => sum + collection.indexes.length,
-      0,
+      0
     );
     return {
       kind: schema.kind,
@@ -63,11 +63,11 @@ export function summarizeSchema(schema: UnifiedSchema | undefined): SchemaSummar
   if (schema.kind === 'vector') {
     const payloadFields = schema.collections.reduce(
       (sum, collection) => sum + collection.payloadFields.length,
-      0,
+      0
     );
     const points = schema.collections.reduce(
       (sum, collection) => sum + (collection.pointCount ?? 0),
-      0,
+      0
     );
     return {
       kind: schema.kind,

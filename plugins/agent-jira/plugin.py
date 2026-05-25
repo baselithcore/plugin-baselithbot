@@ -277,7 +277,9 @@ class AgentJiraPlugin(RouterPlugin):
         """
 
         router = APIRouter()
-        favicon_path = _PLUGIN_DIR / "agent_jira" / "static" / "frontend" / "favicon.svg"
+        favicon_path = (
+            _PLUGIN_DIR / "agent_jira" / "static" / "frontend" / "favicon.svg"
+        )
 
         @router.get("/", include_in_schema=False)
         async def root_redirect() -> RedirectResponse:
@@ -417,7 +419,6 @@ class AgentJiraPlugin(RouterPlugin):
         """
 
         from fastapi.middleware.cors import CORSMiddleware
-        from fastapi.middleware.gzip import GZipMiddleware
 
         from agent_jira import config as aj_config
         from agent_jira.cost_control import CostControlMiddleware
@@ -461,9 +462,7 @@ class AgentJiraPlugin(RouterPlugin):
         if static_root.exists():
             app.mount("/static", StaticFiles(directory=str(static_root)), name="static")
         if assets_root.exists():
-            app.mount(
-                "/assets", StaticFiles(directory=str(assets_root)), name="assets"
-            )
+            app.mount("/assets", StaticFiles(directory=str(assets_root)), name="assets")
 
 
 class _SmartGzipMiddleware(GZipMiddleware):

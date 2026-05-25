@@ -59,7 +59,7 @@ export function LabelToggle({ mode, onChange }: LabelToggleProps) {
             title={it.title}
             className={cn(
               'segmented-item font-mono text-[10px]',
-              active && 'segmented-item-active',
+              active && 'segmented-item-active'
             )}
           >
             {it.icon}

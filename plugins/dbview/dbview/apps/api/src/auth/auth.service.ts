@@ -5,6 +5,7 @@ import {
   InvalidCredentialsError,
   TokenReplayError,
   UnauthorizedError,
+  type BootstrapRequest,
   type InviteRequest,
   type RegisterRequest,
   type UpdateUserRequest,
@@ -16,6 +17,12 @@ import { hashPassword, needsRehash, verifyPassword } from './password.js';
 import { generateRefreshToken, hashToken, refreshTtlSeconds, signAccessToken } from './tokens.js';
 import { toPublicUser } from './auth.types.js';
 import { authEvents } from '../observability/metrics.registry.js';
+
+function envFlag(name: string, fallback: boolean): boolean {
+  const v = process.env[name]?.trim().toLowerCase();
+  if (v === undefined || v === '') return fallback;
+  return v === 'true' || v === '1' || v === 'yes' || v === 'on';
+}
 
 export interface LoginContext {
   ip: string | null;
@@ -79,7 +86,7 @@ export class AuthService implements OnModuleInit {
       const n = this.sessions.revokeFamily(session.familyId, Date.now());
       authEvents.labels({ event: 'token_replay' }).inc();
       this.logger.error(
-        `token_replay user=${session.userId} family=${session.familyId} revoked=${n}`,
+        `token_replay user=${session.userId} family=${session.familyId} revoked=${n}`
       );
       throw new TokenReplayError();
     }
@@ -100,6 +107,40 @@ export class AuthService implements OnModuleInit {
   isRegistrationEnabled(): boolean {
     const v = process.env.DBVIEW_ALLOW_REGISTRATION?.trim().toLowerCase();
     return v === 'true' || v === '1' || v === 'yes' || v === 'on';
+  }
+
+  usersCount(): number {
+    return this.users.count();
+  }
+
+  /**
+   * First-boot superuser creation. Called by AuthController's
+   * bootstrap endpoint after the loopback + rate-limit gate.
+   * Strict idempotency: rejects if any user already exists.
+   * The freshly minted admin is logged in immediately (same
+   * issueSession contract used by login / register).
+   */
+  async bootstrap(req: BootstrapRequest, ctx: LoginContext): Promise<LoginResult> {
+    if (this.users.count() > 0) {
+      throw new ForbiddenError('Bootstrap already completed.');
+    }
+    const now = new Date().toISOString();
+    const user: StoredUser = {
+      id: randomUUID(),
+      email: req.email,
+      emailLower: req.email.trim().toLowerCase(),
+      passwordHash: await hashPassword(req.password),
+      displayName: req.displayName ?? 'Admin',
+      role: 'admin',
+      isActive: true,
+      createdAt: now,
+      lastLoginAt: now,
+      mustChangePassword: false,
+    };
+    this.users.upsert(user);
+    authEvents.labels({ event: 'bootstrap' }).inc();
+    this.logger.log(`bootstrap_admin email=${user.email} source=web`);
+    return this.issueSession(user, randomUUID(), ctx);
   }
 
   async register(req: RegisterRequest, ctx: LoginContext): Promise<LoginResult> {
@@ -169,7 +210,7 @@ export class AuthService implements OnModuleInit {
   async updateUser(
     id: string,
     req: UpdateUserRequest,
-    actor: { id: string; role: 'admin' | 'user' },
+    actor: { id: string; role: 'admin' | 'user' }
   ): Promise<UserPublic> {
     const user = this.users.get(id);
     if (!user) throw new ForbiddenError(`User not found: ${id}`);
@@ -197,7 +238,7 @@ export class AuthService implements OnModuleInit {
   async changePassword(
     userId: string,
     currentPassword: string,
-    newPassword: string,
+    newPassword: string
   ): Promise<UserPublic> {
     const user = this.users.get(userId);
     if (!user || !user.isActive) throw new UnauthorizedError();
@@ -230,7 +271,7 @@ export class AuthService implements OnModuleInit {
     user: StoredUser,
     familyId: string,
     ctx: LoginContext,
-    sessionId: string = randomUUID(),
+    sessionId: string = randomUUID()
   ): LoginResult {
     const access = signAccessToken({
       sub: user.id,
@@ -270,6 +311,15 @@ export class AuthService implements OnModuleInit {
 
     if (envPassword && envPassword.length < 12) {
       throw new Error('DBVIEW_ADMIN_PASSWORD must be at least 12 characters.');
+    }
+
+    // Auto-seed gate: explicit env (email+password) always takes effect.
+    // Without env, the legacy random-password path requires opt-in via
+    // DBVIEW_BOOTSTRAP_AUTOSTART. Default is now `false` so the web
+    // SuperuserWizard (loopback-only) drives first-boot setup.
+    if (!fromEnv && !envFlag('DBVIEW_BOOTSTRAP_AUTOSTART', false)) {
+      this.logger.log('bootstrap_admin skipped (no env, autostart disabled — wizard active)');
+      return;
     }
 
     const email = envEmail || 'admin@dbview.local';

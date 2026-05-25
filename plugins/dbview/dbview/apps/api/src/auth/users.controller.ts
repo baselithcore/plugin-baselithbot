@@ -25,7 +25,7 @@ export class UsersController {
   @Post()
   invite(
     @Body(new ZodPipe(InviteRequestSchema)) body: InviteRequest,
-    @CurrentUser() actor: AuthPrincipal,
+    @CurrentUser() actor: AuthPrincipal
   ): Promise<UserPublic> {
     return this.auth.invite(body, actor.id);
   }
@@ -34,7 +34,7 @@ export class UsersController {
   update(
     @Param('id') id: string,
     @Body(new ZodPipe(UpdateUserRequestSchema)) body: UpdateUserRequest,
-    @CurrentUser() actor: AuthPrincipal,
+    @CurrentUser() actor: AuthPrincipal
   ): Promise<UserPublic> {
     return this.auth.updateUser(id, body, { id: actor.id, role: actor.role });
   }

@@ -13,7 +13,7 @@ describe('classifyError', () => {
   it('offers model picker when ollama reports model not found', () => {
     const r = classifyError(
       "ollama (qwen2.5-coder:7b) returned 404: model 'qwen2.5-coder:7b' not found",
-      'ollama',
+      'ollama'
     );
     expect(r.title).toMatch(/Model not pulled/i);
     expect(r.showModelPicker).toBe(true);

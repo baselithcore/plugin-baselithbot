@@ -86,7 +86,9 @@ def test_filter_response_headers_drops_hop_by_hop_and_content_length():
     )
     filtered = _filter_response_headers(headers, cookie_path_rewriter=rewrite)
     keys = {name.lower() for name, _ in filtered}
-    assert "content-length" not in keys, "stale Content-Length corrupts streaming bodies"
+    assert "content-length" not in keys, (
+        "stale Content-Length corrupts streaming bodies"
+    )
     assert "transfer-encoding" not in keys
     # Set-Cookie path is rewritten in-place.
     cookies = [value for name, value in filtered if name.lower() == "set-cookie"]
@@ -163,7 +165,9 @@ def _install_stub_client(response: _StubResponse) -> dict[str, Any]:
     return captured
 
 
-def _build_app(healthy: bool = True, upstream: str = "http://127.0.0.1:65000") -> FastAPI:
+def _build_app(
+    healthy: bool = True, upstream: str = "http://127.0.0.1:65000"
+) -> FastAPI:
     app = FastAPI()
     router = build_proxy_router(
         upstream_base_url_provider=lambda: upstream,

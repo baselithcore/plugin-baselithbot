@@ -134,7 +134,7 @@ function fixPlaceholder(
   pattern: RegExp,
   keyword: string,
   fallback: string,
-  fixes: string[],
+  fixes: string[]
 ): string {
   return sql.replace(pattern, (match, token: string) => {
     if (/^\d+$/.test(token)) return match;
@@ -162,7 +162,7 @@ function stripBogusSchemaPrefixes(
   sql: string,
   knownTables: Set<string>,
   stripAll: boolean,
-  fixes: string[],
+  fixes: string[]
 ): string {
   // Match `prefix.table` where `prefix` is a bare identifier and `table` matches
   // a known unqualified table name. Skip cases where `prefix.table` itself is in
@@ -216,12 +216,12 @@ function enforceNotNullOnRanking(sql: string, fixes: string[]): string {
   if (whereRe.test(sql)) {
     out = sql.replace(
       /(\bWHERE\b\s+[\s\S]*?)(\s+(?:GROUP\s+BY|HAVING|ORDER\s+BY|LIMIT|FETCH\s+(?:FIRST|NEXT))\b)/i,
-      (_, head: string, tail: string) => `${head} AND ${col} IS NOT NULL${tail}`,
+      (_, head: string, tail: string) => `${head} AND ${col} IS NOT NULL${tail}`
     );
   } else {
     out = sql.replace(
       /(\s+)(GROUP\s+BY|HAVING|ORDER\s+BY)\b/i,
-      (_, ws: string, kw: string) => `${ws}WHERE ${col} IS NOT NULL ${kw}`,
+      (_, ws: string, kw: string) => `${ws}WHERE ${col} IS NOT NULL ${kw}`
     );
   }
   if (out === sql) return sql;

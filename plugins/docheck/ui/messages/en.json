@@ -249,6 +249,103 @@
     "keysWarning": "Warning: without a backup key, audit chain integrity cannot be verified after disk failure.",
     "doneIntro": "Setup complete. Create the first admin user via:"
   },
+  "superuserSetup": {
+    "hero": {
+      "badge": "doCheck · initial setup",
+      "title": "Create the first administrator",
+      "body": "No accounts exist yet. This screen is reachable only from the local browser and seeds the admin who will manage every subsequent user.",
+      "progressLabel": "Progress"
+    },
+    "header": {
+      "title": "Create the first admin",
+      "subtitle": "one-time, loopback-only"
+    },
+    "sidebar": {
+      "title": "Initial admin",
+      "placeholder": "Awaiting setup",
+      "progress": "Progress",
+      "loopback": {
+        "title": "Loopback only",
+        "body": "This endpoint is reachable only from localhost. For remote setups bootstrap via env vars before the first boot."
+      }
+    },
+    "stepper": {
+      "aria": "Setup progress",
+      "title": "Guided setup",
+      "step": "Step {current} of {total}"
+    },
+    "steps": {
+      "identity": { "label": "Identity", "hint": "Email and profile" },
+      "security": { "label": "Security", "hint": "Password ≥12 chars" },
+      "review": { "label": "Confirm", "hint": "Create admin" }
+    },
+    "identity": {
+      "title": "Administrator identity",
+      "body": "These credentials access the admin console. Email and password remain editable after first sign-in.",
+      "email": "Email",
+      "displayName": "Display name",
+      "displayNameHint": "Optional — defaults to the local part of the email if blank."
+    },
+    "security": {
+      "title": "Set the password",
+      "body": "Minimum {min} characters. Mix letters, digits and symbols to maximise robustness. The password is hashed with argon2id and never stored in plaintext.",
+      "password": "Password (min {min} chars)",
+      "confirm": "Confirm password",
+      "strength": {
+        "label": "Password robustness",
+        "weak": "Weak",
+        "fair": "Fair",
+        "good": "Good",
+        "strong": "Strong"
+      }
+    },
+    "review": {
+      "title": "Confirm and create",
+      "body": "Review the data below. Confirming will sign you in immediately and disable the bootstrap endpoint. Further admins are managed from the Users page.",
+      "rows": {
+        "email": "Email",
+        "displayName": "Display name",
+        "role": "Role",
+        "roleValue": "admin",
+        "passwordStrength": "Password strength",
+        "source": "Source",
+        "sourceValue": "web (loopback)",
+        "forcedChange": "Force password change",
+        "forcedChangeValue": "No"
+      },
+      "reminder": {
+        "title": "Reminder.",
+        "body": "Save the password in a password manager: doCheck cannot recover it. Use the user menu to change it later."
+      }
+    },
+    "footer": {
+      "back": "Back",
+      "next": "Next",
+      "create": "Create admin",
+      "creating": "Creating…",
+      "title": {
+        "identity": "Define the administrator identity",
+        "security": "Set a strong password",
+        "review": "Confirm and create the admin"
+      },
+      "hint": {
+        "identity": "email, display name",
+        "security": "min 12 chars, never logged",
+        "review": "irreversible once an admin exists"
+      }
+    },
+    "cliHint": { "label": "Prefer the terminal?" },
+    "errors": {
+      "invalidEmail": "Invalid email address.",
+      "passwordShort": "Password must be at least {min} characters.",
+      "passwordMismatch": "Passwords do not match.",
+      "weakPassword": "Password too weak. Add numbers or symbols.",
+      "incomplete": "Please complete every step before confirming.",
+      "forbidden": "Bootstrap not allowed: an admin already exists or the request is not from loopback.",
+      "validation": "Validation failed. Check email and password constraints.",
+      "generic": "Unexpected error ({status})."
+    }
+  },
   "policies": {
     "scope": {
       "all": "All",

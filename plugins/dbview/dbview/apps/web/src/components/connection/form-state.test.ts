@@ -18,10 +18,10 @@ describe('paramsFromState', () => {
 
   it('rejects postgres without host or database', () => {
     expect(
-      paramsFromState(withOverrides({ dialect: 'postgres', host: '', database: 'db' })),
+      paramsFromState(withOverrides({ dialect: 'postgres', host: '', database: 'db' }))
     ).toBeNull();
     expect(
-      paramsFromState(withOverrides({ dialect: 'postgres', host: 'h', database: '' })),
+      paramsFromState(withOverrides({ dialect: 'postgres', host: 'h', database: '' }))
     ).toBeNull();
   });
 
@@ -90,10 +90,10 @@ describe('paramsFromState', () => {
 
   it('falkordb requires graph', () => {
     expect(
-      paramsFromState(withOverrides({ dialect: 'falkordb', host: 'h', graph: '' })),
+      paramsFromState(withOverrides({ dialect: 'falkordb', host: 'h', graph: '' }))
     ).toBeNull();
     expect(
-      paramsFromState(withOverrides({ dialect: 'falkordb', host: 'h', graph: 'g' })),
+      paramsFromState(withOverrides({ dialect: 'falkordb', host: 'h', graph: 'g' }))
     ).toMatchObject({
       dialect: 'falkordb',
       graph: 'g',
@@ -140,8 +140,8 @@ describe('paramsFromState', () => {
           instanceUrl: '',
           clientId: 'cid',
           clientSecret: 'sec',
-        }),
-      ),
+        })
+      )
     ).toBeNull();
     expect(
       paramsFromState(
@@ -150,8 +150,8 @@ describe('paramsFromState', () => {
           instanceUrl: 'https://x.my.salesforce.com',
           clientId: '',
           clientSecret: 'sec',
-        }),
-      ),
+        })
+      )
     ).toBeNull();
     expect(
       paramsFromState(
@@ -160,8 +160,8 @@ describe('paramsFromState', () => {
           instanceUrl: 'https://x.my.salesforce.com',
           clientId: 'cid',
           clientSecret: '',
-        }),
-      ),
+        })
+      )
     ).toBeNull();
   });
 
@@ -192,8 +192,8 @@ describe('paramsFromState', () => {
           sdcLoginUrl: '',
           sdcClientId: 'cid',
           sdcClientSecret: 'sec',
-        }),
-      ),
+        })
+      )
     ).toBeNull();
     expect(
       paramsFromState(
@@ -202,8 +202,8 @@ describe('paramsFromState', () => {
           sdcLoginUrl: 'https://acme.my.salesforce.com',
           sdcClientId: '',
           sdcClientSecret: 'sec',
-        }),
-      ),
+        })
+      )
     ).toBeNull();
     expect(
       paramsFromState(
@@ -212,8 +212,8 @@ describe('paramsFromState', () => {
           sdcLoginUrl: 'https://acme.my.salesforce.com',
           sdcClientId: 'cid',
           sdcClientSecret: '',
-        }),
-      ),
+        })
+      )
     ).toBeNull();
   });
 

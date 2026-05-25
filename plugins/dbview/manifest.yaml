@@ -1,105 +1,79 @@
 name: dbview
 version: 0.1.0
-description: >-
-  Database visualisation + Natural-Language-to-Query workbench for 17
-  engines (PostgreSQL, MySQL, MariaDB, MSSQL, SQLite, Oracle, ClickHouse,
-  DuckDB, CockroachDB, Neo4j, FalkorDB, Ultipa, MongoDB, Qdrant, Redis,
-  Elasticsearch, Salesforce SOQL). Bundles the upstream dbview NestJS API
-  and React/Vite SPA verbatim under ``dbview/``; the plugin process-
-  supervises the Node backend and proxies traffic through a FastAPI
-  reverse-proxy router mounted at ``/api/dbview``. The built SPA is
-  exposed at ``/dbview``.
+description: Database visualisation + Natural-Language-to-Query workbench for 17 engines
+  (PostgreSQL, MySQL, MariaDB, MSSQL, SQLite, Oracle, ClickHouse, DuckDB, CockroachDB,
+  Neo4j, FalkorDB, Ultipa, MongoDB, Qdrant, Redis, Elasticsearch, Salesforce SOQL).
+  Bundles the upstream dbview NestJS API and React/Vite SPA verbatim under ``dbview/``;
+  the plugin process- supervises the Node backend and proxies traffic through a FastAPI
+  reverse-proxy router mounted at ``/api/dbview``. The built SPA is exposed at ``/dbview``.
 author: Giovanni Ippolito <g.ippolito@gdservices.tech>
 homepage: https://github.com/giovanni-ippolito/dbview
 license: Proprietary
 category: Knowledge
 readiness: beta
-
 tags:
-  - database
-  - nl2sql
-  - nl2cypher
-  - soql
-  - visualisation
-  - postgres
-  - neo4j
-  - mongo
-  - elasticsearch
-  - salesforce
-  - white-label
-
-# SHA-256 over the plugin's *.py/*.pyi tree (recomputed on each release).
-# Generate locally with:
-#   python -c "from pathlib import Path; \
-#     from core.plugins.integrity import compute_plugin_hash; \
-#     print(compute_plugin_hash(Path('plugins/dbview')))"
-integrity_sha256: 52698ccf20e1cb8935f221dcccddda3cccec856fdd2da36050f7a80a49c7da5c
-
+- database
+- nl2sql
+- nl2cypher
+- soql
+- visualisation
+- postgres
+- neo4j
+- mongo
+- elasticsearch
+- salesforce
+- white-label
+integrity_sha256: 2a5e6e994e22016b6dc3ba1e0618c24f29851633f110fcfa897852f0e062c272
 plugin_dependencies: {}
-
-# Only Python dependencies the *host* must ship for the plugin's Python
-# surface (supervisor + reverse-proxy). All the heavy lifting (NestJS,
-# React, OTel, Pino, prom-client, …) lives inside ``dbview/`` and is
-# managed by pnpm at build time — those are NOT pip-installable and are
-# intentionally omitted from this list.
-# ``httpx`` is already part of the baselithcore host pyproject; declared
-# here for clarity so plugin authors editing supervisor.py know it is a
-# load-bearing dependency.
 python_dependencies:
-  - httpx>=0.27.0
-
-# Runtime prerequisites that aren't Python packages. Surfaced as plain
-# strings in the manifest so plugin tooling can show them in the UI;
-# the supervisor itself fails fast at activation time when they are
-# missing.
+- httpx>=0.27.0
 runtime_prerequisites:
-  - Node.js ≥ 20 on PATH (mandatory)
-  - pnpm ≥ 11 on PATH (only when DBVIEW_PLUGIN_MODE=dev)
-  - apps/api/dist/main.js built (only in prod mode — run `pnpm install && pnpm -r build` once)
-  - apps/web/dist/index.html built (for the SPA — `pnpm --filter @dbview/web build`)
-
-# Operator-tunable knobs. dbview itself exposes a much larger surface;
-# only the keys load-bearing for plugin integration are listed here.
+- "Node.js \u2265 20 on PATH (mandatory)"
+- "pnpm \u2265 11 on PATH (only when DBVIEW_PLUGIN_MODE=dev)"
+- "apps/api/dist/main.js built (only in prod mode \u2014 run `pnpm install && pnpm\
+  \ -r build` once)"
+- "apps/web/dist/index.html built (for the SPA \u2014 `pnpm --filter @dbview/web build`)"
 environment_variables:
-  - name: DBVIEW_JWT_SECRET
-    description: JWT signing key, ≥ 32 chars. Mandatory.
-    required: true
-  - name: DBVIEW_SECRET
-    description: AES-256-GCM key for stored connection strings, ≥ 16 chars. Mandatory.
-    required: true
-  - name: DBVIEW_PLUGIN_MODE
-    description: "``prod`` (default, runs node dist/main.js) or ``dev`` (runs pnpm dev)."
-    required: false
-  - name: DBVIEW_INTERNAL_HOST
-    description: Bind host for the embedded Node API. Default ``127.0.0.1``.
-    required: false
-  - name: DBVIEW_INTERNAL_PORT
-    description: Bind port for the embedded Node API. Default = ephemeral allocation.
-    required: false
-  - name: DBVIEW_STARTUP_TIMEOUT_S
-    description: Max seconds the supervisor waits for /api/health before failing. Default 90.
-    required: false
-  - name: DBVIEW_RESTART_MAX_ATTEMPTS
-    description: Cap on consecutive child restarts (0 = unlimited). Default 0.
-    required: false
-  - name: DBVIEW_ADMIN_EMAIL
-    description: Bootstrap admin email (first-boot only).
-    required: false
-  - name: DBVIEW_ADMIN_PASSWORD
-    description: Bootstrap admin password (≥ 12 chars, first-boot only).
-    required: false
-  - name: DBVIEW_API_KEY
-    description: Service-to-service key for /api/metrics scrape + CI automation.
-    required: false
-  - name: OLLAMA_BASE_URL
-    description: Local Ollama endpoint for NL→Query (default http://localhost:11434/api).
-    required: false
-  - name: OPENAI_API_KEY
-    description: Optional OpenAI provider for NL→Query.
-    required: false
-  - name: ANTHROPIC_API_KEY
-    description: Optional Anthropic provider for NL→Query.
-    required: false
-  - name: OTEL_EXPORTER_OTLP_ENDPOINT
-    description: OTLP collector base URL. Tracing is a no-op when unset.
-    required: false
+- name: DBVIEW_JWT_SECRET
+  description: "JWT signing key, \u2265 32 chars. Mandatory."
+  required: true
+- name: DBVIEW_SECRET
+  description: "AES-256-GCM key for stored connection strings, \u2265 16 chars. Mandatory."
+  required: true
+- name: DBVIEW_PLUGIN_MODE
+  description: '``prod`` (default, runs node dist/main.js) or ``dev`` (runs pnpm dev).'
+  required: false
+- name: DBVIEW_INTERNAL_HOST
+  description: Bind host for the embedded Node API. Default ``127.0.0.1``.
+  required: false
+- name: DBVIEW_INTERNAL_PORT
+  description: Bind port for the embedded Node API. Default = ephemeral allocation.
+  required: false
+- name: DBVIEW_STARTUP_TIMEOUT_S
+  description: Max seconds the supervisor waits for /api/health before failing. Default
+    90.
+  required: false
+- name: DBVIEW_RESTART_MAX_ATTEMPTS
+  description: Cap on consecutive child restarts (0 = unlimited). Default 0.
+  required: false
+- name: DBVIEW_ADMIN_EMAIL
+  description: Bootstrap admin email (first-boot only).
+  required: false
+- name: DBVIEW_ADMIN_PASSWORD
+  description: "Bootstrap admin password (\u2265 12 chars, first-boot only)."
+  required: false
+- name: DBVIEW_API_KEY
+  description: Service-to-service key for /api/metrics scrape + CI automation.
+  required: false
+- name: OLLAMA_BASE_URL
+  description: "Local Ollama endpoint for NL\u2192Query (default http://localhost:11434/api)."
+  required: false
+- name: OPENAI_API_KEY
+  description: "Optional OpenAI provider for NL\u2192Query."
+  required: false
+- name: ANTHROPIC_API_KEY
+  description: "Optional Anthropic provider for NL\u2192Query."
+  required: false
+- name: OTEL_EXPORTER_OTLP_ENDPOINT
+  description: OTLP collector base URL. Tracing is a no-op when unset.
+  required: false

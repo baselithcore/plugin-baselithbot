@@ -116,7 +116,7 @@ Il client deve chiudere WS quando riceve `phase: "done"`.
 |----------|-----------|------|
 | `GET /reports/{report_id}` | `report:read` | Report firmato + findings completi. |
 | `GET /reports/{report_id}/findings/{finding_id}/decision` | `report:read` | Lettura decision corrente. |
-| `POST /reports/{report_id}/findings/{finding_id}/decision` | `report:write` | Override umano. Body: `{"decision": "accept"|"reject"|"defer", "rationale": "..."}`. |
+| `POST /reports/{report_id}/findings/{finding_id}/decision` | `report:write` | Override umano. Body: `{"decision": "accept"\|"reject"\|"defer", "rationale": "..."}`. |
 | `GET /reports/{report_id}/decisions` | `report:read` | Tutte le decisions del report. |
 | `POST /reports/{report_id}/findings/{finding_id}/ask` | `report:read` | Q&A in linguaggio naturale su un finding (RAG). |
 | `POST /reports/{report_id}/findings/{finding_id}/ask/stream` | `report:read` | Streaming SSE per Q&A. |

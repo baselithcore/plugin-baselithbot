@@ -12,7 +12,7 @@ export const DATA_PREVIEW_QUERY_KEY = 'graph-data-preview';
 export function useDataPreview(
   connId: string | null,
   schema: UnifiedSchema | undefined,
-  enabled: boolean,
+  enabled: boolean
 ) {
   const previewKind = schema?.kind ?? null;
   const vectorPreviewQuery = useMemo(() => {

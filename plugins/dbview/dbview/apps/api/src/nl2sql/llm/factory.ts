@@ -52,7 +52,7 @@ class GenericRemoteAdapter implements LlmAdapter {
   constructor(
     readonly provider: LlmProvider,
     private readonly resolveModel: (id: string) => Parameters<typeof generateText>[0]['model'],
-    private readonly options: { structured: boolean } = { structured: true },
+    private readonly options: { structured: boolean } = { structured: true }
   ) {
     this.name = `${provider}-sdk${options.structured ? '' : '-text'}`;
   }
@@ -124,7 +124,7 @@ export interface LlmAdapterAuth {
 export function createLlmAdapter(
   provider: LlmProvider,
   model: string,
-  auth: LlmAdapterAuth = {},
+  auth: LlmAdapterAuth = {}
 ): LlmAdapter {
   switch (provider) {
     case 'ollama': {

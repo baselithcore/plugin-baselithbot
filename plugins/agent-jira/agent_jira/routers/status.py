@@ -9,7 +9,12 @@ from agent_jira.metrics import GRAPHDB_UP, POSTGRES_UP, QDRANT_UP, REDIS_UP
 from agent_jira.security import require_admin
 from agent_jira.telemetry import telemetry
 from agent_jira.vectorstore import indexed_items
-from agent_jira.config import CHATBOT_CLIENT_CONFIG, COLLECTION, QDRANT, QDRANT_MODE  # 👈 da .env
+from agent_jira.config import (
+    CHATBOT_CLIENT_CONFIG,
+    COLLECTION,
+    QDRANT,
+    QDRANT_MODE,
+)  # 👈 da .env
 
 router = APIRouter(tags=["status"])
 CHATBOT_ENV_PATH = (

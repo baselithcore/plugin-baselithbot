@@ -34,7 +34,11 @@ from agent_jira.metrics import (
 )
 from agent_jira.nlp_models import get_embedder
 from agent_jira.telemetry import telemetry
-from agent_jira.vectorstore.chunking import _chunk_point_id, _prepare_chunk_text, splitter
+from agent_jira.vectorstore.chunking import (
+    _chunk_point_id,
+    _prepare_chunk_text,
+    splitter,
+)
 from agent_jira.vectorstore.graph_sync import _upsert_graph_document
 from agent_jira.vectorstore.qdrant_ops import _delete_document_points
 from agent_jira.vectorstore.state import (

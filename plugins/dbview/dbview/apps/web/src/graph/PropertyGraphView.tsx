@@ -48,9 +48,9 @@ export function PropertyGraphView({
         highlightedLabels,
         matchedLabels,
         onSelectLabel,
-        onSelectProperty,
+        onSelectProperty
       ),
-    [graph, layout, highlightedLabels, matchedLabels, onSelectLabel, onSelectProperty],
+    [graph, layout, highlightedLabels, matchedLabels, onSelectLabel, onSelectProperty]
   );
 
   const [nodes, setNodes, onNodesChange] = useNodesState(computedNodes);
@@ -136,14 +136,14 @@ function decoratePropertyGraph(
   highlighted?: Set<string>,
   matched?: Set<string>,
   onSelectLabel?: (id: string) => void,
-  onSelectProperty?: (id: string, prop: string) => void,
+  onSelectProperty?: (id: string, prop: string) => void
 ): { nodes: Node[]; edges: Edge[] } {
   // When user searches a relationship, surface its endpoint labels too.
   // Without this, an exact rel-type match would leave the rel visible
   // between two dimmed nodes — confusing.
   const matchedRelEndpoints = matched
     ? new Set(
-        graph.relationships.filter((r) => matched.has(r.id)).flatMap((r) => [r.source, r.target]),
+        graph.relationships.filter((r) => matched.has(r.id)).flatMap((r) => [r.source, r.target])
       )
     : null;
 

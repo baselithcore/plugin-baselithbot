@@ -116,7 +116,7 @@ export function DrawerShell({
         )}
       </AnimatePresence>
     </>,
-    document.body,
+    document.body
   );
 }
 

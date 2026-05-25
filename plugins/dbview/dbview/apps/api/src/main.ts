@@ -17,7 +17,7 @@ async function bootstrap(): Promise<void> {
       logger: false,
       bodyLimit: Number(process.env.DBVIEW_BODY_LIMIT) || 400 * 1024 * 1024,
     }),
-    { bufferLogs: true },
+    { bufferLogs: true }
   );
   app.useLogger(app.get(Logger));
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

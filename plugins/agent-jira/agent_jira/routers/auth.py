@@ -31,6 +31,7 @@ from agent_jira.auth_tokens import (
 from agent_jira.security import rate_limiter
 
 from agent_jira.db.users import (
+    count_users,
     count_users_by_tenant,
     create_user,
     get_user_by_email,
@@ -41,7 +42,12 @@ from agent_jira.db.users import (
     update_user,
     verify_password,
 )
-from agent_jira.config import MULTI_TENANT_ENABLED, PLAN_MAX_USERS, POSTGRES_ENABLED, SECRET_KEY
+from agent_jira.config import (
+    MULTI_TENANT_ENABLED,
+    PLAN_MAX_USERS,
+    POSTGRES_ENABLED,
+    SECRET_KEY,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -836,3 +842,184 @@ async def edit_user(
     )
 
     return {"status": "ok", "user": updated}
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# First-boot superuser bootstrap (mirrors wikigen / dbview / docheck)
+# ──────────────────────────────────────────────────────────────────────────
+
+# Loopback IP set per anti-LAN-attacker. ::ffff:127.0.0.1 copre il mapping
+# IPv4 dentro un socket dual-stack (uvicorn dietro `--host 0.0.0.0` su Linux).
+_LOOPBACK_HOSTS = {"127.0.0.1", "::1", "::ffff:127.0.0.1", "localhost"}
+_BOOTSTRAP_MIN_PASSWORD = 12
+
+
+def _is_loopback(request: Request) -> bool:
+    """True se il client viene da localhost.
+
+    NB: ignora X-Forwarded-For di proposito — durante il bootstrap
+    iniziale non ci si può fidare di header proxiati: deve essere
+    proprio il browser sulla stessa macchina dell'engine.
+    """
+    host = request.client.host if request.client else None
+    if host is None:
+        return False
+    return host in _LOOPBACK_HOSTS
+
+
+class BootstrapStatusResponse(BaseModel):
+    needs_bootstrap: bool
+    users_count: int
+
+
+class BootstrapRequest(BaseModel):
+    email: str = Field(..., min_length=3, max_length=320)
+    password: str = Field(..., min_length=_BOOTSTRAP_MIN_PASSWORD, max_length=512)
+    display_name: str = Field(default="")
+    organization: str = Field(
+        default="",
+        description="Nome organizzazione — verrà creato un tenant dedicato",
+    )
+
+
+@router.get("/bootstrap/status", response_model=BootstrapStatusResponse)
+def bootstrap_status() -> BootstrapStatusResponse:
+    """Probe public side-effect-free. fail-open su errore DB (legacy
+    login resta raggiungibile invece di trap-and-die)."""
+    if not POSTGRES_ENABLED:
+        return BootstrapStatusResponse(needs_bootstrap=False, users_count=0)
+    try:
+        n = count_users()
+    except Exception:
+        return BootstrapStatusResponse(needs_bootstrap=False, users_count=0)
+    return BootstrapStatusResponse(needs_bootstrap=(n == 0), users_count=n)
+
+
+@router.post("/bootstrap")
+def bootstrap_admin(
+    req: BootstrapRequest, request: Request, response: Response
+) -> Dict[str, Any]:
+    """Crea il primo superuser. Gate stack:
+
+    - 503 se Postgres non disponibile,
+    - 403 se ``count_users > 0`` (idempotent — admin gestiti via UI utenti),
+    - 403 se la richiesta non arriva da loopback (anti-LAN-attacker).
+
+    Sul successo apre subito una sessione (access token + refresh cookie)
+    riusando lo stesso shape di POST /auth/login, quindi il frontend salta
+    direttamente alla UI autenticata.
+    """
+    if not POSTGRES_ENABLED:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database non disponibile.",
+        )
+
+    ip = _client_ip(request)
+    rate_limiter.check(f"bootstrap:ip:{ip}", 3, 3600)
+
+    try:
+        n = count_users()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"DB irraggiungibile: {exc}",
+        )
+
+    if n > 0:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Bootstrap già completato.",
+        )
+
+    if not _is_loopback(request):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Il bootstrap è consentito solo da loopback.",
+        )
+
+    email = req.email.strip().lower()
+    if not email or "@" not in email:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Email non valida.",
+        )
+
+    display_name = req.display_name.strip() or email.split("@")[0]
+    org_name = req.organization.strip() or display_name
+
+    if MULTI_TENANT_ENABLED:
+        from agent_jira.db.tenants import create_tenant_with_owner, get_tenant_by_slug
+
+        slug = _slugify(org_name)
+        base_slug = slug
+        counter = 1
+        while get_tenant_by_slug(slug):
+            slug = f"{base_slug}-{counter}"
+            counter += 1
+
+        try:
+            result = create_tenant_with_owner(
+                tenant_name=org_name,
+                tenant_slug=slug,
+                user_email=email,
+                user_password_hash=hash_password(req.password),
+                user_display_name=display_name,
+            )
+        except Exception as exc:
+            logger.exception("Bootstrap atomic creation failed: %s", exc)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Creazione superuser fallita. Riprova.",
+            )
+        user = result["user"]
+        tenant_id = result["tenant"]["id"]
+    else:
+        user = create_user(
+            email=email,
+            password=req.password,
+            display_name=display_name,
+            tenant_id=None,
+            role="admin",
+        )
+        tenant_id = None
+
+    user_id = str(user["id"])
+    update_last_login(user_id)
+
+    # Access token breve (15m) + refresh cookie httpOnly (stesso shape di /login).
+    access_token, access_exp = issue_access_token(
+        user_id=user_id, tenant_id=tenant_id or "", role="admin"
+    )
+    refresh_token, refresh_exp, _ = issue_refresh_token(
+        user_id=user_id,
+        tenant_id=tenant_id or "",
+        user_agent=_user_agent(request),
+        ip_address=ip,
+    )
+    _set_refresh_cookie(response, refresh_token, refresh_exp)
+
+    _audit_safe(
+        "auth.bootstrap",
+        resource_type="user",
+        resource_id=user_id,
+        user_id=user_id,
+        tenant_id=tenant_id,
+        metadata={"email": email, "source": "web"},
+        request=request,
+    )
+
+    user_data = {
+        "id": user_id,
+        "email": user["email"],
+        "display_name": user.get("display_name", display_name),
+        "tenant_id": tenant_id,
+        "role": "admin",
+    }
+    return {
+        "status": "ok",
+        "token": access_token,  # backward-compat con frontend esistente
+        "access_token": access_token,
+        "access_token_expires_at": access_exp.isoformat(),
+        "user": user_data,
+    }

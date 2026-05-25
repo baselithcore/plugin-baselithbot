@@ -71,7 +71,7 @@ export function SchemaGraphView({
     // layoutNonce intentionally invalidates the memo so a Refresh click
     // recomputes positions from scratch even when the schema bytes are identical.
 
-    [graph, layoutNonce],
+    [graph, layoutNonce]
   );
 
   const computedNodes = useMemo<Node[]>(() => {
@@ -190,7 +190,7 @@ export function SchemaGraphView({
   }, [graph.tables]);
   const minimapNodeColor = useCallback(
     (node: Node) => minimapColorById.get(node.id) ?? '#3f3f46',
-    [minimapColorById],
+    [minimapColorById]
   );
 
   return (

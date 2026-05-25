@@ -87,7 +87,7 @@ export class MongoExecutor {
         .filter(([k]) => !k.startsWith('$') && !k.startsWith('wiredTiger'))
         .map(([k, v]) => [k, typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v)]),
       rowLimit,
-      start,
+      start
     );
   }
 
@@ -103,7 +103,7 @@ function finalize(
   columns: string[],
   rows: unknown[][],
   rowLimit: number,
-  start: number,
+  start: number
 ): ExecuteQueryResponse {
   const truncated = rows.length > rowLimit;
   return {
@@ -118,7 +118,7 @@ function finalize(
 function shapeDocs(
   docs: Array<Record<string, unknown>>,
   rowLimit: number,
-  start: number,
+  start: number
 ): ExecuteQueryResponse {
   if (docs.length === 0) return finalize(['_id'], [], rowLimit, start);
   const keys = new Set<string>();
@@ -133,7 +133,7 @@ function shapeDocs(
       if (v === null || v === undefined) return null;
       if (typeof v === 'object') return JSON.stringify(v);
       return v;
-    }),
+    })
   );
   return finalize(columns, rows, rowLimit, start);
 }

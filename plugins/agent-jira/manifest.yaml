@@ -1,311 +1,261 @@
 name: agent-jira
 version: 1.19.1
-description: >-
-  Agile Project Manager + Jira automation ported from agent-jira.
-  Multi-agent system (Orchestrator, RAG, Jira, GraphDB, Audit, Metadata) that
-  ingests project documentation (PDF/DOCX/XLSX/MD/PPT) via hybrid retrieval
-  (Sentence Transformers + Qdrant + CrossEncoder reranker, EasyOCR fallback),
-  generates project plans & user stories with BDD scenarios and QA test cases,
-  and creates/updates Jira issues (autonomous or human-in-the-loop).
-  Bundles a React/Vite console (Home/Conversation/Analysis/KB) with a Jira
-  Setup Wizard, lightweight JS/CSS chat widget, FalkorDB knowledge graph,
-  multi-tenant Postgres isolation with row-level security, sliding-window
-  Redis rate limiting, OpenTelemetry, Prometheus metrics, and Alembic
-  migrations.
+description: Agile Project Manager + Jira automation ported from agent-jira. Multi-agent
+  system (Orchestrator, RAG, Jira, GraphDB, Audit, Metadata) that ingests project
+  documentation (PDF/DOCX/XLSX/MD/PPT) via hybrid retrieval (Sentence Transformers
+  + Qdrant + CrossEncoder reranker, EasyOCR fallback), generates project plans & user
+  stories with BDD scenarios and QA test cases, and creates/updates Jira issues (autonomous
+  or human-in-the-loop). Bundles a React/Vite console (Home/Conversation/Analysis/KB)
+  with a Jira Setup Wizard, lightweight JS/CSS chat widget, FalkorDB knowledge graph,
+  multi-tenant Postgres isolation with row-level security, sliding-window Redis rate
+  limiting, OpenTelemetry, Prometheus metrics, and Alembic migrations.
 author: GD Services <g.ippolito@gdservices.tech>
 homepage: https://github.com/giovanni-ippolito/agent-jira
 license: Proprietary
 category: Project Management
 readiness: production
-
 tags:
-  - jira
-  - agile
-  - project-manager
-  - backlog
-  - user-stories
-  - bdd
-  - test-cases
-  - rag
-  - hybrid-search
-  - reranker
-  - easyocr
-  - multi-agent
-  - knowledge-graph
-  - falkordb
-  - multi-tenant
-  - rls
-  - opentelemetry
-  - prometheus
-  - langgraph
-
-# SHA-256 over the plugin's *.py/*.pyi tree (recomputed each release).
-# Generate locally with:
-#   python -c "from pathlib import Path; \
-#     from core.plugins.integrity import compute_plugin_hash; \
-#     print(compute_plugin_hash(Path('plugins/agent-jira')))"
-integrity_sha256: 45ca54f25547383148aab81b7ffd4e1c526ea8204a260dfc4d3352132b49b73f
-
-# Optional baselithcore plugin dependencies. agent-jira is self-contained:
-# all integrations (alembic, agents, services, vectorstore, graphdb, ui)
-# live inside the plugin tree.
+- jira
+- agile
+- project-manager
+- backlog
+- user-stories
+- bdd
+- test-cases
+- rag
+- hybrid-search
+- reranker
+- easyocr
+- multi-agent
+- knowledge-graph
+- falkordb
+- multi-tenant
+- rls
+- opentelemetry
+- prometheus
+- langgraph
+integrity_sha256: ad66489b1b88cb08c0f6f573755bdb46901c6db5204b53f0d7b2cb3bdf1b9aeb
 plugin_dependencies: {}
-
-# Core baselithcore deps already covered by the host pyproject:
-# fastapi, uvicorn, pydantic, httpx, prometheus-client, psycopg, alembic,
-# redis, cryptography, PyJWT, opentelemetry-*, openai, orjson. The list
-# below mirrors agent-jira/pyproject.toml dependencies block — pin if the
-# host does not already provide them.
 python_dependencies:
-  - "qdrant-client>=1.15.1,<1.17"
-  - "sentence-transformers>=3.0.1"
-  - "ollama==0.6.0"
-  - "langchain>=0.3.0,<0.4"
-  - "langchain-core>=0.3.0,<0.4"
-  - "langchain-community>=0.3.0,<0.4"
-  - "langchain-text-splitters>=0.3.0,<0.4"
-  - "langgraph>=0.3.0,<0.4"
-  - "markdown-it-py==3.0.0"
-  - "beautifulsoup4>=4.14.2"
-  - "spacy>=3.8.2"
-  - "Pillow==10.4.0"
-  - "pymupdf>=1.24.0"
-  - "easyocr>=1.7.1"
-  - "opencv-python-headless>=4.10.0.84"
-  - "pypdf==4.2.0"
-  - "python-docx==1.1.0"
-  - "python-pptx==0.6.23"
-  - "openpyxl==3.1.5"
-  - "xlrd==2.0.1"
-  - "playwright>=1.47.0"
-  - "python-dotenv>=1.0.0"
-  - "python-multipart"
-
-# agent-jira exposes a knob-heavy env surface. Documented in .env.example
-# and docs/. Only the load-bearing keys are surfaced here for UI/CLI use.
+- qdrant-client>=1.15.1,<1.17
+- sentence-transformers>=3.0.1
+- ollama==0.6.0
+- langchain>=0.3.0,<0.4
+- langchain-core>=0.3.0,<0.4
+- langchain-community>=0.3.0,<0.4
+- langchain-text-splitters>=0.3.0,<0.4
+- langgraph>=0.3.0,<0.4
+- markdown-it-py==3.0.0
+- beautifulsoup4>=4.14.2
+- spacy>=3.8.2
+- Pillow==10.4.0
+- pymupdf>=1.24.0
+- easyocr>=1.7.1
+- opencv-python-headless>=4.10.0.84
+- pypdf==4.2.0
+- python-docx==1.1.0
+- python-pptx==0.6.23
+- openpyxl==3.1.5
+- xlrd==2.0.1
+- playwright>=1.47.0
+- python-dotenv>=1.0.0
+- python-multipart
 environment_variables:
-  # ---- Server ----
-  - name: HOST
-    description: Host bind address for the FastAPI app.
-    required: false
-  - name: PORT
-    description: Port bind for the FastAPI app (default 8181).
-    required: false
-  - name: ALLOW_ORIGINS
-    description: Comma-separated CORS allowlist (default `*`).
-    required: false
-
-  # ---- Logging ----
-  - name: LOG_LEVEL_CONSOLE
-    description: Console log level (default INFO).
-    required: false
-  - name: LOG_LEVEL_FILE
-    description: File log level (default INFO).
-    required: false
-  - name: LOG_FORMAT
-    description: "`json` (structured) or `text` (default human-readable)."
-    required: false
-
-  # ---- Postgres / multi-tenancy ----
-  - name: POSTGRES_ENABLED
-    description: Enable Postgres (feedback, tenants, users, audit, refresh tokens).
-    required: false
-  - name: DATABASE_URL
-    description: Full Postgres DSN — takes precedence over DB_HOST/USER/PASSWORD/etc.
-    required: false
-  - name: DB_HOST
-    description: Postgres host (default `postgres`).
-    required: false
-  - name: DB_PORT
-    description: Postgres port (default 5432).
-    required: false
-  - name: DB_NAME
-    description: Postgres database name (default `chatbot`).
-    required: false
-  - name: DB_USER
-    description: Postgres user (default `chatbot`).
-    required: false
-  - name: DB_PASSWORD
-    description: Postgres password (default `chatbot`).
-    required: false
-  - name: DB_SSL_MODE
-    description: Postgres SSL mode (e.g. `require`).
-    required: false
-  - name: MULTI_TENANT_ENABLED
-    description: Enable per-tenant isolation across all data layers.
-    required: false
-  - name: MULTI_TENANT_REQUIRED
-    description: Reject requests without tenant resolution when enabled.
-    required: false
-
-  # ---- Auth / security ----
-  - name: AUTH_REQUIRED
-    description: Reject anonymous requests when true. Requires SECRET_KEY.
-    required: false
-  - name: SECRET_KEY
-    description: JWT signing key (mandatory when AUTH_REQUIRED=true).
-    required: false
-  - name: ADMIN_USER
-    description: Admin username (default `admin`).
-    required: false
-  - name: ADMIN_PASS
-    description: Admin plaintext password (default `password` — change in prod).
-    required: false
-  - name: ADMIN_PASS_HASHED
-    description: Pre-hashed admin password — takes precedence over ADMIN_PASS.
-    required: false
-  - name: API_KEYS_USER
-    description: Comma-separated API keys (role=user).
-    required: false
-  - name: API_KEYS_ADMIN
-    description: Comma-separated API keys (role=admin).
-    required: false
-  - name: API_KEYS_JOB
-    description: Comma-separated API keys (role=job, e.g. cron/scheduler).
-    required: false
-  - name: SECURITY_HEADERS_ENABLED
-    description: Toggle security headers (CSP/HSTS) middleware.
-    required: false
-  - name: CONTENT_SECURITY_POLICY
-    description: Override the default CSP header.
-    required: false
-  - name: ENABLE_HSTS
-    description: Enable Strict-Transport-Security header.
-    required: false
-
-  # ---- Qdrant ----
-  - name: QDRANT_MODE
-    description: "`embedded` (default, file-backed) or `server`."
-    required: false
-  - name: QDRANT_PATH
-    description: Embedded Qdrant persistence path (default `./qdrant_data`).
-    required: false
-  - name: QDRANT_URL
-    description: Qdrant server URL when QDRANT_MODE=server (default http://localhost:6333).
-    required: false
-  - name: COLLECTION_NAME
-    description: Qdrant collection name (default `filesystem_bot`).
-    required: false
-
-  # ---- GraphDB ----
-  - name: GRAPH_DB_ENABLED
-    description: Enable FalkorDB / RedisGraph (default true).
-    required: false
-  - name: GRAPH_DB_URL
-    description: FalkorDB URL (default redis://localhost:6379).
-    required: false
-  - name: GRAPH_DB_NAME
-    description: FalkorDB graph name (default `agent_graph`).
-    required: false
-  - name: GRAPH_RAG_ENABLED
-    description: Use GraphRAG SDK for retrieval (default false).
-    required: false
-
-  # ---- LLM providers ----
-  - name: OLLAMA_API_BASE
-    description: Ollama base URL (default http://localhost:11434).
-    required: false
-  - name: OLLAMA_MODEL
-    description: Ollama model id (default `mistral:latest`).
-    required: false
-  - name: OPENAI
-    description: Switch to OpenAI provider when true.
-    required: false
-  - name: OPENAI_API_KEY
-    description: OpenAI API key (required when OPENAI=true).
-    required: false
-  - name: OPENAI_MODEL
-    description: OpenAI model id (default `gpt-4o`).
-    required: false
-  - name: EMBEDDER_MODEL
-    description: SentenceTransformers embedder (default sentence-transformers/all-MiniLM-L6-v2).
-    required: false
-  - name: RERANKER_MODEL
-    description: CrossEncoder reranker (default cross-encoder/ms-marco-MiniLM-L-6-v2).
-    required: false
-
-  # ---- Indexing / bootstrap ----
-  - name: DOCUMENTS_PATH
-    description: Local docs root to index (default `documents`).
-    required: false
-  - name: DOCUMENTS_EXTENSIONS
-    description: Comma-separated whitelist of file extensions.
-    required: false
-  - name: INDEX_BOOTSTRAP_ENABLED
-    description: Toggle the startup ingest bootstrap.
-    required: false
-  - name: INDEX_BOOTSTRAP_BACKGROUND
-    description: Run bootstrap as background task (non-blocking startup).
-    required: false
-
-  # ---- Jira automation ----
-  - name: ENABLE_JIRA_AUTOMATION
-    description: Allow agent-jira to write to Jira (default false).
-    required: false
-  - name: JIRA_REQUIRE_MANUAL_APPROVAL
-    description: Require human approval before issue creation.
-    required: false
-  - name: JIRA_BASE_URL
-    description: Jira Cloud / Server URL.
-    required: false
-  - name: JIRA_EMAIL
-    description: Jira account email (used with API token).
-    required: false
-  - name: JIRA_API_TOKEN
-    description: Jira API token.
-    required: false
-  - name: JIRA_PROJECT_KEY
-    description: Default Jira project key.
-    required: false
-  - name: JIRA_ISSUE_TYPE
-    description: Default Jira issue type (default `Story`).
-    required: false
-  - name: JIRA_TESTCASE_ISSUE_TYPE
-    description: Issue type for generated test cases (default `Test Case`).
-    required: false
-
-  # ---- Project planner ----
-  - name: ENABLE_PROJECT_MANAGER_MODE
-    description: Enable Agile PM mode (analysis, planner, BDD scenarios).
-    required: false
-  - name: PROJECT_PLANNER_MAX_STORIES
-    description: Cap on user stories per plan (default 10).
-    required: false
-  - name: PROJECT_PLANNER_ENABLE_TEST_CASES
-    description: Generate QA test cases per user story (default true).
-    required: false
-
-  # ---- OCR / NLP ----
-  - name: EASYOCR_LANGUAGES
-    description: Comma-separated EasyOCR languages (default `it,en`).
-    required: false
-  - name: EASYOCR_USE_GPU
-    description: Use GPU for EasyOCR (default false).
-    required: false
-  - name: SPACY_MODEL
-    description: spaCy NER model (default it_core_news_md).
-    required: false
-
-  # ---- Caches ----
-  - name: CACHE_BACKEND
-    description: "`local` (default) or `redis`."
-    required: false
-  - name: CACHE_REDIS_URL
-    description: Redis URL when CACHE_BACKEND=redis.
-    required: false
-
-  # ---- Cost control ----
-  - name: COST_CONTROL_ENABLED
-    description: Enforce per-request budget caps (default true).
-    required: false
-  - name: AGENT_MAX_TOKENS
-    description: Per-agent token cap (default 10000).
-    required: false
-
-  # ---- Audit ----
-  - name: AUDIT_ENABLED
-    description: Persist Audit-agent verdicts to the audit_events table.
-    required: false
-  - name: AUDIT_BLOCK_ON_RISK
-    description: Block responses when the Audit agent flags risk.
-    required: false
+- name: HOST
+  description: Host bind address for the FastAPI app.
+  required: false
+- name: PORT
+  description: Port bind for the FastAPI app (default 8181).
+  required: false
+- name: ALLOW_ORIGINS
+  description: Comma-separated CORS allowlist (default `*`).
+  required: false
+- name: LOG_LEVEL_CONSOLE
+  description: Console log level (default INFO).
+  required: false
+- name: LOG_LEVEL_FILE
+  description: File log level (default INFO).
+  required: false
+- name: LOG_FORMAT
+  description: '`json` (structured) or `text` (default human-readable).'
+  required: false
+- name: POSTGRES_ENABLED
+  description: Enable Postgres (feedback, tenants, users, audit, refresh tokens).
+  required: false
+- name: DATABASE_URL
+  description: "Full Postgres DSN \u2014 takes precedence over DB_HOST/USER/PASSWORD/etc."
+  required: false
+- name: DB_HOST
+  description: Postgres host (default `postgres`).
+  required: false
+- name: DB_PORT
+  description: Postgres port (default 5432).
+  required: false
+- name: DB_NAME
+  description: Postgres database name (default `chatbot`).
+  required: false
+- name: DB_USER
+  description: Postgres user (default `chatbot`).
+  required: false
+- name: DB_PASSWORD
+  description: Postgres password (default `chatbot`).
+  required: false
+- name: DB_SSL_MODE
+  description: Postgres SSL mode (e.g. `require`).
+  required: false
+- name: MULTI_TENANT_ENABLED
+  description: Enable per-tenant isolation across all data layers.
+  required: false
+- name: MULTI_TENANT_REQUIRED
+  description: Reject requests without tenant resolution when enabled.
+  required: false
+- name: AUTH_REQUIRED
+  description: Reject anonymous requests when true. Requires SECRET_KEY.
+  required: false
+- name: SECRET_KEY
+  description: JWT signing key (mandatory when AUTH_REQUIRED=true).
+  required: false
+- name: ADMIN_USER
+  description: Admin username (default `admin`).
+  required: false
+- name: ADMIN_PASS
+  description: "Admin plaintext password (default `password` \u2014 change in prod)."
+  required: false
+- name: ADMIN_PASS_HASHED
+  description: "Pre-hashed admin password \u2014 takes precedence over ADMIN_PASS."
+  required: false
+- name: API_KEYS_USER
+  description: Comma-separated API keys (role=user).
+  required: false
+- name: API_KEYS_ADMIN
+  description: Comma-separated API keys (role=admin).
+  required: false
+- name: API_KEYS_JOB
+  description: Comma-separated API keys (role=job, e.g. cron/scheduler).
+  required: false
+- name: SECURITY_HEADERS_ENABLED
+  description: Toggle security headers (CSP/HSTS) middleware.
+  required: false
+- name: CONTENT_SECURITY_POLICY
+  description: Override the default CSP header.
+  required: false
+- name: ENABLE_HSTS
+  description: Enable Strict-Transport-Security header.
+  required: false
+- name: QDRANT_MODE
+  description: '`embedded` (default, file-backed) or `server`.'
+  required: false
+- name: QDRANT_PATH
+  description: Embedded Qdrant persistence path (default `./qdrant_data`).
+  required: false
+- name: QDRANT_URL
+  description: Qdrant server URL when QDRANT_MODE=server (default http://localhost:6333).
+  required: false
+- name: COLLECTION_NAME
+  description: Qdrant collection name (default `filesystem_bot`).
+  required: false
+- name: GRAPH_DB_ENABLED
+  description: Enable FalkorDB / RedisGraph (default true).
+  required: false
+- name: GRAPH_DB_URL
+  description: FalkorDB URL (default redis://localhost:6379).
+  required: false
+- name: GRAPH_DB_NAME
+  description: FalkorDB graph name (default `agent_graph`).
+  required: false
+- name: GRAPH_RAG_ENABLED
+  description: Use GraphRAG SDK for retrieval (default false).
+  required: false
+- name: OLLAMA_API_BASE
+  description: Ollama base URL (default http://localhost:11434).
+  required: false
+- name: OLLAMA_MODEL
+  description: Ollama model id (default `mistral:latest`).
+  required: false
+- name: OPENAI
+  description: Switch to OpenAI provider when true.
+  required: false
+- name: OPENAI_API_KEY
+  description: OpenAI API key (required when OPENAI=true).
+  required: false
+- name: OPENAI_MODEL
+  description: OpenAI model id (default `gpt-4o`).
+  required: false
+- name: EMBEDDER_MODEL
+  description: SentenceTransformers embedder (default sentence-transformers/all-MiniLM-L6-v2).
+  required: false
+- name: RERANKER_MODEL
+  description: CrossEncoder reranker (default cross-encoder/ms-marco-MiniLM-L-6-v2).
+  required: false
+- name: DOCUMENTS_PATH
+  description: Local docs root to index (default `documents`).
+  required: false
+- name: DOCUMENTS_EXTENSIONS
+  description: Comma-separated whitelist of file extensions.
+  required: false
+- name: INDEX_BOOTSTRAP_ENABLED
+  description: Toggle the startup ingest bootstrap.
+  required: false
+- name: INDEX_BOOTSTRAP_BACKGROUND
+  description: Run bootstrap as background task (non-blocking startup).
+  required: false
+- name: ENABLE_JIRA_AUTOMATION
+  description: Allow agent-jira to write to Jira (default false).
+  required: false
+- name: JIRA_REQUIRE_MANUAL_APPROVAL
+  description: Require human approval before issue creation.
+  required: false
+- name: JIRA_BASE_URL
+  description: Jira Cloud / Server URL.
+  required: false
+- name: JIRA_EMAIL
+  description: Jira account email (used with API token).
+  required: false
+- name: JIRA_API_TOKEN
+  description: Jira API token.
+  required: false
+- name: JIRA_PROJECT_KEY
+  description: Default Jira project key.
+  required: false
+- name: JIRA_ISSUE_TYPE
+  description: Default Jira issue type (default `Story`).
+  required: false
+- name: JIRA_TESTCASE_ISSUE_TYPE
+  description: Issue type for generated test cases (default `Test Case`).
+  required: false
+- name: ENABLE_PROJECT_MANAGER_MODE
+  description: Enable Agile PM mode (analysis, planner, BDD scenarios).
+  required: false
+- name: PROJECT_PLANNER_MAX_STORIES
+  description: Cap on user stories per plan (default 10).
+  required: false
+- name: PROJECT_PLANNER_ENABLE_TEST_CASES
+  description: Generate QA test cases per user story (default true).
+  required: false
+- name: EASYOCR_LANGUAGES
+  description: Comma-separated EasyOCR languages (default `it,en`).
+  required: false
+- name: EASYOCR_USE_GPU
+  description: Use GPU for EasyOCR (default false).
+  required: false
+- name: SPACY_MODEL
+  description: spaCy NER model (default it_core_news_md).
+  required: false
+- name: CACHE_BACKEND
+  description: '`local` (default) or `redis`.'
+  required: false
+- name: CACHE_REDIS_URL
+  description: Redis URL when CACHE_BACKEND=redis.
+  required: false
+- name: COST_CONTROL_ENABLED
+  description: Enforce per-request budget caps (default true).
+  required: false
+- name: AGENT_MAX_TOKENS
+  description: Per-agent token cap (default 10000).
+  required: false
+- name: AUDIT_ENABLED
+  description: Persist Audit-agent verdicts to the audit_events table.
+  required: false
+- name: AUDIT_BLOCK_ON_RISK
+  description: Block responses when the Audit agent flags risk.
+  required: false

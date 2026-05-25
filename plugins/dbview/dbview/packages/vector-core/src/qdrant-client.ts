@@ -41,7 +41,7 @@ export class QdrantClient {
   async getCollection(name: string): Promise<QdrantCollectionInfo> {
     const res = await this.request<{ result: QdrantCollectionInfo }>(
       'GET',
-      `/collections/${encodeURIComponent(name)}`,
+      `/collections/${encodeURIComponent(name)}`
     );
     return res.result;
   }
@@ -52,7 +52,7 @@ export class QdrantClient {
     const res = await this.request<{ result: { count: number } }>(
       'POST',
       `/collections/${encodeURIComponent(name)}/points/count`,
-      body,
+      body
     );
     return res.result.count;
   }
@@ -62,7 +62,7 @@ export class QdrantClient {
     limit: number,
     withPayload = true,
     withVector = false,
-    filter?: Record<string, unknown>,
+    filter?: Record<string, unknown>
   ): Promise<QdrantPoint[]> {
     const body: Record<string, unknown> = {
       limit,
@@ -84,7 +84,7 @@ export class QdrantClient {
       usingNamedVector?: string;
       withPayload?: boolean;
       filter?: Record<string, unknown>;
-    } = {},
+    } = {}
   ): Promise<Array<{ id: string | number; score: number; payload?: Record<string, unknown> }>> {
     const body: Record<string, unknown> = {
       vector: opts.usingNamedVector ? { name: opts.usingNamedVector, vector } : vector,
@@ -124,7 +124,7 @@ export class QdrantClient {
       const text = await res.text();
       if (!res.ok) {
         throw new IntrospectionError(
-          `Qdrant ${method} ${path} → ${res.status}: ${text.slice(0, 200) || res.statusText}`,
+          `Qdrant ${method} ${path} → ${res.status}: ${text.slice(0, 200) || res.statusText}`
         );
       }
       if (!text) return {} as T;
@@ -132,7 +132,7 @@ export class QdrantClient {
     } catch (err) {
       if ((err as { name?: string }).name === 'AbortError') {
         throw new IntrospectionError(
-          `Qdrant ${method} ${path} timed out after ${REQUEST_TIMEOUT_MS}ms`,
+          `Qdrant ${method} ${path} timed out after ${REQUEST_TIMEOUT_MS}ms`
         );
       }
       if (err instanceof IntrospectionError) throw err;

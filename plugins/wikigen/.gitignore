@@ -18,9 +18,21 @@ __pycache__/
 ui/node_modules/
 ui/dist/
 ui/.next/
+ui/.vite/
 ui/*.tsbuildinfo
 ui/playwright-report/
 ui/test-results/
+ui/.playwright/
+
+# Tooling / editor caches
+.eslintcache
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+.DS_Store
+.vscode/
+.idea/
 
 # Local secrets / env
 .env

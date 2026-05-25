@@ -83,7 +83,7 @@ export function compactGraphSchema(graph: PropertyGraphSchema): string {
     const props = l.properties
       .map(
         (p) =>
-          `  - ${p.name} (type: ${p.types.join('|')}${p.nullable ? '' : ', NOT NULL'})${formatSamples(p.sampleValues)}`,
+          `  - ${p.name} (type: ${p.types.join('|')}${p.nullable ? '' : ', NOT NULL'})${formatSamples(p.sampleValues)}`
       )
       .join('\n');
     lines.push(`(:${l.label})${props ? '\n' + props : ''}`);
@@ -146,7 +146,7 @@ const systemPromptCache = new Map<string, string>();
 export function buildSystemPrompt(
   graph: UnifiedSchema,
   dialect: Dialect,
-  allowDml: boolean,
+  allowDml: boolean
 ): string {
   const key = `${graph.kind}|${dialect}|${allowDml ? '1' : '0'}`;
   const hit = systemPromptCache.get(key);
@@ -159,7 +159,7 @@ export function buildSystemPrompt(
 function buildSystemPromptUncached(
   graph: UnifiedSchema,
   dialect: Dialect,
-  allowDml: boolean,
+  allowDml: boolean
 ): string {
   const base = buildSystemPromptCore(graph, dialect, allowDml);
   const fewShot = renderFewShotBlock(pickFewShotExamples(dialect));
@@ -504,7 +504,7 @@ export function renderHistoryBlock(history: readonly Nl2ConversationTurn[] | und
   });
   lines.push('');
   lines.push(
-    'Treat the current user question as a follow-up to the turns above. Resolve references ("these", "those", "previous", "now", "also", "instead", "il precedente", "questi") against the most recent turns. Re-generate the full query from scratch — do NOT copy the prior query verbatim; apply the modification asked by the new question. If the new question is unrelated, ignore the history.',
+    'Treat the current user question as a follow-up to the turns above. Resolve references ("these", "those", "previous", "now", "also", "instead", "il precedente", "questi") against the most recent turns. Re-generate the full query from scratch — do NOT copy the prior query verbatim; apply the modification asked by the new question. If the new question is unrelated, ignore the history.'
   );
   return lines.join('\n');
 }
@@ -546,7 +546,7 @@ export function compactDocumentSchema(graph: Extract<UnifiedSchema, { kind: 'doc
     lines.push(
       `Collection "${c.name}" — docs: ${c.docCount ?? '?'}${
         c.indexes.length ? `, indexes: [${c.indexes.join(', ')}]` : ''
-      }`,
+      }`
     );
     for (const f of c.fields.slice(0, 30)) {
       const samples =
@@ -556,7 +556,7 @@ export function compactDocumentSchema(graph: Extract<UnifiedSchema, { kind: 'doc
       lines.push(
         `  - ${f.name}: ${f.types.join('|')}${
           f.presence !== undefined ? ` (${Math.round(f.presence * 100)}%)` : ''
-        }${samples}`,
+        }${samples}`
       );
     }
     if (c.fields.length > 30) lines.push(`  … +${c.fields.length - 30} more fields`);
@@ -572,7 +572,7 @@ export function compactSearchSchema(graph: Extract<UnifiedSchema, { kind: 'searc
     lines.push(
       `Index "${idx.name}" — docs: ${idx.docCount ?? '?'}, size: ${sizeKB}${
         idx.aliases.length ? `, aliases: [${idx.aliases.join(', ')}]` : ''
-      }`,
+      }`
     );
     for (const f of idx.fields.slice(0, 40)) {
       lines.push(`  - ${f.name}: ${f.type}${f.analyzed ? ' (analyzed)' : ''}`);

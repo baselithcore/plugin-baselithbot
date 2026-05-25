@@ -1,0 +1,50 @@
+# Plugin-scoped .gitignore (activates on standalone extraction).
+#
+# The actual NestJS + React workspace lives under `dbview/` and ships its
+# own .gitignore for node_modules / dist. This file covers the Python
+# wrapper (subprocess supervisor + reverse-proxy router) added by the
+# host plugin layer.
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+
+# Distribution / packaging
+build/
+dist/
+wheels/
+*.egg-info/
+*.egg
+
+# Virtualenvs
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Runtime state (mirrored from dbview/dbview/apps/api/data/)
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+logs/
+*.log
+
+# Editor / tooling
+.eslintcache
+.DS_Store
+.vscode/
+.idea/

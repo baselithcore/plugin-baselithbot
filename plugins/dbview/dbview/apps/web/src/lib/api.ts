@@ -2,6 +2,8 @@ import axios, { type AxiosRequestConfig } from 'axios';
 import { getAccessToken, refreshSession, setSession } from './auth.js';
 import type {
   AuthConfig,
+  BootstrapRequest,
+  BootstrapStatusResponse,
   ChangePasswordRequest,
   ConnectionSharing,
   ConnectionSummary,
@@ -159,6 +161,10 @@ export const api = {
       .delete<{ removed: number }>('/history', { params: connectionId ? { connectionId } : {} })
       .then((r) => r.data),
   authConfig: () => http.get<AuthConfig>('/auth/config').then((r) => r.data),
+  bootstrapStatus: () =>
+    http.get<BootstrapStatusResponse>('/auth/bootstrap/status').then((r) => r.data),
+  bootstrap: (body: BootstrapRequest) =>
+    http.post<LoginResponse>('/auth/bootstrap', body).then((r) => r.data),
   login: (body: LoginRequest) => http.post<LoginResponse>('/auth/login', body).then((r) => r.data),
   register: (body: RegisterRequest) =>
     http.post<LoginResponse>('/auth/register', body).then((r) => r.data),

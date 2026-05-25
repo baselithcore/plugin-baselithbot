@@ -52,7 +52,7 @@ export class SalesforceClient {
     if (!res.ok) {
       const text = await safeReadText(res);
       throw new Error(
-        `Salesforce auth failed (${res.status}): ${truncate(text, 240) || res.statusText}`,
+        `Salesforce auth failed (${res.status}): ${truncate(text, 240) || res.statusText}`
       );
     }
     const data = (await res.json()) as {
@@ -130,7 +130,7 @@ export class SalesforceClient {
     if (!res.ok) {
       const text = await safeReadText(res);
       throw new Error(
-        `Salesforce ${method} ${path} failed (${res.status}): ${truncate(text, 240) || res.statusText}`,
+        `Salesforce ${method} ${path} failed (${res.status}): ${truncate(text, 240) || res.statusText}`
       );
     }
     return (await res.json()) as T;

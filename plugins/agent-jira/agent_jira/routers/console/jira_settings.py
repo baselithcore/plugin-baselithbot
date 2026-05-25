@@ -208,7 +208,9 @@ def update_jira_settings(
 
         # Invalida la cache del client Jira per questo tenant
         try:
-            from agent_jira.integrations.jira.tenant_resolver import invalidate_tenant_client
+            from agent_jira.integrations.jira.tenant_resolver import (
+                invalidate_tenant_client,
+            )
 
             invalidate_tenant_client(tenant_id)
         except Exception:

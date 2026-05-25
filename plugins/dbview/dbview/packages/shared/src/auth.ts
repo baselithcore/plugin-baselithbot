@@ -67,3 +67,27 @@ export const ChangePasswordRequestSchema = z.object({
   newPassword: z.string().min(12).max(200),
 });
 export type ChangePasswordRequest = z.infer<typeof ChangePasswordRequestSchema>;
+
+/**
+ * First-boot superuser bootstrap. Mirrors the wikigen contract:
+ * - GET /api/auth/bootstrap/status — public, returns `needsBootstrap` flag.
+ * - POST /api/auth/bootstrap — loopback-only when `users_count == 0`,
+ *   creates the first admin and issues a session in one shot.
+ *
+ * Endpoint hardening (controller side): rate-limited, loopback-only,
+ * idempotent (rejects if any user already exists). Once a superuser
+ * exists the wizard never appears again and additional admins are
+ * managed via the standard invite flow.
+ */
+export const BootstrapStatusResponseSchema = z.object({
+  needsBootstrap: z.boolean(),
+  usersCount: z.number().int().nonnegative(),
+});
+export type BootstrapStatusResponse = z.infer<typeof BootstrapStatusResponseSchema>;
+
+export const BootstrapRequestSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(12).max(200),
+  displayName: z.string().min(1).max(120).optional(),
+});
+export type BootstrapRequest = z.infer<typeof BootstrapRequestSchema>;

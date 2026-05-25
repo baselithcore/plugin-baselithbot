@@ -45,7 +45,7 @@ export function applySqliteSqlDump(targetPath: string, sql: string): { tables: n
   if (!trimmed) throw new Error('SQL dump is empty.');
   if (looksLikePostgresDump(trimmed)) {
     throw new Error(
-      'This looks like a PostgreSQL dump (SET / \\connect / CREATE EXTENSION). Only SQLite-compatible dumps are supported. Restore the dump on a real Postgres instance and connect to it with credentials, or use sqlite3 .dump / a .db file.',
+      'This looks like a PostgreSQL dump (SET / \\connect / CREATE EXTENSION). Only SQLite-compatible dumps are supported. Restore the dump on a real Postgres instance and connect to it with credentials, or use sqlite3 .dump / a .db file.'
     );
   }
   if (existsSync(targetPath)) {

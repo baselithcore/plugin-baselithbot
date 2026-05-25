@@ -118,7 +118,7 @@ export function useResizableDrawer({
       target.addEventListener('pointerup', onUp);
       target.addEventListener('pointercancel', onUp);
     },
-    [applyPending, minWidth, maxWidth],
+    [applyPending, minWidth, maxWidth]
   );
 
   const onDoubleClick = useCallback(() => {
@@ -155,7 +155,7 @@ export function useResizableDrawer({
         setWidth(minWidth);
       }
     },
-    [minWidth, maxWidth],
+    [minWidth, maxWidth]
   );
 
   return {

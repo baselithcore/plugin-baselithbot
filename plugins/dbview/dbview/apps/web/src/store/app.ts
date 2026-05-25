@@ -226,8 +226,8 @@ export const useAppStore = create<AppState>()(
         checklistDone: s.checklistDone,
         checklistDismissed: s.checklistDismissed,
       }),
-    },
-  ),
+    }
+  )
 );
 
 function detectInitialLocale(): ResponseLocale {

@@ -4,6 +4,7 @@ import Hero from './components/Hero';
 import Tabs from './components/Tabs';
 import HomePanel from './components/HomePanel';
 import LoginPage from './components/LoginPage';
+import SuperuserWizard from './components/SuperuserWizard';
 import JiraSetupWizard from './components/JiraSetupWizard';
 import SettingsPanel from './components/SettingsPanel';
 import { useAuth } from './hooks/useAuth';
@@ -45,6 +46,10 @@ const App = () => {
     null
   );
   const [jiraWizardOpen, setJiraWizardOpen] = useState(false);
+  // First-boot superuser gate. SuperuserWizard interroga
+  // /auth/bootstrap/status e chiama onComplete (che setta false) sia se
+  // needs_bootstrap=false sia dopo creazione admin riuscita.
+  const [bootstrapPending, setBootstrapPending] = useState(true);
   // AUTH_REQUIRED è letto dal config; se il backend non richiede auth, skip login
   const authRequired = config?.auth_required ?? false;
 
@@ -116,6 +121,14 @@ const App = () => {
   };
 
   const versionLabel = pkg.version ? `Versione ${pkg.version}` : null;
+
+  // First-boot gate: se Postgres ha 0 utenti, mostra il SuperuserWizard
+  // PRIMA della LoginPage. Self-checking via /auth/bootstrap/status —
+  // se already-bootstrapped chiama subito onComplete e si auto-smonta.
+  // Stesso pattern usato da wikigen / dbview / docheck.
+  if (authRequired && !isAuthenticated && bootstrapPending) {
+    return <SuperuserWizard onComplete={() => setBootstrapPending(false)} />;
+  }
 
   // Show login page if auth is required and user is not authenticated
   if (authRequired && !isAuthenticated && !authLoading) {

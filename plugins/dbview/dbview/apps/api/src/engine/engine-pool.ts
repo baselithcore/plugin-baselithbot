@@ -77,8 +77,8 @@ export class EnginePool implements OnModuleDestroy {
       entries.map((e) =>
         e.engine.close().catch((err) => {
           this.logger.warn(`engine_close_failed dialect=${e.dialect}: ${(err as Error).message}`);
-        }),
-      ),
+        })
+      )
     );
   }
 
@@ -89,7 +89,7 @@ export class EnginePool implements OnModuleDestroy {
         this.cache.delete(key);
         void entry.engine.close().catch((err) => {
           this.logger.warn(
-            `engine_close_failed dialect=${entry.dialect}: ${(err as Error).message}`,
+            `engine_close_failed dialect=${entry.dialect}: ${(err as Error).message}`
           );
         });
       }

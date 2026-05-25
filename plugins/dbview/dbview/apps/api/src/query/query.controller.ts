@@ -16,7 +16,7 @@ export class QueryController {
   @Post('execute')
   execute(
     @Body(new ZodPipe(ExecuteQueryRequestSchema)) body: unknown,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): Promise<ExecuteQueryResponse> {
     return this.svc.execute(body as never, principal);
   }
@@ -24,7 +24,7 @@ export class QueryController {
   @Post('sample')
   sample(
     @Body(new ZodPipe(SampleRequestSchema)) body: unknown,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): Promise<ExecuteQueryResponse> {
     return this.svc.sample(body as never, principal);
   }

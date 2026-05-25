@@ -44,7 +44,7 @@ export function SearchStoreView({ schema, matched, onSelectIndex }: SearchStoreV
               onClick={() => onSelectIndex(idx.id)}
               className={cn(
                 'panel-glass text-left p-4 transition-all hover:ring-1 hover:ring-accent/40',
-                !isMatched && 'opacity-30',
+                !isMatched && 'opacity-30'
               )}
               style={{ minHeight: 180 }}
             >

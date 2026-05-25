@@ -19,7 +19,7 @@ export const HISTORY_WINDOW = Math.min(4, NL2_HISTORY_MAX_TURNS);
  */
 export function buildHistoryPayload(conversation: readonly ChatTurn[]): Nl2ConversationTurn[] {
   const usable = conversation.filter(
-    (t) => t.status === 'ready' && t.translation && t.translation.query,
+    (t) => t.status === 'ready' && t.translation && t.translation.query
   );
   return usable.slice(-HISTORY_WINDOW).map((t) => ({
     prompt: t.prompt,

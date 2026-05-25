@@ -1,10 +1,13 @@
 import { Body, Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import {
+  BootstrapRequestSchema,
   ChangePasswordRequestSchema,
   LoginRequestSchema,
   RegisterRequestSchema,
   type AuthConfig,
+  type BootstrapRequest,
+  type BootstrapStatusResponse,
   type ChangePasswordRequest,
   type LoginRequest,
   type LoginResponse,
@@ -12,7 +15,7 @@ import {
   type RegisterRequest,
   type UserPublic,
 } from '@dbview/shared';
-import { UnauthorizedError } from '@dbview/shared';
+import { ForbiddenError, UnauthorizedError } from '@dbview/shared';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { ZodPipe } from '../common/zod.pipe.js';
 import { Public } from '../common/public.decorator.js';
@@ -39,7 +42,7 @@ function cookieOpts(maxAge?: number): Record<string, unknown> {
 export class AuthController {
   constructor(
     private readonly auth: AuthService,
-    private readonly reflector: Reflector,
+    private readonly reflector: Reflector
   ) {
     void this.reflector;
   }
@@ -51,7 +54,7 @@ export class AuthController {
   async login(
     @Body(new ZodPipe(LoginRequestSchema)) body: LoginRequest,
     @Req() req: FastifyRequest,
-    @Res({ passthrough: true }) reply: FastifyReply,
+    @Res({ passthrough: true }) reply: FastifyReply
   ): Promise<LoginResponse> {
     const result = await this.auth.login(body.email, body.password, {
       ip: req.ip ?? null,
@@ -72,13 +75,52 @@ export class AuthController {
   }
 
   @Public()
+  @Get('bootstrap/status')
+  bootstrapStatus(): BootstrapStatusResponse {
+    const n = this.auth.usersCount();
+    return { needsBootstrap: n === 0, usersCount: n };
+  }
+
+  /**
+   * First-boot superuser creation. Gate stack:
+   *  - public + rate-limited (1 req / 60s / IP),
+   *  - rejected with 403 if any user already exists,
+   *  - rejected with 403 unless the request comes from loopback
+   *    (anti-LAN-attacker hardening during fresh setup).
+   * On success the session is opened immediately, mirroring login.
+   */
+  @Public()
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ limit: 1, windowSec: 60 })
+  @Post('bootstrap')
+  async bootstrap(
+    @Body(new ZodPipe(BootstrapRequestSchema)) body: BootstrapRequest,
+    @Req() req: FastifyRequest,
+    @Res({ passthrough: true }) reply: FastifyReply
+  ): Promise<LoginResponse> {
+    if (!isLoopback(req)) {
+      throw new ForbiddenError('Bootstrap is restricted to loopback origins.');
+    }
+    const result = await this.auth.bootstrap(body, {
+      ip: req.ip ?? null,
+      userAgent: (req.headers['user-agent'] as string | undefined) ?? null,
+    });
+    reply.setCookie(REFRESH_COOKIE, result.refreshToken, cookieOpts(refreshCookieTtl));
+    return {
+      accessToken: result.accessToken,
+      expiresIn: result.expiresIn,
+      user: result.user,
+    };
+  }
+
+  @Public()
   @UseGuards(RateLimitGuard)
   @RateLimit({ limit: 5, windowSec: 60 })
   @Post('register')
   async register(
     @Body(new ZodPipe(RegisterRequestSchema)) body: RegisterRequest,
     @Req() req: FastifyRequest,
-    @Res({ passthrough: true }) reply: FastifyReply,
+    @Res({ passthrough: true }) reply: FastifyReply
   ): Promise<LoginResponse> {
     const result = await this.auth.register(body, {
       ip: req.ip ?? null,
@@ -98,7 +140,7 @@ export class AuthController {
   @Post('refresh')
   refresh(
     @Req() req: FastifyRequest,
-    @Res({ passthrough: true }) reply: FastifyReply,
+    @Res({ passthrough: true }) reply: FastifyReply
   ): LoginResponse {
     const raw = readRefreshCookie(req);
     if (!raw) throw new UnauthorizedError('No refresh token present.');
@@ -118,7 +160,7 @@ export class AuthController {
   @Post('logout')
   logout(
     @Req() req: FastifyRequest,
-    @Res({ passthrough: true }) reply: FastifyReply,
+    @Res({ passthrough: true }) reply: FastifyReply
   ): { ok: true } {
     const raw = readRefreshCookie(req);
     this.auth.logout(raw);
@@ -155,7 +197,7 @@ export class AuthController {
     @Body(new ZodPipe(ChangePasswordRequestSchema)) body: ChangePasswordRequest,
     @CurrentUser() principal: AuthPrincipal | undefined,
     @Req() req: FastifyRequest,
-    @Res({ passthrough: true }) reply: FastifyReply,
+    @Res({ passthrough: true }) reply: FastifyReply
   ): Promise<LoginResponse> {
     if (!principal || principal.source !== 'jwt') {
       throw new UnauthorizedError('JWT session required.');
@@ -163,7 +205,7 @@ export class AuthController {
     const updated: UserPublic = await this.auth.changePassword(
       principal.id,
       body.currentPassword,
-      body.newPassword,
+      body.newPassword
     );
     // Issue a fresh session so the access token reflects mustChangePassword=false
     // immediately. Refresh cookie is rotated to invalidate the prior token chain.
@@ -184,4 +226,18 @@ function readRefreshCookie(req: FastifyRequest): string | null {
   const cookies = (req as FastifyRequest & { cookies?: Record<string, string | undefined> })
     .cookies;
   return cookies?.[REFRESH_COOKIE] ?? null;
+}
+
+/**
+ * Loopback detection mirrors the wikigen helper. Accepts only IPv4/IPv6
+ * loopback addresses; opt-out for trusted reverse proxies on private
+ * networks via DBVIEW_BOOTSTRAP_ALLOW_PRIVATE=true (NOT recommended).
+ */
+function isLoopback(req: FastifyRequest): boolean {
+  const ip = (req.ip ?? '').trim();
+  if (!ip) return false;
+  if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') return true;
+  const allowPrivate = process.env.DBVIEW_BOOTSTRAP_ALLOW_PRIVATE?.trim().toLowerCase();
+  if (allowPrivate === 'true' || allowPrivate === '1') return true;
+  return false;
 }

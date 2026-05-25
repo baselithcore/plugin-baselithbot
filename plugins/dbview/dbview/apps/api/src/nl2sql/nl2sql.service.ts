@@ -109,7 +109,7 @@ export class Nl2SqlService {
   constructor(
     private readonly connections: ConnectionsService,
     private readonly schema: SchemaService,
-    private readonly credentials: LlmCredentialsService,
+    private readonly credentials: LlmCredentialsService
   ) {}
 
   async translate(req: Nl2SqlRequest, principal: AuthPrincipal): Promise<Nl2SqlResponse> {
@@ -135,7 +135,7 @@ export class Nl2SqlService {
         graph = pruneResult.graph;
         usingPruned = true;
         this.logger.log(
-          `nl2query schema-pruned ${fullGraph.tables.length}->${pruneResult.graph.tables.length} tokens=[${pruneResult.matchedTokens.slice(0, 8).join(',')}]`,
+          `nl2query schema-pruned ${fullGraph.tables.length}->${pruneResult.graph.tables.length} tokens=[${pruneResult.matchedTokens.slice(0, 8).join(',')}]`
         );
       }
     }
@@ -182,7 +182,7 @@ export class Nl2SqlService {
           feedback = `Model returned unusable output: ${err.message}. Output a single SELECT or WITH statement, no prose.`;
           lastError = err;
           this.logger.warn(
-            `nl2query model-output-invalid attempt=${attempt} adapter=${adapter.name ?? adapter.provider} model=${model}: ${err.message}`,
+            `nl2query model-output-invalid attempt=${attempt} adapter=${adapter.name ?? adapter.provider} model=${model}: ${err.message}`
           );
           continue;
         }
@@ -196,7 +196,7 @@ export class Nl2SqlService {
         feedback = `Output was not valid JSON: ${(err as Error).message}`;
         lastError = err as Error;
         this.logger.warn(
-          `nl2query parse-error attempt=${attempt} adapter=${adapter.name ?? adapter.provider} model=${model} dialect=${conn.dialect}: ${(err as Error).message}`,
+          `nl2query parse-error attempt=${attempt} adapter=${adapter.name ?? adapter.provider} model=${model} dialect=${conn.dialect}: ${(err as Error).message}`
         );
         continue;
       }
@@ -213,7 +213,7 @@ export class Nl2SqlService {
           });
           if (sanitized.fixes.length > 0) {
             this.logger.warn(
-              `nl2query sanitized attempt=${attempt} dialect=${conn.dialect} fixes=[${sanitized.fixes.join('; ')}]`,
+              `nl2query sanitized attempt=${attempt} dialect=${conn.dialect} fixes=[${sanitized.fixes.join('; ')}]`
             );
             parsed = { ...parsed, query: sanitized.query };
           }
@@ -221,7 +221,7 @@ export class Nl2SqlService {
         // Log the full query about to be validated at INFO so it always shows.
         // Without this, weak-model failures look like opaque parser errors.
         this.logger.log(
-          `nl2query candidate attempt=${attempt} dialect=${conn.dialect} query=${JSON.stringify(parsed.query)}`,
+          `nl2query candidate attempt=${attempt} dialect=${conn.dialect} query=${JSON.stringify(parsed.query)}`
         );
         const annotated = this.validate(parsed, graph, req);
         const explanationMissing =
@@ -247,12 +247,12 @@ export class Nl2SqlService {
           if (joinNotesMissing && enriched.joinNotes.length > 0)
             annotated.joinNotes = enriched.joinNotes;
           this.logger.log(
-            `nl2query explained adapter=${explainer.name ?? explainer.provider} model=${explainModel} durationMs=${Date.now() - explainStart} hasExplanation=${enriched.explanation.length > 0}`,
+            `nl2query explained adapter=${explainer.name ?? explainer.provider} model=${explainModel} durationMs=${Date.now() - explainStart} hasExplanation=${enriched.explanation.length > 0}`
           );
         }
         const durationMs = Date.now() - t0;
         this.logger.log(
-          `nl2query ok adapter=${adapter.name ?? adapter.provider} model=${model} dialect=${conn.dialect} kind=${kind} retries=${attempt} durationMs=${durationMs} entities=${annotated.involvedEntities.length}`,
+          `nl2query ok adapter=${adapter.name ?? adapter.provider} model=${model} dialect=${conn.dialect} kind=${kind} retries=${attempt} durationMs=${durationMs} entities=${annotated.involvedEntities.length}`
         );
         return {
           ...annotated,
@@ -286,7 +286,7 @@ export class Nl2SqlService {
               });
               knownEntities = collectKnownEntities(graph);
               this.logger.log(
-                `nl2query schema-pruned-fallback attempt=${attempt} unknown=[${unknown.join(',')}] reverted to full schema`,
+                `nl2query schema-pruned-fallback attempt=${attempt} unknown=[${unknown.join(',')}] reverted to full schema`
               );
             }
           }
@@ -304,7 +304,7 @@ export class Nl2SqlService {
           lastError = err;
           lastRejectedQuery = parsed.query;
           this.logger.warn(
-            `nl2query unsafe attempt=${attempt} adapter=${adapter.name ?? adapter.provider} model=${model} dialect=${conn.dialect} unknown=[${unknown.join(',')}]: ${err.message}`,
+            `nl2query unsafe attempt=${attempt} adapter=${adapter.name ?? adapter.provider} model=${model} dialect=${conn.dialect} unknown=[${unknown.join(',')}]: ${err.message}`
           );
           this.logger.warn(`nl2query rejected query=${JSON.stringify(parsed.query)}`);
           continue;
@@ -315,7 +315,7 @@ export class Nl2SqlService {
 
     const attempts = MAX_RETRIES + 1;
     this.logger.error(
-      `nl2query failed adapter=${adapter.name ?? adapter.provider} model=${model} dialect=${conn.dialect} retries=${attempts} lastQuery=${JSON.stringify(lastRejectedQuery ?? '')}: ${lastError?.message ?? 'unknown'}`,
+      `nl2query failed adapter=${adapter.name ?? adapter.provider} model=${model} dialect=${conn.dialect} retries=${attempts} lastQuery=${JSON.stringify(lastRejectedQuery ?? '')}: ${lastError?.message ?? 'unknown'}`
     );
     if (groundingFailure) {
       const suggestions = buildSuggestionMap(groundingFailure.unknown, knownEntities);
@@ -332,14 +332,14 @@ export class Nl2SqlService {
           suggestions,
           lastRejectedQuery: lastRejectedQuery ?? undefined,
           columnLocations,
-        },
+        }
       );
     }
     const tail = lastRejectedQuery
       ? ` Last attempt: ${truncateOneLine(lastRejectedQuery, 200)}`
       : '';
     throw new LlmProviderError(
-      `NL2Query failed after ${attempts} attempts: ${lastError?.message ?? 'unknown'}.${tail}`,
+      `NL2Query failed after ${attempts} attempts: ${lastError?.message ?? 'unknown'}.${tail}`
     );
   }
 
@@ -357,7 +357,7 @@ export class Nl2SqlService {
   private validate(
     parsed: LlmJson,
     graph: UnifiedSchema,
-    req: Nl2SqlRequest,
+    req: Nl2SqlRequest
   ): {
     query: string;
     language: QueryLanguage;
@@ -430,7 +430,7 @@ export class Nl2SqlService {
         envelope = JSON.parse(parsed.query) as { op?: unknown; collection?: unknown };
       } catch (err) {
         throw new UnsafeSqlError(
-          `Qdrant query must be a JSON envelope string: ${(err as Error).message}`,
+          `Qdrant query must be a JSON envelope string: ${(err as Error).message}`
         );
       }
       const opName = typeof envelope.op === 'string' ? envelope.op : '';
@@ -491,7 +491,7 @@ function truncateOneLine(s: string, max: number): string {
  */
 function buildColumnLocationMap(
   unknown: string[],
-  graph: Extract<UnifiedSchema, { kind: 'relational' }>,
+  graph: Extract<UnifiedSchema, { kind: 'relational' }>
 ): Record<string, string[]> {
   const out: Record<string, string[]> = {};
   for (const u of unknown) {
@@ -508,11 +508,11 @@ function buildColumnLocationMap(
 
 function buildColumnLocationHint(
   unknown: string[],
-  graph: Extract<UnifiedSchema, { kind: 'relational' }>,
+  graph: Extract<UnifiedSchema, { kind: 'relational' }>
 ): string {
   const map = buildColumnLocationMap(unknown, graph);
   const lines = Object.entries(map).map(
-    ([col, owners]) => `Column '${col}' exists on: ${owners.join(', ')}.`,
+    ([col, owners]) => `Column '${col}' exists on: ${owners.join(', ')}.`
   );
   return lines.length > 0 ? ` ${lines.join(' ')} Pick the correct table/alias.` : '';
 }
@@ -563,7 +563,7 @@ function formatSuggestions(suggestions: Record<string, string[]>, available: str
   const entries = Object.entries(suggestions);
   if (entries.length > 0) {
     const lines = entries.map(
-      ([k, v]) => `'${k}' → did you mean ${v.map((x) => `'${x}'`).join(', ')}?`,
+      ([k, v]) => `'${k}' → did you mean ${v.map((x) => `'${x}'`).join(', ')}?`
     );
     parts.push(`Suggestions: ${lines.join(' ')}`);
   }

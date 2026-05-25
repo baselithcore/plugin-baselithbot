@@ -49,7 +49,7 @@ describe('CypherSafetyValidator', () => {
   it('accepts valid MATCH', () => {
     const r = v.validate(
       'MATCH (c:Customer)-[:PLACED]->(o:Order) RETURN c.id, o.id LIMIT 10',
-      opts(),
+      opts()
     );
     expect(r.involvedLabels.sort()).toEqual(['Customer', 'Order']);
   });
@@ -80,13 +80,13 @@ describe('CypherSafetyValidator', () => {
 
   it('rejects multiple statements', () => {
     expect(() =>
-      v.validate('MATCH (n:Customer) RETURN n; MATCH (o:Order) RETURN o', opts()),
+      v.validate('MATCH (n:Customer) RETURN n; MATCH (o:Order) RETURN o', opts())
     ).toThrow(UnsafeSqlError);
   });
 
   it('rejects dangerous procs', () => {
     expect(() =>
-      v.validate('CALL apoc.create.node(["Customer"], {}) YIELD node RETURN node', opts()),
+      v.validate('CALL apoc.create.node(["Customer"], {}) YIELD node RETURN node', opts())
     ).toThrow(UnsafeSqlError);
   });
 
@@ -100,14 +100,14 @@ describe('CypherSafetyValidator', () => {
     expect(() =>
       v.validate(
         'MATCH (c:Customer)-[:PLACED]->(o:Order) WITH c, SUM(o.total) AS total ORDER BY total DESC LIMIT 5',
-        opts(),
-      ),
+        opts()
+      )
     ).toThrow(UnsafeSqlError);
   });
 
   it('rejects schema type leak in property map', () => {
     expect(() =>
-      v.validate('MATCH (c:Customer)-[:PLACED {qty: INTEGER}]->(o:Order) RETURN c LIMIT 5', opts()),
+      v.validate('MATCH (c:Customer)-[:PLACED {qty: INTEGER}]->(o:Order) RETURN c LIMIT 5', opts())
     ).toThrow(UnsafeSqlError);
   });
 
@@ -115,8 +115,8 @@ describe('CypherSafetyValidator', () => {
     expect(() =>
       v.validate(
         'MATCH (c:Customer)-[:PLACED]->(o:Order) WHERE o.createdAt > 0 RETURN c LIMIT 5',
-        opts(),
-      ),
+        opts()
+      )
     ).toThrow(UnsafeSqlError);
   });
 });

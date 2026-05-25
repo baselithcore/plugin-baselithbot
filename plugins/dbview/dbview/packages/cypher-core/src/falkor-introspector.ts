@@ -50,7 +50,7 @@ export class FalkorIntrospector {
         .filter((v): v is string => typeof v === 'string');
 
       const relsRes = await graph.roQuery<Record>(
-        'CALL db.relationshipTypes() YIELD relationshipType RETURN relationshipType',
+        'CALL db.relationshipTypes() YIELD relationshipType RETURN relationshipType'
       );
       const relTypes = (relsRes.data ?? [])
         .map((r) => r.relationshipType)
@@ -110,14 +110,14 @@ export class FalkorIntrospector {
 
 async function samplePropertiesForLabel(graph: QueryClient, label: string): Promise<PropertyKey[]> {
   const res = await graph.roQuery<Record>(
-    `MATCH (n:\`${label}\`) WITH n LIMIT ${SAMPLE_LIMIT} RETURN keys(n) AS ks, n AS node`,
+    `MATCH (n:\`${label}\`) WITH n LIMIT ${SAMPLE_LIMIT} RETURN keys(n) AS ks, n AS node`
   );
   return aggregateProps(res.data ?? [], 'node');
 }
 
 async function samplePropertiesForRel(graph: QueryClient, rel: string): Promise<PropertyKey[]> {
   const res = await graph.roQuery<Record>(
-    `MATCH ()-[r:\`${rel}\`]->() WITH r LIMIT ${SAMPLE_LIMIT} RETURN keys(r) AS ks, r AS edge`,
+    `MATCH ()-[r:\`${rel}\`]->() WITH r LIMIT ${SAMPLE_LIMIT} RETURN keys(r) AS ks, r AS edge`
   );
   return aggregateProps(res.data ?? [], 'edge');
 }
@@ -176,10 +176,10 @@ function aggregateProps(rows: Record[], entityKey: 'node' | 'edge'): PropertyKey
 
 async function sampleRelationshipCombos(
   graph: QueryClient,
-  rel: string,
+  rel: string
 ): Promise<Array<{ src: string; tgt: string }>> {
   const res = await graph.roQuery<Record>(
-    `MATCH (a)-[:\`${rel}\`]->(b) RETURN DISTINCT labels(a) AS srcLabels, labels(b) AS tgtLabels LIMIT 25`,
+    `MATCH (a)-[:\`${rel}\`]->(b) RETURN DISTINCT labels(a) AS srcLabels, labels(b) AS tgtLabels LIMIT 25`
   );
   const out: Array<{ src: string; tgt: string }> = [];
   for (const row of res.data ?? []) {

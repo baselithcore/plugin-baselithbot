@@ -68,7 +68,7 @@ function relationalSuggestions(schema: Extract<UnifiedSchema, { kind: 'relationa
   const dateColumn = findDateColumn(ranked);
   if (dateColumn) {
     out.push(
-      `Recent ${humanize(dateColumn.table)} ordered by ${humanize(dateColumn.column)} (last 30 days)`,
+      `Recent ${humanize(dateColumn.table)} ordered by ${humanize(dateColumn.column)} (last 30 days)`
     );
   }
 
@@ -124,7 +124,7 @@ interface ColumnRef {
 }
 
 function findDateColumn(
-  tables: Array<{ name: string; columns: Array<{ name: string; dataType: string }> }>,
+  tables: Array<{ name: string; columns: Array<{ name: string; dataType: string }> }>
 ): ColumnRef | null {
   const dateRe = /(date|timestamp|datetime|time)/i;
   const namedRe = /(_at|_date|_time|created|updated|modified)/i;
@@ -138,13 +138,13 @@ function findDateColumn(
 }
 
 function findNumericColumn(
-  tables: Array<{ name: string; columns: Array<{ name: string; dataType: string }> }>,
+  tables: Array<{ name: string; columns: Array<{ name: string; dataType: string }> }>
 ): ColumnRef | null {
   const numericRe = /(int|numeric|decimal|float|double|money|real|number)/i;
   const interestingRe = /(price|amount|total|revenue|qty|quantity|score|count|stock|salary)/i;
   for (const t of tables) {
     const interesting = t.columns.find(
-      (c) => interestingRe.test(c.name) && numericRe.test(c.dataType),
+      (c) => interestingRe.test(c.name) && numericRe.test(c.dataType)
     );
     if (interesting) return { table: t.name, column: interesting.name };
   }

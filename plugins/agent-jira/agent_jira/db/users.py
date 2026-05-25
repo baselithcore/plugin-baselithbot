@@ -169,6 +169,24 @@ def count_users_by_tenant(tenant_id: str) -> int:
     return row[0] if row else 0
 
 
+def count_users() -> int:
+    """Numero totale utenti (cross-tenant). Usato dal bootstrap gate per
+    rilevare il first-boot. Read-only: rollback esplicito sulla connessione
+    per evitare leak di transazione idle."""
+
+    if not POSTGRES_ENABLED:
+        return 0
+
+    with get_connection() as conn:
+        try:
+            with conn.cursor() as cursor:
+                cursor.execute("SELECT COUNT(*) FROM users")
+                row = cursor.fetchone()
+        finally:
+            conn.rollback()
+    return int(row[0]) if row else 0
+
+
 def list_users_by_tenant(tenant_id: str) -> list[Dict[str, Any]]:
     """Restituisce tutti gli utenti di un tenant."""
 

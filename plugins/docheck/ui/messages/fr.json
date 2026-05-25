@@ -252,6 +252,103 @@
     "keysWarning": "Attention : sans clé de sauvegarde, l'intégrité de la chaîne d'audit ne peut pas être vérifiée après une défaillance du disque.",
     "doneIntro": "Configuration terminée. Créez le premier utilisateur administrateur via :"
   },
+  "superuserSetup": {
+    "hero": {
+      "badge": "doCheck · configuration initiale",
+      "title": "Créer le premier administrateur",
+      "body": "Aucun compte n'existe encore. Cet écran n'est accessible que depuis le navigateur local et crée l'administrateur qui gérera tous les utilisateurs suivants.",
+      "progressLabel": "Progression"
+    },
+    "header": {
+      "title": "Créer le premier admin",
+      "subtitle": "unique, loopback uniquement"
+    },
+    "sidebar": {
+      "title": "Administrateur initial",
+      "placeholder": "En cours",
+      "progress": "Progression",
+      "loopback": {
+        "title": "Loopback uniquement",
+        "body": "Cet endpoint n'accepte que les requêtes depuis localhost. Pour les déploiements distants, utilisez les variables d'environnement avant le premier démarrage."
+      }
+    },
+    "stepper": {
+      "aria": "Progression de la configuration",
+      "title": "Parcours guidé",
+      "step": "Étape {current} sur {total}"
+    },
+    "steps": {
+      "identity": { "label": "Identité", "hint": "Email et profil" },
+      "security": { "label": "Sécurité", "hint": "Mot de passe ≥12 car." },
+      "review": { "label": "Confirmer", "hint": "Créer l'admin" }
+    },
+    "identity": {
+      "title": "Identité de l'administrateur",
+      "body": "Ces identifiants permettent d'accéder à la console d'administration. L'email et le mot de passe restent modifiables après la première connexion.",
+      "email": "Email",
+      "displayName": "Nom affiché",
+      "displayNameHint": "Optionnel — défaut sur la partie locale de l'email si vide."
+    },
+    "security": {
+      "title": "Définir le mot de passe",
+      "body": "Minimum {min} caractères. Mélangez lettres, chiffres et symboles pour maximiser la robustesse. Le mot de passe est haché avec argon2id et jamais stocké en clair.",
+      "password": "Mot de passe (min {min} car.)",
+      "confirm": "Confirmer le mot de passe",
+      "strength": {
+        "label": "Robustesse du mot de passe",
+        "weak": "Faible",
+        "fair": "Acceptable",
+        "good": "Bon",
+        "strong": "Fort"
+      }
+    },
+    "review": {
+      "title": "Confirmer et créer",
+      "body": "Vérifiez les données ci-dessous. La confirmation vous connecte immédiatement et désactive l'endpoint de bootstrap. Les administrateurs suivants se gèrent depuis la page Utilisateurs.",
+      "rows": {
+        "email": "Email",
+        "displayName": "Nom affiché",
+        "role": "Rôle",
+        "roleValue": "admin",
+        "passwordStrength": "Robustesse du mot de passe",
+        "source": "Origine",
+        "sourceValue": "web (loopback)",
+        "forcedChange": "Changement de mot de passe forcé",
+        "forcedChangeValue": "Non"
+      },
+      "reminder": {
+        "title": "Rappel.",
+        "body": "Conservez le mot de passe dans un gestionnaire : doCheck ne peut pas le récupérer. Utilisez le menu utilisateur pour le modifier plus tard."
+      }
+    },
+    "footer": {
+      "back": "Retour",
+      "next": "Suivant",
+      "create": "Créer l'admin",
+      "creating": "Création…",
+      "title": {
+        "identity": "Définir l'identité de l'administrateur",
+        "security": "Définir un mot de passe fort",
+        "review": "Confirmer et créer l'admin"
+      },
+      "hint": {
+        "identity": "email, nom affiché",
+        "security": "min 12 car., jamais loggé",
+        "review": "irréversible une fois l'admin créé"
+      }
+    },
+    "cliHint": { "label": "Préférez le terminal ?" },
+    "errors": {
+      "invalidEmail": "Adresse email invalide.",
+      "passwordShort": "Le mot de passe doit comporter au moins {min} caractères.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas.",
+      "weakPassword": "Mot de passe trop faible. Ajoutez chiffres ou symboles.",
+      "incomplete": "Complétez chaque étape avant de confirmer.",
+      "forbidden": "Bootstrap interdit : un admin existe déjà ou la requête n'est pas en loopback.",
+      "validation": "Validation échouée. Vérifiez email et mot de passe.",
+      "generic": "Erreur inattendue ({status})."
+    }
+  },
   "policies": {
     "scope": {
       "all": "Toutes",

@@ -128,6 +128,6 @@ export function NodeDetailDrawer({ node, onClose }: Props) {
         )}
       </AnimatePresence>
     </>,
-    document.body,
+    document.body
   );
 }

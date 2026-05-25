@@ -49,7 +49,7 @@ export class SqlSafetyValidator {
 
     if (isDml && !opts.allowDml) {
       throw new UnsafeSqlError(
-        `DML statement '${type.toUpperCase()}' blocked. Set allowDml=true to permit.`,
+        `DML statement '${type.toUpperCase()}' blocked. Set allowDml=true to permit.`
       );
     }
 
@@ -145,7 +145,7 @@ export class SqlSafetyValidator {
         warnings
           .filter((w) => w.severity === 'error')
           .map((w) => w.message)
-          .join('; '),
+          .join('; ')
       );
     }
 
@@ -295,7 +295,7 @@ function stripSchema(id: string): string {
 
 function resolveColumnSet(
   tableRef: string,
-  knownColumns: Map<string, Set<string>>,
+  knownColumns: Map<string, Set<string>>
 ): Set<string> | null {
   if (knownColumns.has(tableRef)) return knownColumns.get(tableRef) ?? null;
   // The known map is keyed by `schema.table` ids; lookup by bare name too.
@@ -314,7 +314,7 @@ function buildAliasMap(
   node: unknown,
   knownTables: Set<string>,
   knownColumns: Map<string, Set<string>>,
-  cteNames: Set<string>,
+  cteNames: Set<string>
 ): Map<string, Set<string>[]> {
   const out = new Map<string, Set<string>[]>();
   walk(node, (n) => {
@@ -457,7 +457,7 @@ function rewriteAliasInSql(
   sql: string,
   wrongAlias: string,
   column: string,
-  rightAlias: string,
+  rightAlias: string
 ): string {
   const escAlias = escapeRegex(wrongAlias);
   const escCol = escapeRegex(column);

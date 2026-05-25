@@ -31,6 +31,12 @@ MD036: false
 # Disattiva la regola che controlla lo stile delle tabelle
 MD060: false
 
+# MD040/fenced-code-language: non obbliga a specificare il linguaggio sui code
+# fence. Storicamente molti doc usano ``` per box di output / wireframe; non
+# è errore funzionale, solo stilistico, e bloccarli rende il commit fastidioso
+# sui documenti legacy che continueremo a importare nei plugin.
+MD040: false
+
 # -----------------------------------------
 # Regole personalizzate
 # -----------------------------------------

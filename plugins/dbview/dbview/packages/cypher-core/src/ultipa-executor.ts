@@ -60,7 +60,7 @@ export class UltipaExecutor {
       if (isDeadlineExceeded(err)) {
         throw new QueryTimeoutError(
           `Ultipa query exceeded ${QUERY_TIMEOUT_MS}ms deadline. Narrow the filter or raise DBVIEW_GRAPH_QUERY_TIMEOUT_MS.`,
-          { dialect: 'gqldb', timeoutMs: QUERY_TIMEOUT_MS },
+          { dialect: 'gqldb', timeoutMs: QUERY_TIMEOUT_MS }
         );
       }
       throw err;
@@ -193,7 +193,7 @@ function readProperties(obj: Record<string, unknown>): Record<string, unknown> {
 
 function pickId(
   obj: Record<string, unknown>,
-  props: Record<string, unknown>,
+  props: Record<string, unknown>
 ): string | number | undefined {
   const candidates = [obj.id, obj.uuid, props._uuid, props._id, props.id];
   for (const c of candidates) {

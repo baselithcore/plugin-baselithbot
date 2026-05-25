@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Database, LockKeyhole, LogIn, Network, Shield, type LucideIcon } from 'lucide-react';
 import { login } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8765/api/v1';
 
 export default function LoginPage() {
   const t = useTranslations('login');
@@ -15,6 +17,22 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Bootstrap probe: if no admin exists yet we redirect to the wizard
+  // instead of presenting a login form that will only ever 401. fail-open
+  // on probe error keeps the legacy login path reachable.
+  useEffect(() => {
+    const ac = new AbortController();
+    fetch(`${API_BASE}/auth/bootstrap/status`, { signal: ac.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { needs_bootstrap?: boolean } | null) => {
+        if (data?.needs_bootstrap) router.replace('/superuser-setup');
+      })
+      .catch(() => {
+        /* ignore — stay on /login */
+      });
+    return () => ac.abort();
+  }, [router]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

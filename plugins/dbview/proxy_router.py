@@ -75,7 +75,9 @@ _PROXIED_METHODS: tuple[str, ...] = (
 )
 
 
-def _filter_request_headers(headers: Iterable[tuple[bytes, bytes]]) -> list[tuple[str, str]]:
+def _filter_request_headers(
+    headers: Iterable[tuple[bytes, bytes]],
+) -> list[tuple[str, str]]:
     """Drop hop-by-hop + Host headers before forwarding the request.
 
     ``Host`` is removed so ``httpx`` regenerates it from the upstream URL
@@ -123,9 +125,7 @@ def _filter_response_headers(
     return cleaned
 
 
-def _rewrite_set_cookie_path(
-    set_cookie: str, rewriter: Callable[[str], str]
-) -> str:
+def _rewrite_set_cookie_path(set_cookie: str, rewriter: Callable[[str], str]) -> str:
     """Apply ``rewriter`` to the ``Path=`` attribute of a Set-Cookie value.
 
     Cookie attribute matching is case-insensitive and tolerant of extra
@@ -196,7 +196,9 @@ def build_proxy_router(
     cookie_rewriter = _make_cookie_path_rewriter(proxy_prefix)
     upstream_prefix_clean = upstream_api_prefix.rstrip("/")
 
-    async def _forward(request: Request, sub_path: str) -> StreamingResponse | JSONResponse:
+    async def _forward(
+        request: Request, sub_path: str
+    ) -> StreamingResponse | JSONResponse:
         if not healthy_provider():
             return JSONResponse(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,

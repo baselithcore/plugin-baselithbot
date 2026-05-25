@@ -240,7 +240,7 @@ export function AssistantTurn({ turn, connectionId, onRetry, onFollowUp }: Props
                               ? 'chip-danger'
                               : w.severity === 'warn'
                                 ? 'chip-warn'
-                                : 'chip',
+                                : 'chip'
                           )}
                         >
                           {w.message}

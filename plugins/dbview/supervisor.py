@@ -318,10 +318,7 @@ class NodeSupervisor:
         async with httpx.AsyncClient(timeout=2.0) as client:
             while time.monotonic() < deadline:
                 # Premature exit detection: don't keep polling a dead child.
-                if (
-                    self._process is not None
-                    and self._process.returncode is not None
-                ):
+                if self._process is not None and self._process.returncode is not None:
                     raise StartupTimeoutError(
                         f"dbview child exited during startup "
                         f"(returncode={self._process.returncode}) "
@@ -486,19 +483,13 @@ def build_supervisor_config(
             )
             return default
 
-    mode = (
-        overrides.get("mode")
-        or os.environ.get("DBVIEW_PLUGIN_MODE")
-        or "prod"
-    )
+    mode = overrides.get("mode") or os.environ.get("DBVIEW_PLUGIN_MODE") or "prod"
     if mode not in {"prod", "dev"}:
         logger.warning("[dbview] invalid mode %r, falling back to 'prod'", mode)
         mode = "prod"
 
     host = (
-        overrides.get("host")
-        or os.environ.get("DBVIEW_INTERNAL_HOST")
-        or "127.0.0.1"
+        overrides.get("host") or os.environ.get("DBVIEW_INTERNAL_HOST") or "127.0.0.1"
     )
     port_override = overrides.get("port")
     if port_override is None and "DBVIEW_INTERNAL_PORT" in os.environ:

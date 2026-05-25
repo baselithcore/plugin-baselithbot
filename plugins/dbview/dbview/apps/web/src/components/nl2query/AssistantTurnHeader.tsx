@@ -19,7 +19,7 @@ export function AssistantTurnHeader({ turn, isWorking, statusCopy }: Props) {
     <div
       className={cn(
         'flex items-start justify-between gap-3 border-b border-border-subtle px-3 py-2.5',
-        isError ? 'bg-danger/5' : 'bg-surface-2/30',
+        isError ? 'bg-danger/5' : 'bg-surface-2/30'
       )}
     >
       <div className="flex min-w-0 items-start gap-2.5">
@@ -28,7 +28,7 @@ export function AssistantTurnHeader({ turn, isWorking, statusCopy }: Props) {
             'mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md border',
             isError
               ? 'border-danger/25 bg-danger/10 text-danger'
-              : 'border-accent/25 bg-accent/10 text-accent',
+              : 'border-accent/25 bg-accent/10 text-accent'
           )}
         >
           <MessageSquareText className="h-3.5 w-3.5" />
@@ -49,7 +49,7 @@ export function AssistantTurnHeader({ turn, isWorking, statusCopy }: Props) {
         className={cn(
           'chip h-6 shrink-0 px-2 text-[10px]',
           turn.status === 'ready' && 'chip-success pulse-once',
-          isError && 'chip-danger',
+          isError && 'chip-danger'
         )}
       >
         {isWorking ? (

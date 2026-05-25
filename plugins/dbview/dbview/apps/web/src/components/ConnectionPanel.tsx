@@ -223,7 +223,7 @@ export function ConnectionPanel() {
           <div
             className={cn(
               'relative flex items-center rounded-md border bg-[rgb(var(--surface-2)/0.35)] transition-colors focus-within:border-accent/45 focus-within:ring-1 focus-within:ring-accent/25',
-              filter.length > 0 && matchCount === 0 && 'border-rose-400/50 ring-1 ring-rose-400/30',
+              filter.length > 0 && matchCount === 0 && 'border-rose-400/50 ring-1 ring-rose-400/30'
             )}
             style={{ borderColor: 'rgb(var(--border-subtle))' }}
           >
@@ -363,7 +363,7 @@ export function ConnectionPanel() {
                           'group relative flex items-start gap-2.5 px-2.5 py-2.5 rounded-md cursor-pointer transition-all border outline-none',
                           isActive
                             ? 'ring-1 ring-accent/30 shadow-sm'
-                            : 'hover:bg-surface-2/62 hover:border-border focus-visible:border-accent/45',
+                            : 'hover:bg-surface-2/62 hover:border-border focus-visible:border-accent/45'
                         )}
                         style={{
                           background: isActive

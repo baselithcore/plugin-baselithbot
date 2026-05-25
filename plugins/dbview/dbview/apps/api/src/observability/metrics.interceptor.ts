@@ -29,7 +29,7 @@ export class MetricsInterceptor implements NestInterceptor {
         const reason = extractReason(err);
         record(status, reason);
         return throwError(() => err);
-      }),
+      })
     );
   }
 }

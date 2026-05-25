@@ -141,7 +141,10 @@ class RetrievalPipeline:
         # per evitare di non dare alcuna risposta, ma non forzare il riempimento se abbiamo già match validi.
         try:
             if not hits and not kb_label:
-                from agent_jira.vectorstore.state import _refresh_indexed_items, indexed_items
+                from agent_jira.vectorstore.state import (
+                    _refresh_indexed_items,
+                    indexed_items,
+                )
 
                 _refresh_indexed_items(force=True)
                 if indexed_items:
@@ -443,7 +446,10 @@ class RetrievalPipeline:
             project_key_norm = project_key.upper() if project_key else ""
 
             candidates: list[str] = []
-            from agent_jira.vectorstore.state import _refresh_indexed_items, indexed_items
+            from agent_jira.vectorstore.state import (
+                _refresh_indexed_items,
+                indexed_items,
+            )
 
             _refresh_indexed_items(force=False)  # Usa cache/throttling
             for doc_id, meta in indexed_items.items():

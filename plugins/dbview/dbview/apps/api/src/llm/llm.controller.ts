@@ -30,7 +30,7 @@ export class LlmController {
   constructor(
     private readonly ollama: OllamaService,
     private readonly credentials: LlmCredentialsService,
-    private readonly remote: RemoteProviderService,
+    private readonly remote: RemoteProviderService
   ) {}
 
   @Get('ollama/models')
@@ -41,7 +41,7 @@ export class LlmController {
   @Get('providers/:provider/credential')
   getCredential(
     @Param('provider') providerRaw: string,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): LlmCredentialStatus {
     const provider = parseProvider(providerRaw);
     return this.credentials.status(provider, principal);
@@ -51,7 +51,7 @@ export class LlmController {
   setCredential(
     @Param('provider') providerRaw: string,
     @Body(new ZodPipe(SetLlmCredentialSchema)) body: { apiKey: string },
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): LlmCredentialStatus {
     const provider = parseProvider(providerRaw);
     return this.credentials.upsert(provider, body.apiKey, principal);
@@ -60,7 +60,7 @@ export class LlmController {
   @Delete('providers/:provider/credential')
   deleteCredential(
     @Param('provider') providerRaw: string,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): LlmCredentialStatus {
     const provider = parseProvider(providerRaw);
     return this.credentials.remove(provider, principal);
@@ -78,7 +78,7 @@ export class LlmController {
   async testCredential(
     @Param('provider') providerRaw: string,
     @Body(new ZodPipe(TestLlmCredentialSchema)) body: { apiKey?: string },
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): Promise<TestLlmCredentialResponse> {
     const provider = parseProvider(providerRaw);
     const apiKey = body.apiKey ?? this.credentials.resolveApiKey(provider, principal);
@@ -100,7 +100,7 @@ export class LlmController {
   @Get('providers/:provider/models')
   async listRemoteModels(
     @Param('provider') providerRaw: string,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): Promise<RemoteModelsResponse> {
     const provider = parseProvider(providerRaw);
     const stored = this.credentials.status(provider, principal);

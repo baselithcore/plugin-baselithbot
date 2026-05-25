@@ -153,7 +153,7 @@ export function NL2QueryPanel() {
       addTurn(turn);
       submit.mutate({ mode, turnId, prompt: trimmed, history });
     },
-    [connId, submit, autoExecute, addTurn, conversation],
+    [connId, submit, autoExecute, addTurn, conversation]
   );
 
   const send = useCallback(
@@ -161,14 +161,14 @@ export function NL2QueryPanel() {
       sendPrompt(prompt, overrideMode);
       setPrompt('');
     },
-    [sendPrompt, prompt],
+    [sendPrompt, prompt]
   );
 
   const retry = useCallback(
     (turnPrompt: string) => {
       sendPrompt(turnPrompt);
     },
-    [sendPrompt],
+    [sendPrompt]
   );
 
   useEffect(() => {
@@ -190,7 +190,7 @@ export function NL2QueryPanel() {
         send();
       }
     },
-    [send],
+    [send]
   );
 
   if (!connId) {

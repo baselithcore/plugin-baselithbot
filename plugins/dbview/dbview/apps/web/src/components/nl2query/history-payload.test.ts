@@ -64,7 +64,7 @@ describe('buildHistoryPayload', () => {
 
   it('caps at HISTORY_WINDOW most-recent turns', () => {
     const conv: ChatTurn[] = Array.from({ length: HISTORY_WINDOW + 3 }, (_, i) =>
-      ready(`t${i}`, `q${i}`, `SELECT ${i} FROM t`, i),
+      ready(`t${i}`, `q${i}`, `SELECT ${i} FROM t`, i)
     );
     const out = buildHistoryPayload(conv);
     expect(out).toHaveLength(HISTORY_WINDOW);

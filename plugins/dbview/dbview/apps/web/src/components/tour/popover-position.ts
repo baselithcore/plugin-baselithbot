@@ -22,7 +22,7 @@ const EDGE_PAD = 16;
 export function placePopover(
   rect: TargetRect | null,
   preferred: StepPlacement | undefined,
-  viewport: ViewportSize,
+  viewport: ViewportSize
 ): PopoverPlacement {
   if (!rect || preferred === 'center') {
     return {

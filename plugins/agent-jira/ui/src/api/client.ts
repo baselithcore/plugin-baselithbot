@@ -297,6 +297,43 @@ export async function sendChatStream(
   return buildChatResponse(accumulatedText);
 }
 
+export interface BootstrapStatus {
+  needs_bootstrap: boolean;
+  users_count: number;
+}
+
+export interface BootstrapPayload {
+  email: string;
+  password: string;
+  display_name?: string;
+  organization?: string;
+}
+
+export interface BootstrapResponse {
+  status: 'ok';
+  token: string;
+  access_token: string;
+  access_token_expires_at: string;
+  user: {
+    id: string;
+    email: string;
+    display_name: string;
+    tenant_id: string | null;
+    role: string;
+  };
+}
+
+export async function fetchBootstrapStatus(): Promise<BootstrapStatus> {
+  return apiFetch<BootstrapStatus>('/auth/bootstrap/status');
+}
+
+export async function bootstrapSuperuser(payload: BootstrapPayload): Promise<BootstrapResponse> {
+  return apiFetch<BootstrapResponse>('/auth/bootstrap', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function fetchConfig(): Promise<ConsoleConfig> {
   return apiFetch<ConsoleConfig>('/console/config');
 }

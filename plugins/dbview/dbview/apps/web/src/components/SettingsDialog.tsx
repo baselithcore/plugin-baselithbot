@@ -216,7 +216,7 @@ function LocaleButton({
       onClick={onClick}
       className={cn(
         'flex items-center gap-2 px-3 h-10 rounded-md transition-colors border',
-        active ? 'ring-1 ring-accent/50' : 'hover:bg-surface-2',
+        active ? 'ring-1 ring-accent/50' : 'hover:bg-surface-2'
       )}
       style={{
         background: active
@@ -248,7 +248,7 @@ function ThemeButton({
       onClick={onClick}
       className={cn(
         'flex items-center gap-2 px-3 h-10 rounded-md transition-colors border',
-        active ? 'ring-1 ring-accent/50' : 'hover:bg-surface-2',
+        active ? 'ring-1 ring-accent/50' : 'hover:bg-surface-2'
       )}
       style={{
         background: active

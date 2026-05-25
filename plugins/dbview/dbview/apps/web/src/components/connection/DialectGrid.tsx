@@ -23,7 +23,7 @@ export function DialectGrid({ value, onChange }: Props) {
             className={cn(
               'flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-lg text-[10px] font-medium transition-all border relative',
               active ? 'ring-1 ring-accent/45 shadow-sm' : 'hover:bg-surface-3',
-              !meta.available && 'opacity-65',
+              !meta.available && 'opacity-65'
             )}
             style={{
               background: active

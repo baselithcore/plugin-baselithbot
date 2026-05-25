@@ -53,7 +53,7 @@ export class RateLimitGuard implements CanActivate {
           code: 'rate_limited',
           message: `Too many requests. Limit ${cfg.limit}/${cfg.windowSec}s.`,
         },
-        HttpStatus.TOO_MANY_REQUESTS,
+        HttpStatus.TOO_MANY_REQUESTS
       );
     }
     bucket.tokens -= 1;

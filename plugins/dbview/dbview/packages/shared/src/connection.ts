@@ -509,7 +509,7 @@ export function parseSalesforceDataCloudConnection(cs: string): {
 } {
   if (!cs.startsWith('salesforce-data-cloud://')) {
     throw new Error(
-      'salesforce-data-cloud: connection string must start with salesforce-data-cloud://',
+      'salesforce-data-cloud: connection string must start with salesforce-data-cloud://'
     );
   }
   const qIdx = cs.indexOf('?');
@@ -536,7 +536,7 @@ function buildUrl(
   scheme: string,
   p: { host: string; port?: number; database: string; username?: string; password?: string },
   fallbackPort: number,
-  query: string,
+  query: string
 ): string {
   const port = p.port ?? fallbackPort;
   const auth =

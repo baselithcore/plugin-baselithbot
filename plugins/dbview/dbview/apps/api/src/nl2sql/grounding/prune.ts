@@ -33,7 +33,7 @@ export interface PruneResult {
 export function pruneRelationalSchema(
   graph: SchemaGraph,
   prompt: string,
-  opts: PruneOptions,
+  opts: PruneOptions
 ): PruneResult {
   if (graph.tables.length <= opts.threshold) {
     return { graph, pruned: false, removed: [], matchedTokens: [] };

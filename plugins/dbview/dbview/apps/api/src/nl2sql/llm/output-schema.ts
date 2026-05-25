@@ -17,7 +17,7 @@ export const Nl2QueryOutputSchema = z.object({
     .string()
     .min(1)
     .describe(
-      'The generated query in the requested language (SQL / SOQL / Cypher / Qdrant envelope / Mongo envelope / Elasticsearch envelope / Redis command). MUST be a single statement.',
+      'The generated query in the requested language (SQL / SOQL / Cypher / Qdrant envelope / Mongo envelope / Elasticsearch envelope / Redis command). MUST be a single statement.'
     ),
   language: z
     .enum(['sql', 'soql', 'cypher', 'qdrant', 'mongodb', 'elasticsearch', 'redis'])
@@ -26,19 +26,19 @@ export const Nl2QueryOutputSchema = z.object({
     .string()
     .default('')
     .describe(
-      'Plain-language explanation (one or two sentences) of what the query does and why it answers the user question.',
+      'Plain-language explanation (one or two sentences) of what the query does and why it answers the user question.'
     ),
   joinNotes: z
     .array(z.string())
     .default([])
     .describe(
-      'For each JOIN / relationship traversal, a short comment describing the link (e.g. "1 customer -> N orders").',
+      'For each JOIN / relationship traversal, a short comment describing the link (e.g. "1 customer -> N orders").'
     ),
   involvedEntities: z
     .array(z.string())
     .default([])
     .describe(
-      'List of tables / sObjects / labels / collections / indices the query reads from, exactly as listed in the prompt schema.',
+      'List of tables / sObjects / labels / collections / indices the query reads from, exactly as listed in the prompt schema.'
     ),
 });
 

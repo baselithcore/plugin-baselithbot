@@ -95,7 +95,7 @@ function appendRows(
   page: SdcQueryPage,
   columns: string[],
   positions: number[],
-  rowLimit: number,
+  rowLimit: number
 ): void {
   for (const row of page.data ?? []) {
     if (out.length >= rowLimit) return;

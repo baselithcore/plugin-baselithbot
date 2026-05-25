@@ -37,15 +37,15 @@ export function GraphDetail({
 }: Props) {
   const label = useMemo(
     () => (labelId ? schema.labels.find((l) => l.id === labelId) : undefined),
-    [schema, labelId],
+    [schema, labelId]
   );
   const relsOut = useMemo(
     () => (labelId ? schema.relationships.filter((r) => r.source === labelId) : []),
-    [schema, labelId],
+    [schema, labelId]
   );
   const relsIn = useMemo(
     () => (labelId ? schema.relationships.filter((r) => r.target === labelId) : []),
-    [schema, labelId],
+    [schema, labelId]
   );
 
   const [tab, setTab] = useState<'props' | 'rels' | 'sample'>('props');
@@ -61,7 +61,7 @@ export function GraphDetail({
     const q = propFilter.trim().toLowerCase();
     if (!q || !label) return label?.properties ?? [];
     return label.properties.filter(
-      (p) => p.name.toLowerCase().includes(q) || p.types.some((t) => t.toLowerCase().includes(q)),
+      (p) => p.name.toLowerCase().includes(q) || p.types.some((t) => t.toLowerCase().includes(q))
     );
   }, [label, propFilter]);
 
@@ -152,7 +152,7 @@ export function GraphDetail({
                   key={p.name}
                   className={cn(
                     'flex items-center justify-between px-3 py-2 rounded-md text-[12px] font-mono transition-colors',
-                    isFocused ? 'ring-1 ring-accent/60' : 'hover:bg-surface-2',
+                    isFocused ? 'ring-1 ring-accent/60' : 'hover:bg-surface-2'
                   )}
                   style={{
                     background: isFocused

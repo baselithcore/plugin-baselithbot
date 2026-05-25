@@ -33,7 +33,7 @@ function LabelNodeImpl({ data }: Props) {
     <div
       className={cn(
         'rounded-lg overflow-hidden font-mono text-[11px] w-[220px] transition-shadow border-l-4',
-        labelAccent,
+        labelAccent
       )}
       style={{
         background: 'rgb(var(--surface-1))',

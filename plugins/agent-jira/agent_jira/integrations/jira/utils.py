@@ -3,7 +3,10 @@ from typing import Any, Mapping, Optional, Sequence
 
 import httpx
 
-from agent_jira.kb_labels import is_canonical_document_label, is_supported_document_label
+from agent_jira.kb_labels import (
+    is_canonical_document_label,
+    is_supported_document_label,
+)
 
 _DETERMINISTIC_KB_LABEL_RE = re.compile(r"^[a-z0-9][a-z0-9-]*-[0-9a-f]{6}$")
 
