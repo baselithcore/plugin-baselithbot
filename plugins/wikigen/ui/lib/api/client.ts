@@ -53,10 +53,7 @@ export function getAccessToken(): string | null {
 type AuthEvent = 'auth:logout' | 'auth:refreshed';
 const listeners = new Map<AuthEvent, Set<(payload?: unknown) => void>>();
 
-export function onAuthEvent(
-  event: AuthEvent,
-  listener: (payload?: unknown) => void
-): () => void {
+export function onAuthEvent(event: AuthEvent, listener: (payload?: unknown) => void): () => void {
   if (!listeners.has(event)) listeners.set(event, new Set());
   listeners.get(event)!.add(listener);
   return () => listeners.get(event)?.delete(listener);

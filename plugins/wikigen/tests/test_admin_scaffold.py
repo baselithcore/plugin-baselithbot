@@ -91,7 +91,9 @@ def test_default_vault_resolves_under_repo() -> None:
 
 def test_plan_is_pure(fresh_pack: tuple[str, Path]) -> None:
     name, vault = fresh_pack
-    req = ScaffoldRequest(name=name, vault_root=str(vault), write_env=False, activate=False)
+    req = ScaffoldRequest(
+        name=name, vault_root=str(vault), write_env=False, activate=False
+    )
     plan = plan_scaffold(req)
     assert plan.name == name
     assert plan.target_pack_dir == REPO / "domains" / name
@@ -162,18 +164,24 @@ def test_vault_seed_creates_index_log_claude(fresh_pack: tuple[str, Path]) -> No
 def test_vault_seed_creates_page_type_subfolders(fresh_pack: tuple[str, Path]) -> None:
     name, vault = fresh_pack
     result = scaffold_pack(
-        ScaffoldRequest(name=name, vault_root=str(vault), write_env=False, activate=False)
+        ScaffoldRequest(
+            name=name, vault_root=str(vault), write_env=False, activate=False
+        )
     )
     # _template ships with source/concept/entity/topic page types.
     for folder in ("sources", "concepts", "entities", "topics"):
         assert (result.vault_path / "wiki" / folder).is_dir(), f"missing wiki/{folder}/"
 
 
-def test_vault_seed_idempotent_does_not_clobber_user_edits(fresh_pack: tuple[str, Path]) -> None:
+def test_vault_seed_idempotent_does_not_clobber_user_edits(
+    fresh_pack: tuple[str, Path],
+) -> None:
     """Re-scaffolding with force must NOT overwrite user-edited index/log/CLAUDE."""
     name, vault = fresh_pack
     result = scaffold_pack(
-        ScaffoldRequest(name=name, vault_root=str(vault), write_env=False, activate=False)
+        ScaffoldRequest(
+            name=name, vault_root=str(vault), write_env=False, activate=False
+        )
     )
     index_md = result.vault_path / "wiki" / "index.md"
     index_md.write_text("# tampered by user\n", encoding="utf-8")
@@ -192,7 +200,9 @@ def test_vault_seed_idempotent_does_not_clobber_user_edits(fresh_pack: tuple[str
 
 def test_apply_is_idempotent_without_force(fresh_pack: tuple[str, Path]) -> None:
     name, vault = fresh_pack
-    req = ScaffoldRequest(name=name, vault_root=str(vault), write_env=False, activate=False)
+    req = ScaffoldRequest(
+        name=name, vault_root=str(vault), write_env=False, activate=False
+    )
     scaffold_pack(req)
     with pytest.raises(ScaffoldError, match="already exists"):
         scaffold_pack(req)
@@ -200,7 +210,9 @@ def test_apply_is_idempotent_without_force(fresh_pack: tuple[str, Path]) -> None
 
 def test_apply_force_overwrites(fresh_pack: tuple[str, Path]) -> None:
     name, vault = fresh_pack
-    req = ScaffoldRequest(name=name, vault_root=str(vault), write_env=False, activate=False)
+    req = ScaffoldRequest(
+        name=name, vault_root=str(vault), write_env=False, activate=False
+    )
     scaffold_pack(req)
     # mutate then re-apply with force
     pack_yaml = REPO / "domains" / name / "pack.yaml"
@@ -217,7 +229,9 @@ def test_apply_force_overwrites(fresh_pack: tuple[str, Path]) -> None:
 
 def test_registry_skips_template(fresh_pack: tuple[str, Path]) -> None:
     name, vault = fresh_pack
-    req = ScaffoldRequest(name=name, vault_root=str(vault), write_env=False, activate=False)
+    req = ScaffoldRequest(
+        name=name, vault_root=str(vault), write_env=False, activate=False
+    )
     scaffold_pack(req)
 
     reset_registry()
@@ -229,7 +243,9 @@ def test_registry_skips_template(fresh_pack: tuple[str, Path]) -> None:
 
 def test_registry_distinguishes_seed_vs_user(fresh_pack: tuple[str, Path]) -> None:
     name, vault = fresh_pack
-    req = ScaffoldRequest(name=name, vault_root=str(vault), write_env=False, activate=False)
+    req = ScaffoldRequest(
+        name=name, vault_root=str(vault), write_env=False, activate=False
+    )
     scaffold_pack(req)
 
     reset_registry()
@@ -263,7 +279,9 @@ def test_setup_not_required_with_user_pack_active(
     fresh_pack: tuple[str, Path], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     name, vault = fresh_pack
-    req = ScaffoldRequest(name=name, vault_root=str(vault), write_env=False, activate=False)
+    req = ScaffoldRequest(
+        name=name, vault_root=str(vault), write_env=False, activate=False
+    )
     scaffold_pack(req)
     monkeypatch.setenv("APP_DOMAIN", name)
     reset_registry()
@@ -309,7 +327,9 @@ def test_fork_rejects_unknown_seed(fresh_pack: tuple[str, Path]) -> None:
         scaffold_pack(req)
 
 
-def test_fork_rejects_user_pack_as_seed(fresh_pack: tuple[str, Path], tmp_path: Path) -> None:
+def test_fork_rejects_user_pack_as_seed(
+    fresh_pack: tuple[str, Path], tmp_path: Path
+) -> None:
     """A user pack (seed: false) must not be selectable as a fork source."""
     user_name = "smoke_user_src"
     user_target = REPO / "domains" / user_name
@@ -371,7 +391,9 @@ def test_registry_load_context_uses_env_override(
     """
 
     name, vault = fresh_pack
-    req = ScaffoldRequest(name=name, vault_root=str(vault), write_env=False, activate=False)
+    req = ScaffoldRequest(
+        name=name, vault_root=str(vault), write_env=False, activate=False
+    )
     scaffold_pack(req)
 
     custom = tmp_path / "elsewhere"

@@ -23,7 +23,11 @@ from llm_wiki.domain.pack import GroupingRule
 from llm_wiki.domain.registry import load_pack
 from llm_wiki.graphdb.core import get_graph_db
 from llm_wiki.vectorstore.contextual import is_enabled as contextual_enabled
-from llm_wiki.vectorstore.embedder import dense_dim, embedder_supports_hybrid, get_embedder
+from llm_wiki.vectorstore.embedder import (
+    dense_dim,
+    embedder_supports_hybrid,
+    get_embedder,
+)
 from llm_wiki.vectorstore.qdrant_ops import collection_stats, get_qdrant
 from llm_wiki.vectorstore.reranker import is_available as reranker_available
 from llm_wiki.wiki.parser import walk_wiki
@@ -94,11 +98,15 @@ def status(request: Request) -> dict[str, Any]:
     # ma sono info-leak per probe esterni (path disclosure, fingerprint
     # del cluster Qdrant). Visibili solo per admin / loopback in setup.
     qdrant_target = (
-        str(config.QDRANT_PATH) if config.QDRANT_MODE == "embedded" else config.QDRANT_URL
+        str(config.QDRANT_PATH)
+        if config.QDRANT_MODE == "embedded"
+        else config.QDRANT_URL
     )
     rag_vendor = config.RAG_VENDOR or config.LLM_VENDOR
     ingest_vendor = config.INGEST_VENDOR or config.LLM_VENDOR
-    provider_endpoint = config.OPENAI_API_BASE if rag_vendor == "openai" else config.OLLAMA_URL
+    provider_endpoint = (
+        config.OPENAI_API_BASE if rag_vendor == "openai" else config.OLLAMA_URL
+    )
     return {
         "domain": domain_block,
         "provider": {
@@ -106,7 +114,9 @@ def status(request: Request) -> dict[str, Any]:
             "rag_vendor": rag_vendor,
             "ingest_vendor": ingest_vendor,
             "split": rag_vendor != ingest_vendor,
-            "model": (config.OPENAI_MODEL if rag_vendor == "openai" else config.OLLAMA_MODEL),
+            "model": (
+                config.OPENAI_MODEL if rag_vendor == "openai" else config.OLLAMA_MODEL
+            ),
             "ingest_model": (
                 config.INGEST_OPENAI_MODEL
                 if ingest_vendor == "openai"

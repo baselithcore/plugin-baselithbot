@@ -120,7 +120,9 @@ class AssignGroupRoleRequest(BaseModel):
 router = APIRouter(
     prefix="/api/admin/rbac/groups",
     tags=["admin", "rbac", "groups"],
-    dependencies=[Depends(require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin"))],
+    dependencies=[
+        Depends(require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin"))
+    ],
 )
 
 
@@ -134,7 +136,9 @@ def _client_ip(request: Request) -> str | None:
 def _ensure_group(group_id: str, actor: dict) -> dict:
     group = groups_db.get_group_by_id(group_id)
     if not group:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="gruppo non trovato")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="gruppo non trovato"
+        )
     # Cross-tenant guard: anche se RLS è OFF (superuser bypass), un admin
     # tenant A non deve poter agire su gruppi tenant B.
     actor_tid = actor.get("tenant_id")
@@ -148,7 +152,9 @@ def _ensure_group(group_id: str, actor: dict) -> dict:
 
 @router.get("", response_model=list[GroupSummary])
 def list_groups_endpoint(
-    actor: dict = Depends(require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")
+    ),
 ) -> list[GroupSummary]:
     tenant_id = actor["tenant_id"]
     rows = groups_db.list_groups(tenant_id)
@@ -159,7 +165,9 @@ def list_groups_endpoint(
 def create_group_endpoint(
     body: CreateGroupRequest,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")
+    ),
 ) -> GroupSummary:
     tenant_id = actor["tenant_id"]
     try:
@@ -182,7 +190,11 @@ def create_group_endpoint(
         "group.created",
         tenant_id=tenant_id,
         user_id=actor["id"],
-        payload={"group_id": created["id"], "slug": created["slug"], "name": created["name"]},
+        payload={
+            "group_id": created["id"],
+            "slug": created["slug"],
+            "name": created["name"],
+        },
         ip_address=_client_ip(request),
     )
     return GroupSummary(**created)
@@ -191,7 +203,9 @@ def create_group_endpoint(
 @router.get("/{group_id}", response_model=GroupDetail)
 def get_group_endpoint(
     group_id: str,
-    actor: dict = Depends(require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")
+    ),
 ) -> GroupDetail:
     group = _ensure_group(group_id, actor)
     members = [GroupMember(**m) for m in groups_db.get_group_members(group_id)]
@@ -204,7 +218,9 @@ def update_group_endpoint(
     group_id: str,
     body: UpdateGroupRequest,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")
+    ),
 ) -> GroupSummary:
     group = _ensure_group(group_id, actor)
     updated = groups_db.update_group(
@@ -213,7 +229,9 @@ def update_group_endpoint(
         description=body.description,
     )
     if not updated:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="gruppo non trovato")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="gruppo non trovato"
+        )
     write_event(
         "group.updated",
         tenant_id=actor.get("tenant_id"),
@@ -232,13 +250,17 @@ def update_group_endpoint(
 def delete_group_endpoint(
     group_id: str,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")
+    ),
 ) -> dict:
     group = _ensure_group(group_id, actor)
     try:
         removed = groups_db.delete_group(group_id)
     except groups_db.SystemGroupProtected as exc:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=str(exc)
+        ) from exc
     write_event(
         "group.deleted",
         tenant_id=actor.get("tenant_id"),
@@ -254,7 +276,9 @@ def add_members_endpoint(
     group_id: str,
     body: AddMembersRequest,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")
+    ),
 ) -> dict:
     group = _ensure_group(group_id, actor)
     result = groups_db.add_members_bulk(group_id, body.user_ids, added_by=actor["id"])
@@ -278,7 +302,9 @@ def remove_member_endpoint(
     group_id: str,
     user_id: str,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")
+    ),
 ) -> dict:
     group = _ensure_group(group_id, actor)
     removed = groups_db.remove_member(group_id, user_id)
@@ -302,7 +328,9 @@ def assign_role_endpoint(
     group_id: str,
     body: AssignGroupRoleRequest,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")
+    ),
 ) -> dict:
     group = _ensure_group(group_id, actor)
     role = next(
@@ -314,14 +342,18 @@ def assign_role_endpoint(
         None,
     )
     if not role:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ruolo non trovato")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="ruolo non trovato"
+        )
 
     # Anti-escalation: chi associa il ruolo deve avere lo stesso permesso
     # richiesto per assegnarlo a un utente direttamente. Senza questo,
     # un moderator con admin.group.manage potrebbe creare un gruppo
     # con ruolo admin e auto-aggiungersi.
     if role.get("is_system"):
-        required = ROLE_ASSIGN_PERMISSION.get(role["slug"], Permission.RBAC_ASSIGN_ADMIN)
+        required = ROLE_ASSIGN_PERMISSION.get(
+            role["slug"], Permission.RBAC_ASSIGN_ADMIN
+        )
     else:
         required = Permission.RBAC_ASSIGN_ADMIN
     if required not in (actor.get("perms") or []):
@@ -333,7 +365,9 @@ def assign_role_endpoint(
     try:
         inserted = groups_db.assign_role(group_id, body.role_id, granted_by=actor["id"])
     except groups_db.CrossTenantError as exc:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=str(exc)
+        ) from exc
     write_event(
         "group.role.granted",
         tenant_id=actor.get("tenant_id"),
@@ -355,18 +389,26 @@ def revoke_role_endpoint(
     group_id: str,
     role_id: str,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_GROUP_MANAGE, rate_limit="admin")
+    ),
 ) -> dict:
     group = _ensure_group(group_id, actor)
     # Anti-escalation simmetrico: revocare un ruolo da un gruppo richiede
     # il permesso `rbac.assign.<slug>` corrispondente.
     role = next(
-        (r for r in roles_db.list_roles(tenant_id=actor.get("tenant_id")) if r["id"] == role_id),
+        (
+            r
+            for r in roles_db.list_roles(tenant_id=actor.get("tenant_id"))
+            if r["id"] == role_id
+        ),
         None,
     )
     if role:
         if role.get("is_system"):
-            required = ROLE_ASSIGN_PERMISSION.get(role["slug"], Permission.RBAC_ASSIGN_ADMIN)
+            required = ROLE_ASSIGN_PERMISSION.get(
+                role["slug"], Permission.RBAC_ASSIGN_ADMIN
+            )
         else:
             required = Permission.RBAC_ASSIGN_ADMIN
         if required not in (actor.get("perms") or []):

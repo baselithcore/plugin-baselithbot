@@ -116,7 +116,9 @@ async def api_feedback(
             try:
                 _persist_jsonl(req)
             except OSError as ose:
-                raise HTTPException(status_code=500, detail="unable to persist feedback") from ose
+                raise HTTPException(
+                    status_code=500, detail="unable to persist feedback"
+                ) from ose
             return {"status": "degraded", "fallback": "jsonl"}
 
     # Path JSONL (setup mode / Postgres off).
@@ -124,7 +126,9 @@ async def api_feedback(
         _persist_jsonl(req)
     except OSError as exc:
         logger.warning("[feedback] persist failed: %s", exc)
-        raise HTTPException(status_code=500, detail="unable to persist feedback") from exc
+        raise HTTPException(
+            status_code=500, detail="unable to persist feedback"
+        ) from exc
     return {"status": "ok"}
 
 

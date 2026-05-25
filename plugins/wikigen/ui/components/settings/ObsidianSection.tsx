@@ -88,11 +88,10 @@ export function ObsidianSection({ tenant }: Props) {
   return (
     <div className="space-y-3">
       <p className="text-[11px] leading-relaxed text-ink-muted">
-        Inizializza il vault per consentire la lettura della wiki dal client
-        Obsidian. La pipeline di ingest scrive in <code>wiki/</code> — gli
-        utenti finali con il permesso <code>obsidian.open</code> potranno
-        aprire le pagine ma è loro responsabilità non modificarle (la
-        configurazione predefinita imposta la modalità <em>preview</em>).
+        Inizializza il vault per consentire la lettura della wiki dal client Obsidian. La pipeline
+        di ingest scrive in <code>wiki/</code> — gli utenti finali con il permesso{' '}
+        <code>obsidian.open</code> potranno aprire le pagine ma è loro responsabilità non
+        modificarle (la configurazione predefinita imposta la modalità <em>preview</em>).
       </p>
 
       <div className="flex items-center justify-between gap-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2">
@@ -155,12 +154,7 @@ export function ObsidianSection({ tenant }: Props) {
             >
               Annulla
             </Button>
-            <Button
-              variant="primary"
-              onClick={handleInit}
-              disabled={busy}
-              className="!text-[11px]"
-            >
+            <Button variant="primary" onClick={handleInit} disabled={busy} className="!text-[11px]">
               {busy ? <Loader2 size={11} className="animate-spin" /> : <BookOpenCheck size={11} />}
               Conferma
             </Button>
@@ -179,17 +173,16 @@ export function ObsidianSection({ tenant }: Props) {
 
       {confirmInit && !state?.enabled && (
         <div className="text-[11px] text-ink-muted bg-[var(--color-warning)]/10 border border-[var(--color-warning)]/30 rounded-md px-2.5 py-2">
-          L'azione crea <code>.obsidian/</code> dentro il vault con preset
-          read-only-friendly e abilita il pulsante "Apri in Obsidian" lato
-          chat per gli utenti autorizzati. Idempotente — sicuro da rieseguire.
+          L'azione crea <code>.obsidian/</code> dentro il vault con preset read-only-friendly e
+          abilita il pulsante "Apri in Obsidian" lato chat per gli utenti autorizzati. Idempotente —
+          sicuro da rieseguire.
         </div>
       )}
 
       {confirmDisable && state?.enabled && (
         <div className="text-[11px] text-ink-muted bg-[var(--color-warning)]/10 border border-[var(--color-warning)]/30 rounded-md px-2.5 py-2">
-          La disattivazione nasconde il pulsante "Apri in Obsidian" agli
-          utenti. La cartella <code>.obsidian/</code> resta intatta sul disco
-          — riattivabile in qualsiasi momento.
+          La disattivazione nasconde il pulsante "Apri in Obsidian" agli utenti. La cartella{' '}
+          <code>.obsidian/</code> resta intatta sul disco — riattivabile in qualsiasi momento.
         </div>
       )}
     </div>

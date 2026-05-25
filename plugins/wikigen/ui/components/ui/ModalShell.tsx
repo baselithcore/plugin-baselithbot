@@ -104,7 +104,7 @@ export function ModalShell({
             className={cn(
               'modal-panel flex max-h-[calc(100vh-1.5rem)] flex-col',
               MAX_W[width],
-              panelClassName,
+              panelClassName
             )}
           >
             <header className="modal-header">

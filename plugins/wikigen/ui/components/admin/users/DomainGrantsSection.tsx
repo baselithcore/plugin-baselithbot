@@ -47,7 +47,7 @@ export function DomainGrantsSection({
 
   const grantedSet = useMemo(
     () => new Set(user.domain_grants.map((g) => g.domain_slug)),
-    [user.domain_grants],
+    [user.domain_grants]
   );
 
   const available = useMemo(() => {
@@ -98,8 +98,8 @@ export function DomainGrantsSection({
 
       {isSuperuser && (
         <Callout tone="warning" icon={ShieldOff} className="mb-3">
-          <strong>Superuser</strong> — i domain grants vengono <em>ignorati</em>: l’utente accede
-          a tutti i domini con permessi pieni.
+          <strong>Superuser</strong> — i domain grants vengono <em>ignorati</em>: l’utente accede a
+          tutti i domini con permessi pieni.
         </Callout>
       )}
       {!isSuperuser && isAdmin && (
@@ -156,9 +156,7 @@ export function DomainGrantsSection({
               roleId={picker.roleId}
               roles={assignableRoles}
               busy={busy === `add:${user.id}:${picker.slug}`}
-              onSelect={(slug) =>
-                setPicker((p) => (p ? { ...p, slug } : { slug, roleId: '' }))
-              }
+              onSelect={(slug) => setPicker((p) => (p ? { ...p, slug } : { slug, roleId: '' }))}
               onRoleChange={(roleId) => setPicker((p) => (p ? { ...p, roleId } : null))}
               onCancel={closePicker}
               onConfirm={async () => {

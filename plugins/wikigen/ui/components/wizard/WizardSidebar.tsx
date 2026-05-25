@@ -1,4 +1,12 @@
-import { Building2, CheckCircle2, Database, FileText, KeyRound, Palette, ShieldCheck } from 'lucide-react';
+import {
+  Building2,
+  CheckCircle2,
+  Database,
+  FileText,
+  KeyRound,
+  Palette,
+  ShieldCheck,
+} from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { STEPS, type Step, type WizardForm } from './schema';
 
@@ -57,7 +65,7 @@ export function WizardSidebar({ values, stepIdx, progressPct, workflowComplete }
                     ? 'border-[var(--color-brand)] bg-[var(--color-brand)] text-white'
                     : passed
                       ? 'border-[var(--color-success)]/30 bg-[var(--color-success)]/10 text-[var(--color-success)]'
-                      : 'border-[var(--color-border)] bg-[var(--color-canvas-raised)] text-ink-subtle',
+                      : 'border-[var(--color-border)] bg-[var(--color-canvas-raised)] text-ink-subtle'
                 )}
               >
                 {passed ? <CheckCircle2 size={14} /> : <Icon size={14} />}
@@ -66,14 +74,12 @@ export function WizardSidebar({ values, stepIdx, progressPct, workflowComplete }
                 <div
                   className={cn(
                     'text-[12px]',
-                    current ? 'font-semibold text-ink' : 'font-medium text-ink-muted',
+                    current ? 'font-semibold text-ink' : 'font-medium text-ink-muted'
                   )}
                 >
                   {s.label}
                 </div>
-                <div className="truncate text-[10px] text-ink-subtle">
-                  {sideHintForStep(s.id)}
-                </div>
+                <div className="truncate text-[10px] text-ink-subtle">{sideHintForStep(s.id)}</div>
               </div>
             </li>
           );

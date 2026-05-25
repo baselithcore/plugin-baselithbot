@@ -36,9 +36,7 @@ test('upload modal: dropzone is keyboard reachable', async ({ stubbedPage: page 
   await page.keyboard.press('Meta+u');
   const dialog = page.getByRole('dialog', { name: 'Carica documento' });
   await expect(dialog).toBeVisible();
-  await expect(
-    dialog.getByRole('button', { name: 'seleziona o trascina file' }),
-  ).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'seleziona o trascina file' })).toBeVisible();
 });
 
 test('command palette: search input is autofocused', async ({ stubbedPage: page }) => {

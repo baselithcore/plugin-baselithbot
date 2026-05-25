@@ -1,15 +1,5 @@
 import { motion } from 'framer-motion';
-import {
-  Check,
-  Copy,
-  FileText,
-  Loader2,
-  Pen,
-  RefreshCw,
-  Sparkles,
-  User,
-  X,
-} from 'lucide-react';
+import { Check, Copy, FileText, Loader2, Pen, RefreshCw, Sparkles, User, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
@@ -112,9 +102,7 @@ export function ChatMessage({
   // i bullet entrano uno alla volta.
   const { content: preparedContent, citations } = useMemo(() => {
     if (isUser) return { content: message.content, citations: [] as Citation[] };
-    const raw = message.streaming
-      ? message.content
-      : stripTrailingSourcesBlock(message.content);
+    const raw = message.streaming ? message.content : stripTrailingSourcesBlock(message.content);
     return prepareCitations(raw, message.sources ?? []);
   }, [isUser, message.content, message.sources, message.streaming]);
 
@@ -139,7 +127,7 @@ export function ChatMessage({
       className={cn(
         'group flex gap-3.5 px-4 py-5 sm:gap-4 sm:px-8',
         !isUser && 'border-b border-[var(--color-border)]/60 last:border-b-0',
-        isLast && 'pb-8',
+        isLast && 'pb-8'
       )}
       role="article"
       aria-label={isUser ? 'messaggio utente' : 'risposta assistente'}
@@ -150,7 +138,7 @@ export function ChatMessage({
             'grid size-8 place-items-center rounded-xl text-[11px] font-semibold',
             isUser
               ? 'border border-[var(--color-border)] bg-[var(--color-surface)] text-ink-muted'
-              : 'text-white shadow-[var(--shadow-brand)]',
+              : 'text-white shadow-[var(--shadow-brand)]'
           )}
           style={
             isUser
@@ -167,7 +155,9 @@ export function ChatMessage({
 
       <div className="min-w-0 flex-1">
         <div className="mb-1 flex flex-wrap items-center gap-2">
-          <span className="font-display text-[13px] font-bold text-ink tracking-[-0.01em]">{isUser ? 'Tu' : 'Assistente'}</span>
+          <span className="font-display text-[13px] font-bold text-ink tracking-[-0.01em]">
+            {isUser ? 'Tu' : 'Assistente'}
+          </span>
           {!isUser && showTimer && (
             <Timer
               startedAt={message.startedAt}
@@ -180,16 +170,15 @@ export function ChatMessage({
               the ThinkingPanel below isn't covering the state (no trace
               events yet, or showTrace disabled). Avoids the legacy
               duplicate-spinner UX when both rendered. */}
-          {message.streaming &&
-            (!showTrace || !message.trace || message.trace.length === 0) && (
-              <span
-                className="inline-flex items-center gap-1 text-[10px] text-[var(--color-brand)]"
-                role="status"
-                aria-live="polite"
-              >
-                <Loader2 size={10} className="animate-spin" aria-hidden /> generazione…
-              </span>
-            )}
+          {message.streaming && (!showTrace || !message.trace || message.trace.length === 0) && (
+            <span
+              className="inline-flex items-center gap-1 text-[10px] text-[var(--color-brand)]"
+              role="status"
+              aria-live="polite"
+            >
+              <Loader2 size={10} className="animate-spin" aria-hidden /> generazione…
+            </span>
+          )}
         </div>
 
         {showTrace &&

@@ -128,7 +128,7 @@ export interface IngestFromDiskResponse {
 export function ingestRawFromDisk(
   filename: string | null = null,
   signal?: AbortSignal,
-  opts: { overwrite?: boolean; reindex?: boolean } = {},
+  opts: { overwrite?: boolean; reindex?: boolean } = {}
 ): Promise<IngestFromDiskResponse> {
   const params = new URLSearchParams();
   if (filename) params.set('filename', filename);
@@ -147,7 +147,7 @@ export function ingestRawFromDisk(
  */
 export async function retryIngestJob(
   jobId: string,
-  signal?: AbortSignal,
+  signal?: AbortSignal
 ): Promise<{ job_id: string; filename: string }> {
   const job = await fetchJob(jobId, signal);
   const r = await ingestRawFromDisk(job.filename, signal, { overwrite: true });

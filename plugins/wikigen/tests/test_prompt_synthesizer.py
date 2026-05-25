@@ -257,7 +257,9 @@ def test_anchor_check_rejects_body_without_configured_folders() -> None:
         "categorie inventate come `documents/` e `staff/`. " * 10
     )
     with pytest.raises(ps.SynthesisError, match="invented its own taxonomy"):
-        ps._assert_anchors_to_engine_folders(text_no_anchor, {"sources", "concepts", "entities"})
+        ps._assert_anchors_to_engine_folders(
+            text_no_anchor, {"sources", "concepts", "entities"}
+        )
 
 
 def test_anchor_check_accepts_body_referencing_configured_folders() -> None:
@@ -266,7 +268,9 @@ def test_anchor_check_accepts_body_referencing_configured_folders() -> None:
         "`[[sources/<slug>]]` e `[[concepts/<slug>]]`."
     )
     # Should not raise (2 of 4 folders mentioned, target is ceil(4/2)=2).
-    ps._assert_anchors_to_engine_folders(text, {"sources", "concepts", "entities", "topics"})
+    ps._assert_anchors_to_engine_folders(
+        text, {"sources", "concepts", "entities", "topics"}
+    )
 
 
 def test_collect_folders_falls_back_to_plural_or_id() -> None:
@@ -298,12 +302,14 @@ def test_baseline_system_j2_renders_with_runtime_pack() -> None:
         description="HR vault",
         language="it",
         page_types=[
-            PageType(id=p["id"], label=p["label"], plural=p["plural"], folder=p["folder"])
+            PageType(
+                id=p["id"], label=p["label"], plural=p["plural"], folder=p["folder"]
+            )
             for p in _DEFAULT_PAGE_TYPES
         ],
         ui=UILabels(app_name="Wiki HR"),
     )
-    env = jinja2.Environment(
+    env = jinja2.Environment(  # nosec B701 — non-HTML prompt templates
         autoescape=False,
         undefined=jinja2.StrictUndefined,
         keep_trailing_newline=True,

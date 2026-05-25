@@ -59,9 +59,7 @@ export function CitationPopover({ citation, anchorEl, open, onOpenSource, onClos
     setLoading(true);
     setError(null);
     loadPage(docId, ctrl.signal)
-      .then((p) =>
-        setPage({ title: p.title, body: p.body, obsidianUri: p.obsidian_uri ?? null })
-      )
+      .then((p) => setPage({ title: p.title, body: p.body, obsidianUri: p.obsidian_uri ?? null }))
       .catch((e: Error) => {
         if (e.name !== 'AbortError') setError('Anteprima non disponibile.');
       })
@@ -189,9 +187,7 @@ export function CitationPopover({ citation, anchorEl, open, onOpenSource, onClos
               <a
                 href={page.obsidianUri}
                 onClick={() => {
-                  void import('../lib/onboarding').then((m) =>
-                    m.dismiss('obsidian.first_open'),
-                  );
+                  void import('../lib/onboarding').then((m) => m.dismiss('obsidian.first_open'));
                 }}
                 className="focus-ring inline-flex items-center gap-1 text-[10px]
                            font-medium text-ink-muted hover:text-ink"

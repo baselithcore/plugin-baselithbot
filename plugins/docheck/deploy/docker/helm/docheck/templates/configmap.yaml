@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-engine-config
+data:
+  DOCHECK_MULTITENANT_ENABLED: {{ .Values.multiTenant.enabled | quote }}
+  DOCHECK_DB_BACKEND: {{ if .Values.multiTenant.enabled }}"postgres"{{ else }}"sqlite"{{ end }}
+  DOCHECK_VECTOR_BACKEND: {{ if .Values.multiTenant.enabled }}"qdrant"{{ else }}"chroma"{{ end }}
+  {{- if .Values.multiTenant.enabled }}
+  {{- with .Values.multiTenant.qdrant.host }}
+  DOCHECK_QDRANT_URL: "http://{{ . }}:{{ $.Values.multiTenant.qdrant.port }}"
+  {{- end }}
+  {{- with .Values.multiTenant.oidc.issuer }}
+  DOCHECK_OIDC_ISSUER: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.multiTenant.oidc.clientId }}
+  DOCHECK_OIDC_AUDIENCE: {{ . | quote }}
+  {{- end }}
+  {{- end }}
+  DOCHECK_RETENTION_DEFAULT_DAYS: {{ .Values.audit.rotationDays | quote }}
+{{- if .Values.multiTenant.enabled }}
+{{- with .Values.multiTenant.postgres }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ $.Release.Name }}-engine-postgres
+type: Opaque
+stringData:
+  # Operator deve fornire DSN completo via secretRef esterno.
+  DOCHECK_POSTGRES_DSN: "postgresql+asyncpg://CHANGEME@{{ .host }}/{{ .database }}"
+{{- end }}
+{{- end }}

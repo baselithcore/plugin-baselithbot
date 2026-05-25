@@ -12,13 +12,7 @@
  * - Delete visibile solo se ``can('feedback.delete')``.
  */
 
-import {
-  Calendar,
-  MessageSquare,
-  MessageSquareQuote,
-  Trash2,
-  User,
-} from 'lucide-react';
+import { Calendar, MessageSquare, MessageSquareQuote, Trash2, User } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -179,9 +173,7 @@ export function FeedbackDetailDrawer({
   return (
     <ModalShell open onClose={onClose} title="Dettaglio feedback" width="2xl">
       <div className="space-y-4 p-1">
-        {loading && (
-          <div className="py-8 text-center text-sm text-ink-subtle">Caricamento…</div>
-        )}
+        {loading && <div className="py-8 text-center text-sm text-ink-subtle">Caricamento…</div>}
 
         {error && (
           <div className="rounded border border-rose-500/40 bg-rose-500/10 p-3 text-sm text-rose-700 dark:text-rose-300">
@@ -265,9 +257,7 @@ export function FeedbackDetailDrawer({
             </section>
 
             <section>
-              <h3 className="mb-1 text-[10px] uppercase tracking-wide text-ink-subtle">
-                Risposta
-              </h3>
+              <h3 className="mb-1 text-[10px] uppercase tracking-wide text-ink-subtle">Risposta</h3>
               <div className="max-h-[40vh] overflow-y-auto rounded-md bg-[var(--color-surface)] p-3 ring-1 ring-[var(--color-border)]">
                 <p className="whitespace-pre-wrap text-sm">
                   {item.answer || <em className="text-ink-subtle">non registrata</em>}
@@ -311,12 +301,7 @@ export function FeedbackDetailDrawer({
                   Chiudi
                 </Button>
                 {canDelete && (
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={handleDelete}
-                    disabled={deleting}
-                  >
+                  <Button variant="danger" size="sm" onClick={handleDelete} disabled={deleting}>
                     <Trash2 size={13} />
                     {deleting ? 'Elimino…' : 'Elimina'}
                   </Button>

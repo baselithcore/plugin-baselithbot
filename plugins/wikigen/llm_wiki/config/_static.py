@@ -58,7 +58,9 @@ elif _bool("HYBRID_ENABLED", True):
     _default_upsert_batch = 16
 else:
     _default_upsert_batch = 64
-QDRANT_UPSERT_BATCH_SIZE = max(1, _int("QDRANT_UPSERT_BATCH_SIZE", _default_upsert_batch))
+QDRANT_UPSERT_BATCH_SIZE = max(
+    1, _int("QDRANT_UPSERT_BATCH_SIZE", _default_upsert_batch)
+)
 QDRANT_TIMEOUT = max(5.0, _float("QDRANT_TIMEOUT", 60.0))
 QDRANT_PREFER_GRPC = _bool("QDRANT_PREFER_GRPC", False)
 QDRANT_GRPC_PORT = max(1, _int("QDRANT_GRPC_PORT", 6334))
@@ -138,7 +140,9 @@ RAG_HISTORY_CONDENSE_MAX_TURNS = max(2, _int("RAG_HISTORY_CONDENSE_MAX_TURNS", 6
 RAG_HISTORY_TURN_MAX_CHARS = max(200, _int("RAG_HISTORY_TURN_MAX_CHARS", 800))
 # Lunghezza massima della query riscritta. Difende contro modelli che
 # rispondono con un mini-saggio invece di una query.
-RAG_HISTORY_CONDENSE_MAX_OUTPUT_CHARS = max(40, _int("RAG_HISTORY_CONDENSE_MAX_OUTPUT_CHARS", 400))
+RAG_HISTORY_CONDENSE_MAX_OUTPUT_CHARS = max(
+    40, _int("RAG_HISTORY_CONDENSE_MAX_OUTPUT_CHARS", 400)
+)
 
 
 # --- query understanding ---------------------------------------------------
@@ -195,7 +199,9 @@ INGEST_SUPPORTED_EXTENSIONS = frozenset(
 AGENTIC_RAG_ENABLED = _bool("AGENTIC_RAG_ENABLED", False)
 AGENTIC_RAG_MAX_ITERATIONS = max(1, min(5, _int("AGENTIC_RAG_MAX_ITERATIONS", 2)))
 AGENTIC_RAG_REFLECT_ENABLED = _bool("AGENTIC_RAG_REFLECT_ENABLED", True)
-AGENTIC_RAG_PLANNER_MAX_SUBQUERIES = max(1, min(5, _int("AGENTIC_RAG_PLANNER_MAX_SUBQUERIES", 3)))
+AGENTIC_RAG_PLANNER_MAX_SUBQUERIES = max(
+    1, min(5, _int("AGENTIC_RAG_PLANNER_MAX_SUBQUERIES", 3))
+)
 
 HIERARCHICAL_CHUNKING_ENABLED = _bool("HIERARCHICAL_CHUNKING_ENABLED", False)
 HIERARCHICAL_RETRIEVAL_ENABLED = _bool("HIERARCHICAL_RETRIEVAL_ENABLED", False)
@@ -308,7 +314,9 @@ QUESTIONS_FROM_DOCS_ENABLED = _bool("QUESTIONS_FROM_DOCS_ENABLED", True)
 # cleanly (2/2 or 2/2/2 rows). Defaults to 4/6 — empty homepage area
 # below the hero looked underused with the old 3/5 ceiling.
 QUESTIONS_FROM_DOCS_MIN = max(2, min(6, _int("QUESTIONS_FROM_DOCS_MIN", 4)))
-QUESTIONS_FROM_DOCS_MAX = max(QUESTIONS_FROM_DOCS_MIN, min(6, _int("QUESTIONS_FROM_DOCS_MAX", 6)))
+QUESTIONS_FROM_DOCS_MAX = max(
+    QUESTIONS_FROM_DOCS_MIN, min(6, _int("QUESTIONS_FROM_DOCS_MAX", 6))
+)
 # Sampling budget when reading ingested source pages to build context.
 QUESTIONS_FROM_DOCS_MAX_PAGES = max(1, _int("QUESTIONS_FROM_DOCS_MAX_PAGES", 8))
 QUESTIONS_FROM_DOCS_MAX_CHARS_PER_PAGE = max(

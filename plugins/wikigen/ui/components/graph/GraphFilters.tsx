@@ -41,7 +41,11 @@ export function GraphFilters({
 
   // Largest communities first (most informative when filtering).
   const topCommunities = useMemo(
-    () => data.communities.slice().sort((a, b) => b.size - a.size).slice(0, 10),
+    () =>
+      data.communities
+        .slice()
+        .sort((a, b) => b.size - a.size)
+        .slice(0, 10),
     [data.communities]
   );
 
@@ -122,8 +126,8 @@ export function GraphFilters({
               type="button"
               className="text-accent hover:underline"
               onClick={() =>
-                topCommunities.forEach((c) =>
-                  visibleCommunities.has(c.id) && onToggleCommunity(c.id)
+                topCommunities.forEach(
+                  (c) => visibleCommunities.has(c.id) && onToggleCommunity(c.id)
                 )
               }
             >
@@ -173,9 +177,15 @@ export function GraphFilters({
       </section>
 
       <footer className="mt-auto rounded-lg bg-canvas px-3 py-2 text-xs text-ink-muted">
-        <div>Nodi: <span className="text-ink">{data.stats.node_count}</span></div>
-        <div>Archi: <span className="text-ink">{data.stats.edge_count}</span></div>
-        <div>Community: <span className="text-ink">{data.stats.community_count}</span></div>
+        <div>
+          Nodi: <span className="text-ink">{data.stats.node_count}</span>
+        </div>
+        <div>
+          Archi: <span className="text-ink">{data.stats.edge_count}</span>
+        </div>
+        <div>
+          Community: <span className="text-ink">{data.stats.community_count}</span>
+        </div>
       </footer>
     </aside>
   );

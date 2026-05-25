@@ -44,7 +44,7 @@ export function GrantRow({
       className={cn(
         'group rounded-lg border border-[var(--color-border)] bg-[var(--color-canvas-raised)]',
         'px-3 py-2 transition-colors hover:border-[var(--color-border-strong)]',
-        unknown && 'border-amber-500/40 bg-amber-500/5',
+        unknown && 'border-amber-500/40 bg-amber-500/5'
       )}
     >
       <div className="flex items-center gap-2.5">
@@ -61,17 +61,15 @@ export function GrantRow({
             {unknown && <Chip tone="warn">pack mancante</Chip>}
           </div>
           <div className="flex items-center gap-1.5 text-[10.5px] text-ink-subtle">
-            <code className="rounded bg-[var(--color-surface)] px-1 py-px">{grant.domain_slug}</code>
+            <code className="rounded bg-[var(--color-surface)] px-1 py-px">
+              {grant.domain_slug}
+            </code>
             {tenant?.language && <span>· {tenant.language.toUpperCase()}</span>}
           </div>
         </div>
         {!isEditing && (
           <div className="flex items-center gap-1">
-            {grant.role_slug ? (
-              <RoleBadge slug={grant.role_slug} />
-            ) : (
-              <Chip>ruolo: default</Chip>
-            )}
+            {grant.role_slug ? <RoleBadge slug={grant.role_slug} /> : <Chip>ruolo: default</Chip>}
             <IconButton
               icon={Pencil}
               size="sm"
@@ -107,7 +105,12 @@ export function GrantRow({
               </option>
             ))}
           </select>
-          <Button size="sm" variant="primary" loading={updateBusy} onClick={() => onSaveRole(draft)}>
+          <Button
+            size="sm"
+            variant="primary"
+            loading={updateBusy}
+            onClick={() => onSaveRole(draft)}
+          >
             Salva
           </Button>
           <IconButton icon={X} size="sm" aria-label="annulla" onClick={onCancelEdit} />

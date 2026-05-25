@@ -4,6 +4,8 @@ reasoning_agent:
   branching_factor: 3
 wikigen:
   enabled: true
+docheck:
+  enabled: true
 browser_agent:
   enabled: true
 goals:

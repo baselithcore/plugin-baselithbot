@@ -14,7 +14,9 @@ from fastapi.testclient import TestClient
 
 
 @pytest.fixture
-def client_and_raw_dir(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> tuple[TestClient, Path]:
+def client_and_raw_dir(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> tuple[TestClient, Path]:
     """Crea raw/ + monta solo il router ingest. Niente Postgres, niente
     Qdrant — il endpoint è I/O su file."""
     raw_dir = tmp_path / "raw"
@@ -48,7 +50,9 @@ def test_serve_docx_happy_path(client_and_raw_dir: tuple[TestClient, Path]) -> N
     assert "officedocument.wordprocessingml" in r.headers["content-type"]
 
 
-def test_serve_missing_file_returns_404(client_and_raw_dir: tuple[TestClient, Path]) -> None:
+def test_serve_missing_file_returns_404(
+    client_and_raw_dir: tuple[TestClient, Path],
+) -> None:
     client, _ = client_and_raw_dir
     r = client.get("/api/raw/file/nope.pdf")
     assert r.status_code == 404
@@ -64,7 +68,9 @@ def test_serve_traversal_blocked(client_and_raw_dir: tuple[TestClient, Path]) ->
         assert r.status_code in (400, 404)
 
 
-def test_serve_disallowed_extension(client_and_raw_dir: tuple[TestClient, Path]) -> None:
+def test_serve_disallowed_extension(
+    client_and_raw_dir: tuple[TestClient, Path],
+) -> None:
     """File esistente ma estensione non in allowlist → 400."""
     client, raw_dir = client_and_raw_dir
     (raw_dir / "script.sh").write_bytes(b"#!/bin/sh\nls\n")
@@ -90,7 +96,9 @@ def test_serve_image_png(client_and_raw_dir: tuple[TestClient, Path]) -> None:
     assert r.headers["content-type"] == "image/png"
 
 
-def test_serve_invalid_filename_empty(client_and_raw_dir: tuple[TestClient, Path]) -> None:
+def test_serve_invalid_filename_empty(
+    client_and_raw_dir: tuple[TestClient, Path],
+) -> None:
     client, _ = client_and_raw_dir
     r = client.get("/api/raw/file/")
     assert r.status_code in (404, 405)

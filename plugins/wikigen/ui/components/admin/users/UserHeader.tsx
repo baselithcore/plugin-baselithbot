@@ -37,7 +37,10 @@ export function UserHeader({ user }: { user: UserWithRoles }) {
           />
         </div>
         <p className="mt-1 text-[10px] text-ink-subtle">
-          tenant <code className="rounded bg-[var(--color-surface)] px-1">{user.tenant_id.slice(0, 8)}…</code>
+          tenant{' '}
+          <code className="rounded bg-[var(--color-surface)] px-1">
+            {user.tenant_id.slice(0, 8)}…
+          </code>
         </p>
         {user.roles.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">

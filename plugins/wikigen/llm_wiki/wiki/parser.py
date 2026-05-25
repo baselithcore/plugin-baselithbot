@@ -131,7 +131,9 @@ def walk_wiki(wiki_subdir: Path) -> list[Path]:
     if not wiki_subdir.exists():
         return []
     return sorted(
-        p for p in wiki_subdir.rglob("*.md") if p.is_file() and not p.name.startswith(".")
+        p
+        for p in wiki_subdir.rglob("*.md")
+        if p.is_file() and not p.name.startswith(".")
     )
 
 

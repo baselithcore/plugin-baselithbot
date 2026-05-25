@@ -55,7 +55,9 @@ def seed_vault(vault: Path, pack_dir: Path, *, name: str, label: str) -> None:
 
     claude_path = vault / "CLAUDE.md"
     if not claude_path.exists():
-        claude_path.write_text(_render_claude_md(name, label, page_types), encoding="utf-8")
+        claude_path.write_text(
+            _render_claude_md(name, label, page_types), encoding="utf-8"
+        )
 
 
 def _render_index(label: str, page_types: list[dict[str, Any]]) -> str:
@@ -114,7 +116,11 @@ def _render_claude_md(name: str, label: str, page_types: list[dict[str, Any]]) -
         plabel = str(pt.get("label") or pid)
         folder = pt.get("folder") or pt.get("plural") or pid
         pt_lines.append(f"- **{pid}** — {plabel} → `wiki/{folder}/`")
-    pt_block = "\n".join(pt_lines) if pt_lines else "_(definiti in `domains/<pack>/pack.yaml`)_"
+    pt_block = (
+        "\n".join(pt_lines)
+        if pt_lines
+        else "_(definiti in `domains/<pack>/pack.yaml`)_"
+    )
 
     return f"""# CLAUDE.md — schema agente per `{name}`
 

@@ -108,7 +108,9 @@ async def lifespan(_: FastAPI):
             logger.info("[startup] domain pack: %s (%s)", pack.name, pack.label)
             _check_vault_pack_marker(pack.name, Path(config.WIKI_ROOT))
         except Exception as exc:
-            logger.error("[startup] pack load failed: %s — admin API still reachable", exc)
+            logger.error(
+                "[startup] pack load failed: %s — admin API still reachable", exc
+            )
     else:
         logger.warning(
             "[startup] APP_DOMAIN unset — running in setup mode. "
@@ -134,7 +136,9 @@ async def lifespan(_: FastAPI):
                 logger.info("[startup] DB ready")
                 bootstrap_admin_if_empty(vault_root=Path(config.WIKI_ROOT))
             else:
-                logger.warning("[startup] DB health_check fail — auth/conv/memories diranno 503")
+                logger.warning(
+                    "[startup] DB health_check fail — auth/conv/memories diranno 503"
+                )
         except Exception as exc:
             logger.error("[startup] DB init failed: %s", exc)
 
@@ -154,7 +158,10 @@ async def lifespan(_: FastAPI):
 
         try:
             await asyncio.to_thread(
-                rerank, "warmup", [{"score": 1.0, "payload": {"raw_text": "ping"}}], top_k=1
+                rerank,
+                "warmup",
+                [{"score": 1.0, "payload": {"raw_text": "ping"}}],
+                top_k=1,
             )
         except Exception as exc:
             logger.debug("[startup] reranker warmup skipped: %s", exc)
@@ -366,7 +373,11 @@ if config.ADMIN_API_ENABLED:
 
             if config.ADMIN_API_LOOPBACK_ONLY:
                 client_host = request.client.host if request.client else None
-                has_bearer = request.headers.get("authorization", "").lower().startswith("bearer ")
+                has_bearer = (
+                    request.headers.get("authorization", "")
+                    .lower()
+                    .startswith("bearer ")
+                )
                 # Se Postgres ON e bearer presente → require_admin verifica
                 # tutto router-side. Senza bearer → loopback obbligatorio
                 # (fail-closed in setup mode).

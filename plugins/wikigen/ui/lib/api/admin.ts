@@ -137,20 +137,16 @@ export function fetchObsidianState(
   tenant: string,
   signal?: AbortSignal
 ): Promise<ObsidianStateResponse> {
-  return json<ObsidianStateResponse>(
-    `/admin/tenants/${encodeURIComponent(tenant)}/obsidian`,
-    { signal }
-  );
+  return json<ObsidianStateResponse>(`/admin/tenants/${encodeURIComponent(tenant)}/obsidian`, {
+    signal,
+  });
 }
 
-export function initObsidian(
-  tenant: string,
-  signal?: AbortSignal
-): Promise<ObsidianStateResponse> {
-  return json<ObsidianStateResponse>(
-    `/admin/tenants/${encodeURIComponent(tenant)}/obsidian/init`,
-    { method: 'POST', signal }
-  );
+export function initObsidian(tenant: string, signal?: AbortSignal): Promise<ObsidianStateResponse> {
+  return json<ObsidianStateResponse>(`/admin/tenants/${encodeURIComponent(tenant)}/obsidian/init`, {
+    method: 'POST',
+    signal,
+  });
 }
 
 export function disableObsidian(
@@ -270,10 +266,9 @@ export function fetchTenantBranding(
   tenant: string,
   signal?: AbortSignal
 ): Promise<TenantBrandingPayload> {
-  return json<TenantBrandingPayload>(
-    `/admin/tenants/${encodeURIComponent(tenant)}/branding`,
-    { signal }
-  );
+  return json<TenantBrandingPayload>(`/admin/tenants/${encodeURIComponent(tenant)}/branding`, {
+    signal,
+  });
 }
 
 export function updateTenantBranding(
@@ -281,14 +276,11 @@ export function updateTenantBranding(
   body: TenantBrandingUpdateBody,
   signal?: AbortSignal
 ): Promise<TenantBrandingPayload> {
-  return json<TenantBrandingPayload>(
-    `/admin/tenants/${encodeURIComponent(tenant)}/branding`,
-    {
-      method: 'PUT',
-      body: JSON.stringify(body),
-      signal,
-    }
-  );
+  return json<TenantBrandingPayload>(`/admin/tenants/${encodeURIComponent(tenant)}/branding`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+    signal,
+  });
 }
 
 export interface RestartResponse {
@@ -300,10 +292,7 @@ export interface RestartResponse {
   mode?: 'reload' | 'supervised' | 'bare' | 'unknown';
 }
 
-export function restartBackend(
-  delay_ms = 500,
-  signal?: AbortSignal
-): Promise<RestartResponse> {
+export function restartBackend(delay_ms = 500, signal?: AbortSignal): Promise<RestartResponse> {
   return json<RestartResponse>(`/admin/restart?delay_ms=${delay_ms}`, {
     method: 'POST',
     signal,

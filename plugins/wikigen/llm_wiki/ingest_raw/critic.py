@@ -66,9 +66,13 @@ def refine_until_clean(
     current = markdown
 
     for i in range(1, max_iter + 1):
-        report = lint_wiki_text(current, path=target_path, expected_wikilinks=expected_wikilinks)
+        report = lint_wiki_text(
+            current, path=target_path, expected_wikilinks=expected_wikilinks
+        )
         if not report.has_errors:
-            logger.info("critic: page clean after %d iter (warn=%d)", i, len(report.issues))
+            logger.info(
+                "critic: page clean after %d iter (warn=%d)", i, len(report.issues)
+            )
             return RefineOutcome(
                 markdown=current, final_report=report, iterations=i, exhausted=False
             )
@@ -85,10 +89,14 @@ def refine_until_clean(
             msg = getattr(iss, "message", str(iss))
             logger.info("  · [%s] %s", code, msg[:200])
         bundle = refine_bundle(current_markdown=current, lint_feedback=feedback)
-        current = generate_text(messages=bundle.as_messages(), model=model, temperature=0.15)
+        current = generate_text(
+            messages=bundle.as_messages(), model=model, temperature=0.15
+        )
         current = strip_markdown_wrapper(current)
 
-    report = lint_wiki_text(current, path=target_path, expected_wikilinks=expected_wikilinks)
+    report = lint_wiki_text(
+        current, path=target_path, expected_wikilinks=expected_wikilinks
+    )
     return RefineOutcome(
         markdown=current,
         final_report=report,

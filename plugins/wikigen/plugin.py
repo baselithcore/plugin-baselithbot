@@ -102,14 +102,20 @@ class WikigenPlugin(RouterPlugin):
 
         if wikigen_config.POSTGRES_ENABLED:
             from llm_wiki.api.routers.auth import router as auth_router
-            from llm_wiki.api.routers.conversations import router as conversations_router
+            from llm_wiki.api.routers.conversations import (
+                router as conversations_router,
+            )
             from llm_wiki.api.routers.embeds_admin import router as embeds_admin_router
-            from llm_wiki.api.routers.feedback_admin import router as feedback_admin_router
+            from llm_wiki.api.routers.feedback_admin import (
+                router as feedback_admin_router,
+            )
             from llm_wiki.api.routers.gdpr import router as gdpr_router
             from llm_wiki.api.routers.memories import router as memories_router
             from llm_wiki.api.routers.rbac import router as rbac_router
             from llm_wiki.api.routers.rbac_groups import router as rbac_groups_router
-            from llm_wiki.api.routers.rbac_lifecycle import router as rbac_lifecycle_router
+            from llm_wiki.api.routers.rbac_lifecycle import (
+                router as rbac_lifecycle_router,
+            )
 
             routers.extend(
                 [
@@ -190,7 +196,10 @@ class WikigenPlugin(RouterPlugin):
                 "`wiki-wl init --domain <name>`."
             )
 
-        if wikigen_config.AUTH_REQUIRED and not (wikigen_config.SECRET_KEY or "").strip():
+        if (
+            wikigen_config.AUTH_REQUIRED
+            and not (wikigen_config.SECRET_KEY or "").strip()
+        ):
             raise RuntimeError(
                 "AUTH_REQUIRED=true ma SECRET_KEY vuota. Genera con "
                 '`python -c "import secrets; print(secrets.token_urlsafe(48))"` '
@@ -217,9 +226,7 @@ class WikigenPlugin(RouterPlugin):
 
         try:
             await self._preload_blocking()
-            logger.info(
-                "[wikigen] core warmup done in %.2fs", time.perf_counter() - t0
-            )
+            logger.info("[wikigen] core warmup done in %.2fs", time.perf_counter() - t0)
         except Exception as exc:
             logger.warning("[wikigen] partial warmup: %s", exc)
 

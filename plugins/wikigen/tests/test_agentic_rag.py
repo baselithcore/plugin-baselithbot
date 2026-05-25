@@ -149,8 +149,12 @@ def test_plan_fallback_on_garbage_output(
     assert plan == ["test"]
 
 
-def test_plan_cap_respected(monkeypatch: pytest.MonkeyPatch, mock_generate: dict[str, Any]) -> None:
-    mock_generate["responses"].append(json.dumps({"sub_queries": ["q1", "q2", "q3", "q4", "q5"]}))
+def test_plan_cap_respected(
+    monkeypatch: pytest.MonkeyPatch, mock_generate: dict[str, Any]
+) -> None:
+    mock_generate["responses"].append(
+        json.dumps({"sub_queries": ["q1", "q2", "q3", "q4", "q5"]})
+    )
     agent = AgenticRAGAgent(planner_max_subqueries=2)
     plan = agent._plan("composita")
     # Cap=2 + injection di "composita" se non presente nelle prime 2
@@ -164,7 +168,9 @@ def test_plan_cap_respected(monkeypatch: pytest.MonkeyPatch, mock_generate: dict
 def test_reflect_returns_empty_when_coverage_adequate(
     monkeypatch: pytest.MonkeyPatch, mock_generate: dict[str, Any]
 ) -> None:
-    mock_generate["responses"].append(json.dumps({"missing_aspects": [], "extra_queries": []}))
+    mock_generate["responses"].append(
+        json.dumps({"missing_aspects": [], "extra_queries": []})
+    )
     agent = AgenticRAGAgent()
     extras = agent._reflect("domanda", hits=[_hit("p1", "doc/foo", "Foo")])
     assert extras == []
@@ -263,7 +269,9 @@ def test_answer_end_to_end_with_reflect(
     riceve l'union dedupata."""
     # 1) Plan response
     mock_generate["responses"].append(
-        json.dumps({"sub_queries": ["cos'è X?", "come si implementa X?"], "rationale": "comp"})
+        json.dumps(
+            {"sub_queries": ["cos'è X?", "come si implementa X?"], "rationale": "comp"}
+        )
     )
     # 2) Reflect response
     mock_generate["responses"].append(
@@ -273,7 +281,9 @@ def test_answer_end_to_end_with_reflect(
     mock_generate["responses"].append("Risposta finale sintetizzata.")
 
     mock_search["per_query"]["cos'è X?"] = [_hit("p1", "concepts/x", "X concept")]
-    mock_search["per_query"]["come si implementa X?"] = [_hit("p2", "sources/x", "X impl source")]
+    mock_search["per_query"]["come si implementa X?"] = [
+        _hit("p2", "sources/x", "X impl source")
+    ]
     mock_search["per_query"]["esempi di X"] = [_hit("p3", "sources/x-ex", "X esempi")]
 
     # Disable post-synthesis guards che farebbero LLM call extra non in queue.
@@ -282,7 +292,9 @@ def test_answer_end_to_end_with_reflect(
     monkeypatch.setattr("llm_wiki.config.CITATION_REPAIR_ENABLED", False)
 
     # Patch render per non dipendere dal pack attivo nei test
-    monkeypatch.setattr("llm_wiki.agents.rag_agent.render", lambda name, **kw: f"<template:{name}>")
+    monkeypatch.setattr(
+        "llm_wiki.agents.rag_agent.render", lambda name, **kw: f"<template:{name}>"
+    )
 
     agent = AgenticRAGAgent(planner_max_subqueries=3, reflect_enabled=True)
     result = agent.answer("cos'è X e come si implementa?", limit=5)
@@ -303,7 +315,9 @@ def test_answer_no_reflect_when_disabled(
     mock_generate: dict[str, Any],
     mock_search: dict[str, Any],
 ) -> None:
-    mock_generate["responses"].append(json.dumps({"sub_queries": ["q1"], "rationale": "atomic"}))
+    mock_generate["responses"].append(
+        json.dumps({"sub_queries": ["q1"], "rationale": "atomic"})
+    )
     # Solo synthesis (no reflect call)
     mock_generate["responses"].append("Risposta.")
     mock_search["per_query"]["q1"] = [_hit("p1", "d/x", "X")]
@@ -311,7 +325,9 @@ def test_answer_no_reflect_when_disabled(
     monkeypatch.setattr("llm_wiki.config.POSTGRES_ENABLED", False)
     monkeypatch.setattr("llm_wiki.agents.rag_guards.RAG_GROUNDEDNESS_ENABLED", False)
     monkeypatch.setattr("llm_wiki.config.CITATION_REPAIR_ENABLED", False)
-    monkeypatch.setattr("llm_wiki.agents.rag_agent.render", lambda name, **kw: f"<template:{name}>")
+    monkeypatch.setattr(
+        "llm_wiki.agents.rag_agent.render", lambda name, **kw: f"<template:{name}>"
+    )
 
     agent = AgenticRAGAgent(reflect_enabled=False)
     agent.answer("test", limit=5)

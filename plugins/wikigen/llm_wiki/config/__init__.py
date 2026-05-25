@@ -123,7 +123,9 @@ SYNTHESIS_MODEL = _str("SYNTHESIS_MODEL", "")
 # inference is serialized in-daemon), 8 per OpenAI (managed endpoint
 # load-balances server-side).
 _DEFAULT_INGEST_CONCURRENT = 8 if INGEST_VENDOR == "openai" else 1
-INGEST_MAX_CONCURRENT = max(1, _int("INGEST_MAX_CONCURRENT", _DEFAULT_INGEST_CONCURRENT))
+INGEST_MAX_CONCURRENT = max(
+    1, _int("INGEST_MAX_CONCURRENT", _DEFAULT_INGEST_CONCURRENT)
+)
 # Quando True, classify/plan partono con `format="json"` invece dello schema
 # JSON pieno. Default True su Ollama, False su OpenAI.
 INGEST_LOOSE_JSON = _bool("INGEST_LOOSE_JSON", INGEST_VENDOR == "ollama")
@@ -134,7 +136,9 @@ INGEST_LOOSE_JSON = _bool("INGEST_LOOSE_JSON", INGEST_VENDOR == "ollama")
 # Qdrant
 QDRANT_PATH = WIKI_ROOT / _str("QDRANT_PATH", "./qdrant_data")
 # Default scoping: ``<APP_DOMAIN>-wiki`` quando il pack è caricato.
-COLLECTION_NAME = _str("COLLECTION_NAME", f"{APP_DOMAIN}-wiki" if APP_DOMAIN else "wiki")
+COLLECTION_NAME = _str(
+    "COLLECTION_NAME", f"{APP_DOMAIN}-wiki" if APP_DOMAIN else "wiki"
+)
 
 # Graph
 GRAPH_DB_NAME = _str("GRAPH_DB_NAME", COLLECTION_NAME)
@@ -176,7 +180,13 @@ def refresh_paths() -> None:
     Idempotent. Safe to call from any thread; assignments to module
     globals are atomic in CPython.
     """
-    global APP_DOMAIN, DOMAIN_PACK_DIR, WIKI_ROOT, WIKI_DIR, RAW_DIR, OBSIDIAN_VAULT_NAME
+    global \
+        APP_DOMAIN, \
+        DOMAIN_PACK_DIR, \
+        WIKI_ROOT, \
+        WIKI_DIR, \
+        RAW_DIR, \
+        OBSIDIAN_VAULT_NAME
     global LLM_VENDOR, RAG_VENDOR, INGEST_VENDOR
     global OLLAMA_URL, OLLAMA_MODEL, OLLAMA_EMBED_MODEL
     global OPENAI_API_KEY, OPENAI_API_BASE, OPENAI_MODEL

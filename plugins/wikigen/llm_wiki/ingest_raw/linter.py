@@ -43,7 +43,9 @@ __all__ = [
 ]
 
 
-def lint_wiki_file(path: Path, *, expected_wikilinks: set[str] | None = None) -> LintReport:
+def lint_wiki_file(
+    path: Path, *, expected_wikilinks: set[str] | None = None
+) -> LintReport:
     """Linta un singolo file wiki.
 
     ``expected_wikilinks`` = target noti del piano (pagine che stiamo

@@ -42,7 +42,9 @@ def _maybe_synthesise_prompts(
     pack_data = read_pack_data(target)
     page_types = list(pack_data.get("page_types") or [])
     if not page_types:
-        logger.warning("[synthesis] %s has no page_types in pack.yaml — skipping synthesis", name)
+        logger.warning(
+            "[synthesis] %s has no page_types in pack.yaml — skipping synthesis", name
+        )
         return False, None, "pack.yaml has no page_types"
 
     try:
@@ -56,7 +58,9 @@ def _maybe_synthesise_prompts(
     except Exception as exc:
         is_known = isinstance(exc, SynthesisError)
         level = logging.WARNING if is_known else logging.ERROR
-        logger.log(level, "[synthesis] failed for %s: %s", name, exc, exc_info=not is_known)
+        logger.log(
+            level, "[synthesis] failed for %s: %s", name, exc, exc_info=not is_known
+        )
         return False, None, str(exc) or exc.__class__.__name__
 
     prompts_dir = target / "prompts"
@@ -64,7 +68,9 @@ def _maybe_synthesise_prompts(
         _write_with_trailing_nl(
             prompts_dir / "system.j2", BASELINE_SYSTEM_J2 + result.system_prompt
         )
-        _write_with_trailing_nl(prompts_dir / "no_hits.j2", BASELINE_NO_HITS_J2 + result.no_hits)
+        _write_with_trailing_nl(
+            prompts_dir / "no_hits.j2", BASELINE_NO_HITS_J2 + result.no_hits
+        )
         _patch_pack_yaml_with_synthesis(
             pack_yaml=target / "pack.yaml",
             disclaimer=result.disclaimer,
@@ -79,7 +85,8 @@ def _maybe_synthesise_prompts(
             "description": description,
             "language": language,
             "page_type_folders": [
-                pt.get("folder") or pt.get("plural") or pt.get("id") for pt in page_types
+                pt.get("folder") or pt.get("plural") or pt.get("id")
+                for pt in page_types
             ],
             "ts": datetime.now(timezone.utc).isoformat(),
         }

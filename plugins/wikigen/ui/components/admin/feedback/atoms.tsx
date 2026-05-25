@@ -48,17 +48,11 @@ export function StatCard({
       )}
     >
       <div className="flex items-center justify-between">
-        <span className="text-[10px] uppercase tracking-wide text-ink-subtle">
-          {label}
-        </span>
+        <span className="text-[10px] uppercase tracking-wide text-ink-subtle">{label}</span>
         {icon && <span className={cn('opacity-70', toneText)}>{icon}</span>}
       </div>
-      <span className={cn('text-2xl font-semibold leading-tight', toneText)}>
-        {value}
-      </span>
-      {hint && (
-        <span className="text-[11px] text-ink-subtle leading-snug">{hint}</span>
-      )}
+      <span className={cn('text-2xl font-semibold leading-tight', toneText)}>{value}</span>
+      {hint && <span className="text-[11px] text-ink-subtle leading-snug">{hint}</span>}
     </div>
   );
 }
@@ -150,10 +144,7 @@ export function PercentBar({ pct }: { pct: number }) {
   return (
     <div className="flex items-center gap-2" title={pctLabel}>
       <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-rose-500/15">
-        <div
-          className="h-full rounded-full bg-emerald-500/80"
-          style={{ width: pctLabel }}
-        />
+        <div className="h-full rounded-full bg-emerald-500/80" style={{ width: pctLabel }} />
       </div>
       <span className="w-10 shrink-0 text-right text-[10px] font-medium tabular-nums text-ink-subtle">
         {pctLabel}

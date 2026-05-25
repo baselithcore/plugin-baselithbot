@@ -200,7 +200,9 @@ def to_obsidian_vault(graph: Any, output_dir: Path) -> list[Path]:
         out_path.write_text(page, encoding="utf-8")
         written.append(out_path)
 
-    logger.info("[graph.export] obsidian: wrote %d pages under %s", len(written), output_dir)
+    logger.info(
+        "[graph.export] obsidian: wrote %d pages under %s", len(written), output_dir
+    )
     return written
 
 
@@ -218,9 +220,13 @@ def _entity_page(
     out_neighbors: list[tuple[str, str, float]] = []
     in_neighbors: list[tuple[str, str, float]] = []
     for _, nbr, data in graph.out_edges(entity_id, data=True):
-        out_neighbors.append((nbr, str(data.get("kind") or ""), float(data.get("confidence", 0.0))))
+        out_neighbors.append(
+            (nbr, str(data.get("kind") or ""), float(data.get("confidence", 0.0)))
+        )
     for nbr, _, data in graph.in_edges(entity_id, data=True):
-        in_neighbors.append((nbr, str(data.get("kind") or ""), float(data.get("confidence", 0.0))))
+        in_neighbors.append(
+            (nbr, str(data.get("kind") or ""), float(data.get("confidence", 0.0)))
+        )
 
     lines = [
         "---",
@@ -357,7 +363,9 @@ cy.on("tap", evt => {{ if (evt.target === cy) cy.elements().removeClass("dim hig
 """
 
 
-def to_html(graph: Any, output: Path, *, snap: GraphSnapshot | None = None) -> Path | None:
+def to_html(
+    graph: Any, output: Path, *, snap: GraphSnapshot | None = None
+) -> Path | None:
     """Standalone Cytoscape HTML page with the graph embedded inline.
 
     Loads cytoscape + cose-bilkent from a CDN. ``snap`` (community / pagerank

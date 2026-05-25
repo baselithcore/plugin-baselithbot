@@ -27,7 +27,10 @@ def merge_hits_rrf(
 
     for hits in per_query_hits:
         for rank, h in enumerate(hits):
-            key = h.get("point_id") or h.get("id") or h.get("document_id"), h.get("chunk_index")
+            key = (
+                h.get("point_id") or h.get("id") or h.get("document_id"),
+                h.get("chunk_index"),
+            )
             if key[0] is None:
                 text_sample = str(h.get("text") or h.get("content") or "")[:200]
                 key = ("txt", text_sample)

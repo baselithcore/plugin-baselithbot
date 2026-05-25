@@ -104,9 +104,7 @@ export function useChat(opts: UseChatOptions = {}): UseChatResult {
         if (ev.type === 'done') {
           setIsStreaming(false);
           setMessages((prev) =>
-            prev.map((m) =>
-              m.id === asstId ? { ...m, streaming: false, completedAt: now } : m
-            )
+            prev.map((m) => (m.id === asstId ? { ...m, streaming: false, completedAt: now } : m))
           );
           return;
         }
@@ -198,8 +196,7 @@ export function useChat(opts: UseChatOptions = {}): UseChatResult {
             signal: ctrl.signal,
             graph: opts.graph,
             limit: opts.limit,
-            conversationId:
-              opts.conversationIdRef?.current ?? opts.conversationId ?? null,
+            conversationId: opts.conversationIdRef?.current ?? opts.conversationId ?? null,
           });
           lastErr = null;
           break;

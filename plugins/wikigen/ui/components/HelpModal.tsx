@@ -44,7 +44,11 @@ const SHORTCUTS: { group: string; items: Shortcut[] }[] = [
     items: [
       { keys: ['⌘', '↵'], label: 'Salva e rigenera (in modifica)' },
       { keys: ['Esc'], label: 'Annulla modifica' },
-      { keys: ['dbl click'], label: 'Rinomina conversazione in sidebar', perm: 'conversation.write' },
+      {
+        keys: ['dbl click'],
+        label: 'Rinomina conversazione in sidebar',
+        perm: 'conversation.write',
+      },
     ],
   },
   {

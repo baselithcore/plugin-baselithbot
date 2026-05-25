@@ -148,7 +148,9 @@ _BULLET_RE = re.compile(r"^\s*[-*•]\s+", re.MULTILINE)
 def _strip_wrappers(text: str) -> str:
     """Rimuove fence, bullet leading, prefissi 'Risposta:' / 'Pseudo:'."""
     s = _FENCE_RE.sub("", text or "").strip()
-    s = re.sub(r"^(risposta|pseudo[- ]?documento|paragrafo)\s*:\s*", "", s, flags=re.IGNORECASE)
+    s = re.sub(
+        r"^(risposta|pseudo[- ]?documento|paragrafo)\s*:\s*", "", s, flags=re.IGNORECASE
+    )
     s = _BULLET_RE.sub("", s)
     return s.strip()
 

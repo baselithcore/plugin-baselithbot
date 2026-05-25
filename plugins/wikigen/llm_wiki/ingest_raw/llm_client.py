@@ -147,7 +147,9 @@ def generate_structured(
             logger.warning("generate_structured attempt %d error: %s", attempt, exc)
             time.sleep(0.5 * attempt)
 
-    raise RuntimeError(f"generate_structured failed after {max_retries} attempts: {last_err}")
+    raise RuntimeError(
+        f"generate_structured failed after {max_retries} attempts: {last_err}"
+    )
 
 
 def _is_timeout(exc: Exception) -> bool:
@@ -251,7 +253,9 @@ def _call_json(
         try:
             resp = client.chat(format=fmt, **base_kwargs)
         except TypeError:
-            logger.info("ollama SDK too old: falling back to format='json' (no keep_alive)")
+            logger.info(
+                "ollama SDK too old: falling back to format='json' (no keep_alive)"
+            )
             resp = client.chat(
                 model=model,
                 messages=messages,

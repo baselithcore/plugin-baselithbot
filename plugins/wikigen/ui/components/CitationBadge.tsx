@@ -93,10 +93,7 @@ export function CitationBadge({ citation, onOpen, active }: Props) {
         {n}
       </button>
       {hasSource && (
-        <span
-          onMouseEnter={() => clearTimers()}
-          onMouseLeave={scheduleClose}
-        >
+        <span onMouseEnter={() => clearTimers()} onMouseLeave={scheduleClose}>
           <CitationPopover
             citation={citation}
             anchorEl={btnRef.current}

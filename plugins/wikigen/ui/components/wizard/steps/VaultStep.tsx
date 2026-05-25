@@ -8,8 +8,8 @@ export function VaultStep({ register, errors, values }: StepProps) {
   return (
     <div className="space-y-5 px-5 py-4">
       <Callout tone="info" icon={Database} title="Spazio di archiviazione">
-        Il vault è la cartella locale che ospita documenti sorgente, pagine generate e log
-        operativi della knowledge base.
+        Il vault è la cartella locale che ospita documenti sorgente, pagine generate e log operativi
+        della knowledge base.
       </Callout>
 
       <Field
@@ -40,7 +40,7 @@ export function VaultStep({ register, errors, values }: StepProps) {
         </summary>
         <div className="border-t border-[var(--color-border)] px-3 py-2.5 space-y-2">
           <pre className="font-mono text-[10.5px] leading-relaxed text-ink-muted whitespace-pre">
-{`<vault>/
+            {`<vault>/
 ├── raw/         documenti sorgente (PDF caricati dal wizard o aggiunti dopo)
 └── wiki/        pagine markdown generate dal modello`}
           </pre>

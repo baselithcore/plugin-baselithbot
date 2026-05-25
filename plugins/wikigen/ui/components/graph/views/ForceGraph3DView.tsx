@@ -60,24 +60,31 @@ export function ForceGraph3DView({
   const fg = useMemo(
     () => buildFGData(data, { visibleKinds, visibleCommunities, confidenceMin }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data],
+    [data]
   );
 
   const visibleNodeIds = useMemo(() => {
     const set = new Set<string>();
-    for (const n of fg.nodes) if (isNodeVisible(n, { visibleKinds, visibleCommunities, confidenceMin }, search)) set.add(n.id);
+    for (const n of fg.nodes)
+      if (isNodeVisible(n, { visibleKinds, visibleCommunities, confidenceMin }, search))
+        set.add(n.id);
     return set;
   }, [fg.nodes, visibleKinds, visibleCommunities, confidenceMin, search]);
 
   const nodeCount = fg.nodes.length;
   const linkCount = fg.links.length;
 
-  const { hoverId, onNodeHover, enabled: hoverEnabled, mode: hoverMode, setMode: setHoverMode } =
-    useHoverGuard<FGNode>({
-      containerRef: wrapRef,
-      nodeCount,
-      autoDisableAbove: HOVER_AUTO_DISABLE_NODES_3D,
-    });
+  const {
+    hoverId,
+    onNodeHover,
+    enabled: hoverEnabled,
+    mode: hoverMode,
+    setMode: setHoverMode,
+  } = useHoverGuard<FGNode>({
+    containerRef: wrapRef,
+    nodeCount,
+    autoDisableAbove: HOVER_AUTO_DISABLE_NODES_3D,
+  });
 
   // New graphData reference (filter change, reload) = allow one fresh fit.
   useEffect(() => {
@@ -123,15 +130,14 @@ export function ForceGraph3DView({
     const y = node.y ?? 0;
     const z = node.z ?? 0;
     const distRatio = 1 + distance / Math.max(1, Math.hypot(x, y, z));
-    inst.cameraPosition(
-      { x: x * distRatio, y: y * distRatio, z: z * distRatio },
-      { x, y, z },
-      800,
-    );
+    inst.cameraPosition({ x: x * distRatio, y: y * distRatio, z: z * distRatio }, { x, y, z }, 800);
   }, [selectedNodeId, fg.nodes]);
 
   return (
-    <div ref={wrapRef} className="relative h-full w-full overflow-hidden rounded-2xl border border-[var(--color-border)] bg-canvas-raised">
+    <div
+      ref={wrapRef}
+      className="relative h-full w-full overflow-hidden rounded-2xl border border-[var(--color-border)] bg-canvas-raised"
+    >
       {size.w > 0 && size.h > 0 && (
         <ForceGraph3D<FGNode, FGLink>
           ref={fgRef}
@@ -215,7 +221,7 @@ export function ForceGraph3DView({
               inst.cameraPosition(
                 { x: x * distRatio, y: y * distRatio, z: z * distRatio },
                 { x, y, z },
-                800,
+                800
               );
             }
             const original = data.nodes.find((n) => n.id === node.id) ?? null;
@@ -224,7 +230,11 @@ export function ForceGraph3DView({
           onBackgroundClick={() => onSelectNode(null)}
         />
       )}
-      <Legend nodes={nodeCount} edges={linkCount} hint={hoverEnabled ? 'hover per vicini' : 'orbita libera'} />
+      <Legend
+        nodes={nodeCount}
+        edges={linkCount}
+        hint={hoverEnabled ? 'hover per vicini' : 'orbita libera'}
+      />
       <HoverToggle mode={hoverMode} enabled={hoverEnabled} onChange={setHoverMode} bottomPx={12} />
     </div>
   );

@@ -72,7 +72,12 @@ class _FakeStore:
         return eid
 
     def link_mention(
-        self, page_id: str, entity_id: str, *, confidence: float, canonical: bool = False
+        self,
+        page_id: str,
+        entity_id: str,
+        *,
+        confidence: float,
+        canonical: bool = False,
     ) -> None:
         self.mentions.append((page_id, entity_id, confidence, canonical))
 
@@ -138,7 +143,9 @@ def test_extraction_disabled_short_circuits(insurance_spec: GraphSpec) -> None:
     assert store.entities == []
 
 
-def test_persistence_pipeline(insurance_spec: GraphSpec, patch_llm: dict[str, Any]) -> None:
+def test_persistence_pipeline(
+    insurance_spec: GraphSpec, patch_llm: dict[str, Any]
+) -> None:
     from llm_wiki.graphdb import extraction as ext
 
     pack = _make_pack(insurance_spec)
@@ -180,7 +187,9 @@ def test_persistence_pipeline(insurance_spec: GraphSpec, patch_llm: dict[str, An
     assert store.relations[0][2] == "RELATES_TO"
 
 
-def test_invalid_kind_is_dropped(insurance_spec: GraphSpec, patch_llm: dict[str, Any]) -> None:
+def test_invalid_kind_is_dropped(
+    insurance_spec: GraphSpec, patch_llm: dict[str, Any]
+) -> None:
     """LLM hallucinates an entity kind not in the spec → coerced out."""
     from llm_wiki.graphdb import extraction as ext
 
@@ -208,7 +217,9 @@ def test_invalid_kind_is_dropped(insurance_spec: GraphSpec, patch_llm: dict[str,
     assert all(e[0] == "RCT" for e in store.entities)
 
 
-def test_phantom_relation_is_dropped(insurance_spec: GraphSpec, patch_llm: dict[str, Any]) -> None:
+def test_phantom_relation_is_dropped(
+    insurance_spec: GraphSpec, patch_llm: dict[str, Any]
+) -> None:
     """Relation references an entity not in the entities[] list."""
     from llm_wiki.graphdb import extraction as ext
 
@@ -219,7 +230,9 @@ def test_phantom_relation_is_dropped(insurance_spec: GraphSpec, patch_llm: dict[
             ext.ExtractedEntity(name="RCT", kind="concept", confidence=0.9),
         ],
         relations=[
-            ext.ExtractedRelation(src="RCT", dst="GhostEntity", kind="COVERS", confidence=0.9),
+            ext.ExtractedRelation(
+                src="RCT", dst="GhostEntity", kind="COVERS", confidence=0.9
+            ),
         ],
     )
 

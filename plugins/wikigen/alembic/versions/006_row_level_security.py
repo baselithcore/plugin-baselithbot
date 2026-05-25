@@ -76,7 +76,9 @@ def upgrade() -> None:
         "); END $$"
     )
     op.execute("GRANT USAGE ON SCHEMA public TO app_runtime")
-    op.execute("GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_runtime")
+    op.execute(
+        "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_runtime"
+    )
     op.execute("GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO app_runtime")
     op.execute(
         "ALTER DEFAULT PRIVILEGES IN SCHEMA public "

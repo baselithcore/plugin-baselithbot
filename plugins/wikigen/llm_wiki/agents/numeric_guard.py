@@ -73,7 +73,18 @@ _TIME_UNITS = (
     "year",
     "years",
 )
-_CURRENCY_UNITS = ("€", "$", "£", "eur", "usd", "gbp", "euro", "euros", "dollar", "dollari")
+_CURRENCY_UNITS = (
+    "€",
+    "$",
+    "£",
+    "eur",
+    "usd",
+    "gbp",
+    "euro",
+    "euros",
+    "dollar",
+    "dollari",
+)
 _BYTE_UNITS = (
     "b",
     "byte",
@@ -269,7 +280,9 @@ def extract_numeric_claims(
     return out
 
 
-def _claim_supported(claim: NumericClaim, context_claims: Iterable[NumericClaim]) -> bool:
+def _claim_supported(
+    claim: NumericClaim, context_claims: Iterable[NumericClaim]
+) -> bool:
     """Un claim è supportato se il CONTESTO contiene la stessa coppia (core, family).
 
     Cross-family match non ammesso: ``5%`` nel claim ≠ ``5 minuti`` nel

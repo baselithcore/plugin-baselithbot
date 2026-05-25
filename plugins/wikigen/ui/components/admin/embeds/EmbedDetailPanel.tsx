@@ -31,9 +31,7 @@ export function EmbedDetailPanel({ embed, onChanged }: Props) {
   const [description, setDescription] = useState(embed.description);
   const [originsRaw, setOriginsRaw] = useState(embed.origin_allowlist.join('\n'));
   const [welcome, setWelcome] = useState(embed.welcome_message);
-  const [suggestionsRaw, setSuggestionsRaw] = useState(
-    embed.suggested_questions.join('\n')
-  );
+  const [suggestionsRaw, setSuggestionsRaw] = useState(embed.suggested_questions.join('\n'));
   const [primary, setPrimary] = useState(embed.theme.primary ?? '#0ea5e9');
   const [position, setPosition] = useState<'bottom-right' | 'bottom-left'>(
     embed.theme.position ?? 'bottom-right'
@@ -116,7 +114,10 @@ export function EmbedDetailPanel({ embed, onChanged }: Props) {
             className="input-sm w-full"
           />
         </Row>
-        <Row label="Origini autorizzate" hint="Una per riga. Senza origini il widget è inutilizzabile.">
+        <Row
+          label="Origini autorizzate"
+          hint="Una per riga. Senza origini il widget è inutilizzabile."
+        >
           <textarea
             value={originsRaw}
             onChange={(e) => setOriginsRaw(e.target.value)}
@@ -193,7 +194,6 @@ export function EmbedDetailPanel({ embed, onChanged }: Props) {
     </aside>
   );
 }
-
 
 function Row({
   label,

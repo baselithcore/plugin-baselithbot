@@ -67,17 +67,14 @@ export function DocUploadList({ docs }: { docs: DocUploadState[] }) {
 
       <ul className="rounded-md border border-[var(--color-border)] divide-y divide-[var(--color-border)] max-h-44 overflow-y-auto">
         {docs.map((d) => (
-          <li
-            key={d.filename}
-            className="flex items-center gap-2 px-2.5 py-1.5 text-[11px]"
-          >
+          <li key={d.filename} className="flex items-center gap-2 px-2.5 py-1.5 text-[11px]">
             <DocStatusIcon status={d.status} />
             <span className="flex-1 truncate font-mono">{d.filename}</span>
             <span className="text-[10px] text-ink-subtle tabular-nums w-12 text-right">
               {d.status === 'done'
                 ? '100%'
                 : d.status === 'error'
-                  ? d.error ?? 'errore'
+                  ? (d.error ?? 'errore')
                   : `${d.pct}%`}
             </span>
           </li>
@@ -88,8 +85,10 @@ export function DocUploadList({ docs }: { docs: DocUploadState[] }) {
 }
 
 function DocStatusIcon({ status }: { status: DocUploadState['status'] }) {
-  if (status === 'done') return <CheckCircle2 size={12} className="text-[var(--color-success)] shrink-0" />;
-  if (status === 'error') return <AlertCircle size={12} className="text-[var(--color-danger)] shrink-0" />;
+  if (status === 'done')
+    return <CheckCircle2 size={12} className="text-[var(--color-success)] shrink-0" />;
+  if (status === 'error')
+    return <AlertCircle size={12} className="text-[var(--color-danger)] shrink-0" />;
   if (status === 'uploading')
     return <Loader2 size={12} className="animate-spin text-[var(--color-brand)] shrink-0" />;
   return <span className="size-3 shrink-0 rounded-full border border-[var(--color-border)]" />;

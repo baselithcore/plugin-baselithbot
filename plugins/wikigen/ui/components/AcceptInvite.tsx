@@ -106,8 +106,7 @@ export function AcceptInvite({ token, onComplete, onCancel }: Props) {
           <p className="mt-2 text-xs text-ink-subtle">
             {peek?.reason === 'expired' && 'Questo invito è scaduto.'}
             {peek?.reason === 'used' && 'Questo invito è già stato utilizzato.'}
-            {(!peek?.reason || peek?.reason === 'unknown') &&
-              'Token sconosciuto o malformato.'}
+            {(!peek?.reason || peek?.reason === 'unknown') && 'Token sconosciuto o malformato.'}
           </p>
           <p className="mt-2 text-[11px] text-ink-subtle">
             Contatta il maintainer per un nuovo invito.
@@ -147,10 +146,7 @@ export function AcceptInvite({ token, onComplete, onCancel }: Props) {
             />
           </label>
 
-          <label
-            htmlFor={nameId}
-            className="flex flex-col gap-1 text-xs text-ink-subtle"
-          >
+          <label htmlFor={nameId} className="flex flex-col gap-1 text-xs text-ink-subtle">
             <span className="flex items-center gap-1.5 font-medium">
               <User size={12} className="text-ink-subtle" /> Nome visualizzato
             </span>
@@ -166,13 +162,10 @@ export function AcceptInvite({ token, onComplete, onCancel }: Props) {
             />
           </label>
 
-          <label
-            htmlFor={pwId}
-            className="flex flex-col gap-1 text-xs text-ink-subtle"
-          >
+          <label htmlFor={pwId} className="flex flex-col gap-1 text-xs text-ink-subtle">
             <span className="flex items-center gap-1.5 font-medium">
-              <KeyRound size={12} className="text-ink-subtle" /> Password (min{' '}
-              {PASSWORD_MIN} caratteri)
+              <KeyRound size={12} className="text-ink-subtle" /> Password (min {PASSWORD_MIN}{' '}
+              caratteri)
             </span>
             <div className="relative">
               <input
@@ -196,10 +189,7 @@ export function AcceptInvite({ token, onComplete, onCancel }: Props) {
             </div>
           </label>
 
-          <label
-            htmlFor={confirmId}
-            className="flex flex-col gap-1 text-xs text-ink-subtle"
-          >
+          <label htmlFor={confirmId} className="flex flex-col gap-1 text-xs text-ink-subtle">
             <span className="flex items-center gap-1.5 font-medium">
               <KeyRound size={12} className="text-ink-subtle" /> Conferma password
             </span>

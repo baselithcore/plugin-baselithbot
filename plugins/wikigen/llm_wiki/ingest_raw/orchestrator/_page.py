@@ -36,7 +36,9 @@ def _generate_and_write(
 
     md = generate_page(entry, plan=plan, doc=doc, model=model, today=today)
     md = strip_markdown_wrapper(md)
-    md = ensure_frontmatter(md, entry=entry, plan=plan, today=today, source_hash=source_hash)
+    md = ensure_frontmatter(
+        md, entry=entry, plan=plan, today=today, source_hash=source_hash
+    )
     md = ensure_required_sections(md, entry=entry, plan=plan)
 
     outcome = refine_until_clean(

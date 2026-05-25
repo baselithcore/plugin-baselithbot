@@ -56,7 +56,9 @@ def test_repair_feedback_lists_unsupported_only() -> None:
     report = g.GroundednessReport(
         claims=[
             g.ClaimScore("claim ok", supported=True),
-            g.ClaimScore("claim cattivo kubectl deploy", supported=False, note="non nel contesto"),
+            g.ClaimScore(
+                "claim cattivo kubectl deploy", supported=False, note="non nel contesto"
+            ),
         ],
         supported_ratio=0.5,
         threshold=0.95,

@@ -99,7 +99,11 @@ def ingest_raw_file(
 
     source_hash = compute_source_hash(raw_path)
     result.source_hash = source_hash
-    if not overwrite and not dry_run and _try_skip_unchanged(raw_path, source_hash, result):
+    if (
+        not overwrite
+        and not dry_run
+        and _try_skip_unchanged(raw_path, source_hash, result)
+    ):
         return result
 
     logger.info("extract: %s", raw_path.name)
@@ -126,7 +130,9 @@ def ingest_raw_file(
         try:
             plan = IngestPlan.model_validate(saved_state["plan"])
             page_status = dict(saved_state.get("page_status") or {})
-            done_count = sum(1 for s in page_status.values() if s in {"written", "needs-review"})
+            done_count = sum(
+                1 for s in page_status.values() if s in {"written", "needs-review"}
+            )
             logger.info(
                 "resume: state hit (%d/%d pagine già fatte) — skip classify+plan",
                 done_count,
@@ -159,7 +165,9 @@ def ingest_raw_file(
             )
     result.plan = plan
 
-    expected = {slug_from_target(p.target_path) for p in [plan.source_page, *plan.derived_pages]}
+    expected = {
+        slug_from_target(p.target_path) for p in [plan.source_page, *plan.derived_pages]
+    }
 
     pages_to_gen: list[PagePlan] = [plan.source_page]
     if not only_source_page:

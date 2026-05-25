@@ -82,7 +82,9 @@ def expand_to_parent_section(
         payload = hit.get("payload") or {}
         doc_id = payload.get("document_id")
         section_heading = (
-            payload.get("parent_section_heading") or payload.get("section_heading") or ""
+            payload.get("parent_section_heading")
+            or payload.get("section_heading")
+            or ""
         ).strip()
         if not doc_id or not section_heading:
             continue
@@ -102,11 +104,14 @@ def expand_to_parent_section(
                 collection_name=COLLECTION_NAME,
                 scroll_filter=Filter(
                     must=[
-                        FieldCondition(key="document_id", match=MatchValue(value=doc_id)),
+                        FieldCondition(
+                            key="document_id", match=MatchValue(value=doc_id)
+                        ),
                     ],
                     should=[
                         FieldCondition(
-                            key="section_heading", match=MatchValue(value=section_heading)
+                            key="section_heading",
+                            match=MatchValue(value=section_heading),
                         ),
                         FieldCondition(
                             key="parent_section_heading",
@@ -156,5 +161,7 @@ def expand_to_parent_section(
             int((h.get("payload") or {}).get("chunk_index") or 0),
         )
     )
-    logger.info("[parent-section] +%d sibling chunks da %d sezioni", len(extras), len(explored))
+    logger.info(
+        "[parent-section] +%d sibling chunks da %d sezioni", len(extras), len(explored)
+    )
     return hits + extras

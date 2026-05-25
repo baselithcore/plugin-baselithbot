@@ -278,7 +278,10 @@ def test_cors_preflight_non_embed_path_unaffected(admin_setup, client) -> None:
         },
     )
     # Static CORSMiddleware permette localhost:5173 → preflight 200 con ACAO echo.
-    assert r.headers.get("access-control-allow-origin") in ("http://localhost:5173", "*")
+    assert r.headers.get("access-control-allow-origin") in (
+        "http://localhost:5173",
+        "*",
+    )
 
 
 # --- Admin gating ---------------------------------------------------------

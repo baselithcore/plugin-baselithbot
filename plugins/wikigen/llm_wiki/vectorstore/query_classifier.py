@@ -265,7 +265,9 @@ def spot_entities_in_query(query: str, *, limit: int = 5) -> list[str]:
         if eid in seen:
             continue
         # Word boundary semplice per evitare match parziali.
-        boundary = re.compile(r"(?<!\w)" + re.escape(surface) + r"(?!\w)", re.IGNORECASE)
+        boundary = re.compile(
+            r"(?<!\w)" + re.escape(surface) + r"(?!\w)", re.IGNORECASE
+        )
         if boundary.search(q_lower):
             out.append(eid)
             seen.add(eid)

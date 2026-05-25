@@ -58,7 +58,9 @@ class CodeBlockReport:
             return "code-block guard ok"
         parts: list[str] = []
         if self.answer_has_code_context_does_not:
-            parts.append(f"risposta ha {len(self.answer_fences)} code block, CONTESTO nessuno")
+            parts.append(
+                f"risposta ha {len(self.answer_fences)} code block, CONTESTO nessuno"
+            )
         if self.answer_only_langs:
             parts.append(f"lingue fabbricate: {', '.join(self.answer_only_langs)}")
         return "; ".join(parts)

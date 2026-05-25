@@ -144,7 +144,9 @@ def test_create_tenant_with_owner_atomic(
     assert result["user"]["tenant_id"] == result["tenant"]["id"]
 
 
-def test_duplicate_email_rolls_back_tenant(fresh_email: str, cleanup_users: list[str]) -> None:
+def test_duplicate_email_rolls_back_tenant(
+    fresh_email: str, cleanup_users: list[str]
+) -> None:
     """Crea due volte la stessa email → seconda call solleva, NESSUN
     tenant orfano."""
     import psycopg
@@ -173,7 +175,9 @@ def test_duplicate_email_rolls_back_tenant(fresh_email: str, cleanup_users: list
     assert get_tenant_by_slug(dup_slug) is None
 
 
-def test_get_user_by_email_strips_password(fresh_email: str, cleanup_users: list[str]) -> None:
+def test_get_user_by_email_strips_password(
+    fresh_email: str, cleanup_users: list[str]
+) -> None:
     from llm_wiki.db.tenants import create_tenant_with_owner
     from llm_wiki.db.users import get_user_by_email, hash_password
 
@@ -219,7 +223,9 @@ def test_get_user_with_credentials_includes_hash(
 # --- refresh token rotation + replay --------------------------------------
 
 
-def test_refresh_token_rotation_chain(fresh_email: str, cleanup_users: list[str]) -> None:
+def test_refresh_token_rotation_chain(
+    fresh_email: str, cleanup_users: list[str]
+) -> None:
     """Issue → rotate → vecchio replay revoca family."""
     from llm_wiki.auth.tokens import (
         TokenError,
@@ -275,7 +281,9 @@ def test_revoke_all_for_user(fresh_email: str, cleanup_users: list[str]) -> None
     tenant_id = res["tenant"]["id"]
 
     # 3 sessioni concorrenti (3 device).
-    tokens = [issue_refresh_token(user_id=user_id, tenant_id=tenant_id)[0] for _ in range(3)]
+    tokens = [
+        issue_refresh_token(user_id=user_id, tenant_id=tenant_id)[0] for _ in range(3)
+    ]
     n = revoke_all_for_user(user_id)
     assert n == 3
 
@@ -306,7 +314,9 @@ def test_count_users_returns_int(cleanup_users: list[str]) -> None:
 # --- conversation CRUD con tenant context ----------------------------------
 
 
-def test_conversation_crud_with_tenant_context(fresh_email: str, cleanup_users: list[str]) -> None:
+def test_conversation_crud_with_tenant_context(
+    fresh_email: str, cleanup_users: list[str]
+) -> None:
     """End-to-end: setup tenant → contextvar → create/list/append/delete."""
     from llm_wiki.auth.tenant_context import (
         TenantInfo,

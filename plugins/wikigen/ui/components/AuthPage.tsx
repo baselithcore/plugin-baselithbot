@@ -59,17 +59,12 @@ export function AuthPage() {
       ].filter(Boolean).length
     : 0;
   const canSubmit =
-    !loading &&
-    hasEmailShape &&
-    password.length >= (isLogin ? 1 : 12) &&
-    !passwordTooShort;
+    !loading && hasEmailShape && password.length >= (isLogin ? 1 : 12) && !passwordTooShort;
   const logoUrl = branding?.logo_url || undefined;
   const appName = branding?.label || branding?.ui?.app_name || 'Wiki';
   const tenantDisplayName = branding?.tenant?.name || branding?.domain || 'tenant';
   const formTitle = isLogin ? 'Accedi' : 'Crea accesso';
-  const formSubtitle = isLogin
-    ? 'Credenziali del tenant'
-    : 'Profilo utente e workspace';
+  const formSubtitle = isLogin ? 'Credenziali del tenant' : 'Profilo utente e workspace';
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();

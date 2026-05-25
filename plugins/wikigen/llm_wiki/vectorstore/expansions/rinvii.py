@@ -89,8 +89,12 @@ def expand_with_rinvii(
                 collection_name=COLLECTION_NAME,
                 scroll_filter=Filter(
                     must=[
-                        FieldCondition(key="document_id", match=MatchValue(value=doc_id)),
-                        FieldCondition(key="articoli_citati", match=MatchValue(value=article)),
+                        FieldCondition(
+                            key="document_id", match=MatchValue(value=doc_id)
+                        ),
+                        FieldCondition(
+                            key="articoli_citati", match=MatchValue(value=article)
+                        ),
                     ]
                 ),
                 limit=2,

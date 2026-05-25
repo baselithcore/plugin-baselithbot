@@ -158,11 +158,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // back-compat: prima del rollout RBAC i super-user usavano solo `role`.
   const permSet = useMemo(() => new Set(user?.permissions ?? []), [user?.permissions]);
   const roleSet = useMemo(
-    () =>
-      new Set([
-        ...(user?.roles ?? []),
-        ...(user?.role ? [user.role] : []),
-      ]),
+    () => new Set([...(user?.roles ?? []), ...(user?.role ? [user.role] : [])]),
     [user?.roles, user?.role]
   );
   const isLegacyAdmin = user?.role === 'admin';

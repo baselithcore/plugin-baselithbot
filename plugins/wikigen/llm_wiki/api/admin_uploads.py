@@ -70,7 +70,9 @@ def _resolve_tenant_or_404(name: str) -> TenantInfo:
     if info is None:
         raise HTTPException(status_code=404, detail=f"tenant `{name}` not found")
     if not info.valid:
-        raise HTTPException(status_code=422, detail=f"tenant `{name}` invalid: {info.error}")
+        raise HTTPException(
+            status_code=422, detail=f"tenant `{name}` invalid: {info.error}"
+        )
     return info
 
 
@@ -158,7 +160,9 @@ async def upload_tenant_raw(
     response_model=TenantUploadResponse,
     dependencies=[Depends(require_admin_perm("admin.tenant.manage"))],
 )
-async def upload_tenant_logo(name: str, file: UploadFile = File(...)) -> TenantUploadResponse:
+async def upload_tenant_logo(
+    name: str, file: UploadFile = File(...)
+) -> TenantUploadResponse:
     """Save a logo into ``domains/<name>/assets/`` and update
     ``pack.yaml ui.logo_path`` to reference it.
 
@@ -186,7 +190,9 @@ async def upload_tenant_logo(name: str, file: UploadFile = File(...)) -> TenantU
         text = pack_yaml.read_text(encoding="utf-8")
         rel = f"assets/{safe}"
         if "logo_path:" in text:
-            text = re.sub(r"^(\s*logo_path:)[^\n]*$", rf'\1 "{rel}"', text, count=1, flags=re.M)
+            text = re.sub(
+                r"^(\s*logo_path:)[^\n]*$", rf'\1 "{rel}"', text, count=1, flags=re.M
+            )
         else:
             # insert under the `ui:` block. crude but stable for our YAML shape.
             text = re.sub(
@@ -233,7 +239,9 @@ def update_tenant_theme(name: str, req: ThemeUpdateRequest) -> dict[str, Any]:
     try:
         text = pack_yaml.read_text(encoding="utf-8")
     except OSError as exc:
-        raise HTTPException(status_code=500, detail=f"cannot read pack.yaml: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"cannot read pack.yaml: {exc}"
+        ) from exc
 
     # Build the theme block we want to inject under `ui:`.
     block_lines = ["  theme:"]

@@ -24,9 +24,7 @@ export function WizardStepper({ step, onJump }: { step: Step; onJump: (s: Step) 
       aria-label="progresso wizard"
     >
       <div className="mb-3 flex items-center justify-between gap-3">
-        <div className="text-[10px] font-semibold uppercase text-ink-subtle">
-          Percorso guidato
-        </div>
+        <div className="text-[10px] font-semibold uppercase text-ink-subtle">Percorso guidato</div>
         <div className="text-[10px] tabular-nums text-ink-subtle">
           Step {stepIdx + 1} di {STEPS.length}
         </div>

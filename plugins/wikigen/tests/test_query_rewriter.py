@@ -57,7 +57,9 @@ def test_format_history_caps_turns() -> None:
 
 
 def test_format_history_truncates_long_content(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr("llm_wiki.agents.rag_agent._query_rewriter.RAG_HISTORY_TURN_MAX_CHARS", 50)
+    monkeypatch.setattr(
+        "llm_wiki.agents.rag_agent._query_rewriter.RAG_HISTORY_TURN_MAX_CHARS", 50
+    )
     turns = [{"role": "assistant", "content": "a" * 200}]
     out = _format_history_for_condense(turns, max_turns=4)
     assert "…" in out
@@ -103,7 +105,9 @@ def test_clean_clamps_length(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_condense_skips_when_disabled() -> None:
-    res = condense_question("domanda", [{"role": "user", "content": "ctx"}], enabled=False)
+    res = condense_question(
+        "domanda", [{"role": "user", "content": "ctx"}], enabled=False
+    )
     assert isinstance(res, CondenseResult)
     assert res.rewritten is False
     assert res.skip_reason == "disabled"
@@ -119,7 +123,10 @@ def test_condense_skips_no_history(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_condense_skips_standalone_question(monkeypatch: pytest.MonkeyPatch) -> None:
     # Long, no anaphora — heuristic short-circuits.
     q = "Quali sono i passaggi per configurare il retrieval ibrido in produzione?"
-    history = [{"role": "user", "content": "prev"}, {"role": "assistant", "content": "ans"}]
+    history = [
+        {"role": "user", "content": "prev"},
+        {"role": "assistant", "content": "ans"},
+    ]
     res = condense_question(q, history, enabled=True)
     assert res.skip_reason == "heuristic_standalone"
     assert res.query == q
@@ -252,7 +259,9 @@ def test_rag_agent_uses_condensed_query_for_search(
 
     agent = RAGAgent(conversation_id="conv-1")
     # Force condense ON regardless of POSTGRES_ENABLED env
-    monkeypatch.setattr(agent, "_condense", lambda q, h: condense_question(q, h, enabled=True))
+    monkeypatch.setattr(
+        agent, "_condense", lambda q, h: condense_question(q, h, enabled=True)
+    )
 
     result = agent.answer("approfondiscilo", limit=5)
 
@@ -310,7 +319,9 @@ def test_rag_agent_stream_emits_query_rewrite_event(
     monkeypatch.setattr("llm_wiki.agents.rag_guards.RAG_GROUNDEDNESS_ENABLED", False)
 
     agent = RAGAgent(conversation_id="conv-2")
-    monkeypatch.setattr(agent, "_condense", lambda q, h: condense_question(q, h, enabled=True))
+    monkeypatch.setattr(
+        agent, "_condense", lambda q, h: condense_question(q, h, enabled=True)
+    )
 
     events = list(agent.stream("approfondiscilo", limit=5))
     rewrite_events = [e for e in events if e.get("type") == "query_rewrite"]
@@ -326,7 +337,9 @@ def test_rag_agent_no_rewrite_event_when_history_empty(
     nuovi eventi, comportamento identico a Fase pre-memoria."""
     from llm_wiki.agents.rag_agent import RAGAgent
 
-    monkeypatch.setattr("llm_wiki.agents.rag_agent._loaders.load_history", lambda **_kw: [])
+    monkeypatch.setattr(
+        "llm_wiki.agents.rag_agent._loaders.load_history", lambda **_kw: []
+    )
 
     def _fake_generate(**_kw: Any) -> str:
         return "Risposta."

@@ -136,7 +136,9 @@ class RemoteBGEM3Embedder(_BaseEmbedder):
             resp.raise_for_status()
             info = resp.json() if resp.content else {}
             self.dense_dim = int(info.get("dense_dim", 1024))
-            logger.info("[embedder] remote BGE-M3 ok: %s (dim=%d)", self._url, self.dense_dim)
+            logger.info(
+                "[embedder] remote BGE-M3 ok: %s (dim=%d)", self._url, self.dense_dim
+            )
         except Exception as exc:
             logger.warning("[embedder] remote /health fallito (%s): uso default", exc)
 
@@ -255,7 +257,9 @@ def _build_embedder() -> _BaseEmbedder | None:
                 "Impossibile usare EMBEDDER_URL; provo fallback."
             )
         except Exception as exc:
-            logger.error("[embedder] remote embedder init failed (%s); provo fallback.", exc)
+            logger.error(
+                "[embedder] remote embedder init failed (%s); provo fallback.", exc
+            )
 
     # Path Ollama: se esplicitato OLLAMA_EMBED_MODEL, lo usiamo prioritariamente
     if OLLAMA_EMBED_MODEL:
@@ -281,7 +285,9 @@ def _build_embedder() -> _BaseEmbedder | None:
 
     # Fallback
     target = (
-        EMBEDDER_MODEL if not EMBEDDER_MODEL.lower().startswith("baai/") else LEGACY_EMBEDDER_MODEL
+        EMBEDDER_MODEL
+        if not EMBEDDER_MODEL.lower().startswith("baai/")
+        else LEGACY_EMBEDDER_MODEL
     )
     try:
         logger.info("[embedder] loading sentence-transformers: %s", target)

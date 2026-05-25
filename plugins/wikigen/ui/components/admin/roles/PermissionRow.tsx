@@ -45,7 +45,7 @@ export function PermissionRow({
             key={r.id}
             className={cn(
               'border-b border-[var(--color-border)] p-0 align-middle',
-              changed && 'bg-[var(--color-brand-soft)]',
+              changed && 'bg-[var(--color-brand-soft)]'
             )}
           >
             <button
@@ -57,7 +57,7 @@ export function PermissionRow({
               className={cn(
                 'focus-ring grid h-9 w-full place-items-center transition-colors',
                 'disabled:cursor-not-allowed',
-                !locked && 'hover:bg-[var(--color-surface-hover)]',
+                !locked && 'hover:bg-[var(--color-surface-hover)]'
               )}
             >
               <ToggleCell checked={checked} changed={changed} locked={locked && isLocked(r)} />
@@ -83,7 +83,7 @@ function ToggleCell({
       <span
         className={cn(
           'grid size-5 place-items-center rounded',
-          checked ? 'bg-[var(--color-brand)]/30 text-[var(--color-brand)]' : 'text-ink-subtle',
+          checked ? 'bg-[var(--color-brand)]/30 text-[var(--color-brand)]' : 'text-ink-subtle'
         )}
         aria-hidden
       >
@@ -98,7 +98,7 @@ function ToggleCell({
           'grid size-5 place-items-center rounded shadow-sm',
           changed
             ? 'bg-emerald-500 text-white ring-2 ring-emerald-500/30'
-            : 'bg-[var(--color-brand)] text-white',
+            : 'bg-[var(--color-brand)] text-white'
         )}
         aria-hidden
       >
@@ -112,7 +112,7 @@ function ToggleCell({
         'grid size-5 place-items-center rounded border border-dashed',
         changed
           ? 'border-rose-500/60 bg-rose-500/10 text-rose-600 dark:text-rose-400'
-          : 'border-[var(--color-border-strong)] text-transparent group-hover:text-ink-subtle',
+          : 'border-[var(--color-border-strong)] text-transparent group-hover:text-ink-subtle'
       )}
       aria-hidden
     >

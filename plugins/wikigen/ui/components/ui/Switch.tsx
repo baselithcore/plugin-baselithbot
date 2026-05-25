@@ -13,7 +13,14 @@ interface SwitchProps {
   describedBy?: string;
 }
 
-export function Switch({ checked, onChange, label, hideLabel, disabled, describedBy }: SwitchProps) {
+export function Switch({
+  checked,
+  onChange,
+  label,
+  hideLabel,
+  disabled,
+  describedBy,
+}: SwitchProps) {
   const id = useId();
   return (
     <button
@@ -30,14 +37,14 @@ export function Switch({ checked, onChange, label, hideLabel, disabled, describe
         'disabled:cursor-not-allowed disabled:opacity-40',
         checked
           ? 'border-transparent bg-[var(--color-brand)]'
-          : 'border-[var(--color-border)] bg-[var(--color-surface)]',
+          : 'border-[var(--color-border)] bg-[var(--color-surface)]'
       )}
     >
       <span
         aria-hidden
         className={cn(
           'absolute top-[1px] size-[14px] rounded-full bg-white shadow-sm transition-transform',
-          checked ? 'translate-x-[19px]' : 'translate-x-[1px]',
+          checked ? 'translate-x-[19px]' : 'translate-x-[1px]'
         )}
       />
     </button>

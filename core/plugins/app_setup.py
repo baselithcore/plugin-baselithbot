@@ -51,7 +51,9 @@ def _declares_setup_app_middleware(plugin_file: Path) -> bool:
     side effects (DB pools, model warmup, …) for nothing.
     """
     try:
-        tree = ast.parse(plugin_file.read_text(encoding="utf-8"), filename=str(plugin_file))
+        tree = ast.parse(
+            plugin_file.read_text(encoding="utf-8"), filename=str(plugin_file)
+        )
     except (OSError, SyntaxError):
         return False
     for node in ast.walk(tree):
@@ -158,9 +160,7 @@ def _overrides_setup_app_middleware(plugin_class: type[Plugin]) -> bool:
     return True
 
 
-def apply_plugin_app_middleware(
-    app: Any, plugins_dir: Optional[Path] = None
-) -> int:
+def apply_plugin_app_middleware(app: Any, plugins_dir: Optional[Path] = None) -> int:
     """Discover plugins under ``plugins_dir`` and apply their middleware hooks.
 
     Args:
@@ -174,7 +174,9 @@ def apply_plugin_app_middleware(
         plugins_dir = Path(__file__).resolve().parents[2] / "plugins"
 
     if not plugins_dir.exists():
-        logger.debug("Plugins directory not found at %s — skipping middleware hook", plugins_dir)
+        logger.debug(
+            "Plugins directory not found at %s — skipping middleware hook", plugins_dir
+        )
         return 0
 
     analyzer = ResourceAnalyzer(plugins_dir)

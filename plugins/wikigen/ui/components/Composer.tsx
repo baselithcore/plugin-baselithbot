@@ -126,10 +126,7 @@ export function Composer({
             </div>
           </div>
         </div>
-        <p
-          id="composer-help"
-          className="mt-2 text-center text-[10.5px] text-ink-subtle"
-        >
+        <p id="composer-help" className="mt-2 text-center text-[10.5px] text-ink-subtle">
           Risposte basate sui documenti caricati. I dati restano sul tuo computer.
         </p>
       </div>

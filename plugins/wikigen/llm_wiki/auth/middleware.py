@@ -107,20 +107,26 @@ class TenantMiddleware(BaseHTTPMiddleware):
                 claim_tenant_id = payload.get("tenant_id")
                 claim_user_id = payload.get("sub") or payload.get("uid")
                 if claim_tenant_id and claim_user_id:
-                    verified = self._verify_jwt_tenant(str(claim_user_id), str(claim_tenant_id))
+                    verified = self._verify_jwt_tenant(
+                        str(claim_user_id), str(claim_tenant_id)
+                    )
                     if verified:
                         return verified
                     # JWT tampering — non fallback su header. Fail closed.
                     return None
 
         # 2. Header server-to-server — solo se NON c'è JWT (anti-bypass).
-        header_value = request.headers.get("x-tenant-id") or request.headers.get("X-Tenant-ID")
+        header_value = request.headers.get("x-tenant-id") or request.headers.get(
+            "X-Tenant-ID"
+        )
         if header_value:
             return header_value.strip() or None
 
         return None
 
-    def _verify_jwt_tenant(self, claim_user_id: str, claim_tenant_id: str) -> str | None:
+    def _verify_jwt_tenant(
+        self, claim_user_id: str, claim_tenant_id: str
+    ) -> str | None:
         """Verifica DB: ``users.tenant_id`` per ``claim.sub`` deve
         coincidere con ``claim.tenant_id``. Fail-closed su qualsiasi
         errore (DB down → meglio negare che passare un tampered claim).
@@ -204,7 +210,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Esatto match `/embed.js` o `/embed` (anche con trailing slash o
         # sotto-path tipo `/embed/index.html`). Esclude `/embedXXX` non-/.
         for prefix in cls.EMBED_PATH_PREFIXES:
-            if path == prefix or path.startswith(prefix + "/") or path.startswith(prefix + "?"):
+            if (
+                path == prefix
+                or path.startswith(prefix + "/")
+                or path.startswith(prefix + "?")
+            ):
                 return True
         return False
 

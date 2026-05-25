@@ -22,7 +22,11 @@ from typing import Any
 
 from llm_wiki.config import WIKI_ROOT
 from llm_wiki.ingest_raw.jobs import Job, get_registry
-from llm_wiki.ingest_raw.orchestrator import IngestResult, ingest_raw_file, reindex_result
+from llm_wiki.ingest_raw.orchestrator import (
+    IngestResult,
+    ingest_raw_file,
+    reindex_result,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +135,9 @@ def run_ingest_job(
         # Reindex eseguito DOPO il finalize event così l'UI vede `done`
         # subito, senza attendere l'embed BGE-M3 + upsert Qdrant. Il tempo
         # totale del thread è uguale; solo la latenza percepita migliora.
-        do_reindex = bool(options.get("reindex", True)) and not bool(options.get("dry_run", False))
+        do_reindex = bool(options.get("reindex", True)) and not bool(
+            options.get("dry_run", False)
+        )
         result: IngestResult = ingest_raw_file(
             raw_path,
             model=options.get("model"),

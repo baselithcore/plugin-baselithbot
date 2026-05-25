@@ -36,7 +36,10 @@ def _fake_doc(path: Path, backend: str) -> ExtractedDocument:
 
 def test_extensions_sets_are_disjoint() -> None:
     assert SUPPORTED_PDF_EXTENSIONS.isdisjoint(SUPPORTED_DOCLING_ONLY_EXTENSIONS)
-    assert SUPPORTED_EXTENSIONS == SUPPORTED_PDF_EXTENSIONS | SUPPORTED_DOCLING_ONLY_EXTENSIONS
+    assert (
+        SUPPORTED_EXTENSIONS
+        == SUPPORTED_PDF_EXTENSIONS | SUPPORTED_DOCLING_ONLY_EXTENSIONS
+    )
 
 
 def test_extensions_include_common_formats() -> None:
@@ -74,8 +77,12 @@ def test_extract_document_routes_docx_to_generic(
         calls.append("pdf")
         return _fake_doc(p, "docling")
 
-    monkeypatch.setattr("llm_wiki.ingest_raw.extractor._extract_docling_generic", _fake_generic)
-    monkeypatch.setattr("llm_wiki.ingest_raw.extractor._extract_pdf_impl", _fake_pdf_impl)
+    monkeypatch.setattr(
+        "llm_wiki.ingest_raw.extractor._extract_docling_generic", _fake_generic
+    )
+    monkeypatch.setattr(
+        "llm_wiki.ingest_raw.extractor._extract_pdf_impl", _fake_pdf_impl
+    )
     doc = extract_document(p)
     assert calls == ["generic"]
     assert doc.backend == "docling"
@@ -91,12 +98,14 @@ def test_extract_document_routes_pptx_to_generic(
     monkeypatch.setattr(
         "llm_wiki.ingest_raw.extractor._extract_docling_generic",
         lambda path: (
-            state.__setitem__("generic", state["generic"] + 1) or _fake_doc(path, "docling")
+            state.__setitem__("generic", state["generic"] + 1)
+            or _fake_doc(path, "docling")
         ),
     )
     monkeypatch.setattr(
         "llm_wiki.ingest_raw.extractor._extract_pdf_impl",
-        lambda *a, **kw: state.__setitem__("pdf", state["pdf"] + 1) or _fake_doc(p, "docling"),
+        lambda *a, **kw: state.__setitem__("pdf", state["pdf"] + 1)
+        or _fake_doc(p, "docling"),
     )
     extract_document(p)
     assert state["generic"] == 1
@@ -137,7 +146,9 @@ def test_extract_document_routes_html_to_generic(
     assert flag["generic"]
 
 
-def test_extract_pdf_legacy_alias_works(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_extract_pdf_legacy_alias_works(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     """Backward-compat: ``extract_pdf`` accetta solo .pdf e usa la chain."""
     p = tmp_path / "doc.pdf"
     p.write_bytes(b"%PDF-1.4\n")

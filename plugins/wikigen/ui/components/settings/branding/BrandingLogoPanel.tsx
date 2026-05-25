@@ -56,12 +56,7 @@ export function BrandingLogoPanel({ tenant, onUploaded }: Props) {
       {file && (
         <div className="flex items-center gap-2">
           <IconButton icon={X} aria-label="rimuovi" size="sm" onClick={() => setFile(null)} />
-          <Button
-            variant="primary"
-            onClick={handleUpload}
-            disabled={busy}
-            className="!text-[11px]"
-          >
+          <Button variant="primary" onClick={handleUpload} disabled={busy} className="!text-[11px]">
             {busy ? <Loader2 size={11} className="animate-spin" /> : <Save size={11} />}
             Carica logo
           </Button>

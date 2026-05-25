@@ -83,25 +83,17 @@ export const createGroup = (args: CreateGroupArgs): Promise<GroupSummary> =>
 export const getGroup = (groupId: string): Promise<GroupDetail> =>
   json(`${BASE_PATH}/${encodeURIComponent(groupId)}`);
 
-export const updateGroup = (
-  groupId: string,
-  args: UpdateGroupArgs
-): Promise<GroupSummary> =>
+export const updateGroup = (groupId: string, args: UpdateGroupArgs): Promise<GroupSummary> =>
   json(`${BASE_PATH}/${encodeURIComponent(groupId)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(args),
   });
 
-export const deleteGroup = (
-  groupId: string
-): Promise<{ status: string; removed: boolean }> =>
+export const deleteGroup = (groupId: string): Promise<{ status: string; removed: boolean }> =>
   json(`${BASE_PATH}/${encodeURIComponent(groupId)}`, { method: 'DELETE' });
 
-export const addMembers = (
-  groupId: string,
-  userIds: string[]
-): Promise<AddMembersResult> =>
+export const addMembers = (groupId: string, userIds: string[]): Promise<AddMembersResult> =>
   json(`${BASE_PATH}/${encodeURIComponent(groupId)}/members`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -112,10 +104,9 @@ export const removeMember = (
   groupId: string,
   userId: string
 ): Promise<{ status: string; removed: boolean }> =>
-  json(
-    `${BASE_PATH}/${encodeURIComponent(groupId)}/members/${encodeURIComponent(userId)}`,
-    { method: 'DELETE' }
-  );
+  json(`${BASE_PATH}/${encodeURIComponent(groupId)}/members/${encodeURIComponent(userId)}`, {
+    method: 'DELETE',
+  });
 
 export const assignGroupRole = (
   groupId: string,
@@ -131,7 +122,6 @@ export const revokeGroupRole = (
   groupId: string,
   roleId: string
 ): Promise<{ status: string; removed: boolean }> =>
-  json(
-    `${BASE_PATH}/${encodeURIComponent(groupId)}/roles/${encodeURIComponent(roleId)}`,
-    { method: 'DELETE' }
-  );
+  json(`${BASE_PATH}/${encodeURIComponent(groupId)}/roles/${encodeURIComponent(roleId)}`, {
+    method: 'DELETE',
+  });

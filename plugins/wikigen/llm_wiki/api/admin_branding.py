@@ -42,7 +42,9 @@ def _resolve_tenant_or_404(name: str) -> TenantInfo:
     if info is None:
         raise HTTPException(status_code=404, detail=f"tenant `{name}` not found")
     if not info.valid:
-        raise HTTPException(status_code=422, detail=f"tenant `{name}` invalid: {info.error}")
+        raise HTTPException(
+            status_code=422, detail=f"tenant `{name}` invalid: {info.error}"
+        )
     return info
 
 
@@ -50,13 +52,19 @@ def _load_pack_yaml(path: Path) -> dict[str, Any]:
     try:
         raw = path.read_text(encoding="utf-8")
     except OSError as exc:
-        raise HTTPException(status_code=500, detail=f"cannot read pack.yaml: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"cannot read pack.yaml: {exc}"
+        ) from exc
     try:
         data = yaml.safe_load(raw) or {}
     except yaml.YAMLError as exc:
-        raise HTTPException(status_code=500, detail=f"pack.yaml invalid YAML: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"pack.yaml invalid YAML: {exc}"
+        ) from exc
     if not isinstance(data, dict):
-        raise HTTPException(status_code=500, detail="pack.yaml: top level is not a mapping")
+        raise HTTPException(
+            status_code=500, detail="pack.yaml: top level is not a mapping"
+        )
     return data
 
 
@@ -84,7 +92,9 @@ class BrandingUpdateRequest(BaseModel):
     hero_pill: str | None = Field(default=None, max_length=120)
     hero_pill_icon: str | None = Field(default=None, max_length=64)
     disclaimer: str | None = Field(default=None, max_length=600)
-    suggested_questions: list[UISuggestedQuestion] | None = Field(default=None, max_length=8)
+    suggested_questions: list[UISuggestedQuestion] | None = Field(
+        default=None, max_length=8
+    )
 
 
 _TOP_LEVEL_KEYS = ("label", "description")
@@ -158,7 +168,9 @@ def read_tenant_branding(name: str) -> BrandingReadResponse:
     response_model=BrandingReadResponse,
     dependencies=[Depends(require_admin_perm("admin.tenant.manage"))],
 )
-def update_tenant_branding(name: str, req: BrandingUpdateRequest) -> BrandingReadResponse:
+def update_tenant_branding(
+    name: str, req: BrandingUpdateRequest
+) -> BrandingReadResponse:
     info = _resolve_tenant_or_404(name)
     pack_yaml = info.pack_dir / "pack.yaml"
     data = _load_pack_yaml(pack_yaml)
@@ -170,7 +182,9 @@ def update_tenant_branding(name: str, req: BrandingUpdateRequest) -> BrandingRea
     try:
         DomainPack(**patched)
     except Exception as exc:
-        raise HTTPException(status_code=422, detail=f"invalid branding patch: {exc}") from exc
+        raise HTTPException(
+            status_code=422, detail=f"invalid branding patch: {exc}"
+        ) from exc
 
     try:
         dumped = yaml.safe_dump(
@@ -182,7 +196,9 @@ def update_tenant_branding(name: str, req: BrandingUpdateRequest) -> BrandingRea
         )
         pack_yaml.write_text(dumped, encoding="utf-8")
     except OSError as exc:
-        raise HTTPException(status_code=500, detail=f"cannot write pack.yaml: {exc}") from exc
+        raise HTTPException(
+            status_code=500, detail=f"cannot write pack.yaml: {exc}"
+        ) from exc
 
     # Live process picks up the change without restart: drop cached pack
     # + refresh tenants registry. The active tenant's TenantContext is

@@ -86,7 +86,9 @@ def extract_wikilinks(text: str) -> list[str]:
 # Catturiamo numero + eventuale lettera. Il comma-lettera viene normalizzato
 # come `num.letter` per matching esatto in payload (es. "2.4.b").
 _ARTICOLO_REF = re.compile(
-    r"art(?:icolo|icoli|\.|t\.)\s*" r"(\d+(?:[\.\-]\d+)*)" r"(?:\s*(?:lett\.?|lettera)\s*([a-z]))?",
+    r"art(?:icolo|icoli|\.|t\.)\s*"
+    r"(\d+(?:[\.\-]\d+)*)"
+    r"(?:\s*(?:lett\.?|lettera)\s*([a-z]))?",
     re.IGNORECASE,
 )
 
@@ -163,7 +165,9 @@ def _find_atomic_blocks(lines: list[str]) -> list[tuple[int, int]]:
                 # Consente righe vuote all'interno di un callout Obsidian
                 # (es. `> [!rule]` + `>` + `> - item`). Termina quando finisce
                 # la sequenza e la riga successiva non è callout.
-                if lines[i].strip() == "" and (i + 1 >= n or not _CALLOUT_LINE.match(lines[i + 1])):
+                if lines[i].strip() == "" and (
+                    i + 1 >= n or not _CALLOUT_LINE.match(lines[i + 1])
+                ):
                     break
                 i += 1
             if i > start:
@@ -380,7 +384,9 @@ def prepare_chunk_text(chunk: str, metadata: dict[str, Any]) -> str:
 
     pair_hint = _detect_pair_hint(
         chunk,
-        metadata.get("relative_path") if isinstance(metadata.get("relative_path"), str) else None,
+        metadata.get("relative_path")
+        if isinstance(metadata.get("relative_path"), str)
+        else None,
     )
     footer = f"\n---\n{pair_hint}" if pair_hint else ""
 

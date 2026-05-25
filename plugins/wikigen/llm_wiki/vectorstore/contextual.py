@@ -73,7 +73,9 @@ def _get_client() -> Any:
 
             _client = ollama.Client(host=OLLAMA_URL)
         except ImportError:
-            logger.warning("[contextual] pacchetto `ollama` non installato — feature disabilitata")
+            logger.warning(
+                "[contextual] pacchetto `ollama` non installato — feature disabilitata"
+            )
             _failed = True
         except Exception as exc:
             logger.warning("[contextual] init Ollama fallita: %s", exc)

@@ -36,7 +36,9 @@ def _assert_not_raw(path: Path) -> None:
     except OSError:
         return
     if RAW_DIR in resolved.parents or resolved == RAW_DIR:
-        raise RawDirViolation(f"`raw/` è immutabile (CLAUDE.md §1). Rifiutato: {resolved}")
+        raise RawDirViolation(
+            f"`raw/` è immutabile (CLAUDE.md §1). Rifiutato: {resolved}"
+        )
 
 
 async def ingest_file(path: Path) -> dict[str, Any]:
@@ -84,7 +86,9 @@ async def ingest_files_batched(paths: list[Path]) -> dict[str, Any]:
     if not pages_data:
         return {"status": "empty", "indexed": 0, "unchanged": 0, "chunks": 0}
 
-    batch_result = await index_pages_batched(pages_data, use_contextual=True, force=False)
+    batch_result = await index_pages_batched(
+        pages_data, use_contextual=True, force=False
+    )
     for page in pages:
         _sync_graph(page)
     _tag_chunks_with_entities([p.document_id for p in pages])
@@ -151,10 +155,14 @@ async def ingest_all(
         valid_pages.append(page)
 
     t_parsed = time.perf_counter()
-    logger.info("[perf] parsed %d/%d files in %.2fs", len(pages_data), len(files), t_parsed - t0)
+    logger.info(
+        "[perf] parsed %d/%d files in %.2fs", len(pages_data), len(files), t_parsed - t0
+    )
 
     # --- batch embed + upsert (con skip content-hash interno) --------------
-    batch_result = await index_pages_batched(pages_data, use_contextual=use_contextual, force=force)
+    batch_result = await index_pages_batched(
+        pages_data, use_contextual=use_contextual, force=force
+    )
 
     # --- sync graph (leggero, sequenziale) ---------------------------------
     if graph.is_enabled():

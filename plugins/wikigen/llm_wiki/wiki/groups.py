@@ -86,7 +86,10 @@ def compute_groups(
 
     out = list(buckets.values())
     if rule.sort_by:
-        out.sort(key=lambda g: tuple(str(g["key"].get(k, "")) for k in rule.sort_by), reverse=True)
+        out.sort(
+            key=lambda g: tuple(str(g["key"].get(k, "")) for k in rule.sort_by),
+            reverse=True,
+        )
     return out
 
 

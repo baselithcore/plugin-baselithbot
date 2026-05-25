@@ -33,7 +33,9 @@ from llm_wiki.db.connection import get_connection
 # --- helpers ---------------------------------------------------------------
 
 
-def _format_memory(row: dict[str, Any], *, include_embedding: bool = False) -> dict[str, Any]:
+def _format_memory(
+    row: dict[str, Any], *, include_embedding: bool = False
+) -> dict[str, Any]:
     result = dict(row)
     for key in ("id", "tenant_id", "user_id"):
         if key in result and result[key] is not None:

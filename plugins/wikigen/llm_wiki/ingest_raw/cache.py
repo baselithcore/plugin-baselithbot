@@ -37,7 +37,9 @@ logger = logging.getLogger(__name__)
 
 _HASH_LEN = 16  # sha256 troncato; 64 bit anti-collisione, leggibile
 _FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
-_SOURCE_HASH_RE = re.compile(r"^source_hash:\s*['\"]?([a-f0-9]+)['\"]?\s*$", re.MULTILINE)
+_SOURCE_HASH_RE = re.compile(
+    r"^source_hash:\s*['\"]?([a-f0-9]+)['\"]?\s*$", re.MULTILINE
+)
 # v2: pages persistono solo come count (gli unici consumatori di
 # ExtractedDocument.pages a valle della cache leggono `n_pages`, non i corpi).
 # Su PDF grandi taglia ~50% dimensione cache + load più veloce.

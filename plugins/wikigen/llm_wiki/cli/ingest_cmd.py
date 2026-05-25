@@ -19,8 +19,12 @@ def ingest(
     ctx: typer.Context,
     file: Path = typer.Argument(..., help="Path to a PDF inside the vault `raw/` dir."),
     dry_run: bool = typer.Option(False, "--dry-run", help="Don't write to disk."),
-    overwrite: bool = typer.Option(False, "--overwrite", help="Overwrite existing pages."),
-    reindex: bool = typer.Option(True, "--reindex/--no-reindex", help="Reindex Qdrant."),
+    overwrite: bool = typer.Option(
+        False, "--overwrite", help="Overwrite existing pages."
+    ),
+    reindex: bool = typer.Option(
+        True, "--reindex/--no-reindex", help="Reindex Qdrant."
+    ),
     only_source: bool = typer.Option(
         False, "--only-source", help="Generate only the source page (skip derived)."
     ),
@@ -79,7 +83,10 @@ def ingest(
                 "ok": True,
                 "file": str(target),
                 "summary": result.summary(),
-                "pages": [{"status": p.status, "target": str(p.target_path)} for p in result.pages],
+                "pages": [
+                    {"status": p.status, "target": str(p.target_path)}
+                    for p in result.pages
+                ],
             }
         )
         return

@@ -88,8 +88,16 @@ _EXPANSIONS: Final[dict[str, tuple[str, ...]]] = {
         "tempo di franchigia temporale",
         "periodo iniziale di non operatività",
     ),
-    "prescrizione": ("termine di prescrizione", "decadenza del diritto", "art. 2952 CC"),
-    "decorrenza": ("effetto del contratto", "inizio della copertura", "data di effetto"),
+    "prescrizione": (
+        "termine di prescrizione",
+        "decadenza del diritto",
+        "art. 2952 CC",
+    ),
+    "decorrenza": (
+        "effetto del contratto",
+        "inizio della copertura",
+        "data di effetto",
+    ),
     "recesso": ("scioglimento del contratto", "disdetta", "risoluzione del contratto"),
     # Sinistro
     "denuncia": (
@@ -111,12 +119,24 @@ _EXPANSIONS: Final[dict[str, tuple[str, ...]]] = {
         "proporzionale in caso di sottoassicurazione",
         "riduzione proporzionale dell'indennizzo",
     ),
-    "rivalsa": ("azione di rivalsa", "regresso", "surroga della Società ex art. 1916 CC"),
+    "rivalsa": (
+        "azione di rivalsa",
+        "regresso",
+        "surroga della Società ex art. 1916 CC",
+    ),
     "surroga": ("surrogazione della Società", "rivalsa", "art. 1916 CC"),
     "aggravamento del rischio": ("art. 1898 CC", "mutamento del rischio"),
-    "altre assicurazioni": ("coassicurazione indiretta", "art. 1910 CC", "pluralità di coperture"),
+    "altre assicurazioni": (
+        "coassicurazione indiretta",
+        "art. 1910 CC",
+        "pluralità di coperture",
+    ),
     # Forme di assicurazione
-    "valore intero": ("art. 1907 CC", "forma a valore pieno", "valore integrale dei beni"),
+    "valore intero": (
+        "art. 1907 CC",
+        "forma a valore pieno",
+        "valore integrale dei beni",
+    ),
     "primo rischio": (
         "primo rischio assoluto",
         "deroga all'art. 1907 CC",
@@ -134,7 +154,11 @@ _EXPANSIONS: Final[dict[str, tuple[str, ...]]] = {
     "dip": ("Documento Informativo Precontrattuale", "IPID"),
     "dip aggiuntivo": ("DIP Aggiuntivo Danni", "documento integrativo precontrattuale"),
     "condizioni generali": ("Condizioni di Assicurazione", "CdA", "CGA"),
-    "condizioni di assicurazione": ("CdA", "CGA", "Condizioni Generali di Assicurazione"),
+    "condizioni di assicurazione": (
+        "CdA",
+        "CGA",
+        "Condizioni Generali di Assicurazione",
+    ),
     "norme tecniche assuntive": ("NTA", "regole di sottoscrizione", "norme assuntive"),
     # Contraente / assicurato
     "assicurato": (

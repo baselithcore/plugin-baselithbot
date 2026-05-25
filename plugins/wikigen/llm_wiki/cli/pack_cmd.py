@@ -62,7 +62,9 @@ def pack_list(ctx: typer.Context) -> None:
     octx = get_ctx(ctx)
     domains_dir = _domains_dir()
     if not domains_dir.is_dir():
-        emit_error(ctx, message="domains/ directory not found", exit_code=EXIT_USER_ERROR)
+        emit_error(
+            ctx, message="domains/ directory not found", exit_code=EXIT_USER_ERROR
+        )
         raise
 
     rows: list[dict[str, Any]] = []
@@ -130,13 +132,17 @@ def pack_list(ctx: typer.Context) -> None:
 @pack_app.command("show")
 def pack_show(
     ctx: typer.Context,
-    name: str = typer.Argument(..., help="Pack slug (the directory name under domains/)."),
+    name: str = typer.Argument(
+        ..., help="Pack slug (the directory name under domains/)."
+    ),
 ) -> None:
     """Print the parsed Domain Pack metadata for one slug."""
     octx = get_ctx(ctx)
     pack, err = _load_pack_safely(name)
     if pack is None:
-        emit_error(ctx, message=f"pack '{name}' invalid: {err}", exit_code=EXIT_USER_ERROR)
+        emit_error(
+            ctx, message=f"pack '{name}' invalid: {err}", exit_code=EXIT_USER_ERROR
+        )
         raise
 
     if octx.json_output:
@@ -153,7 +159,9 @@ def pack_show(
         f"[bold]page types[/bold]:  "
         + ", ".join(f"{pt.id}({pt.folder})" for pt in pack.page_types)
         + "\n"
-        "[bold]grouping[/bold]:    " + (", ".join(r.key for r in pack.grouping) or "-") + "\n"
+        "[bold]grouping[/bold]:    "
+        + (", ".join(r.key for r in pack.grouping) or "-")
+        + "\n"
         f"[bold]path[/bold]:        {pack_dir}"
     )
     octx.console.print(Panel.fit(body, title=f"Pack '{pack.name}'"))
@@ -201,7 +209,9 @@ def pack_validate(
 @pack_app.command("activate")
 def pack_activate(
     ctx: typer.Context,
-    name: str = typer.Argument(..., help="Pack slug to activate (writes APP_DOMAIN to .env)."),
+    name: str = typer.Argument(
+        ..., help="Pack slug to activate (writes APP_DOMAIN to .env)."
+    ),
     yes: bool = typer.Option(
         False, "--yes", "-y", help="Skip confirmation prompt (for non-interactive use)."
     ),
@@ -210,7 +220,9 @@ def pack_activate(
     octx = get_ctx(ctx)
     pack, err = _load_pack_safely(name)
     if pack is None:
-        emit_error(ctx, message=f"pack '{name}' invalid: {err}", exit_code=EXIT_USER_ERROR)
+        emit_error(
+            ctx, message=f"pack '{name}' invalid: {err}", exit_code=EXIT_USER_ERROR
+        )
         raise
 
     from llm_wiki.admin.scaffold import _upsert_env_kv, repo_root
@@ -231,7 +243,9 @@ def pack_activate(
     try:
         env_path.write_text(new_base, encoding="utf-8")
     except OSError as exc:
-        emit_error(ctx, message=f"failed to write {env_path}: {exc}", exit_code=EXIT_USER_ERROR)
+        emit_error(
+            ctx, message=f"failed to write {env_path}: {exc}", exit_code=EXIT_USER_ERROR
+        )
         raise
 
     if octx.json_output:

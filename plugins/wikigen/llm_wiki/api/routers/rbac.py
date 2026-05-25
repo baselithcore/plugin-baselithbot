@@ -109,7 +109,9 @@ class GrantDomainRequest(BaseModel):
 router = APIRouter(
     prefix="/api/admin/rbac",
     tags=["admin", "rbac"],
-    dependencies=[Depends(require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin"))],
+    dependencies=[
+        Depends(require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin"))
+    ],
 )
 
 
@@ -120,12 +122,16 @@ def list_permissions() -> list[PermissionEntry]:
     Esposto via API per popolare la UI admin senza cablare le stringhe
     nel frontend.
     """
-    return [PermissionEntry(slug=slug, description="") for slug in sorted(ALL_PERMISSIONS)]
+    return [
+        PermissionEntry(slug=slug, description="") for slug in sorted(ALL_PERMISSIONS)
+    ]
 
 
 @router.get("/roles", response_model=list[RoleSummary])
 def list_roles_endpoint(
-    user: dict = Depends(require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")),
+    user: dict = Depends(
+        require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")
+    ),
 ) -> list[RoleSummary]:
     rows = roles_db.list_roles(tenant_id=user.get("tenant_id"))
     return [RoleSummary(**r) for r in rows]
@@ -136,7 +142,9 @@ def get_role(role_id: str) -> RoleDetail:
     rows = roles_db.list_roles()
     match = next((r for r in rows if r["id"] == role_id), None)
     if not match:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ruolo non trovato")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="ruolo non trovato"
+        )
     perms = roles_db.get_role_permissions(role_id)
     return RoleDetail(**match, permissions=perms)
 
@@ -146,7 +154,9 @@ def update_role_permissions(
     role_id: str,
     body: SetRolePermissionsRequest,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")
+    ),
 ) -> RoleDetail:
     """Sostituisce i permessi di un ruolo.
 
@@ -204,7 +214,9 @@ def list_users_with_roles() -> list[UserWithRoles]:
     for u in list_users():
         uid = u["id"]
         roles = [RoleSummary(**r) for r in roles_db.get_user_roles(uid)]
-        grants_detailed = [DomainGrant(**g) for g in roles_db.get_user_domain_grants_detailed(uid)]
+        grants_detailed = [
+            DomainGrant(**g) for g in roles_db.get_user_domain_grants_detailed(uid)
+        ]
         domains = [g.domain_slug for g in grants_detailed]
         out.append(
             UserWithRoles(
@@ -225,7 +237,9 @@ def list_users_with_roles() -> list[UserWithRoles]:
 def _ensure_user_exists(user_id: str) -> dict:
     target = get_user_by_id(user_id)
     if not target:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="utente non trovato")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="utente non trovato"
+        )
     return target
 
 
@@ -233,7 +247,9 @@ def _ensure_role_exists(role_id: str) -> dict:
     rows = roles_db.list_roles()
     match = next((r for r in rows if r["id"] == role_id), None)
     if not match:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ruolo non trovato")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="ruolo non trovato"
+        )
     return match
 
 
@@ -249,7 +265,9 @@ def assign_role(
     user_id: str,
     body: AssignRoleRequest,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")
+    ),
 ) -> dict:
     target = _ensure_user_exists(user_id)
     role = _ensure_role_exists(body.role_id)
@@ -274,7 +292,9 @@ def assign_role(
     # permesso più alto `rbac.assign.admin` — il sistema non sa a priori
     # quanto siano potenti.
     if role.get("is_system"):
-        required = ROLE_ASSIGN_PERMISSION.get(role["slug"], Permission.RBAC_ASSIGN_ADMIN)
+        required = ROLE_ASSIGN_PERMISSION.get(
+            role["slug"], Permission.RBAC_ASSIGN_ADMIN
+        )
     else:
         required = Permission.RBAC_ASSIGN_ADMIN
     actor_perms = set(actor.get("perms") or [])
@@ -284,7 +304,9 @@ def assign_role(
             detail=f"Permesso richiesto per assegnare '{role['slug']}': {required}.",
         )
 
-    inserted = roles_db.assign_role_to_user(user_id, body.role_id, granted_by=actor["id"])
+    inserted = roles_db.assign_role_to_user(
+        user_id, body.role_id, granted_by=actor["id"]
+    )
     write_event(
         "rbac.role.assign",
         tenant_id=actor.get("tenant_id"),
@@ -306,7 +328,9 @@ def revoke_role(
     user_id: str,
     role_id: str,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")
+    ),
 ) -> dict:
     target = _ensure_user_exists(user_id)
     role = _ensure_role_exists(role_id)
@@ -322,7 +346,9 @@ def revoke_role(
     # stesso ruolo (simmetria). Un moderatore con rbac.assign.user può
     # quindi anche degradare un user, ma non un admin.
     if role.get("is_system"):
-        required = ROLE_ASSIGN_PERMISSION.get(role["slug"], Permission.RBAC_ASSIGN_ADMIN)
+        required = ROLE_ASSIGN_PERMISSION.get(
+            role["slug"], Permission.RBAC_ASSIGN_ADMIN
+        )
     else:
         required = Permission.RBAC_ASSIGN_ADMIN
     actor_perms = set(actor.get("perms") or [])
@@ -359,7 +385,9 @@ def grant_domain(
     user_id: str,
     body: GrantDomainRequest,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")
+    ),
 ) -> dict:
     target = _ensure_user_exists(user_id)
     if user_id == actor["id"]:
@@ -395,7 +423,9 @@ def revoke_domain(
     user_id: str,
     domain_slug: str,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")
+    ),
 ) -> dict:
     target = _ensure_user_exists(user_id)
     if user_id == actor["id"]:

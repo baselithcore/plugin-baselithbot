@@ -48,7 +48,9 @@ def test_insurance_pack_registers_three_strategies() -> None:
 
 def test_insurance_dispatch_garanzia() -> None:
     load_pack("insurance", force=True)
-    strat = select_page_type_strategy(page_type="concept", subtype="garanzia-assicurativa")
+    strat = select_page_type_strategy(
+        page_type="concept", subtype="garanzia-assicurativa"
+    )
     assert strat.name == "insurance.garanzia"
 
 

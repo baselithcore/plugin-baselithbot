@@ -48,7 +48,7 @@ export function DonePanel({
       try {
         window.localStorage.setItem(
           'onboarding.pending_synth_warning',
-          JSON.stringify({ pack: result.name, msg: result.synthesis_warning }),
+          JSON.stringify({ pack: result.name, msg: result.synthesis_warning })
         );
       } catch {
         /* ignore */
@@ -89,7 +89,7 @@ export function DonePanel({
         const prev = byName.get(j.filename);
         // prefer the most-advanced status if same filename appears twice
         const advance = (s: typeof j.status) =>
-          ({ queued: 0, running: 1, done: 2, error: 2 } as const)[s];
+          (({ queued: 0, running: 1, done: 2, error: 2 }) as const)[s];
         if (!prev || advance(j.status) >= advance(prev.status)) {
           byName.set(j.filename, {
             filename: j.filename,
@@ -159,8 +159,7 @@ export function DonePanel({
           if (!act.ok || act.setup_mode) {
             setDoneState('manual_required');
             toast.error(
-              act.note ||
-                'Attivazione in-process non riuscita: avvia il server con --reload.'
+              act.note || 'Attivazione in-process non riuscita: avvia il server con --reload.'
             );
             return;
           }
@@ -238,16 +237,14 @@ export function DonePanel({
               v={`personalizzato${result.synthesis_model ? ` · ${result.synthesis_model}` : ''}`}
             />
           )}
-          {expectedDocs > 0 && (
-            <Row k="documenti" v={`${expectedDocs} PDF da elaborare`} />
-          )}
+          {expectedDocs > 0 && <Row k="documenti" v={`${expectedDocs} PDF da elaborare`} />}
         </dl>
         {result.synthesis_warning && !result.synthesis_applied && (
           <div className="mt-2 flex items-start gap-1.5 text-[10.5px] text-[var(--color-warning)]">
             <AlertCircle size={11} className="mt-0.5 shrink-0" aria-hidden />
             <span>
-              Personalizzazione del prompt non eseguita ({result.synthesis_warning}). Sono stati usati
-              i prompt generici di <code>_template</code> — modificali in{' '}
+              Personalizzazione del prompt non eseguita ({result.synthesis_warning}). Sono stati
+              usati i prompt generici di <code>_template</code> — modificali in{' '}
               <code>domains/{result.name}/prompts/system.j2</code>.
             </span>
           </div>

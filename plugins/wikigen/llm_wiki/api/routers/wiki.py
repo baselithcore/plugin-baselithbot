@@ -49,9 +49,7 @@ def _obsidian_uri(vault_root: Any, relative_path: str) -> str:
     `OBSIDIAN_VAULT_NAME`; otherwise it derives from the vault dir name.
     """
     vault_name = config.OBSIDIAN_VAULT_NAME or vault_root.name
-    return (
-        f"obsidian://open?vault={quote(vault_name, safe='')}&file={quote(relative_path, safe='/')}"
-    )
+    return f"obsidian://open?vault={quote(vault_name, safe='')}&file={quote(relative_path, safe='/')}"
 
 
 router = APIRouter(dependencies=[Depends(_require_wiki_read_or_anon)])
@@ -63,10 +61,14 @@ def get_groups_index(ctx: TenantContext = Depends(get_tenant)) -> dict[str, Any]
 
 
 @router.get("/api/groups/{rule_key}")
-def get_groups(rule_key: str, ctx: TenantContext = Depends(get_tenant)) -> dict[str, Any]:
+def get_groups(
+    rule_key: str, ctx: TenantContext = Depends(get_tenant)
+) -> dict[str, Any]:
     rule = get_rule(rule_key, ctx.pack)
     if rule is None:
-        raise HTTPException(status_code=404, detail=f"unknown grouping rule: {rule_key}")
+        raise HTTPException(
+            status_code=404, detail=f"unknown grouping rule: {rule_key}"
+        )
     groups = compute_groups(rule, wiki_dir=ctx.wiki_dir, wiki_root=ctx.vault_root)
     return {
         "rule": serialize_rule(rule),

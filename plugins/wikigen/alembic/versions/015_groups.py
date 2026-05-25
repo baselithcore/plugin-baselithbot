@@ -70,7 +70,8 @@ def upgrade() -> None:
     )
     # Slug unico per tenant (no NULL — i gruppi sono sempre tenant-scoped).
     op.execute(
-        "CREATE UNIQUE INDEX IF NOT EXISTS uq_groups_tenant_slug " "ON groups (tenant_id, slug)"
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_groups_tenant_slug "
+        "ON groups (tenant_id, slug)"
     )
     op.execute("CREATE INDEX IF NOT EXISTS idx_groups_tenant ON groups (tenant_id)")
 
@@ -89,8 +90,12 @@ def upgrade() -> None:
         )
         """
     )
-    op.execute("CREATE INDEX IF NOT EXISTS idx_group_members_user ON group_members (user_id)")
-    op.execute("CREATE INDEX IF NOT EXISTS idx_group_members_group ON group_members (group_id)")
+    op.execute(
+        "CREATE INDEX IF NOT EXISTS idx_group_members_user ON group_members (user_id)"
+    )
+    op.execute(
+        "CREATE INDEX IF NOT EXISTS idx_group_members_group ON group_members (group_id)"
+    )
 
     op.execute(
         """
@@ -104,8 +109,12 @@ def upgrade() -> None:
         )
         """
     )
-    op.execute("CREATE INDEX IF NOT EXISTS idx_group_roles_group ON group_roles (group_id)")
-    op.execute("CREATE INDEX IF NOT EXISTS idx_group_roles_role ON group_roles (role_id)")
+    op.execute(
+        "CREATE INDEX IF NOT EXISTS idx_group_roles_group ON group_roles (group_id)"
+    )
+    op.execute(
+        "CREATE INDEX IF NOT EXISTS idx_group_roles_role ON group_roles (role_id)"
+    )
 
     # Trigger updated_at su groups (riusa ``set_updated_at_timestamp`` di mig 001).
     op.execute(

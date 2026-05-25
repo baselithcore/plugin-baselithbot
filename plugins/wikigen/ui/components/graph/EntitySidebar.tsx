@@ -120,7 +120,9 @@ export function EntitySidebar({ node, onClose, onSelectEntity }: EntitySidebarPr
           <div className="rounded-md bg-canvas px-3 py-2 text-xs text-ink-muted">Carico…</div>
         )}
         {error && (
-          <div className="rounded-md bg-canvas px-3 py-2 text-xs text-[var(--color-danger)]">{error}</div>
+          <div className="rounded-md bg-canvas px-3 py-2 text-xs text-[var(--color-danger)]">
+            {error}
+          </div>
         )}
         {!loading && !error && neighbors && neighbors.results.length === 0 && (
           <div className="rounded-md bg-canvas px-3 py-2 text-xs text-ink-muted">

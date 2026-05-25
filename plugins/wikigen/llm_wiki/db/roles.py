@@ -291,7 +291,9 @@ def set_role_permissions(role_id: str, permissions: list[str]) -> dict[str, list
     return {"added": added, "removed": removed}
 
 
-def assign_role_to_user(user_id: str, role_id: str, granted_by: str | None = None) -> bool:
+def assign_role_to_user(
+    user_id: str, role_id: str, granted_by: str | None = None
+) -> bool:
     """Idempotent. Ritorna True se l'inserimento è avvenuto."""
     if not config.POSTGRES_ENABLED:
         return False

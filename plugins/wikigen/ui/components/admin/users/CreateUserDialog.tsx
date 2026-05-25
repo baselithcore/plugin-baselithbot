@@ -38,13 +38,7 @@ function generatePassword(): string {
   return `A!${hex}`;
 }
 
-export function CreateUserDialog({
-  open,
-  roles,
-  assignableRoles,
-  onClose,
-  onCreated,
-}: Props) {
+export function CreateUserDialog({ open, roles, assignableRoles, onClose, onCreated }: Props) {
   const [email, setEmail] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
@@ -115,8 +109,8 @@ export function CreateUserDialog({
       {createdInfo ? (
         <div className="flex flex-col gap-3 p-5 text-xs">
           <Callout tone="success">
-            Utente creato. Condividi credenziali via canale sicuro — al
-            primo accesso verrà obbligato a cambiarla.
+            Utente creato. Condividi credenziali via canale sicuro — al primo accesso verrà
+            obbligato a cambiarla.
           </Callout>
           <div className="flex flex-col gap-1">
             <span className="text-[10px] uppercase text-ink-subtle">Email</span>

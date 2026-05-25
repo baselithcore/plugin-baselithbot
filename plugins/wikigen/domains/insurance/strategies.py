@@ -43,7 +43,9 @@ def _full_outline(markdown: str, *, limit_chars: int) -> str:
     return "\n".join(out)
 
 
-def _extract_section_markdown(doc: ExtractedDocument, *, section_hints: list[str]) -> str:
+def _extract_section_markdown(
+    doc: ExtractedDocument, *, section_hints: list[str]
+) -> str:
     if not section_hints:
         return doc.markdown[:10000]
     md = doc.markdown
@@ -54,8 +56,14 @@ def _extract_section_markdown(doc: ExtractedDocument, *, section_hints: list[str
         if not m:
             continue
         start = m.start()
-        next_heading = re.search(r"^#{1,2}\s+", md[start + len(m.group(0)) :], re.MULTILINE)
-        end = (start + len(m.group(0)) + next_heading.start()) if next_heading else len(md)
+        next_heading = re.search(
+            r"^#{1,2}\s+", md[start + len(m.group(0)) :], re.MULTILINE
+        )
+        end = (
+            (start + len(m.group(0)) + next_heading.start())
+            if next_heading
+            else len(md)
+        )
         chunks.append(md[start:end])
     if not chunks:
         return doc.markdown[:10000]
@@ -158,7 +166,10 @@ class InsuranceGaranziaStrategy:
     name = "insurance.garanzia"
 
     def matches(self, *, page_type: str, subtype: str | None) -> bool:
-        return page_type == "concept" and subtype in {"garanzia-assicurativa", "pack-opzionale"}
+        return page_type == "concept" and subtype in {
+            "garanzia-assicurativa",
+            "pack-opzionale",
+        }
 
     def generate(self, ctx: GenerationContext) -> str:
         plan = ctx.plan

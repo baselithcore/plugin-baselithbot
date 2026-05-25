@@ -40,7 +40,9 @@ class FrontmatterSchema:
     construction, safe to share across threads.
     """
 
-    def __init__(self, pack: DomainPack, fields: list[FrontmatterField], extra: dict[str, Any]):
+    def __init__(
+        self, pack: DomainPack, fields: list[FrontmatterField], extra: dict[str, Any]
+    ):
         self._pack = pack
         self._fields = fields
         self._extra = extra
@@ -137,7 +139,9 @@ def _build_schema(pack: DomainPack) -> FrontmatterSchema:
         try:
             fields.append(FrontmatterField(**entry))
         except ValidationError as exc:
-            raise ValueError(f"{pack.schema_path}: invalid field {entry!r}\n{exc}") from exc
+            raise ValueError(
+                f"{pack.schema_path}: invalid field {entry!r}\n{exc}"
+            ) from exc
 
     extra = raw.get("extra") or {}
     if not isinstance(extra, dict):

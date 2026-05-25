@@ -63,7 +63,9 @@ class CitationViolation:
     raw: str  # wikilink così come appare nel testo
     folder: str
     slug: str
-    reason: str  # 'unknown_folder' | 'slug_not_in_sources' | 'unknown_anchor' | 'malformed'
+    reason: (
+        str  # 'unknown_folder' | 'slug_not_in_sources' | 'unknown_anchor' | 'malformed'
+    )
     anchor: str = ""
 
 
@@ -81,8 +83,9 @@ class CitationReport:
     def summary(self) -> str:
         if not self.violations:
             return f"{len(self.valid)} citazioni valide"
-        return f"{len(self.valid)} valide · {len(self.violations)} violazioni: " + ", ".join(
-            f"{v.raw}({v.reason})" for v in self.violations[:5]
+        return (
+            f"{len(self.valid)} valide · {len(self.violations)} violazioni: "
+            + ", ".join(f"{v.raw}({v.reason})" for v in self.violations[:5])
         )
 
 
@@ -164,7 +167,11 @@ def validate(
         if "/" not in target:
             report.violations.append(
                 CitationViolation(
-                    raw=raw, folder="", slug=target, reason="malformed", anchor=anchor_raw
+                    raw=raw,
+                    folder="",
+                    slug=target,
+                    reason="malformed",
+                    anchor=anchor_raw,
                 )
             )
             continue
@@ -174,7 +181,11 @@ def validate(
         if folder not in allowed_folders:
             report.violations.append(
                 CitationViolation(
-                    raw=raw, folder=folder, slug=slug, reason="unknown_folder", anchor=anchor_raw
+                    raw=raw,
+                    folder=folder,
+                    slug=slug,
+                    reason="unknown_folder",
+                    anchor=anchor_raw,
                 )
             )
             continue
@@ -219,7 +230,9 @@ def build_repair_feedback(report: CitationReport, sources: list[dict[str, Any]])
     Elenca esplicitamente le fonti ammesse (recuperate) + le violazioni
     riscontrate. Il messaggio è in italiano (il pack è italiano-only).
     """
-    lines = ["La risposta precedente contiene citazioni non valide. Rigenera correggendo:"]
+    lines = [
+        "La risposta precedente contiene citazioni non valide. Rigenera correggendo:"
+    ]
     if report.violations:
         lines.append("")
         lines.append("**Violazioni:**")

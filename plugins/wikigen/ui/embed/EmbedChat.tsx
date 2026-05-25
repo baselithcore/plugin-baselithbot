@@ -76,9 +76,7 @@ export function EmbedChat({ token }: EmbedChatProps) {
 
   if (!config) {
     return (
-      <div style={{ padding: 24, fontFamily: 'sans-serif', color: '#6b7280' }}>
-        Caricamento…
-      </div>
+      <div style={{ padding: 24, fontFamily: 'sans-serif', color: '#6b7280' }}>Caricamento…</div>
     );
   }
 

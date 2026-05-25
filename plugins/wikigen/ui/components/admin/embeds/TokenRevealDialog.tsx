@@ -47,8 +47,8 @@ export function TokenRevealDialog({ result, onClose }: Props) {
     <ModalShell open onClose={onClose} title={`Token "${result.name}"`} width="lg" blocking>
       <div className="space-y-4 p-1">
         <div className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-          <strong>Importante:</strong> il token plaintext viene mostrato UNA volta sola. Copialo
-          ora — dopo questa schermata non sarà più recuperabile. Per emergenze usa "Ruota token".
+          <strong>Importante:</strong> il token plaintext viene mostrato UNA volta sola. Copialo ora
+          — dopo questa schermata non sarà più recuperabile. Per emergenze usa "Ruota token".
         </div>
 
         <div>

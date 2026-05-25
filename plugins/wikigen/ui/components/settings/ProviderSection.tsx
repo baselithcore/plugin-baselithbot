@@ -50,12 +50,16 @@ export function ProviderSection() {
         setIngestModel(s.provider.ingest_model || '');
         if (s.provider.rag_vendor === 'ollama' || s.provider.ingest_vendor === 'ollama') {
           setOllamaUrl(
-            s.provider.endpoint && s.provider.endpoint.startsWith('http://') ? s.provider.endpoint : ''
+            s.provider.endpoint && s.provider.endpoint.startsWith('http://')
+              ? s.provider.endpoint
+              : ''
           );
         }
         if (s.provider.rag_vendor === 'openai' || s.provider.ingest_vendor === 'openai') {
           setOpenaiBase(
-            s.provider.endpoint && s.provider.endpoint.startsWith('https://') ? s.provider.endpoint : ''
+            s.provider.endpoint && s.provider.endpoint.startsWith('https://')
+              ? s.provider.endpoint
+              : ''
           );
         }
       })
@@ -113,9 +117,9 @@ export function ProviderSection() {
   return (
     <div className="space-y-3">
       <p className="text-[11px] leading-relaxed text-ink-muted">
-        Scegli il vendor indipendentemente per chat e ingestion. Quando differiscono
-        viene attivata la modalità ibrida (chat su un provider, ingestion sull'altro).
-        Le modifiche vanno in <code>.env</code> e nel processo live — niente restart.
+        Scegli il vendor indipendentemente per chat e ingestion. Quando differiscono viene attivata
+        la modalità ibrida (chat su un provider, ingestion sull'altro). Le modifiche vanno in{' '}
+        <code>.env</code> e nel processo live — niente restart.
       </p>
 
       <div className="space-y-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-3">

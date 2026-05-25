@@ -110,7 +110,8 @@ def _dense_only(
         with_payload=True,
     )
     return [
-        {"id": str(p.id), "score": float(p.score), "payload": p.payload or {}} for p in resp.points
+        {"id": str(p.id), "score": float(p.score), "payload": p.payload or {}}
+        for p in resp.points
     ]
 
 
@@ -133,14 +134,24 @@ def hybrid_search(
 
     # Fast path dense-only
     if not is_hybrid_collection(collection) or not emb_out.has_sparse():
-        return _dense_only(dense_vec, limit=limit, qfilter=qfilter, collection=collection)
+        return _dense_only(
+            dense_vec, limit=limit, qfilter=qfilter, collection=collection
+        )
 
     sparse_vec = _sparse_to_qdrant(emb_out.sparse[0])
 
     prefetches = [
-        Prefetch(query=dense_vec, using=DENSE_VECTOR, limit=HYBRID_PREFETCH_LIMIT, filter=qfilter),
         Prefetch(
-            query=sparse_vec, using=SPARSE_VECTOR, limit=HYBRID_PREFETCH_LIMIT, filter=qfilter
+            query=dense_vec,
+            using=DENSE_VECTOR,
+            limit=HYBRID_PREFETCH_LIMIT,
+            filter=qfilter,
+        ),
+        Prefetch(
+            query=sparse_vec,
+            using=SPARSE_VECTOR,
+            limit=HYBRID_PREFETCH_LIMIT,
+            filter=qfilter,
         ),
     ]
 
@@ -172,8 +183,11 @@ def hybrid_search(
             )
     except Exception as exc:
         logger.warning("[hybrid] query fallita (%s); fallback dense-only", exc)
-        return _dense_only(dense_vec, limit=limit, qfilter=qfilter, collection=collection)
+        return _dense_only(
+            dense_vec, limit=limit, qfilter=qfilter, collection=collection
+        )
 
     return [
-        {"id": str(p.id), "score": float(p.score), "payload": p.payload or {}} for p in resp.points
+        {"id": str(p.id), "score": float(p.score), "payload": p.payload or {}}
+        for p in resp.points
     ]

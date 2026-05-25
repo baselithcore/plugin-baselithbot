@@ -47,19 +47,27 @@ def _escape_cell(c: str) -> str:
     return (c or "").replace("\n", " ").replace("|", "\\|").strip()
 
 
-def _extract_tables_from_markdown(md: str, *, default_page: int) -> list[ExtractedTable]:
+def _extract_tables_from_markdown(
+    md: str, *, default_page: int
+) -> list[ExtractedTable]:
     """Parse tabelle da markdown già esistente (backend marker)."""
     out: list[ExtractedTable] = []
     lines = md.splitlines()
     i = 0
     while i < len(lines):
-        if lines[i].lstrip().startswith("|") and i + 1 < len(lines) and "---" in lines[i + 1]:
+        if (
+            lines[i].lstrip().startswith("|")
+            and i + 1 < len(lines)
+            and "---" in lines[i + 1]
+        ):
             start = i
             while i < len(lines) and lines[i].lstrip().startswith("|"):
                 i += 1
             block = lines[start:i]
             header = [c.strip() for c in block[0].strip().strip("|").split("|")]
-            rows = [[c.strip() for c in r.strip().strip("|").split("|")] for r in block[2:]]
+            rows = [
+                [c.strip() for c in r.strip().strip("|").split("|")] for r in block[2:]
+            ]
             out.append(
                 ExtractedTable(
                     caption=None,

@@ -201,10 +201,15 @@ def _safe_parse_judge(raw: str, claims: list[str]) -> list[ClaimScore]:
             supported = bool(raw_item.get("supported", False))
             note = str(raw_item.get("note") or "").strip()[:120]
             out.append(ClaimScore(text=text, supported=supported, note=note))
-        return out or [ClaimScore(text=c, supported=False, note="parse: empty") for c in claims]
+        return out or [
+            ClaimScore(text=c, supported=False, note="parse: empty") for c in claims
+        ]
     except Exception as exc:
         logger.warning("[groundedness] parse failed: %s — fallback to unsupported", exc)
-        return [ClaimScore(text=c, supported=False, note=f"parse_error: {exc}") for c in claims]
+        return [
+            ClaimScore(text=c, supported=False, note=f"parse_error: {exc}")
+            for c in claims
+        ]
 
 
 def repair_feedback(report: GroundednessReport) -> str:
@@ -217,7 +222,9 @@ def repair_feedback(report: GroundednessReport) -> str:
     unsup = report.unsupported_claims()
     if not unsup:
         return ""
-    bullets = "\n".join(f"- «{c.text}»  → motivo: {c.note or 'non supportato'}" for c in unsup)
+    bullets = "\n".join(
+        f"- «{c.text}»  → motivo: {c.note or 'non supportato'}" for c in unsup
+    )
     return (
         "GROUNDEDNESS VIOLATION rilevata. I seguenti claim della tua risposta "
         "non sono supportati dal CONTESTO che hai a disposizione:\n\n"

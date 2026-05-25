@@ -81,7 +81,9 @@ class RateLimiter:
             raise RateLimitExceeded(identifier)
         bucket.append(now)
 
-    def _check_redis(self, redis, identifier: str, limit: int, window_seconds: int) -> None:
+    def _check_redis(
+        self, redis, identifier: str, limit: int, window_seconds: int
+    ) -> None:
         key = f"ratelimit:{identifier}"
         now = time.time()
         window_start = now - window_seconds

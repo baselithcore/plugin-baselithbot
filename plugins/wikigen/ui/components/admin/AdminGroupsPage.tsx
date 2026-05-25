@@ -118,11 +118,7 @@ export function AdminGroupsPage() {
           </span>
           {can('admin.group.manage') && (
             <div className="ml-auto">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setCreateOpen(true)}
-              >
+              <Button variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
                 <Plus size={13} />
                 Nuovo gruppo
               </Button>

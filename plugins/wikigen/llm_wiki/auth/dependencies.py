@@ -40,7 +40,9 @@ def _client_ip(request: Request) -> str:
 
 
 def _extract_bearer(request: Request) -> str | None:
-    auth = request.headers.get("authorization") or request.headers.get("Authorization", "")
+    auth = request.headers.get("authorization") or request.headers.get(
+        "Authorization", ""
+    )
     if auth.lower().startswith("bearer "):
         token = auth[7:].strip()
         return token or None
@@ -116,7 +118,9 @@ def _enforce_rate_limit(
         return
     identifier = f"user:{user['id']}" if user else f"ip:{_client_ip(request)}"
     try:
-        rate_limiter.check(identifier, limit_per_minute, config.RATE_LIMIT_WINDOW_SECONDS)
+        rate_limiter.check(
+            identifier, limit_per_minute, config.RATE_LIMIT_WINDOW_SECONDS
+        )
     except RateLimitExceeded as exc:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
@@ -174,7 +178,11 @@ def require_admin(request: Request) -> dict[str, Any]:
     # E con la gerarchia 008: superuser è il vero "all-access". Manteniamo
     # `admin` come accettato per non rompere route che non sono ancora
     # passate a `require_permission` granulare.
-    is_admin = user.get("role") == "admin" or "superuser" in user_roles or "admin" in user_roles
+    is_admin = (
+        user.get("role") == "admin"
+        or "superuser" in user_roles
+        or "admin" in user_roles
+    )
     if not is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

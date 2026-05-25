@@ -77,8 +77,7 @@ export function MarkdownPreview({
   // deferred + min-length: l'highlight non corre per ogni keystroke,
   // così la preview non si blocca mentre l'utente digita.
   const deferredQuery = useDeferredValue(query);
-  const effectiveQuery =
-    deferredQuery.trim().length >= MIN_HIGHLIGHT_LEN ? deferredQuery : '';
+  const effectiveQuery = deferredQuery.trim().length >= MIN_HIGHLIGHT_LEN ? deferredQuery : '';
   const plugins = useMemo(
     () => [rehypeHighlight, rehypeHighlightSearch(effectiveQuery)],
     [effectiveQuery]

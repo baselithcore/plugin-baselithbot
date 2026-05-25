@@ -76,7 +76,9 @@ class HttpMetricsMiddleware(BaseHTTPMiddleware):
                 route=route,
                 status_bucket=_status_bucket(status_code),
             ).inc()
-            TENANT_HTTP_LATENCY_SECONDS.labels(tenant_id=tid, route=route).observe(elapsed)
+            TENANT_HTTP_LATENCY_SECONDS.labels(tenant_id=tid, route=route).observe(
+                elapsed
+            )
             if status_code >= 400:
                 TENANT_HTTP_ERRORS_TOTAL.labels(
                     tenant_id=tid, route=route, status=str(status_code)

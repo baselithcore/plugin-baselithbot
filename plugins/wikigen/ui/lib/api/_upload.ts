@@ -98,19 +98,17 @@ export async function runWithConcurrency<T, R>(
 ): Promise<PromiseSettledResult<R>[]> {
   const results: PromiseSettledResult<R>[] = new Array(items.length);
   let cursor = 0;
-  const workers = new Array(Math.max(1, Math.min(limit, items.length)))
-    .fill(0)
-    .map(async () => {
-      while (true) {
-        const i = cursor++;
-        if (i >= items.length) return;
-        try {
-          results[i] = { status: 'fulfilled', value: await fn(items[i], i) };
-        } catch (err) {
-          results[i] = { status: 'rejected', reason: err };
-        }
+  const workers = new Array(Math.max(1, Math.min(limit, items.length))).fill(0).map(async () => {
+    while (true) {
+      const i = cursor++;
+      if (i >= items.length) return;
+      try {
+        results[i] = { status: 'fulfilled', value: await fn(items[i], i) };
+      } catch (err) {
+        results[i] = { status: 'rejected', reason: err };
       }
-    });
+    }
+  });
   await Promise.all(workers);
   return results;
 }

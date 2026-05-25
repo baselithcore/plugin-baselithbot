@@ -144,7 +144,9 @@ def tag_chunks_for_document(document_id: str) -> int:
 
     try:
         scroll_filter = Filter(
-            must=[FieldCondition(key="document_id", match=MatchValue(value=document_id))]
+            must=[
+                FieldCondition(key="document_id", match=MatchValue(value=document_id))
+            ]
         )
         # Page tipica = 5-50 chunk; limit alto basta una pass.
         results, _ = client.scroll(

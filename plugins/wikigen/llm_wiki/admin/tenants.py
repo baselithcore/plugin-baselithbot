@@ -116,7 +116,9 @@ class TenantContext(BaseModel):
         return f"{self.name}-wiki"
 
     @classmethod
-    def derive(cls, *, pack: DomainPack, vault_root: Path, is_active: bool) -> TenantContext:
+    def derive(
+        cls, *, pack: DomainPack, vault_root: Path, is_active: bool
+    ) -> TenantContext:
         return cls(
             name=pack.name,
             pack=pack,

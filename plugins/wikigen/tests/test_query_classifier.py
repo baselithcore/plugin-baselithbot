@@ -57,7 +57,9 @@ def _pack(page_type_ids: list[tuple[str, str, str]]) -> DomainPack:
         ("step by step per setup", "procedural", "strict"),
     ],
 )
-def test_strict_archetypes(query: str, expected_archetype: str, expected_conf: str) -> None:
+def test_strict_archetypes(
+    query: str, expected_archetype: str, expected_conf: str
+) -> None:
     archetype, conf, _ = detect_archetype(query)
     assert archetype == expected_archetype
     assert conf == expected_conf
@@ -66,12 +68,18 @@ def test_strict_archetypes(query: str, expected_archetype: str, expected_conf: s
 @pytest.mark.parametrize(
     "query,expected_archetype,expected_conf",
     [
-        ("Vorrei capire il significato del RAG nel contesto industriale", "definitional", "soft"),
+        (
+            "Vorrei capire il significato del RAG nel contesto industriale",
+            "definitional",
+            "soft",
+        ),
         ("Hai qualche esempio interessante da mostrarmi?", "example", "soft"),
         ("Mi serve un tutorial generale sul tema", "procedural", "soft"),
     ],
 )
-def test_soft_archetypes(query: str, expected_archetype: str, expected_conf: str) -> None:
+def test_soft_archetypes(
+    query: str, expected_archetype: str, expected_conf: str
+) -> None:
     archetype, conf, _ = detect_archetype(query)
     assert archetype == expected_archetype
     assert conf == expected_conf

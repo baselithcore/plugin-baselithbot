@@ -50,14 +50,14 @@ const TONE: Record<
 
 export function Callout({ tone = 'neutral', title, icon, className, children }: CalloutProps) {
   const t = TONE[tone];
-  const Icon = icon === null ? null : icon ?? t.defaultIcon;
+  const Icon = icon === null ? null : (icon ?? t.defaultIcon);
   return (
     <div
       role={t.role}
       className={cn(
         'rounded-lg border px-3 py-2.5 text-[11.5px] leading-relaxed',
         t.box,
-        className,
+        className
       )}
     >
       <div className="flex items-start gap-2.5">

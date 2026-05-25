@@ -12,7 +12,9 @@ logger = logging.getLogger(__name__)
 _MEMORIES_MIN_SIMILARITY = 0.4
 
 
-def load_memories(*, user_id: str | None, question: str, top_k: int) -> list[dict[str, Any]]:
+def load_memories(
+    *, user_id: str | None, question: str, top_k: int
+) -> list[dict[str, Any]]:
     """Top-K memorie utente via pgvector. Skippa se Postgres OFF o
     user_id mancante (chat anonima legacy)."""
     if not user_id or top_k <= 0:
@@ -42,7 +44,9 @@ def load_memories(*, user_id: str | None, question: str, top_k: int) -> list[dic
         return []
 
 
-def load_history(*, conversation_id: str | None, max_turns: int) -> list[dict[str, Any]]:
+def load_history(
+    *, conversation_id: str | None, max_turns: int
+) -> list[dict[str, Any]]:
     """Ultimi N turni dalla conversation. Skippa se Postgres OFF o
     conversation_id mancante."""
     if not conversation_id or max_turns <= 0:

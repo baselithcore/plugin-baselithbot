@@ -150,7 +150,9 @@ def frontmatter_defaults(
     # per riparare campi che già conosciamo.
     if entry.page_type == "source":
         raw_name = Path(plan.source_file).name if plan.source_file else ""
-        base["source_file"] = f"raw/{raw_name}" if raw_name else (plan.source_file or "")
+        base["source_file"] = (
+            f"raw/{raw_name}" if raw_name else (plan.source_file or "")
+        )
         if plan.source_type:
             base["source_type"] = plan.source_type
         base["ingested"] = today_iso
@@ -249,7 +251,9 @@ def ensure_required_sections(
     appended: list[str] = []
     for section in required:
         text = section.lstrip("# ").strip().lower()
-        pat = re.compile(rf"^#{{2,6}}\s+{re.escape(text)}\b", re.MULTILINE | re.IGNORECASE)
+        pat = re.compile(
+            rf"^#{{2,6}}\s+{re.escape(text)}\b", re.MULTILINE | re.IGNORECASE
+        )
         if pat.search(body_lower):
             continue
         if section == "## Fonti" and source_slug:

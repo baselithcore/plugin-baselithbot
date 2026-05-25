@@ -47,7 +47,10 @@ def recall_at_k(
     """Frazione di doc attesi che appaiono nei primi K hit."""
     if not expected_doc_ids:
         return RetrievalScores(
-            recall_at_k=0.0, mrr=0.0, hits_returned=len(retrieved_doc_ids), expected_docs=0
+            recall_at_k=0.0,
+            mrr=0.0,
+            hits_returned=len(retrieved_doc_ids),
+            expected_docs=0,
         )
     top_k_set = set(retrieved_doc_ids[:k])
     expected_set = set(expected_doc_ids)
@@ -90,8 +93,12 @@ def citation_grounding(
     total = len(report.valid) + len(report.violations)
     precision = (len(report.valid) / total) if total else 1.0
 
-    cited_ids = {f"{f}/{s}" for f, s, _ in report.valid} | {s for _, s, _ in report.valid}
-    source_ids = {s.get("document_id") for s in sources if isinstance(s.get("document_id"), str)}
+    cited_ids = {f"{f}/{s}" for f, s, _ in report.valid} | {
+        s for _, s, _ in report.valid
+    }
+    source_ids = {
+        s.get("document_id") for s in sources if isinstance(s.get("document_id"), str)
+    }
     recall = (
         len([sid for sid in source_ids if sid in cited_ids]) / len(source_ids)
         if source_ids

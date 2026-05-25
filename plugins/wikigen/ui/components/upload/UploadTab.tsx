@@ -55,10 +55,7 @@ export function UploadTab({
     return files.filter((f) => existing.has(f.name.toLowerCase())).map((f) => f.name);
   }, [files, rawFiles]);
 
-  const totalMB = useMemo(
-    () => files.reduce((s, f) => s + f.size, 0) / 1024 / 1024,
-    [files],
-  );
+  const totalMB = useMemo(() => files.reduce((s, f) => s + f.size, 0) / 1024 / 1024, [files]);
 
   return (
     <div className="space-y-5 px-5 py-4">
@@ -224,7 +221,7 @@ function DropZone({
         hasFiles ? 'cursor-default' : 'cursor-pointer p-8 text-center',
         isDragging
           ? 'border-[var(--color-brand)] bg-[var(--color-brand-soft)]'
-          : 'border-[var(--color-border)] hover:border-[var(--color-brand-ring)] hover:bg-[var(--color-surface)]',
+          : 'border-[var(--color-border)] hover:border-[var(--color-brand-ring)] hover:bg-[var(--color-surface)]'
       )}
     >
       <input
@@ -267,10 +264,7 @@ function DropZone({
           </div>
           <ul className="rounded-md border border-[var(--color-border)] divide-y divide-[var(--color-border)] max-h-44 overflow-y-auto">
             {files.map((f) => (
-              <li
-                key={f.name}
-                className="flex items-center gap-2 px-2.5 py-1.5 text-[11px]"
-              >
+              <li key={f.name} className="flex items-center gap-2 px-2.5 py-1.5 text-[11px]">
                 <FileText size={12} className="shrink-0 text-[var(--color-brand)]" aria-hidden />
                 <span className="flex-1 truncate font-mono">{f.name}</span>
                 <span className="text-[10px] tabular-nums text-ink-subtle">

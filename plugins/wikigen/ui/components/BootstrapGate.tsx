@@ -100,9 +100,7 @@ export function BootstrapGate({ onComplete }: Props) {
       await refreshUser();
       onComplete();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Errore durante il bootstrap.'
-      );
+      setError(err instanceof Error ? err.message : 'Errore durante il bootstrap.');
     } finally {
       setBusy(false);
     }
@@ -122,9 +120,8 @@ export function BootstrapGate({ onComplete }: Props) {
           <ShieldCheck size={32} className="text-[var(--color-brand)]" />
           <h1 className="text-lg font-semibold text-ink">Configurazione iniziale</h1>
           <p className="max-w-sm text-xs text-ink-subtle">
-            Nessun amministratore configurato. Crea il primo{' '}
-            <strong>superuser</strong> per iniziare. Questo passaggio è
-            disponibile solo dal browser locale (loopback).
+            Nessun amministratore configurato. Crea il primo <strong>superuser</strong> per
+            iniziare. Questo passaggio è disponibile solo dal browser locale (loopback).
           </p>
         </header>
 
@@ -180,12 +177,7 @@ export function BootstrapGate({ onComplete }: Props) {
             </p>
           )}
 
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={busy}
-            className="mt-2"
-          >
+          <Button type="submit" variant="primary" disabled={busy} className="mt-2">
             {busy ? 'Creazione…' : 'Crea superuser e continua'}
           </Button>
         </form>
@@ -253,15 +245,7 @@ interface PwProps {
   disabled?: boolean;
 }
 
-function PasswordField({
-  id,
-  label,
-  value,
-  onChange,
-  show,
-  onToggleShow,
-  disabled,
-}: PwProps) {
+function PasswordField({ id, label, value, onChange, show, onToggleShow, disabled }: PwProps) {
   return (
     <label htmlFor={id} className="flex flex-col gap-1 text-xs text-ink-subtle">
       <span className="flex items-center gap-1.5 font-medium">

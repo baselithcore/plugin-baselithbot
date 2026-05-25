@@ -192,9 +192,8 @@ export function BrandingSection({ tenant }: Props) {
   return (
     <div className="space-y-4">
       <p className="text-[11px] leading-relaxed text-ink-muted">
-        Modifica nome, descrizione, copy della homepage e domande suggerite. Le
-        modifiche scrivono <code>pack.yaml</code> e si applicano immediatamente —
-        nessun restart.
+        Modifica nome, descrizione, copy della homepage e domande suggerite. Le modifiche scrivono{' '}
+        <code>pack.yaml</code> e si applicano immediatamente — nessun restart.
       </p>
 
       <div className="space-y-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-3">

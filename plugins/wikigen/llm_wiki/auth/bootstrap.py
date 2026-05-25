@@ -60,7 +60,9 @@ def _validate_email(email: str) -> str:
 
 def _validate_password(password: str) -> None:
     if not password or len(password) < PASSWORD_MIN_LEN:
-        raise BootstrapError(f"Password deve essere di almeno {PASSWORD_MIN_LEN} caratteri.")
+        raise BootstrapError(
+            f"Password deve essere di almeno {PASSWORD_MIN_LEN} caratteri."
+        )
 
 
 # --- core: pure function ---------------------------------------------------
@@ -234,10 +236,14 @@ def bootstrap_admin_if_empty(*, vault_root: Path) -> None:
         return
 
     if generated:
-        _emit_generated_password_notice(email=email, password=password, vault_root=vault_root)
+        _emit_generated_password_notice(
+            email=email, password=password, vault_root=vault_root
+        )
 
 
-def _emit_generated_password_notice(*, email: str, password: str, vault_root: Path) -> None:
+def _emit_generated_password_notice(
+    *, email: str, password: str, vault_root: Path
+) -> None:
     """Stampa banner stderr + dump file 0600. UNA sola volta, prima
     della prima richiesta. Output non torna in audit (mai loggare
     password in chiaro nel DB)."""

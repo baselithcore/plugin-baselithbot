@@ -153,9 +153,7 @@ export function SourcesDrawer({
     const apply = () => {
       const all = root.querySelectorAll<HTMLElement>('[data-hit-index]');
       all.forEach((el) => el.classList.remove('search-hit--active'));
-      const target = root.querySelector<HTMLElement>(
-        `[data-hit-index="${activeHit}"]`
-      );
+      const target = root.querySelector<HTMLElement>(`[data-hit-index="${activeHit}"]`);
       if (target) {
         target.classList.add('search-hit--active');
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -185,7 +183,10 @@ export function SourcesDrawer({
     const q = listFilter.trim().toLowerCase();
     if (!q) return sources;
     return sources.filter((s) => {
-      const blob = [s.title, s.rango, s.edizione, s.subtype].filter(Boolean).join(' ').toLowerCase();
+      const blob = [s.title, s.rango, s.edizione, s.subtype]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
       return blob.includes(q);
     });
   }, [sources, listFilter]);
@@ -262,10 +263,7 @@ export function SourcesDrawer({
                     tab={tab}
                     setTab={setTab}
                   />
-                  <div
-                    ref={previewScrollRef}
-                    className="flex-1 overflow-y-auto overflow-x-hidden"
-                  >
+                  <div ref={previewScrollRef} className="flex-1 overflow-y-auto overflow-x-hidden">
                     {tab === 'verbatim' && verbatims.length > 0 && (
                       <VerbatimList items={verbatims} focused={focusedVerbatim} />
                     )}

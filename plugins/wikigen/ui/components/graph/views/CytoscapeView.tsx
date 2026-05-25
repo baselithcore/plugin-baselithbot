@@ -193,8 +193,7 @@ export function CytoscapeView({
     cy.batch(() => {
       cy.nodes().forEach((n: NodeSingular) => {
         const kindOk = visibleKinds.size === 0 || visibleKinds.has(n.data('kind'));
-        const commOk =
-          visibleCommunities.size === 0 || visibleCommunities.has(n.data('community'));
+        const commOk = visibleCommunities.size === 0 || visibleCommunities.has(n.data('community'));
         const visible = kindOk && commOk;
         n.toggleClass('dimmed', !visible);
         if (searchLower) {
@@ -206,8 +205,7 @@ export function CytoscapeView({
       });
       cy.edges().forEach((e: EdgeSingular) => {
         const confOk = e.data('confidence') >= confidenceMin;
-        const endpointsVisible =
-          !e.source().hasClass('dimmed') && !e.target().hasClass('dimmed');
+        const endpointsVisible = !e.source().hasClass('dimmed') && !e.target().hasClass('dimmed');
         e.toggleClass('dimmed', !(confOk && endpointsVisible));
       });
     });

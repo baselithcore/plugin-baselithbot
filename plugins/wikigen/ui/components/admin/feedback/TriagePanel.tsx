@@ -89,29 +89,23 @@ export function TriagePanel(props: TriagePanelProps) {
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div>
-          <label className="text-[10px] uppercase tracking-wide text-ink-subtle">
-            Stato
-          </label>
+          <label className="text-[10px] uppercase tracking-wide text-ink-subtle">Stato</label>
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value as FeedbackStatus)}
             disabled={!editable}
             className="input-sm mt-1 w-full"
           >
-            {(['open', 'triaged', 'resolved', 'dismissed'] as FeedbackStatus[]).map(
-              (s) => (
-                <option key={s} value={s}>
-                  {STATUS_LABEL[s]}
-                </option>
-              )
-            )}
+            {(['open', 'triaged', 'resolved', 'dismissed'] as FeedbackStatus[]).map((s) => (
+              <option key={s} value={s}>
+                {STATUS_LABEL[s]}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
-          <label className="text-[10px] uppercase tracking-wide text-ink-subtle">
-            Tag
-          </label>
+          <label className="text-[10px] uppercase tracking-wide text-ink-subtle">Tag</label>
           <div className="mt-1 flex flex-wrap items-center gap-1 rounded border border-[var(--color-border)] bg-[var(--color-canvas)] p-1.5">
             {tags.map((t) => (
               <span
@@ -184,12 +178,7 @@ export function TriagePanel(props: TriagePanelProps) {
 
       {editable && (
         <div className="mt-2 flex items-center justify-end gap-2">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={onSave}
-            disabled={!dirty || saving}
-          >
+          <Button variant="primary" size="sm" onClick={onSave} disabled={!dirty || saving}>
             {saving && <Loader2 size={12} className="animate-spin" />}
             Salva triage
           </Button>

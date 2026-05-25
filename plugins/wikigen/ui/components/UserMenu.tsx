@@ -141,9 +141,7 @@ export function UserMenu({ onOpenMemories }: UserMenuProps) {
         <ChevronDown
           size={12}
           className={
-            open
-              ? 'shrink-0 rotate-180 transition-transform'
-              : 'shrink-0 transition-transform'
+            open ? 'shrink-0 rotate-180 transition-transform' : 'shrink-0 transition-transform'
           }
           aria-hidden
         />

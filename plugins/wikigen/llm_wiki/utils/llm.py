@@ -65,7 +65,9 @@ def _ollama_client() -> Any:
             # versioni vecchie non accettano timeout nel costruttore
             client = ollama.Client(host=url)
     except ImportError as exc:
-        raise RuntimeError("Pacchetto `ollama` non installato. `pip install ollama`.") from exc
+        raise RuntimeError(
+            "Pacchetto `ollama` non installato. `pip install ollama`."
+        ) from exc
     _client_cache["ollama"] = client
     _client_cache["ollama_url"] = url
     return client
@@ -90,7 +92,9 @@ def _openai_client() -> Any:
             timeout=LLM_TIMEOUT,
         )
     except ImportError as exc:
-        raise RuntimeError("Pacchetto `openai` non installato. `pip install openai`.") from exc
+        raise RuntimeError(
+            "Pacchetto `openai` non installato. `pip install openai`."
+        ) from exc
     _client_cache["openai"] = client
     _client_cache["openai_key"] = key
     _client_cache["openai_base"] = base
@@ -222,7 +226,9 @@ def generate(
         # between consecutive ingest steps (cold-load = 30-60s). Older
         # ollama-python versions don't accept the kwarg → fall back silently.
         try:
-            resp = client.chat(model=model_id, messages=msgs, keep_alive=LLM_KEEP_ALIVE, **kwargs)
+            resp = client.chat(
+                model=model_id, messages=msgs, keep_alive=LLM_KEEP_ALIVE, **kwargs
+            )
         except TypeError:
             resp = client.chat(model=model_id, messages=msgs, **kwargs)
         if isinstance(resp, dict):
@@ -283,7 +289,9 @@ def stream(
                 **ollama_kwargs,
             )
         except TypeError:
-            response = client.chat(model=model_id, messages=msgs, stream=True, **ollama_kwargs)
+            response = client.chat(
+                model=model_id, messages=msgs, stream=True, **ollama_kwargs
+            )
         for chunk in response:
             if isinstance(chunk, dict):
                 piece = chunk.get("message", {}).get("content", "")
@@ -354,7 +362,9 @@ def warmup_llm(model: str | None = None) -> bool:
                 messages=[{"role": "user", "content": "ping"}],
                 options={"temperature": 0.0, "num_predict": 1},
             )
-        logger.info("[warmup] LLM `%s` resident (keep_alive=%s)", model_id, LLM_KEEP_ALIVE)
+        logger.info(
+            "[warmup] LLM `%s` resident (keep_alive=%s)", model_id, LLM_KEEP_ALIVE
+        )
         return True
     except Exception as exc:
         logger.warning("[warmup] LLM `%s` failed: %s", model_id, exc)

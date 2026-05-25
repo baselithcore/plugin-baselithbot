@@ -33,15 +33,11 @@ export interface ApiMessage {
 }
 
 export async function listConversations(): Promise<ApiConversation[]> {
-  const r = await json<{ count: number; conversations: ApiConversation[] }>(
-    '/conversations'
-  );
+  const r = await json<{ count: number; conversations: ApiConversation[] }>('/conversations');
   return r.conversations;
 }
 
-export async function createConversation(
-  title = 'Nuova conversazione'
-): Promise<ApiConversation> {
+export async function createConversation(title = 'Nuova conversazione'): Promise<ApiConversation> {
   return json<ApiConversation>('/conversations', {
     method: 'POST',
     body: JSON.stringify({ title }),

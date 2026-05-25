@@ -53,12 +53,14 @@ export function AdminUsersPage() {
       const [u, r, t] = await Promise.all([
         rbacApi.listUsersWithRoles(),
         rbacApi.listRoles(),
-        fetchTenants().then((res) => res.tenants).catch(() => [] as TenantInfo[]),
+        fetchTenants()
+          .then((res) => res.tenants)
+          .catch(() => [] as TenantInfo[]),
       ]);
       setUsers(u);
       setRoles(r);
       setTenants(t);
-      setSelectedId((prev) => prev ?? (u[0]?.id ?? null));
+      setSelectedId((prev) => prev ?? u[0]?.id ?? null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'errore caricamento');
     } finally {
@@ -178,19 +180,11 @@ export function AdminUsersPage() {
               comunque enforce su POST /users + /invite. */}
           {can('admin.user.manage') && (
             <div className="ml-auto flex items-center gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setCreateOpen(true)}
-              >
+              <Button variant="secondary" size="sm" onClick={() => setCreateOpen(true)}>
                 <KeyRound size={13} />
                 Crea utente
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setInviteOpen(true)}
-              >
+              <Button variant="primary" size="sm" onClick={() => setInviteOpen(true)}>
                 <UserPlus size={13} />
                 Invita utente
               </Button>

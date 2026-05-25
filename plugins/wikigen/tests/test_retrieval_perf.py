@@ -22,7 +22,9 @@ def test_parallel_map_preserves_order(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("llm_wiki.config.QDRANT_MODE", "server")
     monkeypatch.setattr("llm_wiki.config.RETRIEVAL_PARALLEL_ENABLED", True)
     monkeypatch.setattr("llm_wiki.vectorstore.parallel.QDRANT_MODE", "server")
-    monkeypatch.setattr("llm_wiki.vectorstore.parallel.RETRIEVAL_PARALLEL_ENABLED", True)
+    monkeypatch.setattr(
+        "llm_wiki.vectorstore.parallel.RETRIEVAL_PARALLEL_ENABLED", True
+    )
 
     from llm_wiki.vectorstore.parallel import parallel_map
 
@@ -31,10 +33,14 @@ def test_parallel_map_preserves_order(monkeypatch: pytest.MonkeyPatch) -> None:
     assert out == [x * 2 for x in items]
 
 
-def test_parallel_map_embedded_mode_runs_serial(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_parallel_map_embedded_mode_runs_serial(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """In modalità embedded il fan-out è disabilitato → tutto sullo stesso thread."""
     monkeypatch.setattr("llm_wiki.vectorstore.parallel.QDRANT_MODE", "embedded")
-    monkeypatch.setattr("llm_wiki.vectorstore.parallel.RETRIEVAL_PARALLEL_ENABLED", True)
+    monkeypatch.setattr(
+        "llm_wiki.vectorstore.parallel.RETRIEVAL_PARALLEL_ENABLED", True
+    )
 
     import threading
 
@@ -55,7 +61,9 @@ def test_parallel_map_embedded_mode_runs_serial(monkeypatch: pytest.MonkeyPatch)
 def test_parallel_map_single_item_no_pool(monkeypatch: pytest.MonkeyPatch) -> None:
     """Lista di 1 elemento → niente overhead pool, esecuzione diretta."""
     monkeypatch.setattr("llm_wiki.vectorstore.parallel.QDRANT_MODE", "server")
-    monkeypatch.setattr("llm_wiki.vectorstore.parallel.RETRIEVAL_PARALLEL_ENABLED", True)
+    monkeypatch.setattr(
+        "llm_wiki.vectorstore.parallel.RETRIEVAL_PARALLEL_ENABLED", True
+    )
 
     from llm_wiki.vectorstore.parallel import parallel_map
 
@@ -64,7 +72,9 @@ def test_parallel_map_single_item_no_pool(monkeypatch: pytest.MonkeyPatch) -> No
 
 def test_parallel_map_propagates_exception(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("llm_wiki.vectorstore.parallel.QDRANT_MODE", "server")
-    monkeypatch.setattr("llm_wiki.vectorstore.parallel.RETRIEVAL_PARALLEL_ENABLED", True)
+    monkeypatch.setattr(
+        "llm_wiki.vectorstore.parallel.RETRIEVAL_PARALLEL_ENABLED", True
+    )
 
     from llm_wiki.vectorstore.parallel import parallel_map
 

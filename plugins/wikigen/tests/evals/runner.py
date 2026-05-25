@@ -71,7 +71,9 @@ class EvalSummary:
             "avg_citation_precision": round(self.avg_citation_precision, 4),
             "avg_citation_recall": round(self.avg_citation_recall, 4),
             "avg_judge_score": (
-                round(self.avg_judge_score, 4) if self.avg_judge_score is not None else None
+                round(self.avg_judge_score, 4)
+                if self.avg_judge_score is not None
+                else None
             ),
         }
 
@@ -152,7 +154,9 @@ def run_evals(
     for q in golden:
         try:
             hits = search(q.question, limit=top_k, page_type=q.page_type)
-            retrieved_ids = [str((h.get("payload") or {}).get("document_id") or "") for h in hits]
+            retrieved_ids = [
+                str((h.get("payload") or {}).get("document_id") or "") for h in hits
+            ]
             retrieved_ids = [d for d in retrieved_ids if d]
             ret_scores = recall_at_k(retrieved_ids, q.expected_doc_ids, k=top_k)
 
@@ -167,9 +171,13 @@ def run_evals(
                 )
                 if with_judge:
                     gen_scores.judge_score = faithfulness_judge(
-                        question=q.question, answer=result.answer, context=result.context
+                        question=q.question,
+                        answer=result.answer,
+                        context=result.context,
                     )
-            records.append(EvalRecord(query=q, retrieval=ret_scores, generation=gen_scores))
+            records.append(
+                EvalRecord(query=q, retrieval=ret_scores, generation=gen_scores)
+            )
         except Exception as exc:
             logger.exception("[evals] query %s failed", q.id)
             records.append(
@@ -187,17 +195,21 @@ def _aggregate(records: list[EvalRecord]) -> EvalSummary:
     n = len(records)
     failures = sum(1 for r in records if r.error)
     valid = [r for r in records if not r.error]
-    avg_recall = sum(r.retrieval.recall_at_k for r in valid) / len(valid) if valid else 0.0
+    avg_recall = (
+        sum(r.retrieval.recall_at_k for r in valid) / len(valid) if valid else 0.0
+    )
     avg_mrr = sum(r.retrieval.mrr for r in valid) / len(valid) if valid else 0.0
 
     gen_records = [r for r in valid if r.generation is not None]
     avg_prec = (
-        sum(r.generation.citation_precision for r in gen_records if r.generation) / len(gen_records)
+        sum(r.generation.citation_precision for r in gen_records if r.generation)
+        / len(gen_records)
         if gen_records
         else 0.0
     )
     avg_rec = (
-        sum(r.generation.citation_recall for r in gen_records if r.generation) / len(gen_records)
+        sum(r.generation.citation_recall for r in gen_records if r.generation)
+        / len(gen_records)
         if gen_records
         else 0.0
     )

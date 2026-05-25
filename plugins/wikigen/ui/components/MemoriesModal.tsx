@@ -259,9 +259,7 @@ export function MemoriesModal({ open, onClose }: MemoriesModalProps) {
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     <div className="mb-1 flex items-center gap-2 text-[10px] uppercase tracking-wider">
-                      <span
-                        className={`rounded px-1.5 py-0.5 ${KIND_COLORS[m.kind]}`}
-                      >
+                      <span className={`rounded px-1.5 py-0.5 ${KIND_COLORS[m.kind]}`}>
                         {KIND_LABELS[m.kind]}
                       </span>
                       {m.key && (
@@ -270,9 +268,7 @@ export function MemoriesModal({ open, onClose }: MemoriesModalProps) {
                         </span>
                       )}
                       {typeof m.similarity === 'number' && (
-                        <span className="text-ink-muted">
-                          sim {m.similarity.toFixed(2)}
-                        </span>
+                        <span className="text-ink-muted">sim {m.similarity.toFixed(2)}</span>
                       )}
                     </div>
                     <div className="text-sm text-ink">{m.value}</div>
@@ -310,9 +306,7 @@ function KindToggle({ value, onChange }: KindToggleProps) {
           type="button"
           onClick={() => onChange(k)}
           className={`rounded px-2 py-0.5 text-[10px] font-medium transition-colors ${
-            value === k
-              ? 'bg-[var(--color-brand)] text-white'
-              : 'text-ink-muted hover:text-ink'
+            value === k ? 'bg-[var(--color-brand)] text-white' : 'text-ink-muted hover:text-ink'
           }`}
         >
           {KIND_LABELS[k]}

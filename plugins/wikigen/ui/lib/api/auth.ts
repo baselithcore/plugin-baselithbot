@@ -59,14 +59,11 @@ export interface InviteAcceptArgs {
   display_name?: string;
 }
 
-export async function peekInvite(
-  token: string,
-  signal?: AbortSignal
-): Promise<InvitePeek> {
-  const res = await fetch(
-    `${AUTH_BASE}/invite/${encodeURIComponent(token)}`,
-    { credentials: 'include', signal }
-  );
+export async function peekInvite(token: string, signal?: AbortSignal): Promise<InvitePeek> {
+  const res = await fetch(`${AUTH_BASE}/invite/${encodeURIComponent(token)}`, {
+    credentials: 'include',
+    signal,
+  });
   if (!res.ok) {
     return { valid: false, reason: 'unknown' };
   }
@@ -115,11 +112,7 @@ export interface TokenResponse {
   email: string;
 }
 
-async function postJson<T>(
-  path: string,
-  body?: unknown,
-  signal?: AbortSignal
-): Promise<T> {
+async function postJson<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
   const res = await fetch(`${AUTH_BASE}${path}`, {
     method: 'POST',
     headers: body ? { 'Content-Type': 'application/json' } : undefined,
@@ -143,11 +136,7 @@ async function postJson<T>(
  * pre-auth (login/register/refresh/logout/bootstrap) e quelli che
  * settano l'access token loro stessi (accept-invite).
  */
-async function postJsonAuth<T>(
-  path: string,
-  body?: unknown,
-  signal?: AbortSignal
-): Promise<T> {
+async function postJsonAuth<T>(path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
   const res = await authFetch(`${AUTH_BASE}${path}`, {
     method: 'POST',
     absolute: true,
@@ -183,9 +172,7 @@ export interface BootstrapArgs {
   tenant_slug?: string;
 }
 
-export async function bootstrapStatus(
-  signal?: AbortSignal
-): Promise<BootstrapStatus> {
+export async function bootstrapStatus(signal?: AbortSignal): Promise<BootstrapStatus> {
   const res = await fetch(`${AUTH_BASE}/bootstrap/status`, {
     method: 'GET',
     credentials: 'include',
@@ -197,10 +184,7 @@ export async function bootstrapStatus(
   return (await res.json()) as BootstrapStatus;
 }
 
-export async function bootstrap(
-  args: BootstrapArgs,
-  signal?: AbortSignal
-): Promise<TokenResponse> {
+export async function bootstrap(args: BootstrapArgs, signal?: AbortSignal): Promise<TokenResponse> {
   const r = await postJson<TokenResponse>('/bootstrap', args, signal);
   setAccessToken(r.access_token);
   return r;
@@ -213,10 +197,7 @@ export interface RegisterArgs {
   tenant_name?: string;
 }
 
-export async function register(
-  args: RegisterArgs,
-  signal?: AbortSignal
-): Promise<TokenResponse> {
+export async function register(args: RegisterArgs, signal?: AbortSignal): Promise<TokenResponse> {
   const r = await postJson<TokenResponse>('/register', args, signal);
   setAccessToken(r.access_token);
   return r;
@@ -233,11 +214,7 @@ export async function logout(signal?: AbortSignal): Promise<void> {
 
 export async function logoutAll(signal?: AbortSignal): Promise<number> {
   try {
-    const r = await postJson<{ revoked_count: number }>(
-      '/logout-all',
-      undefined,
-      signal
-    );
+    const r = await postJson<{ revoked_count: number }>('/logout-all', undefined, signal);
     return r.revoked_count;
   } finally {
     setAccessToken(null);

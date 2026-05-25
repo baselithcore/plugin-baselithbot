@@ -29,8 +29,12 @@ def invite_superuser_cmd(
     tenant_slug: str = typer.Option(
         "", "--tenant-slug", help="Slug tenant (default: derivato dall'email)."
     ),
-    note: str = typer.Option("", "--note", help="Annotazione interna (es. 'cliente acme srl')."),
-    ttl_hours: int = typer.Option(24, "--ttl-hours", help="Validità in ore (default 24)."),
+    note: str = typer.Option(
+        "", "--note", help="Annotazione interna (es. 'cliente acme srl')."
+    ),
+    ttl_hours: int = typer.Option(
+        24, "--ttl-hours", help="Validità in ore (default 24)."
+    ),
     base_url: str = typer.Option(
         "",
         "--base-url",

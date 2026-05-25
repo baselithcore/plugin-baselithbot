@@ -157,7 +157,9 @@ def _evidence_summary(hits: list[dict[str, Any]], *, max_lines: int = 12) -> str
         register = payload.get("doc_register") or "?"
         section = payload.get("section_heading") or ""
         section_part = f" — sezione «{section}»" if section else ""
-        lines.append(f"- {title} (page_type={page_type}, registro={register}){section_part}")
+        lines.append(
+            f"- {title} (page_type={page_type}, registro={register}){section_part}"
+        )
         if len(lines) >= max_lines:
             break
     return "\n".join(lines)
@@ -188,10 +190,15 @@ class AgenticRAGAgent(RAGAgent):
     ) -> None:
         super().__init__(**base_kwargs)
         self.max_iterations = max(
-            1, max_iterations if max_iterations is not None else AGENTIC_RAG_MAX_ITERATIONS
+            1,
+            max_iterations
+            if max_iterations is not None
+            else AGENTIC_RAG_MAX_ITERATIONS,
         )
         self.reflect_enabled = (
-            reflect_enabled if reflect_enabled is not None else AGENTIC_RAG_REFLECT_ENABLED
+            reflect_enabled
+            if reflect_enabled is not None
+            else AGENTIC_RAG_REFLECT_ENABLED
         )
         self.planner_max_subqueries = max(
             1,
@@ -213,7 +220,11 @@ class AgenticRAGAgent(RAGAgent):
         if self.reflect_enabled and self.max_iterations >= 2:
             extras = self._reflect(condensed.query, hits)
             if extras:
-                logger.info("[agentic] reflect propose %d extra queries: %s", len(extras), extras)
+                logger.info(
+                    "[agentic] reflect propose %d extra queries: %s",
+                    len(extras),
+                    extras,
+                )
                 more_hits = self._search_multi(extras, limit=limit)
                 hits = self._dedup_merge(hits, more_hits)
 
@@ -221,7 +232,9 @@ class AgenticRAGAgent(RAGAgent):
         hits = hits[: limit * 2]
         return self._synthesize_from_hits(question, hits, prefetched_history=history)
 
-    def stream(self, question: str, *, limit: int = RETRIEVAL_TOP_K) -> Iterator[dict[str, Any]]:
+    def stream(
+        self, question: str, *, limit: int = RETRIEVAL_TOP_K
+    ) -> Iterator[dict[str, Any]]:
         history = self._load_history()
         if history:
             yield {
@@ -255,7 +268,11 @@ class AgenticRAGAgent(RAGAgent):
         # poi i risultati vengono raccolti in parallelo (o serial in embedded
         # mode). Niente progress per-step quando parallelo — sarebbe
         # disordinato — ma il count finale arriva nello stesso stream.
-        parallel = AGENTIC_RAG_PARALLEL_SEARCHES and is_parallel_safe() and len(sub_queries) > 1
+        parallel = (
+            AGENTIC_RAG_PARALLEL_SEARCHES
+            and is_parallel_safe()
+            and len(sub_queries) > 1
+        )
         if parallel:
             yield {
                 "type": "step",
@@ -265,7 +282,10 @@ class AgenticRAGAgent(RAGAgent):
         else:
             hits = []
             for i, sq in enumerate(sub_queries, start=1):
-                yield {"type": "step", "content": f"Ricerca {i}/{len(sub_queries)}: {sq[:60]}…"}
+                yield {
+                    "type": "step",
+                    "content": f"Ricerca {i}/{len(sub_queries)}: {sq[:60]}…",
+                }
                 sub_hits = search(sq, limit=limit, expand_with_graph=self.use_graph)
                 hits = self._dedup_merge(hits, sub_hits)
         yield {"type": "hits", "count": len(hits)}
@@ -282,7 +302,9 @@ class AgenticRAGAgent(RAGAgent):
                 yield {"type": "reflect", "extra_queries": list(extras)}
                 yield {"type": "agent", "content": "Retriever"}
                 parallel_extra = (
-                    AGENTIC_RAG_PARALLEL_SEARCHES and is_parallel_safe() and len(extras) > 1
+                    AGENTIC_RAG_PARALLEL_SEARCHES
+                    and is_parallel_safe()
+                    and len(extras) > 1
                 )
                 if parallel_extra:
                     yield {
@@ -297,14 +319,21 @@ class AgenticRAGAgent(RAGAgent):
                             "type": "step",
                             "content": f"Ricerca extra {i}/{len(extras)}: {eq[:60]}…",
                         }
-                        extra_hits = search(eq, limit=limit, expand_with_graph=self.use_graph)
+                        extra_hits = search(
+                            eq, limit=limit, expand_with_graph=self.use_graph
+                        )
                         hits = self._dedup_merge(hits, extra_hits)
                 yield {"type": "hits", "count": len(hits)}
             else:
-                yield {"type": "step", "content": "Copertura adeguata, sintesi immediata"}
+                yield {
+                    "type": "step",
+                    "content": "Copertura adeguata, sintesi immediata",
+                }
 
         hits = hits[: limit * 2]
-        yield from self._stream_synthesis_from_hits(question, hits, prefetched_history=history)
+        yield from self._stream_synthesis_from_hits(
+            question, hits, prefetched_history=history
+        )
 
     # --- internals ---------------------------------------------------------
 
@@ -425,17 +454,23 @@ class AgenticRAGAgent(RAGAgent):
         return merged
 
     @staticmethod
-    def _planner_user_message(question: str, history: list[dict[str, Any]] | None) -> str:
+    def _planner_user_message(
+        question: str, history: list[dict[str, Any]] | None
+    ) -> str:
         """Format planner user-message. Quando ``history`` non-vuota,
         prepend block "Conversazione precedente" così le sub_queries
         emesse sono autonomiche."""
         q = question.strip()
         if not history:
             return q
-        from llm_wiki.agents.rag_agent._query_rewriter import _format_history_for_condense
+        from llm_wiki.agents.rag_agent._query_rewriter import (
+            _format_history_for_condense,
+        )
         from llm_wiki.config import RAG_HISTORY_CONDENSE_MAX_TURNS
 
-        block = _format_history_for_condense(history, max_turns=RAG_HISTORY_CONDENSE_MAX_TURNS)
+        block = _format_history_for_condense(
+            history, max_turns=RAG_HISTORY_CONDENSE_MAX_TURNS
+        )
         if not block:
             return q
         return (

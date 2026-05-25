@@ -99,7 +99,11 @@ def doctor(
     if exit_code != EXIT_OK:
         octx.console.print(
             f"[red]✗[/red] {sum(1 for c in checks if c.status == 'fail')} failure(s)"
-            + (f", {sum(1 for c in checks if c.status == 'warn')} warning(s)" if warned else "")
+            + (
+                f", {sum(1 for c in checks if c.status == 'warn')} warning(s)"
+                if warned
+                else ""
+            )
         )
         raise typer.Exit(code=exit_code)
     octx.console.print("[green]✓[/green] all checks passed")
@@ -138,7 +142,9 @@ def _check_vault() -> CheckResult:
     except OSError as exc:
         return CheckResult("vault", "fail", f"{root} not writable: {exc}")
     if not (root / "wiki").is_dir():
-        return CheckResult("vault", "warn", f"{root}/wiki/ missing — run wizard or scaffold first")
+        return CheckResult(
+            "vault", "warn", f"{root}/wiki/ missing — run wizard or scaffold first"
+        )
     return CheckResult("vault", "ok", f"{root} writable, wiki/ present")
 
 

@@ -37,8 +37,8 @@ export function DocumentsStep({
   return (
     <div className="px-5 py-4 space-y-4">
       <Callout tone="info" icon={FileText} title="Documenti iniziali">
-        Carica i PDF da rendere subito consultabili. Verranno trasformati in pagine al primo
-        avvio. Puoi sempre aggiungerne altri in seguito.
+        Carica i PDF da rendere subito consultabili. Verranno trasformati in pagine al primo avvio.
+        Puoi sempre aggiungerne altri in seguito.
       </Callout>
 
       <div
@@ -66,7 +66,7 @@ export function DocumentsStep({
           'focus-ring cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors',
           isDragging
             ? 'border-[var(--color-brand)] bg-[var(--color-brand-soft)]'
-            : 'border-[var(--color-border)] hover:border-[var(--color-brand-ring)] hover:bg-[var(--color-surface)]',
+            : 'border-[var(--color-border)] hover:border-[var(--color-brand-ring)] hover:bg-[var(--color-surface)]'
         )}
       >
         <input

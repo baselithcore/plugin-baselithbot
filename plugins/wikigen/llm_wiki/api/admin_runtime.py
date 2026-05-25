@@ -52,7 +52,10 @@ def _running_under_reloader() -> bool:
     # solo in reload mode).
     import sys as _sys
 
-    if "watchfiles" in _sys.modules or "uvicorn.supervisors.watchfilesreload" in _sys.modules:
+    if (
+        "watchfiles" in _sys.modules
+        or "uvicorn.supervisors.watchfilesreload" in _sys.modules
+    ):
         return True
     # Ultimo fallback: ispeziona la cmdline del parent process. Cattura
     # `uvicorn main:app --reload` lanciato senza il nostro wrapper.
@@ -342,7 +345,9 @@ def update_provider(req: ProviderSettings) -> ProviderUpdateResponse:
     import os as _os
 
     if not (req.vendor or req.rag_vendor or req.ingest_vendor):
-        raise HTTPException(400, "at least one of vendor / rag_vendor / ingest_vendor required")
+        raise HTTPException(
+            400, "at least one of vendor / rag_vendor / ingest_vendor required"
+        )
 
     eff_rag = req.rag_vendor or req.vendor
     eff_ingest = req.ingest_vendor or req.vendor

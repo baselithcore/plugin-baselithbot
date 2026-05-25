@@ -122,7 +122,9 @@ def regenerate_questions_from_docs(
 
     min_q = min_questions if min_questions is not None else _cfg.QUESTIONS_FROM_DOCS_MIN
     max_q = max_questions if max_questions is not None else _cfg.QUESTIONS_FROM_DOCS_MAX
-    page_budget = max_pages if max_pages is not None else _cfg.QUESTIONS_FROM_DOCS_MAX_PAGES
+    page_budget = (
+        max_pages if max_pages is not None else _cfg.QUESTIONS_FROM_DOCS_MAX_PAGES
+    )
     char_budget = (
         max_chars_per_page
         if max_chars_per_page is not None
@@ -142,7 +144,9 @@ def regenerate_questions_from_docs(
     page_types = list(pack_data.get("page_types") or [])
     fingerprint = compute_doc_fingerprint(wiki_dir, page_types)
     if not fingerprint:
-        return _skipped(f"no source pages under {wiki_dir} — nothing to ground questions on")
+        return _skipped(
+            f"no source pages under {wiki_dir} — nothing to ground questions on"
+        )
 
     marker_path = pack_dir / "prompts" / MARKER_FILENAME
     existing = _read_marker(marker_path)
@@ -169,7 +173,9 @@ def regenerate_questions_from_docs(
         # Fingerprint says corpus is non-empty but the sampler returned
         # nothing — defensive: malformed pages, all-incomplete suffixes,
         # etc. Skip without touching the marker.
-        return _skipped(f"sampler returned 0 pages despite fingerprint {fingerprint[:12]}…")
+        return _skipped(
+            f"sampler returned 0 pages despite fingerprint {fingerprint[:12]}…"
+        )
 
     marker_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -306,9 +312,13 @@ def compute_doc_fingerprint(wiki_dir: Path, page_types: list[dict[str, Any]]) ->
     # if present; otherwise the whole set (lets non-source-only packs
     # still benefit from change detection).
     source_folders = [folder for folder, _ in ordered if folder]
-    if any(f for f in source_folders if "source" in f or "fonti" in f or "document" in f):
+    if any(
+        f for f in source_folders if "source" in f or "fonti" in f or "document" in f
+    ):
         source_folders = [
-            f for f in source_folders if "source" in f or "fonti" in f or "document" in f
+            f
+            for f in source_folders
+            if "source" in f or "fonti" in f or "document" in f
         ]
 
     paths: list[str] = []

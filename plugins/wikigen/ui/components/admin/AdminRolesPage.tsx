@@ -79,7 +79,7 @@ export function AdminRolesPage() {
         return next;
       });
     },
-    [canEdit],
+    [canEdit]
   );
 
   const bulkSetGroup = useCallback(
@@ -94,17 +94,11 @@ export function AdminRolesPage() {
         return next;
       });
     },
-    [canEdit],
+    [canEdit]
   );
 
-  const dirtyIds = useMemo(
-    () => dirtyRoleIds(roles, original, draft),
-    [roles, original, draft],
-  );
-  const dirtyRoles = useMemo(
-    () => roles.filter((r) => dirtyIds.includes(r.id)),
-    [roles, dirtyIds],
-  );
+  const dirtyIds = useMemo(() => dirtyRoleIds(roles, original, draft), [roles, original, draft]);
+  const dirtyRoles = useMemo(() => roles.filter((r) => dirtyIds.includes(r.id)), [roles, dirtyIds]);
 
   const filteredPerms = useMemo(() => {
     let list = filterPermissions(perms, query);
@@ -142,14 +136,14 @@ export function AdminRolesPage() {
         });
       }
     },
-    [draft, original],
+    [draft, original]
   );
 
   const resetRole = useCallback(
     (roleId: string) => {
       setDraft((d) => ({ ...d, [roleId]: new Set(original[roleId] ?? []) }));
     },
-    [original],
+    [original]
   );
 
   const saveAll = useCallback(async () => {
@@ -201,10 +195,9 @@ export function AdminRolesPage() {
       {canEdit && roles.length > 0 && (
         <div className="px-5 pt-3">
           <Hint id="rbac.first_visit" tone="info" title="Come usare la matrice">
-            Ogni colonna è un ruolo, ogni riga un permesso. Clicca sulla cella per togglare;
-            il diff (+N / −M) appare nell’header del ruolo. Usa <strong>tutti</strong> nella riga
-            di gruppo per assegnare l’intero blocco. <code>superuser</code> è protetto a livello
-            backend.
+            Ogni colonna è un ruolo, ogni riga un permesso. Clicca sulla cella per togglare; il diff
+            (+N / −M) appare nell’header del ruolo. Usa <strong>tutti</strong> nella riga di gruppo
+            per assegnare l’intero blocco. <code>superuser</code> è protetto a livello backend.
           </Hint>
         </div>
       )}
@@ -221,10 +214,7 @@ export function AdminRolesPage() {
                 Permesso
               </th>
               {roles.map((r) => {
-                const diff = computeDiff(
-                  original[r.id] ?? new Set(),
-                  draft[r.id] ?? new Set(),
-                );
+                const diff = computeDiff(original[r.id] ?? new Set(), draft[r.id] ?? new Set());
                 return (
                   <RoleHeader
                     key={r.id}

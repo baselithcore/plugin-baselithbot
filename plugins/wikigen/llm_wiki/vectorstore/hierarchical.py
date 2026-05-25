@@ -70,7 +70,9 @@ class HierarchicalChunk:
     section_anchor_fine: str = ""
 
 
-def _split_into_section_blocks(text: str, max_level: int = 2) -> list[tuple[str, list[str]]]:
+def _split_into_section_blocks(
+    text: str, max_level: int = 2
+) -> list[tuple[str, list[str]]]:
     """Spezza il testo in blocchi-sezione delimitati da heading ≤ max_level.
 
     Ritorna tuple ``(block_text, breadcrumb)``. Default max_level=2 → split
@@ -78,7 +80,9 @@ def _split_into_section_blocks(text: str, max_level: int = 2) -> list[tuple[str,
     heading, l'intero testo è un unico blocco con breadcrumb vuoto.
     """
     lines = text.split(_NL)
-    blocks: list[tuple[int, int, list[str]]] = []  # (start_line, end_line, breadcrumb_at_start)
+    blocks: list[
+        tuple[int, int, list[str]]
+    ] = []  # (start_line, end_line, breadcrumb_at_start)
     stack: list[tuple[int, str]] = []
     cur_start = 0
     cur_path: list[str] = []
@@ -164,7 +168,9 @@ def _split_parent_window(block: str, max_size: int) -> list[str]:
     return windows
 
 
-def _split_child_chunks(parent_window: str, child_size: int, child_overlap: int) -> list[str]:
+def _split_child_chunks(
+    parent_window: str, child_size: int, child_overlap: int
+) -> list[str]:
     """Spezza un parent_window in child chunk preservando atomic blocks.
 
     Strategia: itera per paragrafo (doppio newline). Se il paragrafo è
@@ -253,7 +259,9 @@ def chunk_markdown_hierarchical(
     if not text or not text.strip():
         return []
 
-    section_blocks = _split_into_section_blocks(text, max_level=max_heading_level_parent)
+    section_blocks = _split_into_section_blocks(
+        text, max_level=max_heading_level_parent
+    )
     if not section_blocks:
         section_blocks = [(text.strip(), [])]
 
@@ -403,7 +411,9 @@ def collapse_hits_by_parent(
         if key in by_parent:
             # Già visto: aggiorna lo score se questo child è migliore
             existing = by_parent[key]
-            if not keep_first_score and (h.get("score") or 0) > (existing.get("score") or 0):
+            if not keep_first_score and (h.get("score") or 0) > (
+                existing.get("score") or 0
+            ):
                 existing["score"] = h.get("score")
             existing.setdefault("merged_child_count", 1)
             existing["merged_child_count"] = int(existing["merged_child_count"]) + 1
@@ -413,7 +423,9 @@ def collapse_hits_by_parent(
         # Conserviamo il child originale per audit e l'embed per debug.
         merged = dict(h)
         merged_payload = dict(payload)
-        merged_payload["child_text"] = payload.get("text") or payload.get("raw_text") or ""
+        merged_payload["child_text"] = (
+            payload.get("text") or payload.get("raw_text") or ""
+        )
         merged_payload["text"] = parent_text
         merged_payload["raw_text"] = parent_text
         merged["payload"] = merged_payload

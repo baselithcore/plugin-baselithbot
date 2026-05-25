@@ -32,7 +32,11 @@ def test_single_section_short_returns_one_chunk() -> None:
 
 def test_multiple_h2_sections_each_becomes_parent() -> None:
     text = (
-        "## Sezione A\n\n" + ("Frase A. " * 50) + "\n\n" + "## Sezione B\n\n" + ("Frase B. " * 50)
+        "## Sezione A\n\n"
+        + ("Frase A. " * 50)
+        + "\n\n"
+        + "## Sezione B\n\n"
+        + ("Frase B. " * 50)
     )
     out = chunk_markdown_hierarchical(text, parent_size=2000, child_size=400)
     # Due parent (anchor differente)
@@ -59,7 +63,9 @@ def test_child_smaller_than_parent() -> None:
     out = chunk_markdown_hierarchical(text, parent_size=2000, child_size=300)
     for c in out:
         # Ogni child appartiene al parent
-        assert c.child_text in c.parent_text or c.parent_text.startswith(c.child_text[:50])
+        assert c.child_text in c.parent_text or c.parent_text.startswith(
+            c.child_text[:50]
+        )
 
 
 def test_no_heading_falls_back_to_single_block() -> None:

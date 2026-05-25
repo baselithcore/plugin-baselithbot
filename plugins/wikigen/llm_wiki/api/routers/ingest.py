@@ -145,7 +145,9 @@ async def autostart_pending_ingest() -> None:
     targets = [
         p
         for p in sorted(raw_dir.iterdir())
-        if p.is_file() and p.suffix.lower() in ALLOWED_UPLOAD_EXTS and _is_pdf_pending(p, existing)
+        if p.is_file()
+        and p.suffix.lower() in ALLOWED_UPLOAD_EXTS
+        and _is_pdf_pending(p, existing)
     ]
     if not targets:
         return
@@ -413,7 +415,9 @@ def list_pending_raw() -> dict[str, Any]:
             stat = p.stat()
         except OSError:
             continue
-        pending.append({"name": p.name, "size": stat.st_size, "modified": stat.st_mtime})
+        pending.append(
+            {"name": p.name, "size": stat.st_size, "modified": stat.st_mtime}
+        )
     return {"count": len(pending), "files": pending}
 
 
@@ -505,7 +509,10 @@ async def stream_job(job_id: str) -> StreamingResponse:
                 yield json.dumps(event, ensure_ascii=False) + "\n"
             final = registry.get(job_id)
             if final is not None:
-                yield json.dumps({"type": "final", **final.to_dict()}, ensure_ascii=False) + "\n"
+                yield (
+                    json.dumps({"type": "final", **final.to_dict()}, ensure_ascii=False)
+                    + "\n"
+                )
         except asyncio.CancelledError:
             raise
 

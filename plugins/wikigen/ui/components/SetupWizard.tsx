@@ -295,7 +295,13 @@ export function SetupWizard({
   };
 
   const isScreen = variant === 'screen';
-  const stepIdx = step === 'done' ? STEPS.length - 1 : Math.max(0, STEPS.findIndex((s) => s.id === step));
+  const stepIdx =
+    step === 'done'
+      ? STEPS.length - 1
+      : Math.max(
+          0,
+          STEPS.findIndex((s) => s.id === step)
+        );
   const workflowComplete = step === 'done';
   const progressPct = workflowComplete ? 100 : Math.round(((stepIdx + 1) / STEPS.length) * 100);
 
@@ -347,7 +353,9 @@ export function SetupWizard({
               <header className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-3 sm:px-5">
                 <div className="inline-flex min-w-0 items-center gap-2">
                   <Sparkles size={14} className="shrink-0 text-[var(--color-brand)]" aria-hidden />
-                  <span className="truncate text-sm font-semibold text-ink">Configurazione wiki</span>
+                  <span className="truncate text-sm font-semibold text-ink">
+                    Configurazione wiki
+                  </span>
                   <span className="hidden text-[10px] text-ink-subtle sm:inline">
                     creazione guidata
                   </span>
@@ -362,12 +370,7 @@ export function SetupWizard({
                     />
                   )}
                   {!blocking && (
-                    <IconButton
-                      icon={X}
-                      aria-label="chiudi"
-                      size="sm"
-                      onClick={onClose}
-                    />
+                    <IconButton icon={X} aria-label="chiudi" size="sm" onClick={onClose} />
                   )}
                 </div>
               </header>

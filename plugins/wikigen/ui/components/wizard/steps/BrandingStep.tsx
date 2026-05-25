@@ -109,7 +109,9 @@ export function BrandingStep({
             hint="Brand principale"
             value={v.theme_primary ?? ''}
             error={errors.theme_primary?.message}
-            onChange={(c) => setValue('theme_primary', c, { shouldDirty: true, shouldValidate: true })}
+            onChange={(c) =>
+              setValue('theme_primary', c, { shouldDirty: true, shouldValidate: true })
+            }
             register={register('theme_primary')}
           />
           <ColorField
@@ -127,7 +129,9 @@ export function BrandingStep({
             hint="Accenti / gradiente"
             value={v.theme_accent ?? ''}
             error={errors.theme_accent?.message}
-            onChange={(c) => setValue('theme_accent', c, { shouldDirty: true, shouldValidate: true })}
+            onChange={(c) =>
+              setValue('theme_accent', c, { shouldDirty: true, shouldValidate: true })
+            }
             register={register('theme_accent')}
           />
         </div>
@@ -170,10 +174,7 @@ export function BrandingStep({
               className="h-2 rounded-full"
               style={{ background: v.theme_primary_hover || '#163a6c' }}
             />
-            <div
-              className="h-2 rounded-full"
-              style={{ background: v.theme_accent || '#1f8a8a' }}
-            />
+            <div className="h-2 rounded-full" style={{ background: v.theme_accent || '#1f8a8a' }} />
           </div>
         </div>
       </section>

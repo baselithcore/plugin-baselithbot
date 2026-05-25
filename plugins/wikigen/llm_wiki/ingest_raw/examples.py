@@ -53,7 +53,9 @@ class Example:
             label = self.path
         body = self.body
         if len(body) > _EXAMPLE_BODY_CAP:
-            body = body[:_EXAMPLE_BODY_CAP].rstrip() + "\n\n<!-- (esempio troncato) -->\n"
+            body = (
+                body[:_EXAMPLE_BODY_CAP].rstrip() + "\n\n<!-- (esempio troncato) -->\n"
+            )
         return f"<!-- ESEMPIO: {label} -->\n{body}"
 
 

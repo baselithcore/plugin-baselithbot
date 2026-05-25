@@ -40,10 +40,9 @@ export function PendingSynthHint() {
         tone="warning"
         title="Prompt non personalizzato"
       >
-        Sintesi del prompt fallita ({pending.msg}). Sono stati usati i prompt
-        generici di <code>_template</code>. Modifica{' '}
-        <code>domains/{pending.pack}/prompts/system.j2</code> per affinare le
-        risposte sul tuo dominio.
+        Sintesi del prompt fallita ({pending.msg}). Sono stati usati i prompt generici di{' '}
+        <code>_template</code>. Modifica <code>domains/{pending.pack}/prompts/system.j2</code> per
+        affinare le risposte sul tuo dominio.
       </Hint>
     </div>
   );

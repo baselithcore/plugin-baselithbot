@@ -1,0 +1,14 @@
+apiVersion: v2
+name: docheck
+description: doCheck — Local/VPC Document Compliance Checker (multi-tenant ready)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - compliance
+  - llm
+  - local-first
+  - rag
+maintainers:
+  - name: GD Services
+    email: g.ippolito@gdservices.tech

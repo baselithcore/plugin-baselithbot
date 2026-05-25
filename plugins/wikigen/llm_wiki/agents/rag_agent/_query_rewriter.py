@@ -227,23 +227,33 @@ def condense_question(
         return CondenseResult(query=original, original=original, skip_reason="disabled")
 
     if not history_turns:
-        return CondenseResult(query=original, original=original, skip_reason="no_history")
+        return CondenseResult(
+            query=original, original=original, skip_reason="no_history"
+        )
 
     if _looks_standalone(original):
-        return CondenseResult(query=original, original=original, skip_reason="heuristic_standalone")
+        return CondenseResult(
+            query=original, original=original, skip_reason="heuristic_standalone"
+        )
 
     history_block = _format_history_for_condense(
         history_turns,
-        max_turns=max_turns if max_turns is not None else RAG_HISTORY_CONDENSE_MAX_TURNS,
+        max_turns=max_turns
+        if max_turns is not None
+        else RAG_HISTORY_CONDENSE_MAX_TURNS,
     )
     if not history_block:
-        return CondenseResult(query=original, original=original, skip_reason="no_history")
+        return CondenseResult(
+            query=original, original=original, skip_reason="no_history"
+        )
 
     # Lazy import + namespace indirection so tests can monkeypatch
     # ``llm_wiki.agents.rag_agent.generate``.
     from llm_wiki.agents import rag_agent as _pkg
 
-    system_msg = _CONDENSE_SYSTEM.format(max_chars=RAG_HISTORY_CONDENSE_MAX_OUTPUT_CHARS)
+    system_msg = _CONDENSE_SYSTEM.format(
+        max_chars=RAG_HISTORY_CONDENSE_MAX_OUTPUT_CHARS
+    )
     user_msg = _CONDENSE_USER.format(history=history_block, question=original)
     try:
         raw = _pkg.generate(
@@ -260,17 +270,23 @@ def condense_question(
         )
     except Exception as exc:
         logger.warning("[condense] LLM failed (%s) — keep original query", exc)
-        return CondenseResult(query=original, original=original, skip_reason="llm_failed")
+        return CondenseResult(
+            query=original, original=original, skip_reason="llm_failed"
+        )
 
     cleaned = _clean_llm_output(raw)
     if not cleaned:
-        return CondenseResult(query=original, original=original, skip_reason="empty_output")
+        return CondenseResult(
+            query=original, original=original, skip_reason="empty_output"
+        )
 
     # No-op detection (case-insensitive whitespace-normalised). Model
     # decided the query is already standalone — record as not-rewritten
     # to suppress UI noise.
     if cleaned.casefold().strip() == original.casefold().strip():
-        return CondenseResult(query=original, original=original, skip_reason="model_kept_original")
+        return CondenseResult(
+            query=original, original=original, skip_reason="model_kept_original"
+        )
 
     logger.info("[condense] '%s' → '%s'", original[:60], cleaned[:60])
     return CondenseResult(query=cleaned, original=original, rewritten=True)

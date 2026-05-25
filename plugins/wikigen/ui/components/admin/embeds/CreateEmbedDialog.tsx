@@ -48,7 +48,7 @@ export function CreateEmbedDialog({ open, onClose, onCreated }: Props) {
     ev.preventDefault();
     setErr(null);
     if (!SLUG_RE.test(slug)) {
-      setErr("Slug non valido: usa solo [a-z0-9._-], inizia con lettera/cifra.");
+      setErr('Slug non valido: usa solo [a-z0-9._-], inizia con lettera/cifra.');
       return;
     }
     if (!name.trim()) {
@@ -193,7 +193,6 @@ export function CreateEmbedDialog({ open, onClose, onCreated }: Props) {
     </ModalShell>
   );
 }
-
 
 function Row({
   label,

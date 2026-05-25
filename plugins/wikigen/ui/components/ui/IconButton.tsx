@@ -21,7 +21,7 @@ const ICON_SIZE = { sm: 12, md: 13, lg: 15 } as const;
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(function IconButton(
   { icon: Icon, size = 'md', emphasis = 'subtle', className, type = 'button', ...rest },
-  ref,
+  ref
 ) {
   return (
     <button
@@ -35,7 +35,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
           ? 'border border-transparent'
           : 'border border-[var(--color-border)] bg-[var(--color-canvas-raised)] shadow-xs',
         BOX[size],
-        className,
+        className
       )}
       {...rest}
     >

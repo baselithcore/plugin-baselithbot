@@ -14,10 +14,7 @@ export function BrandingQuestionsEditor({ questions, onChange }: Props) {
   };
   const remove = (i: number) => onChange(questions.filter((_, idx) => idx !== i));
   const add = () =>
-    onChange([
-      ...questions,
-      { label: '', prompt: '', hint: '', category: 'default', icon: '' },
-    ]);
+    onChange([...questions, { label: '', prompt: '', hint: '', category: 'default', icon: '' }]);
 
   return (
     <div className="space-y-3 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-3">

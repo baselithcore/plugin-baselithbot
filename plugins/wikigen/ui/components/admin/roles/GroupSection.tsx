@@ -59,7 +59,10 @@ export function GroupSection({
           >
             <ChevronRight
               size={12}
-              className={cn('shrink-0 transition-transform text-ink-subtle', !collapsed && 'rotate-90')}
+              className={cn(
+                'shrink-0 transition-transform text-ink-subtle',
+                !collapsed && 'rotate-90'
+              )}
               aria-hidden
             />
             <Icon size={13} className="shrink-0 text-ink-subtle" aria-hidden />
@@ -73,8 +76,7 @@ export function GroupSection({
               className="mt-0.5 pl-6 text-[10px] leading-tight text-ink-subtle"
               title={`Superfici UI controllate da ${group.label}`}
             >
-              <span className="font-medium">Mostra/nasconde:</span>{' '}
-              {group.tabs.join(' · ')}
+              <span className="font-medium">Mostra/nasconde:</span> {group.tabs.join(' · ')}
             </div>
           )}
         </th>
@@ -102,7 +104,7 @@ export function GroupSection({
                         ? 'text-[var(--color-brand)] hover:bg-[var(--color-brand-soft)]'
                         : all
                           ? 'text-rose-600 hover:bg-rose-500/10 dark:text-rose-400'
-                          : 'text-[var(--color-brand)] hover:bg-[var(--color-brand-soft)]',
+                          : 'text-[var(--color-brand)] hover:bg-[var(--color-brand-soft)]'
                     )}
                     title={
                       all

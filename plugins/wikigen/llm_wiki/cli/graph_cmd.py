@@ -81,7 +81,9 @@ def graph_rebuild(
     from llm_wiki.wiki.parser import parse_file, walk_wiki
 
     if not GRAPH_EXTRACT_ENABLED:
-        emit_error(ctx, message="GRAPH_EXTRACT_ENABLED=false — set it to enable extraction.")
+        emit_error(
+            ctx, message="GRAPH_EXTRACT_ENABLED=false — set it to enable extraction."
+        )
         raise typer.Exit(code=EXIT_USER_ERROR)
 
     store = _require_store(ctx)
@@ -149,7 +151,9 @@ def graph_rebuild(
 def graph_report(
     ctx: typer.Context,
     output_dir: str = typer.Option(
-        "", "--output-dir", help="Override GRAPH_REPORT_DIR (default WIKI_ROOT/.graphify)."
+        "",
+        "--output-dir",
+        help="Override GRAPH_REPORT_DIR (default WIKI_ROOT/.graphify).",
     ),
 ) -> None:
     """Compute snapshot + write GRAPH_REPORT.md and graph.json."""
@@ -177,7 +181,9 @@ def graph_export(
         "-f",
         help="Output format: graphml | cypher | obsidian | html.",
     ),
-    output_dir: str = typer.Option("", "--output-dir", help="Override GRAPH_REPORT_DIR/exports/."),
+    output_dir: str = typer.Option(
+        "", "--output-dir", help="Override GRAPH_REPORT_DIR/exports/."
+    ),
 ) -> None:
     """Export the entity graph for downstream tools.
 
@@ -187,7 +193,12 @@ def graph_export(
     - ``html`` → standalone Cytoscape page with the graph embedded inline.
     """
     from llm_wiki.config import GRAPH_REPORT_DIR
-    from llm_wiki.graphdb.export import to_cypher, to_graphml, to_html, to_obsidian_vault
+    from llm_wiki.graphdb.export import (
+        to_cypher,
+        to_graphml,
+        to_html,
+        to_obsidian_vault,
+    )
 
     store = _require_store(ctx)
     graph = store.to_networkx()
@@ -246,10 +257,18 @@ def _resolve_entity(store: KnowledgeGraphStore, needle: str) -> EntityRecord | N
 @graph_app.command("query")
 def graph_query(
     ctx: typer.Context,
-    text: str = typer.Argument(..., help="Question or keyword (substring match on entity names)."),
-    kind: str = typer.Option("", "--kind", help="Filter on entity kind (e.g. concept, source)."),
-    limit: int = typer.Option(10, "--limit", min=1, max=50, help="Top-N entity matches."),
-    neighbors: int = typer.Option(5, "--neighbors", min=0, max=25, help="1-hop neighbors per hit."),
+    text: str = typer.Argument(
+        ..., help="Question or keyword (substring match on entity names)."
+    ),
+    kind: str = typer.Option(
+        "", "--kind", help="Filter on entity kind (e.g. concept, source)."
+    ),
+    limit: int = typer.Option(
+        10, "--limit", min=1, max=50, help="Top-N entity matches."
+    ),
+    neighbors: int = typer.Option(
+        5, "--neighbors", min=0, max=25, help="1-hop neighbors per hit."
+    ),
 ) -> None:
     """Substring search over entity names + neighbor preview for top hit.
 
@@ -303,7 +322,9 @@ def graph_path(
     ctx: typer.Context,
     src: str = typer.Argument(..., help="Source entity name or id."),
     dst: str = typer.Argument(..., help="Destination entity name or id."),
-    max_hops: int = typer.Option(5, "--max-hops", min=1, max=8, help="Max path length."),
+    max_hops: int = typer.Option(
+        5, "--max-hops", min=1, max=8, help="Max path length."
+    ),
 ) -> None:
     """Shortest entity path between two entities.
 
@@ -316,8 +337,12 @@ def graph_path(
     output = get_ctx(ctx)
 
     if src_ent is None or dst_ent is None:
-        unresolved = [name for name, ent in ((src, src_ent), (dst, dst_ent)) if ent is None]
-        emit_error(ctx, message=f"entity not found: {', '.join(repr(n) for n in unresolved)}")
+        unresolved = [
+            name for name, ent in ((src, src_ent), (dst, dst_ent)) if ent is None
+        ]
+        emit_error(
+            ctx, message=f"entity not found: {', '.join(repr(n) for n in unresolved)}"
+        )
         raise typer.Exit(code=EXIT_USER_ERROR)
 
     path = store.shortest_path(src_ent.id, dst_ent.id, max_hops=max_hops)
@@ -350,7 +375,9 @@ def graph_path(
 def graph_explain(
     ctx: typer.Context,
     concept: str = typer.Argument(..., help="Entity name or canonical id."),
-    neighbors: int = typer.Option(10, "--neighbors", min=0, max=50, help="1-hop neighbors cap."),
+    neighbors: int = typer.Option(
+        10, "--neighbors", min=0, max=50, help="1-hop neighbors cap."
+    ),
 ) -> None:
     """Focused subgraph for one entity: definition pages + 1-hop neighbors.
 
@@ -368,10 +395,17 @@ def graph_explain(
         raise typer.Exit(code=EXIT_USER_ERROR)
 
     nbrs = store.neighbors(ent.id, hops=1, limit=neighbors) if neighbors > 0 else []
-    pages = store.pages_for_entities([ent.id], confidence_min=GRAPH_CONFIDENCE_MIN, limit=10)
+    pages = store.pages_for_entities(
+        [ent.id], confidence_min=GRAPH_CONFIDENCE_MIN, limit=10
+    )
 
     payload = {
-        "entity": {"id": ent.id, "name": ent.name, "kind": ent.kind, "aliases": ent.aliases},
+        "entity": {
+            "id": ent.id,
+            "name": ent.name,
+            "kind": ent.kind,
+            "aliases": ent.aliases,
+        },
         "pages": pages,
         "neighbors": [{"id": n.id, "name": n.name, "kind": n.kind} for n in nbrs],
     }

@@ -37,7 +37,7 @@ export function Chip({
       className={cn(
         'inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium',
         CHIP_TONES[tone],
-        className,
+        className
       )}
     >
       {children}
@@ -67,13 +67,10 @@ export function RoleBadge({
         'inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium',
         size === 'md' ? 'text-[11px]' : 'text-[10px]',
         CHIP_TONES[ROLE_TONE[slug] ?? 'neutral'],
-        className,
+        className
       )}
     >
-      <span
-        className="size-1.5 rounded-full bg-current opacity-70"
-        aria-hidden
-      />
+      <span className="size-1.5 rounded-full bg-current opacity-70" aria-hidden />
       {slug}
     </span>
   );
@@ -109,7 +106,7 @@ export function Avatar({
     <span
       className={cn(
         'inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-white',
-        className,
+        className
       )}
       style={{
         width: size,

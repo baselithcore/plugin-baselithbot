@@ -131,7 +131,7 @@ function TenantRow({ tenant, onSelect }: { tenant: TenantInfo; onSelect: (slug: 
         onClick={() => onSelect(tenant.name)}
         className={cn(
           'focus-ring w-full rounded-md px-2.5 py-1.5 text-left transition-colors',
-          'hover:bg-[var(--color-surface)]',
+          'hover:bg-[var(--color-surface)]'
         )}
       >
         <div className="flex items-center justify-between gap-2">
@@ -173,7 +173,7 @@ function RoleOption({
         'focus-within:focus-ring flex cursor-pointer items-start gap-2 rounded-lg border px-2.5 py-2 text-left transition-colors',
         checked
           ? 'border-[var(--color-brand)] bg-[var(--color-brand-soft)]'
-          : 'border-[var(--color-border)] bg-[var(--color-canvas-raised)] hover:border-[var(--color-border-strong)]',
+          : 'border-[var(--color-border)] bg-[var(--color-canvas-raised)] hover:border-[var(--color-border-strong)]'
       )}
     >
       <input

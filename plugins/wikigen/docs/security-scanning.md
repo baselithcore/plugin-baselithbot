@@ -78,7 +78,9 @@ Run su `llm_wiki/` (17905 LOC). Tutti i HIGH/MEDIUM finding triagiati come false
 |Severity|Issue|Files|Outcome|
 |--------|-----|-----|-------|
 |HIGH (1)|`B701` Jinja2 autoescape=False|`admin/prompt_synthesizer.py:309`|False positive — Environment usato per generare prompt LLM (testo server-side, mai HTML browser). Autoescape romperebbe `<DOMINIO>` in `&lt;DOMINIO&gt;`. `# nosec B701`|
+|HIGH (1)|`B701` Jinja2 autoescape=False|`tests/test_prompt_synthesizer.py:312`|False positive — jinja2 Environment mock in test matching production setup. `# nosec B701`|
 |MEDIUM (6)|`B608` SQL f-string construction|`db/{conversations,feedback,memories,tenants,users}.py`|False positive — `where`/`updates` sono whitelist locali di clausole `"col = %s"`; nessun input utente concatenato; valori bound via `params` tuple a psycopg. `# nosec B608` con commento|
+|MEDIUM (1)|`B108` Hardcoded /tmp directory|`tests/test_verbatim_atoms.py:161`|False positive — hardcoded mock source path `/tmp/...` in test suite. `# nosec B108`|
 
 Stato attuale: HIGH=0, MEDIUM=0, LOW=14 (ratchet). CI `bandit` è **blocking su HIGH+MEDIUM** (`-ll`), LOW non blocca.
 

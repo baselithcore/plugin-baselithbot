@@ -110,9 +110,7 @@ export function WizardBody(p: WizardBodyProps) {
     );
   }
   if (step === 'done' && p.result) {
-    return (
-      <DonePanel result={p.result} expectedDocs={p.docFiles.length} onClose={p.onClose} />
-    );
+    return <DonePanel result={p.result} expectedDocs={p.docFiles.length} onClose={p.onClose} />;
   }
   return null;
 }

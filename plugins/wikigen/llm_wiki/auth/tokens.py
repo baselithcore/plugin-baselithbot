@@ -58,7 +58,9 @@ def _require_secret() -> str:
 # --- access token (JWT HS256) ----------------------------------------------
 
 
-def issue_access_token(*, user_id: str, tenant_id: str, role: str) -> tuple[str, datetime.datetime]:
+def issue_access_token(
+    *, user_id: str, tenant_id: str, role: str
+) -> tuple[str, datetime.datetime]:
     """Genera JWT HS256 con TTL = ``ACCESS_TOKEN_TTL_MINUTES``."""
     import jwt as pyjwt
 

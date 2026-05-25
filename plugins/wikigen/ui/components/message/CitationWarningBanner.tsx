@@ -48,10 +48,7 @@ export function CitationWarningBanner({ warning }: { warning: CitationWarning })
         </div>
         <ChevronRight
           size={12}
-          className={cn(
-            'mt-0.5 shrink-0 text-amber-700 transition-transform',
-            open && 'rotate-90'
-          )}
+          className={cn('mt-0.5 shrink-0 text-amber-700 transition-transform', open && 'rotate-90')}
           aria-hidden
         />
       </button>

@@ -220,7 +220,9 @@ def test_add_member_cross_tenant_rejected(tenant_a: dict, tenant_b: dict) -> Non
         add_member(g["id"], other_uid)
 
 
-def test_add_members_bulk_partitions_added_skipped(tenant_a: dict, tenant_b: dict) -> None:
+def test_add_members_bulk_partitions_added_skipped(
+    tenant_a: dict, tenant_b: dict
+) -> None:
     from llm_wiki.db.groups import add_members_bulk, create_group
 
     g = create_group(tenant_id=tenant_a["tenant_id"], slug="bulk", name="Bulk")
@@ -243,7 +245,9 @@ def test_assign_global_role_ok(tenant_a: dict) -> None:
     from llm_wiki.db.roles import list_roles
 
     g = create_group(tenant_id=tenant_a["tenant_id"], slug="r1", name="R1")
-    moderator = next(r for r in list_roles() if r["slug"] == "moderator" and r["is_system"])
+    moderator = next(
+        r for r in list_roles() if r["slug"] == "moderator" and r["is_system"]
+    )
     assert assign_role(g["id"], moderator["id"]) is True
     # Idempotent
     assert assign_role(g["id"], moderator["id"]) is False
@@ -252,7 +256,9 @@ def test_assign_global_role_ok(tenant_a: dict) -> None:
     assert any(r["slug"] == "moderator" for r in roles)
 
 
-def test_assign_tenant_role_cross_tenant_rejected(tenant_a: dict, tenant_b: dict) -> None:
+def test_assign_tenant_role_cross_tenant_rejected(
+    tenant_a: dict, tenant_b: dict
+) -> None:
     """Ruolo creato in tenant_b non può finire su gruppo tenant_a."""
     from llm_wiki.db.connection import get_connection
     from llm_wiki.db.groups import CrossTenantError, assign_role, create_group
@@ -287,7 +293,9 @@ def test_group_role_perms_included_in_get_user_permissions(tenant_a: dict) -> No
     assert get_user_permissions(uid) == []
 
     g = create_group(tenant_id=tenant_a["tenant_id"], slug="adm", name="Admins")
-    admin_role = next(r for r in list_roles() if r["slug"] == "admin" and r["is_system"])
+    admin_role = next(
+        r for r in list_roles() if r["slug"] == "admin" and r["is_system"]
+    )
     assign_role(g["id"], admin_role["id"])
     add_member(g["id"], uid)
 
@@ -309,7 +317,9 @@ def test_user_roles_and_group_roles_union(tenant_a: dict) -> None:
     uid = tenant_a["user"]["id"]
     roles = list_roles()
     user_role = next(r for r in roles if r["slug"] == "user" and r["is_system"])
-    moderator_role = next(r for r in roles if r["slug"] == "moderator" and r["is_system"])
+    moderator_role = next(
+        r for r in roles if r["slug"] == "moderator" and r["is_system"]
+    )
 
     # Ruolo diretto: user
     assign_role_to_user(uid, user_role["id"])
@@ -340,7 +350,9 @@ def test_remove_member_removes_perms(tenant_a: dict) -> None:
 
     uid = tenant_a["user"]["id"]
     g = create_group(tenant_id=tenant_a["tenant_id"], slug="tmp", name="Tmp")
-    admin_role = next(r for r in list_roles() if r["slug"] == "admin" and r["is_system"])
+    admin_role = next(
+        r for r in list_roles() if r["slug"] == "admin" and r["is_system"]
+    )
     assign_role(g["id"], admin_role["id"])
     add_member(g["id"], uid)
     assert "wiki.write" in get_user_permissions(uid)
@@ -357,7 +369,9 @@ def test_group_perms_apply_with_domain_filter(tenant_a: dict) -> None:
 
     uid = tenant_a["user"]["id"]
     g = create_group(tenant_id=tenant_a["tenant_id"], slug="gd", name="GD")
-    admin_role = next(r for r in list_roles() if r["slug"] == "admin" and r["is_system"])
+    admin_role = next(
+        r for r in list_roles() if r["slug"] == "admin" and r["is_system"]
+    )
     assign_role(g["id"], admin_role["id"])
     add_member(g["id"], uid)
 

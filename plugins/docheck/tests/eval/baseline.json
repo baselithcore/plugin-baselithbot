@@ -1,0 +1,9 @@
+{
+  "version": "2026-05-14",
+  "metrics": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1": 1.0
+  },
+  "tolerance": 0.05
+}

@@ -69,7 +69,9 @@ def _load_migration(name: str):
     import importlib.util
     from pathlib import Path
 
-    mig_path = Path(__file__).resolve().parent.parent / "alembic" / "versions" / f"{name}.py"
+    mig_path = (
+        Path(__file__).resolve().parent.parent / "alembic" / "versions" / f"{name}.py"
+    )
     spec = importlib.util.spec_from_file_location(f"mig_{name}", mig_path)
     assert spec and spec.loader
     mod = importlib.util.module_from_spec(spec)

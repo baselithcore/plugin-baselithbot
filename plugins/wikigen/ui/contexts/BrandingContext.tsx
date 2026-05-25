@@ -101,8 +101,7 @@ export const BrandingProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       mutations.forEach((mutation) => {
         if (
           mutation.type === 'attributes' &&
-          (mutation.attributeName === 'class' ||
-            mutation.attributeName === 'data-tenant-theme')
+          (mutation.attributeName === 'class' || mutation.attributeName === 'data-tenant-theme')
         ) {
           applyTheme(config, isDarkMode());
         }

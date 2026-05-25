@@ -78,19 +78,14 @@ export const createEmbed = (args: CreateEmbedArgs): Promise<EmbedWithToken> =>
 export const getEmbed = (embedId: string): Promise<EmbedSummary> =>
   json(`${BASE_PATH}/${encodeURIComponent(embedId)}`);
 
-export const updateEmbed = (
-  embedId: string,
-  args: UpdateEmbedArgs
-): Promise<EmbedSummary> =>
+export const updateEmbed = (embedId: string, args: UpdateEmbedArgs): Promise<EmbedSummary> =>
   json(`${BASE_PATH}/${encodeURIComponent(embedId)}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(args),
   });
 
-export const deleteEmbed = (
-  embedId: string
-): Promise<{ status: string; removed: boolean }> =>
+export const deleteEmbed = (embedId: string): Promise<{ status: string; removed: boolean }> =>
   json(`${BASE_PATH}/${encodeURIComponent(embedId)}`, { method: 'DELETE' });
 
 export const rotateToken = (embedId: string): Promise<EmbedWithToken> =>

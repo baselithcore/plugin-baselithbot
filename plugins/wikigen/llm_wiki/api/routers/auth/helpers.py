@@ -42,8 +42,12 @@ def slugify(value: str) -> str:
     return s or "tenant"
 
 
-def set_refresh_cookie(response: Response, token: str, expires_at: datetime.datetime) -> None:
-    max_age = int((expires_at - datetime.datetime.now(datetime.timezone.utc)).total_seconds())
+def set_refresh_cookie(
+    response: Response, token: str, expires_at: datetime.datetime
+) -> None:
+    max_age = int(
+        (expires_at - datetime.datetime.now(datetime.timezone.utc)).total_seconds()
+    )
     response.set_cookie(
         key=REFRESH_COOKIE_NAME,
         value=token,

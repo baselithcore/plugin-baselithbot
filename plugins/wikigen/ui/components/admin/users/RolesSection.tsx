@@ -13,7 +13,8 @@ const ROLE_DESCRIPTIONS: Record<string, string> = {
 const ROLE_ACCENT: Record<string, string> = {
   superuser: 'data-[on=true]:border-rose-500/50 data-[on=true]:bg-rose-500/10',
   admin: 'data-[on=true]:border-amber-500/50 data-[on=true]:bg-amber-500/10',
-  moderator: 'data-[on=true]:border-[var(--color-brand-ring)] data-[on=true]:bg-[var(--color-brand-soft)]',
+  moderator:
+    'data-[on=true]:border-[var(--color-brand-ring)] data-[on=true]:bg-[var(--color-brand-soft)]',
   user: 'data-[on=true]:border-emerald-500/40 data-[on=true]:bg-emerald-500/10',
 };
 
@@ -35,9 +36,7 @@ export function RolesSection({
       <SectionHeader
         title="Ruoli di sistema"
         icon={ShieldCheck}
-        trailing={
-          <span className="text-[10px] text-ink-subtle">{user.roles.length} attivi</span>
-        }
+        trailing={<span className="text-[10px] text-ink-subtle">{user.roles.length} attivi</span>}
       />
       <p className="mb-2 text-[11px] leading-relaxed text-ink-subtle">
         Definiscono i permessi globali. I domain grants estendono o restringono l’accesso per
@@ -61,7 +60,7 @@ export function RolesSection({
                   'bg-[var(--color-canvas-raised)] px-3 py-2 text-left transition-colors',
                   'hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface)]',
                   'disabled:cursor-not-allowed disabled:opacity-50',
-                  ROLE_ACCENT[r.slug] ?? '',
+                  ROLE_ACCENT[r.slug] ?? ''
                 )}
                 aria-pressed={has}
                 title={!allowed ? 'Permesso insufficiente per gestire questo ruolo' : undefined}
@@ -69,9 +68,7 @@ export function RolesSection({
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <span className="truncate text-[12px] font-semibold text-ink">
-                        {r.name}
-                      </span>
+                      <span className="truncate text-[12px] font-semibold text-ink">{r.name}</span>
                       <code className="rounded bg-[var(--color-surface)] px-1 text-[10px] text-ink-subtle">
                         {r.slug}
                       </code>
@@ -87,7 +84,7 @@ export function RolesSection({
                       <span
                         className={cn(
                           'inline-flex size-5 items-center justify-center rounded-full',
-                          'bg-emerald-500 text-white shadow-sm',
+                          'bg-emerald-500 text-white shadow-sm'
                         )}
                       >
                         <Check size={11} strokeWidth={3} aria-hidden />

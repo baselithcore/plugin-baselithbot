@@ -136,7 +136,9 @@ class UpdateEmbedRequest(BaseModel):
 router = APIRouter(
     prefix="/api/admin/embeds",
     tags=["admin", "embeds"],
-    dependencies=[Depends(require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin"))],
+    dependencies=[
+        Depends(require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin"))
+    ],
 )
 
 
@@ -150,13 +152,17 @@ def _client_ip(request: Request) -> str | None:
 def _require_embed(embed_id: str, actor: dict) -> dict:
     embed = embeds_db.get_embed_by_id(embed_id, tenant_id=actor.get("tenant_id"))
     if not embed:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="embed non trovato")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="embed non trovato"
+        )
     return embed
 
 
 @router.get("", response_model=list[EmbedSummary])
 def list_embeds_endpoint(
-    actor: dict = Depends(require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin")
+    ),
 ) -> list[EmbedSummary]:
     tenant_id = actor.get("tenant_id")
     if not tenant_id:
@@ -172,7 +178,9 @@ def list_embeds_endpoint(
 def create_embed_endpoint(
     body: CreateEmbedRequest,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin")
+    ),
 ) -> EmbedWithToken:
     tenant_id = actor.get("tenant_id")
     if not tenant_id:
@@ -217,7 +225,9 @@ def create_embed_endpoint(
 @router.get("/{embed_id}", response_model=EmbedSummary)
 def get_embed_endpoint(
     embed_id: str,
-    actor: dict = Depends(require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin")
+    ),
 ) -> EmbedSummary:
     embed = _require_embed(embed_id, actor)
     return EmbedSummary(**embed)
@@ -228,7 +238,9 @@ def update_embed_endpoint(
     embed_id: str,
     body: UpdateEmbedRequest,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin")
+    ),
 ) -> EmbedSummary:
     _require_embed(embed_id, actor)
     tenant_id = actor["tenant_id"]
@@ -245,7 +257,9 @@ def update_embed_endpoint(
         is_enabled=body.is_enabled,
     )
     if not updated:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="embed non trovato")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="embed non trovato"
+        )
     write_event(
         "embed.updated",
         tenant_id=tenant_id,
@@ -263,7 +277,9 @@ def update_embed_endpoint(
 def delete_embed_endpoint(
     embed_id: str,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin")
+    ),
 ) -> dict:
     embed = _require_embed(embed_id, actor)
     removed = embeds_db.delete_embed(embed_id, actor["tenant_id"])
@@ -281,12 +297,16 @@ def delete_embed_endpoint(
 def rotate_token_endpoint(
     embed_id: str,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_EMBED_MANAGE, rate_limit="admin")
+    ),
 ) -> EmbedWithToken:
     _require_embed(embed_id, actor)
     rotated = embeds_db.rotate_token(embed_id, actor["tenant_id"])
     if not rotated:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="embed non trovato")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="embed non trovato"
+        )
     record, plaintext = rotated
     write_event(
         "embed.token.rotated",

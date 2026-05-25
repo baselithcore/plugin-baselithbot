@@ -71,8 +71,7 @@ def upgrade() -> None:
     )
     # GIN per filtri "tags contiene X".
     op.execute(
-        "CREATE INDEX IF NOT EXISTS idx_feedback_tags "
-        "ON feedback USING GIN (tags)"
+        "CREATE INDEX IF NOT EXISTS idx_feedback_tags ON feedback USING GIN (tags)"
     )
 
     bind = op.get_bind()

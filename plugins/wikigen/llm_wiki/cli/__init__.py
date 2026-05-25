@@ -98,9 +98,13 @@ def _main(
     verbose: bool = typer.Option(False, "--verbose", "-v", help="DEBUG logging."),
     quiet: bool = typer.Option(False, "--quiet", "-q", help="ERROR-only logging."),
     log_level: str = typer.Option(
-        "", "--log-level", help="Override log level (DEBUG/INFO/WARNING/ERROR/CRITICAL)."
+        "",
+        "--log-level",
+        help="Override log level (DEBUG/INFO/WARNING/ERROR/CRITICAL).",
     ),
-    log_format: str = typer.Option("text", "--log-format", help="Log format: text|json."),
+    log_format: str = typer.Option(
+        "text", "--log-format", help="Log format: text|json."
+    ),
     json_output: bool = typer.Option(
         False, "--json", help="Emit machine-readable JSON to stdout (where supported)."
     ),

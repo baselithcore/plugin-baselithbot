@@ -67,7 +67,9 @@ def test_decimal_comma_normalization() -> None:
 
 def test_year_filtered_out_by_default() -> None:
     """Anno a 4 cifre standalone non deve sporcare i claim."""
-    claims = g.extract_numeric_claims("Riferimento al benchmark del 2024.", include_generic=True)
+    claims = g.extract_numeric_claims(
+        "Riferimento al benchmark del 2024.", include_generic=True
+    )
     assert not any(c.core == "2024" for c in claims)
 
 
@@ -78,7 +80,9 @@ def test_generic_off_by_default() -> None:
 
 
 def test_generic_on_captures_standalone() -> None:
-    claims = g.extract_numeric_claims("Throughput 1500 record processati.", include_generic=True)
+    claims = g.extract_numeric_claims(
+        "Throughput 1500 record processati.", include_generic=True
+    )
     assert any(c.core == "1500" for c in claims)
 
 
@@ -129,7 +133,9 @@ def test_decimal_separator_robustness() -> None:
 
 def test_empty_inputs() -> None:
     assert g.analyze("", "").has_violations is False
-    assert g.analyze("Risposta senza numeri.", "Contesto vuoto.").has_violations is False
+    assert (
+        g.analyze("Risposta senza numeri.", "Contesto vuoto.").has_violations is False
+    )
 
 
 # --- repair feedback / strip ----------------------------------------------

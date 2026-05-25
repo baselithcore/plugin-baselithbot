@@ -53,7 +53,9 @@ def setup_tracing(app) -> None:
         return
 
     service_name = os.getenv("OTEL_SERVICE_NAME", "llm-wiki")
-    resource = Resource.create({"service.name": service_name, **_parse_resource_attrs()})
+    resource = Resource.create(
+        {"service.name": service_name, **_parse_resource_attrs()}
+    )
     traces_endpoint = os.getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT", "").strip()
     if not traces_endpoint:
         traces_endpoint = endpoint.rstrip("/") + "/v1/traces"

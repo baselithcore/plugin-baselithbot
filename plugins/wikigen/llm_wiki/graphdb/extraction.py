@@ -60,7 +60,9 @@ class ExtractedRelation(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     src: str = Field(
-        ..., min_length=1, description="Entity name (must match an entity in this batch)."
+        ...,
+        min_length=1,
+        description="Entity name (must match an entity in this batch).",
     )
     dst: str = Field(..., min_length=1)
     kind: str = Field(..., min_length=1)
@@ -107,7 +109,11 @@ def _baseline_prompt(spec: GraphSpec, *, page_title: str, page_body: str) -> str
     rt_lines = "\n".join(
         f"- `{r.id}` ({r.label}): {r.description or ''}" for r in spec.relation_types
     )
-    hints = f"\n\nGuida specifica:\n{spec.extraction_hints}" if spec.extraction_hints else ""
+    hints = (
+        f"\n\nGuida specifica:\n{spec.extraction_hints}"
+        if spec.extraction_hints
+        else ""
+    )
     return (
         "Sei un estrattore di knowledge graph. Analizza la pagina wiki e produci "
         "entità e relazioni in JSON conforme allo schema.\n\n"
@@ -158,7 +164,9 @@ def _render_prompt(
     return _baseline_prompt(pack.graph, page_title=page_title, page_body=page_body)
 
 
-def _validate_against_spec(payload: ExtractionPayload, spec: GraphSpec) -> ExtractionPayload:
+def _validate_against_spec(
+    payload: ExtractionPayload, spec: GraphSpec
+) -> ExtractionPayload:
     """Drop entities/relations whose ``kind`` is not in the pack spec.
 
     The LLM may hallucinate kinds despite the prompt; we coerce to the
@@ -177,7 +185,9 @@ def _validate_against_spec(payload: ExtractionPayload, spec: GraphSpec) -> Extra
     for e in payload.entities[:_MAX_ENTITIES]:
         kind_norm = e.kind.strip().lower()
         if kind_norm not in entity_kinds:
-            logger.debug("[graph.extract] dropping entity kind=%s name=%s", e.kind, e.name)
+            logger.debug(
+                "[graph.extract] dropping entity kind=%s name=%s", e.kind, e.name
+            )
             continue
         valid_entities.append(
             ExtractedEntity(
@@ -195,8 +205,13 @@ def _validate_against_spec(payload: ExtractionPayload, spec: GraphSpec) -> Extra
         if relation_kinds and kind_norm not in relation_kinds:
             logger.debug("[graph.extract] dropping relation kind=%s", r.kind)
             continue
-        if r.src.strip().lower() not in valid_names or r.dst.strip().lower() not in valid_names:
-            logger.debug("[graph.extract] dropping phantom relation src=%s dst=%s", r.src, r.dst)
+        if (
+            r.src.strip().lower() not in valid_names
+            or r.dst.strip().lower() not in valid_names
+        ):
+            logger.debug(
+                "[graph.extract] dropping phantom relation src=%s dst=%s", r.src, r.dst
+            )
             continue
         valid_relations.append(
             ExtractedRelation(
@@ -239,7 +254,10 @@ def extract_from_page(
 
     prompt = _render_prompt(pack, registry, page_title=page_title, page_body=page_body)
     messages = [
-        {"role": "system", "content": "Estrai knowledge graph dalla pagina wiki. JSON only."},
+        {
+            "role": "system",
+            "content": "Estrai knowledge graph dalla pagina wiki. JSON only.",
+        },
         {"role": "user", "content": prompt},
     ]
 

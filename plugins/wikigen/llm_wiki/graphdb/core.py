@@ -55,7 +55,9 @@ class GraphDb:
         try:
             from redis import Redis  # type: ignore[import-not-found]
         except ImportError as exc:
-            raise RuntimeError("`redis` non installato. `pip install redis falkordb`.") from exc
+            raise RuntimeError(
+                "`redis` non installato. `pip install redis falkordb`."
+            ) from exc
         self._client = Redis.from_url(
             self._url, socket_timeout=self._timeout, decode_responses=True
         )
@@ -78,7 +80,9 @@ class GraphDb:
         try:
             client = self._get_client()
             expanded = _inline_params(cypher, params or {})
-            result = client.execute_command("GRAPH.QUERY", self.name, expanded, "--compact")
+            result = client.execute_command(
+                "GRAPH.QUERY", self.name, expanded, "--compact"
+            )
             return list(result) if isinstance(result, list | tuple) else []
         except Exception as exc:
             logger.debug("[graphdb] query fallita: %s", exc)

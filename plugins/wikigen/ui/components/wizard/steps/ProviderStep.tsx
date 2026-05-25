@@ -25,9 +25,8 @@ export function ProviderStep({
   return (
     <div className="space-y-4 px-5 py-4">
       <Callout tone="info" icon={Server} title="Provider del modello">
-        Scegli il vendor indipendentemente per chat e ingestion. Esempio: Ollama
-        locale per la chat (privacy / latenza) + OpenAI per ingestion (qualità
-        classify/plan), o viceversa.
+        Scegli il vendor indipendentemente per chat e ingestion. Esempio: Ollama locale per la chat
+        (privacy / latenza) + OpenAI per ingestion (qualità classify/plan), o viceversa.
       </Callout>
 
       <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-canvas-raised)] px-3 py-2.5 hover:bg-[var(--color-surface)]">
@@ -46,8 +45,8 @@ export function ProviderStep({
             Configura il provider in questo passaggio
           </div>
           <div className="mt-0.5 text-[10.5px] leading-relaxed text-ink-subtle">
-            Salva vendor, modello e indirizzo del servizio. Le credenziali esistenti
-            vengono sovrascritte solo se inserisci nuovi valori qui.
+            Salva vendor, modello e indirizzo del servizio. Le credenziali esistenti vengono
+            sovrascritte solo se inserisci nuovi valori qui.
           </div>
         </div>
       </label>
@@ -114,9 +113,7 @@ export function ProviderStep({
               <input
                 {...register('provider_ingest_model')}
                 className="input font-mono text-[11.5px]"
-                placeholder={
-                  ingestVendor === 'openai' ? 'gpt-4o' : 'qwen2.5:14b-instruct'
-                }
+                placeholder={ingestVendor === 'openai' ? 'gpt-4o' : 'qwen2.5:14b-instruct'}
                 autoComplete="off"
               />
             </Field>

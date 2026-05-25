@@ -1,0 +1,79 @@
+# Changelog
+
+Tutti i cambi rilevanti documentati. Formato [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), versioning [SemVer](https://semver.org/).
+
+## [Unreleased]
+
+### Added
+
+- Documentazione definitiva organizzata secondo framework Diátaxis (`docs/index.md`, `docs/tutorials/`, `docs/explanation/`, `docs/reference/`).
+- `SECURITY.md` con threat model + disclosure policy.
+- `CONTRIBUTING.md` con workflow e convenzioni.
+- `CHANGELOG.md` Keep-a-Changelog format.
+- Runbooks: `deploy-dgx.md`, `rotate-keys.md`, `restore-audit.md`.
+- ADR template `docs/adr/TEMPLATE.md`.
+
+## [0.1.0] — 2026-05-03 — MVP scaffold
+
+### Added — Backend Engine
+
+- FastAPI + Uvicorn su Unix socket (default) o TCP loopback opt-in.
+- Auth argon2id login → JWT EdDSA (Ed25519) [`core/jwt.py`](docheck-engine/src/docheck/core/jwt.py).
+- RBAC `(resource, action)` via `require()` dependency.
+- Audit log Ed25519 hash-chained, immutable triggers, **per-tenant chain**.
+- LangGraph multi-agent: Classifier · Structurer · Legal · Technical · PII · Synthesizer (parallel fan-out).
+- Glass-box: `evidence.bbox` + `policy_ref.excerpt` validation Pydantic.
+- Vector store abstraction: ChromaDB (MVP) ↔ Qdrant (multi-tenant) con tenant scoping.
+- Document parsers: PDF (pdfplumber + PaddleOCR fallback), DOCX, XLSX, MD/TXT.
+- Report signing Ed25519 + verify CLI-friendly.
+- WebSocket streaming pipeline events.
+- OpenTelemetry locale (file exporter, no cloud).
+- OIDC stub (issuer config-flag).
+- Postgres RLS migration + session GUC binding.
+- Multi-tenant: `TenantMixin` colonna `tenant_id`, ContextVar propagation, middleware.
+- Built-in deterministic policy (`DocCheck_Builtin`) sempre applicata, surface in `policies_applied`.
+- Document classifier (ADR-0011) → `doc_type` + applicability filter per agente.
+
+### Added — Frontend UI
+
+- Layout 60/40 split-pane resizable.
+- Document Viewer con highlight bbox + scroll-to-finding.
+- FindingsPanel virtualizzata (`react-virtuoso`).
+- Reasoning Drawer (Glass Box) con timeline agent steps.
+- Policy Manager modal + Policies dedicated page master/detail.
+- Audit Log viewer + chain integrity verify.
+- Settings (Account, Engine, Security, Storage).
+- Login + AuthGuard + Sidebar nav.
+- Tenant header `X-Tenant-Id` + Bearer JWT propagati.
+- ScoreGauge, SeverityBadge, PhaseIndicator components.
+- Phase streaming progress bar.
+- Electron shell con preload sandboxed.
+- i18n (IT default, EN).
+
+### Added — Infra
+
+- Docker Compose single-tenant (engine + vLLM).
+- Docker Compose multi-tenant (engine + Postgres + Qdrant).
+- Helm chart skeleton (StatefulSet + ConfigMap + NetworkPolicy).
+- Alembic migrations: 0001 schema, 0002 tenant_id, 0003 Postgres RLS.
+- CI: lint + type-check + tests + egress lockdown gate (tcpdump + iptables).
+- Mock LLM server per dev offline.
+
+### Added — Docs
+
+- Blueprint enterprise (`blueprint/00..09`).
+- 11 ADR (`docs/adr/0001..0011`).
+- Module docs: `agents`, `audit`, `events`, `tenant`, `api`.
+- API reference `docs/api/endpoints.md`.
+- Runbooks `setup-dev.md`, `kpi-evaluation.md`.
+- Helm README.
+
+### Security
+
+- Egress lockdown CI gate (tcpdump zero-egress validation).
+- CSP Electron strict, `nodeIntegration` off, sandbox on.
+- Audit chain Ed25519 + immutable triggers.
+- SQLCipher option attivabile via env.
+
+[Unreleased]: https://example.invalid/docheck/compare/v0.1.0...HEAD
+[0.1.0]: https://example.invalid/docheck/releases/tag/v0.1.0

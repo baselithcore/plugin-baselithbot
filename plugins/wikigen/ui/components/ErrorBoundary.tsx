@@ -37,9 +37,7 @@ export class ErrorBoundary extends Component<Props, State> {
         <div role="alert" className="surface max-w-lg p-6 flex flex-col items-start gap-3">
           <div className="inline-flex items-center gap-2 text-[var(--color-danger)]">
             <AlertTriangle size={16} />
-            <span className="text-sm font-semibold uppercase">
-              Errore applicativo
-            </span>
+            <span className="text-sm font-semibold uppercase">Errore applicativo</span>
           </div>
           <p className="text-sm text-ink-muted leading-relaxed">
             L'interfaccia ha incontrato un errore imprevisto. Puoi riprovare senza perdere la

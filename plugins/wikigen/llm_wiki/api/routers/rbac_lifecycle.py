@@ -72,7 +72,9 @@ class CreateUserRequest(BaseModel):
 router = APIRouter(
     prefix="/api/admin/rbac",
     tags=["admin", "rbac", "users"],
-    dependencies=[Depends(require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin"))],
+    dependencies=[
+        Depends(require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin"))
+    ],
 )
 
 
@@ -86,7 +88,9 @@ def _client_ip(request: Request) -> str | None:
 def _ensure_user_exists(user_id: str) -> dict:
     target = get_user_by_id(user_id)
     if not target:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="utente non trovato")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="utente non trovato"
+        )
     return target
 
 
@@ -94,7 +98,9 @@ def _ensure_user_exists(user_id: str) -> dict:
 def create_user_endpoint(
     body: CreateUserRequest,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")
+    ),
 ) -> dict:
     """Crea utente con password set dall'admin + ``password_must_change=true``.
 
@@ -166,7 +172,11 @@ def create_user_endpoint(
     # users.role è legacy; il RBAC autoritativo è user_roles).
     if target_role:
         sys_role = next(
-            (r for r in roles_db.list_roles() if r["slug"] == target_role and r["is_system"]),
+            (
+                r
+                for r in roles_db.list_roles()
+                if r["slug"] == target_role and r["is_system"]
+            ),
             None,
         )
         if sys_role:
@@ -202,7 +212,9 @@ def set_user_active(
     user_id: str,
     body: SetUserActiveRequest,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")
+    ),
 ) -> dict:
     """Attiva o disattiva un utente.
 
@@ -224,7 +236,9 @@ def set_user_active(
         )
     updated = update_user(user_id, is_active=body.is_active)
     if not updated:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="utente non trovato")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="utente non trovato"
+        )
     write_event(
         "admin.user.activate" if body.is_active else "admin.user.deactivate",
         tenant_id=actor.get("tenant_id"),
@@ -243,7 +257,9 @@ def set_user_active(
 def delete_user_endpoint(
     user_id: str,
     request: Request,
-    actor: dict = Depends(require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")),
+    actor: dict = Depends(
+        require_permission(Permission.ADMIN_USER_MANAGE, rate_limit="admin")
+    ),
 ) -> dict:
     """Hard delete utente. CASCADE su refresh_tokens / conversations /
     memories / feedback / user_roles / user_domain_grants /

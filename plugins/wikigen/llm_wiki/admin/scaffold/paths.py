@@ -8,10 +8,12 @@ from llm_wiki.admin.scaffold.models import DOMAIN_NAME_RE, ScaffoldError
 
 
 def repo_root() -> Path:
-    """Project root: the directory holding both ``pyproject.toml`` and ``domains/``."""
+    """Project root: the directory holding both ``pyproject.toml``/``manifest.yaml`` and ``domains/``."""
     here = Path(__file__).resolve()
     for parent in here.parents:
-        if (parent / "pyproject.toml").exists() and (parent / "domains").exists():
+        if (
+            (parent / "pyproject.toml").exists() or (parent / "manifest.yaml").exists()
+        ) and (parent / "domains").exists():
             return parent
     return here.parents[2]
 
@@ -40,7 +42,9 @@ def seed_pack_dir(slug: str) -> Path:
     except yaml.YAMLError as exc:
         raise ScaffoldError(f"seed pack {slug} has invalid YAML: {exc}") from exc
     if not data.get("seed"):
-        raise ScaffoldError(f"pack {slug!r} is not marked as seed; cannot fork from a user pack")
+        raise ScaffoldError(
+            f"pack {slug!r} is not marked as seed; cannot fork from a user pack"
+        )
     return candidate
 
 
@@ -69,7 +73,9 @@ def resolve_vault_path(name: str, raw: str) -> Path:
         (rr / "frontend").resolve(),
     }
     if candidate in forbidden:
-        raise ScaffoldError(f"vault_root cannot be `{candidate}` (reserved engine path)")
+        raise ScaffoldError(
+            f"vault_root cannot be `{candidate}` (reserved engine path)"
+        )
     domains_root = (rr / "domains").resolve()
     try:
         candidate.relative_to(domains_root)

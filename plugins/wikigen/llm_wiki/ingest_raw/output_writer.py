@@ -41,7 +41,8 @@ def append_log(result: IngestResult, *, today: date | None) -> None:
     log_path = WIKI_DIR / "log.md"
     today_iso = (today or date.today()).isoformat()
     pages_line = ", ".join(
-        f"[[{slug_from_target(str(p.target_path.relative_to(WIKI_ROOT)))}]]" for p in result.pages
+        f"[[{slug_from_target(str(p.target_path.relative_to(WIKI_ROOT)))}]]"
+        for p in result.pages
     )
     entry = (
         f"\n## [{today_iso}] ingest | {result.source_path.name}\n"
@@ -148,7 +149,9 @@ def update_index(result: IngestResult) -> None:
         if section_end == -1:
             section_end = len(updated)
         section_body = updated[match.end() : section_end]
-        cleaned_body = re.sub(r"_Nessuna voce ancora\..*?_\n?", "", section_body, count=1)
+        cleaned_body = re.sub(
+            r"_Nessuna voce ancora\..*?_\n?", "", section_body, count=1
+        )
         rebuilt = "\n".join(insertion) + "\n" + cleaned_body.lstrip("\n")
         updated = updated[: match.end()] + rebuilt + updated[section_end:]
 

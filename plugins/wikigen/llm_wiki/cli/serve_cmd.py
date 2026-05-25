@@ -22,7 +22,9 @@ def serve(
         max=64,
     ),
     log_level: str = typer.Option(
-        "info", "--log-level", help="Uvicorn log level: critical|error|warning|info|debug|trace."
+        "info",
+        "--log-level",
+        help="Uvicorn log level: critical|error|warning|info|debug|trace.",
     ),
 ) -> None:
     """Start the FastAPI server."""

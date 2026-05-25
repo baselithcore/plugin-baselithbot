@@ -21,9 +21,13 @@ from llm_wiki.vectorstore.hierarchical import chunk_markdown_hierarchical
 
 
 def test_child_resolves_to_finest_heading() -> None:
-    text = "## Capitolo A\n\nIntro del capitolo.\n\n" "### Sezione A.1\n\n" + (
-        "Frase A.1. " * 30
-    ) + "\n\n### Sezione A.2\n\n" + ("Frase A.2. " * 30)
+    text = (
+        "## Capitolo A\n\nIntro del capitolo.\n\n"
+        "### Sezione A.1\n\n"
+        + ("Frase A.1. " * 30)
+        + "\n\n### Sezione A.2\n\n"
+        + ("Frase A.2. " * 30)
+    )
     out = chunk_markdown_hierarchical(text, parent_size=2000, child_size=200)
     # Heading fine deve essere "Sezione A.1" o "Sezione A.2" per la parte
     # di testo che ricade sotto di esse.

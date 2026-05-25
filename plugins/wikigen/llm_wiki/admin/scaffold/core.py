@@ -57,18 +57,28 @@ def plan_scaffold(req: ScaffoldRequest) -> ScaffoldPlan:
         raise ScaffoldError("forked pack name must differ from the seed slug")
 
     label = req.label.strip() or humanise(req.name)
-    description = req.description.strip() or f"White-label LLM wiki for the {req.name} domain."
+    description = (
+        req.description.strip() or f"White-label LLM wiki for the {req.name} domain."
+    )
     target = repo_root() / "domains" / req.name
     vault_path = resolve_vault_path(req.name, req.vault_root)
 
     pack_exists = target.exists()
     operations: list[dict[str, str]] = []
     if pack_exists and req.force:
-        operations.append({"kind": "remove", "target": str(target), "note": "force overwrite"})
-    operations.append({"kind": "copy", "target": str(target), "note": f"from {source_label}"})
-    operations.append({"kind": "edit", "target": str(target / "pack.yaml"), "note": "customise"})
+        operations.append(
+            {"kind": "remove", "target": str(target), "note": "force overwrite"}
+        )
+    operations.append(
+        {"kind": "copy", "target": str(target), "note": f"from {source_label}"}
+    )
+    operations.append(
+        {"kind": "edit", "target": str(target / "pack.yaml"), "note": "customise"}
+    )
     for sub in ("wiki", "raw"):
-        operations.append({"kind": "mkdir", "target": str(vault_path / sub), "note": ""})
+        operations.append(
+            {"kind": "mkdir", "target": str(vault_path / sub), "note": ""}
+        )
 
     # Vault seed files mandated by istruzioni.md (Karpathy pattern).
     pack_data = read_pack_data(source)
@@ -84,13 +94,25 @@ def plan_scaffold(req: ScaffoldRequest) -> ScaffoldPlan:
                 }
             )
     operations.append(
-        {"kind": "write", "target": str(vault_path / "wiki" / "index.md"), "note": "catalog"}
+        {
+            "kind": "write",
+            "target": str(vault_path / "wiki" / "index.md"),
+            "note": "catalog",
+        }
     )
     operations.append(
-        {"kind": "write", "target": str(vault_path / "wiki" / "log.md"), "note": "chronological"}
+        {
+            "kind": "write",
+            "target": str(vault_path / "wiki" / "log.md"),
+            "note": "chronological",
+        }
     )
     operations.append(
-        {"kind": "write", "target": str(vault_path / "CLAUDE.md"), "note": "agent schema"}
+        {
+            "kind": "write",
+            "target": str(vault_path / "CLAUDE.md"),
+            "note": "agent schema",
+        }
     )
 
     env_diff: list[dict[str, str]] = []
@@ -111,7 +133,9 @@ def plan_scaffold(req: ScaffoldRequest) -> ScaffoldPlan:
             if prov.base_url and prov.vendor == "openai":
                 env_diff.append({"key": "OPENAI_API_BASE", "value": prov.base_url})
             if prov.api_key and prov.vendor == "openai":
-                env_diff.append({"key": "OPENAI_API_KEY", "value": "***"})  # never echo secret
+                env_diff.append(
+                    {"key": "OPENAI_API_KEY", "value": "***"}
+                )  # never echo secret
 
     return ScaffoldPlan(
         name=req.name,
@@ -169,12 +193,14 @@ def scaffold_pack(req: ScaffoldRequest) -> ScaffoldResult:
     synthesis_model: str | None = None
     synthesis_warning: str | None = None
     if req.synthesize_prompts and not req.from_seed:
-        synthesis_applied, synthesis_model, synthesis_warning = _maybe_synthesise_prompts(
-            target=target,
-            name=req.name,
-            label=plan.label,
-            description=plan.description,
-            language=req.language,
+        synthesis_applied, synthesis_model, synthesis_warning = (
+            _maybe_synthesise_prompts(
+                target=target,
+                name=req.name,
+                label=plan.label,
+                description=plan.description,
+                language=req.language,
+            )
         )
 
     (plan.vault_path / "wiki").mkdir(parents=True, exist_ok=True)
@@ -265,7 +291,11 @@ def _upsert_env_file(*, req: ScaffoldRequest, vault_path: Path) -> tuple[Path, b
                     base = _upsert_env_kv(base, "OLLAMA_URL", prov.base_url)
                 if "openai" in {eff_rag, eff_ingest}:
                     base = _upsert_env_kv(base, "OPENAI_API_BASE", prov.base_url)
-            if prov.api_key and not prov.openai_api_key and "openai" in {eff_rag, eff_ingest}:
+            if (
+                prov.api_key
+                and not prov.openai_api_key
+                and "openai" in {eff_rag, eff_ingest}
+            ):
                 base = _upsert_env_kv(base, "OPENAI_API_KEY", prov.api_key)
         return base
 
@@ -317,7 +347,11 @@ def _upsert_env_file(*, req: ScaffoldRequest, vault_path: Path) -> tuple[Path, b
                 _os.environ["OLLAMA_URL"] = prov.base_url
             if "openai" in {eff_rag, eff_ingest}:
                 _os.environ["OPENAI_API_BASE"] = prov.base_url
-        if prov.api_key and not prov.openai_api_key and "openai" in {eff_rag, eff_ingest}:
+        if (
+            prov.api_key
+            and not prov.openai_api_key
+            and "openai" in {eff_rag, eff_ingest}
+        ):
             _os.environ["OPENAI_API_KEY"] = prov.api_key
         try:
             from llm_wiki.utils.llm import reset_clients
@@ -346,5 +380,7 @@ def _next_steps(name: str, activated: bool) -> list[str]:
     if activated:
         base.append("Restart the API: `python -m llm_wiki serve` (single-tenant boot).")
     else:
-        base.append(f"To activate this pack: set APP_DOMAIN={name} in .env and restart the API.")
+        base.append(
+            f"To activate this pack: set APP_DOMAIN={name} in .env and restart the API."
+        )
     return base

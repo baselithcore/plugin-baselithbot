@@ -12,11 +12,5 @@ export function AppToaster({ styled = true }: { styled?: boolean }) {
   if (!styled) {
     return <Toaster theme="system" position="top-right" />;
   }
-  return (
-    <Toaster
-      theme="system"
-      position="top-right"
-      toastOptions={{ style: TOAST_STYLE }}
-    />
-  );
+  return <Toaster theme="system" position="top-right" toastOptions={{ style: TOAST_STYLE }} />;
 }

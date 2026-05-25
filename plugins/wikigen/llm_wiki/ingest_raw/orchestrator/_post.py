@@ -49,7 +49,9 @@ def _extract_page_graph(path: Path) -> None:
             store=store,
         )
     except Exception as exc:
-        logger.warning("[graph.extract] post-write extraction failed for %s: %s", path, exc)
+        logger.warning(
+            "[graph.extract] post-write extraction failed for %s: %s", path, exc
+        )
 
 
 def _add_page_to_examples(path: Path) -> None:

@@ -1,9 +1,4 @@
-import {
-  type ComponentType,
-  type InputHTMLAttributes,
-  type ReactNode,
-  useId,
-} from 'react';
+import { type ComponentType, type InputHTMLAttributes, type ReactNode, useId } from 'react';
 
 interface InfoPillProps {
   icon: ComponentType<{ size?: number; className?: string; 'aria-hidden'?: boolean }>;
@@ -39,7 +34,7 @@ export function TabButton({ active, icon: Icon, label, onClick }: TabButtonProps
       role="tab"
       aria-selected={active}
       onClick={onClick}
-            className={`focus-ring inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-3 text-xs transition-all ${
+      className={`focus-ring inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border px-3 text-xs transition-all ${
         active
           ? 'border-[var(--color-brand)] bg-[var(--color-brand)] font-semibold text-white shadow-sm'
           : 'border-transparent font-medium text-ink-muted hover:border-[var(--color-border)] hover:bg-[var(--color-canvas-raised)] hover:text-ink'
@@ -150,9 +145,7 @@ export function Field({
             error ? 'border-[var(--color-danger)]/60' : 'border-[var(--color-border)]'
           }`}
         />
-        {trailing && (
-          <div className="absolute right-2 top-1/2 -translate-y-1/2">{trailing}</div>
-        )}
+        {trailing && <div className="absolute right-2 top-1/2 -translate-y-1/2">{trailing}</div>}
       </div>
       {hint && !error && (
         <span id={hintId} className="mt-1 block text-[11px] text-ink-muted">

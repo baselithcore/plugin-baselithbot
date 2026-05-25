@@ -55,7 +55,9 @@ def run(
         False, "--json", help="Output JSON machine-readable invece del report TTY."
     ),
     show_records: bool = typer.Option(
-        False, "--show-records", help="Stampa anche il dettaglio per-query nel report TTY."
+        False,
+        "--show-records",
+        help="Stampa anche il dettaglio per-query nel report TTY.",
     ),
 ) -> None:
     """Esegui golden set ed emetti report aggregato."""
@@ -83,7 +85,9 @@ def run(
                     "citation_precision": (
                         r.generation.citation_precision if r.generation else None
                     ),
-                    "citation_recall": (r.generation.citation_recall if r.generation else None),
+                    "citation_recall": (
+                        r.generation.citation_recall if r.generation else None
+                    ),
                     "judge_score": (r.generation.judge_score if r.generation else None),
                     "error": r.error,
                 }

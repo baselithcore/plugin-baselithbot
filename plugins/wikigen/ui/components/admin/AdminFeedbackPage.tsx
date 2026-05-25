@@ -333,21 +333,16 @@ export function AdminFeedbackPage() {
                           </span>
                         ))}
                         {it.tags.length > 3 && (
-                          <span className="text-[10px] text-ink-subtle">
-                            +{it.tags.length - 3}
-                          </span>
+                          <span className="text-[10px] text-ink-subtle">+{it.tags.length - 3}</span>
                         )}
                       </span>
                     )}
                   </Td>
                   <Td className="font-mono text-[11px] text-ink-subtle">
-                    {it.user_email ??
-                      (it.user_id ? it.user_id.slice(0, 8) + '…' : '—')}
+                    {it.user_email ?? (it.user_id ? it.user_id.slice(0, 8) + '…' : '—')}
                   </Td>
                   <Td>
-                    <span className="line-clamp-1 max-w-[360px]">
-                      {truncate(it.question, 140)}
-                    </span>
+                    <span className="line-clamp-1 max-w-[360px]">{truncate(it.question, 140)}</span>
                   </Td>
                   <Td>
                     {it.reason ? (
@@ -358,9 +353,7 @@ export function AdminFeedbackPage() {
                       <span className="text-ink-subtle">—</span>
                     )}
                   </Td>
-                  <Td className="text-center text-ink-subtle">
-                    {it.sources?.length ?? 0}
-                  </Td>
+                  <Td className="text-center text-ink-subtle">{it.sources?.length ?? 0}</Td>
                 </tr>
               );
             })}

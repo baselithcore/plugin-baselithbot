@@ -73,7 +73,9 @@ def create_invitation_endpoint(
             ttl_hours=body.ttl_hours,
         )
     except InvitationError as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+        ) from exc
 
     write_event(
         "auth.invite.create",
@@ -169,7 +171,9 @@ def accept_invitation_endpoint(
                 source="invite",
             )
         except BootstrapError as exc:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
+            ) from exc
         user_id = info["user_id"]
         tenant_id = info["tenant_id"]
     else:
@@ -178,7 +182,8 @@ def accept_invitation_endpoint(
         from llm_wiki.db.users import hash_password
 
         tenant_slug = (
-            invite.get("tenant_slug") or (invite["email"].replace("@", "-").replace(".", "-")[:50])
+            invite.get("tenant_slug")
+            or (invite["email"].replace("@", "-").replace(".", "-")[:50])
         )
         try:
             result = create_tenant_with_owner(
@@ -186,7 +191,9 @@ def accept_invitation_endpoint(
                 tenant_slug=tenant_slug,
                 user_email=invite["email"],
                 user_password_hash=hash_password(body.password),
-                user_display_name=(body.display_name or invite.get("display_name") or ""),
+                user_display_name=(
+                    body.display_name or invite.get("display_name") or ""
+                ),
                 plan="free",
                 role="user",
             )
@@ -217,7 +224,9 @@ def accept_invitation_endpoint(
         user_agent=ua(request),
     )
 
-    access, access_exp = issue_access_token(user_id=user_id, tenant_id=tenant_id, role="admin")
+    access, access_exp = issue_access_token(
+        user_id=user_id, tenant_id=tenant_id, role="admin"
+    )
     refresh_token, refresh_exp, _family = issue_refresh_token(
         user_id=user_id,
         tenant_id=tenant_id,

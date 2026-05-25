@@ -171,7 +171,9 @@ def test_preview_dry_run_does_not_write(
     assert not (tmp_path / "vault").exists()
 
 
-def test_preview_rejects_reserved_name(loopback_client: TestClient, tmp_path: Path) -> None:
+def test_preview_rejects_reserved_name(
+    loopback_client: TestClient, tmp_path: Path
+) -> None:
     body = {
         "name": "_template",
         "language": "en",
@@ -379,7 +381,8 @@ def test_admin_disabled_hides_routes(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.fixture(autouse=True, scope="module")
 def _restore_env() -> Iterator[None]:
     snapshot = {
-        k: os.environ.get(k) for k in ("APP_DOMAIN", "ADMIN_API_ENABLED", "ADMIN_API_LOOPBACK_ONLY")
+        k: os.environ.get(k)
+        for k in ("APP_DOMAIN", "ADMIN_API_ENABLED", "ADMIN_API_LOOPBACK_ONLY")
     }
     yield
     for k, v in snapshot.items():

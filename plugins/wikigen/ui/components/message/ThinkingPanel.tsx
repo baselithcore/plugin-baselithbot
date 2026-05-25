@@ -47,13 +47,7 @@ function stepLabel(step: ThinkingStep): string {
  *
  * Replaces the legacy "last-3 trace lines" inline strip in Message.tsx.
  */
-export function ThinkingPanel({
-  trace,
-  streaming,
-  startedAt,
-  firstTokenAt,
-  completedAt,
-}: Props) {
+export function ThinkingPanel({ trace, streaming, startedAt, firstTokenAt, completedAt }: Props) {
   const [expanded, setExpanded] = useState(false);
   const elapsedMs = useElapsed(startedAt, streaming, completedAt);
 

@@ -144,7 +144,9 @@ class DefaultPageTypeStrategy:
             )
             return generate_text(messages=bundle.as_messages(), model=ctx.model)
 
-        snippet = _snippet_for_keyword(doc.markdown, keyword=plan_entry.title, window=4000)
+        snippet = _snippet_for_keyword(
+            doc.markdown, keyword=plan_entry.title, window=4000
+        )
         bundle = entity_page_bundle(
             plan_entry=plan_entry.model_dump(mode="json"),
             source_path=plan.source_page.target_path,
@@ -227,7 +229,9 @@ def _import_pack_strategies(pack: DomainPack) -> StrategyBundle:
     page_types: list[PageTypeStrategy] = []
     extractors: list[ExtractorStrategy] = []
 
-    module_name = getattr(pack, "_strategies_module", None) or _resolve_strategies_module(pack)
+    module_name = getattr(
+        pack, "_strategies_module", None
+    ) or _resolve_strategies_module(pack)
     if module_name is None:
         return StrategyBundle(page_types, extractors)
 
@@ -291,7 +295,9 @@ def reset_strategies_cache() -> None:
         _cached_pack_root = None
 
 
-def select_page_type_strategy(*, page_type: str, subtype: str | None) -> PageTypeStrategy:
+def select_page_type_strategy(
+    *, page_type: str, subtype: str | None
+) -> PageTypeStrategy:
     """Pick the first matching strategy or fall back to the default."""
     bundle = get_strategies()
     for strat in bundle.page_types:

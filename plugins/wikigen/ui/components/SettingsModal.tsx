@@ -109,7 +109,11 @@ export function SettingsModal({ open, onClose, settings, onChange }: Props) {
       <span className="text-[10px] text-ink-subtle">
         Le preferenze interfaccia sono salvate sul browser.
       </span>
-      <Button variant="secondary" onClick={() => onChange(DEFAULT_SETTINGS)} className="!text-[11px]">
+      <Button
+        variant="secondary"
+        onClick={() => onChange(DEFAULT_SETTINGS)}
+        className="!text-[11px]"
+      >
         Ripristina predefiniti
       </Button>
     </div>

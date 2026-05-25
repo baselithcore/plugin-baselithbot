@@ -136,7 +136,11 @@ def build_context(hits: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]]
             rinvio_art = h.get("rinvio_articolo") or "n/d"
             header_extra = f"\n{_FOLLOW_THE_LINK_HINT} Articolo rinviato: {rinvio_art}."
         elif h.get("via_parent_section"):
-            parent_h = h.get("parent_section_heading") or payload.get("section_heading") or "n/d"
+            parent_h = (
+                h.get("parent_section_heading")
+                or payload.get("section_heading")
+                or "n/d"
+            )
             header_extra = f"\n{_PARENT_SECTION_HINT} Sezione: «{parent_h}»."
         elif h.get("hierarchical_collapsed"):
             n_children = int(h.get("merged_child_count") or 1)
@@ -149,7 +153,9 @@ def build_context(hits: list[dict[str, Any]]) -> tuple[str, list[dict[str, Any]]
             # Graphify principle #6: "why matched" esplicito. Tier
             # EXTRACTED/INFERRED/AMBIGUOUS preserva la trasparenza della
             # confidence cascade (no inferred-as-extracted spoofing).
-            ent_name = h.get("via_graph_entity_name") or h.get("via_graph_entity") or "n/d"
+            ent_name = (
+                h.get("via_graph_entity_name") or h.get("via_graph_entity") or "n/d"
+            )
             tier = h.get("via_graph_tier") or ""
             conf = h.get("via_graph_confidence")
             overlap = int(h.get("via_graph_overlap") or 0)

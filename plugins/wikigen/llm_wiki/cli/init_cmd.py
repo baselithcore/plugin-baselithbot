@@ -21,17 +21,27 @@ from llm_wiki.cli._output import (
 
 def init(
     ctx: typer.Context,
-    domain: str = typer.Option(..., "--domain", "-d", help="New domain name (snake_case ASCII)."),
-    label: str = typer.Option("", "--label", "-l", help="Human label, e.g. 'Wiki Legale'."),
+    domain: str = typer.Option(
+        ..., "--domain", "-d", help="New domain name (snake_case ASCII)."
+    ),
+    label: str = typer.Option(
+        "", "--label", "-l", help="Human label, e.g. 'Wiki Legale'."
+    ),
     description: str = typer.Option("", "--description", help="Short description."),
     language: str = typer.Option("it", "--language", help="ISO 639-1 language code."),
     vault_root: str = typer.Option(
-        "", "--vault-root", help="Absolute path to the vault root. Defaults to ./vaults/<domain>."
+        "",
+        "--vault-root",
+        help="Absolute path to the vault root. Defaults to ./vaults/<domain>.",
     ),
     write_env: bool = typer.Option(
-        True, "--write-env/--no-write-env", help="Write .env with APP_DOMAIN + WIKI_ROOT."
+        True,
+        "--write-env/--no-write-env",
+        help="Write .env with APP_DOMAIN + WIKI_ROOT.",
     ),
-    force: bool = typer.Option(False, "--force", help="Overwrite an existing domain dir."),
+    force: bool = typer.Option(
+        False, "--force", help="Overwrite an existing domain dir."
+    ),
     synthesize: bool = typer.Option(
         True,
         "--synthesize/--no-synthesize",
@@ -114,7 +124,9 @@ def init(
         )
     else:
         synthesis_line = ""
-    next_lines = "\n".join(f"  {i + 1}. {step}" for i, step in enumerate(result.next_steps))
+    next_lines = "\n".join(
+        f"  {i + 1}. {step}" for i, step in enumerate(result.next_steps)
+    )
     octx.console.print(
         Panel.fit(
             f"[green]✓[/green] Scaffolded domain pack at [bold]{pack_rel}[/bold]\n"

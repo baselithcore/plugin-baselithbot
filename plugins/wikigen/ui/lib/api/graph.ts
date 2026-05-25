@@ -111,8 +111,7 @@ export function getData(opts?: {
   max_nodes?: number;
 }): Promise<GraphData> {
   const params = new URLSearchParams();
-  if (opts?.confidence_min !== undefined)
-    params.set('confidence_min', String(opts.confidence_min));
+  if (opts?.confidence_min !== undefined) params.set('confidence_min', String(opts.confidence_min));
   if (opts?.resolution !== undefined) params.set('resolution', String(opts.resolution));
   if (opts?.top_n !== undefined) params.set('top_n', String(opts.top_n));
   if (opts?.max_nodes !== undefined) params.set('max_nodes', String(opts.max_nodes));
@@ -140,12 +139,9 @@ export function getNeighbors(
 ): Promise<NeighborsResponse> {
   const params = new URLSearchParams();
   if (opts?.hops !== undefined) params.set('hops', String(opts.hops));
-  if (opts?.confidence_min !== undefined)
-    params.set('confidence_min', String(opts.confidence_min));
+  if (opts?.confidence_min !== undefined) params.set('confidence_min', String(opts.confidence_min));
   if (opts?.kind) params.set('kind', opts.kind);
   if (opts?.limit !== undefined) params.set('limit', String(opts.limit));
   const qs = params.toString();
-  return _get<NeighborsResponse>(
-    `/graph/neighbors/${encodeURIComponent(id)}${qs ? `?${qs}` : ''}`
-  );
+  return _get<NeighborsResponse>(`/graph/neighbors/${encodeURIComponent(id)}${qs ? `?${qs}` : ''}`);
 }

@@ -60,7 +60,9 @@ def _load_model() -> Any:
             )
             _failed = True
         except Exception as exc:
-            logger.warning("[reranker] load fallito (%s) — fallback a ordering originale", exc)
+            logger.warning(
+                "[reranker] load fallito (%s) — fallback a ordering originale", exc
+            )
             _failed = True
     return _model
 
@@ -87,7 +89,9 @@ def _dedupe(hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
     order: list[str] = []
     for h in hits:
         doc_id = str(h.get("payload", {}).get("document_id") or h.get("id") or id(h))
-        if doc_id not in best or float(h.get("score") or 0) > float(best[doc_id].get("score") or 0):
+        if doc_id not in best or float(h.get("score") or 0) > float(
+            best[doc_id].get("score") or 0
+        ):
             if doc_id not in best:
                 order.append(doc_id)
             best[doc_id] = h
@@ -123,9 +127,13 @@ def rerank(
     pairs: list[tuple[str, str]] = [(query, _passage_text(h)[:1800]) for h in unique]
 
     try:
-        scores = model.predict(pairs, batch_size=RERANKER_BATCH_SIZE, show_progress_bar=False)
+        scores = model.predict(
+            pairs, batch_size=RERANKER_BATCH_SIZE, show_progress_bar=False
+        )
     except Exception as exc:
-        logger.warning("[reranker] predict fallito (%s) — fallback ordering originale", exc)
+        logger.warning(
+            "[reranker] predict fallito (%s) — fallback ordering originale", exc
+        )
         return unique[:top_k]
 
     enriched: list[dict[str, Any]] = []

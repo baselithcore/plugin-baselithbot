@@ -101,7 +101,9 @@ def test_jwt_decode_invalid_signature_returns_none(secret: str) -> None:
     assert decode_access_token(bad) is None
 
 
-def test_jwt_decode_expired_returns_none(secret: str, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_jwt_decode_expired_returns_none(
+    secret: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Access token con exp nel passato → None."""
     import jwt as pyjwt
 

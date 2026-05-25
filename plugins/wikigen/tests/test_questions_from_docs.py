@@ -45,7 +45,12 @@ def _make_pack(tmp_path: Path) -> tuple[Path, Path]:
                 "description": "Demo per i test.",
                 "language": "it",
                 "page_types": [
-                    {"id": "source", "label": "Fonte", "plural": "fonti", "folder": "sources"},
+                    {
+                        "id": "source",
+                        "label": "Fonte",
+                        "plural": "fonti",
+                        "folder": "sources",
+                    },
                     {
                         "id": "concept",
                         "label": "Concetto",
@@ -218,7 +223,10 @@ def test_force_bypasses_marker_and_regenerates(
     monkeypatch.setattr(
         qfd,
         "call_llm",
-        lambda **_kw: ([SuggestedQuestion(**q) for q in _valid_questions()], "fake-model"),
+        lambda **_kw: (
+            [SuggestedQuestion(**q) for q in _valid_questions()],
+            "fake-model",
+        ),
     )
     first = qfd.regenerate_questions_from_docs(pack_dir, wiki_dir)
     assert first.applied
@@ -261,7 +269,9 @@ def test_llm_failure_leaves_existing_questions_intact(
     assert not (pack_dir / "prompts" / qfd.MARKER_FILENAME).exists()
 
 
-def test_empty_vault_skips_without_marker(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_empty_vault_skips_without_marker(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     pack_dir, _ = _make_pack(tmp_path)
     empty_wiki = tmp_path / "empty_vault" / "wiki"
     empty_wiki.mkdir(parents=True)

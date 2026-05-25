@@ -41,7 +41,7 @@ export function computeDiff(original: Set<string>, draft: Set<string>): RoleDiff
 export function dirtyRoleIds(
   roles: RoleSummary[],
   original: Record<string, Set<string>>,
-  draft: Record<string, Set<string>>,
+  draft: Record<string, Set<string>>
 ): string[] {
   const out: string[] = [];
   for (const r of roles) {
@@ -52,14 +52,11 @@ export function dirtyRoleIds(
   return out;
 }
 
-export function filterPermissions(
-  perms: PermissionEntry[],
-  query: string,
-): PermissionEntry[] {
+export function filterPermissions(perms: PermissionEntry[], query: string): PermissionEntry[] {
   const q = query.trim().toLowerCase();
   if (!q) return perms;
   return perms.filter(
-    (p) => p.slug.toLowerCase().includes(q) || (p.description ?? '').toLowerCase().includes(q),
+    (p) => p.slug.toLowerCase().includes(q) || (p.description ?? '').toLowerCase().includes(q)
   );
 }
 

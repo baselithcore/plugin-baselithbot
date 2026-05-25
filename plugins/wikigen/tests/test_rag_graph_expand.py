@@ -55,7 +55,9 @@ class _FakeUnderlyingGraph:
         return []
 
 
-def test_expansion_disabled_returns_hits_unchanged(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_expansion_disabled_returns_hits_unchanged(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr("llm_wiki.config.GRAPH_RAG_ENABLED", False)
     from llm_wiki.vectorstore.expansions import expand_with_entity_graph
 
@@ -104,7 +106,9 @@ def test_expansion_adds_extra_hit_when_qdrant_returns_chunk(
     fake_store = _FakeStore(
         mention_entities=["entity:bar"],
         entity_neighbors={
-            "entity:bar": [EntityRecord(id="entity:baz", name="Baz", kind="entity", aliases=[])]
+            "entity:bar": [
+                EntityRecord(id="entity:baz", name="Baz", kind="entity", aliases=[])
+            ]
         },
         docs_for_entities=["concepts/baz"],
     )
@@ -118,7 +122,9 @@ def test_expansion_adds_extra_hit_when_qdrant_returns_chunk(
         def scroll(self, **_kw: Any) -> tuple[list[Any], None]:
             return [_FakePoint()], None
 
-    monkeypatch.setattr("llm_wiki.vectorstore.expansions.get_qdrant", lambda: _FakeQdrant())
+    monkeypatch.setattr(
+        "llm_wiki.vectorstore.expansions.get_qdrant", lambda: _FakeQdrant()
+    )
 
     from llm_wiki.vectorstore.expansions import expand_with_entity_graph
 

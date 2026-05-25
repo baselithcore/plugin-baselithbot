@@ -101,10 +101,9 @@ export function useConversations({
         const migrated = await migrateLegacyConversations(userId);
         if (!migrated.skipped && migrated.conversations_imported > 0) {
           const errCount = migrated.errors.length;
-          const detail =
-            `${migrated.conversations_imported} conversazion${
-              migrated.conversations_imported === 1 ? 'e' : 'i'
-            } · ${migrated.messages_imported} messaggi`;
+          const detail = `${migrated.conversations_imported} conversazion${
+            migrated.conversations_imported === 1 ? 'e' : 'i'
+          } · ${migrated.messages_imported} messaggi`;
           if (errCount > 0) {
             toast.warning('Cronologia importata parzialmente', {
               description: `${detail}. ${errCount} errori — vedi console.`,
@@ -301,9 +300,7 @@ export function useConversations({
     async (id: string) => {
       const prevPinned = conversations.find((c) => c.id === id)?.pinned;
       const nextPinned = !prevPinned;
-      setConversations((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, pinned: nextPinned } : c))
-      );
+      setConversations((prev) => prev.map((c) => (c.id === id ? { ...c, pinned: nextPinned } : c)));
       if (!isAuthenticated) return;
       try {
         await apiUpdate(id, { pinned: nextPinned });
@@ -346,9 +343,7 @@ export function useConversations({
       // (primo turno con activeId locale). Swap id locale → server.
       if (!activeId || activeId === serverId) return;
       const localId = activeId;
-      setConversations((prev) =>
-        prev.map((c) => (c.id === localId ? { ...c, id: serverId } : c))
-      );
+      setConversations((prev) => prev.map((c) => (c.id === localId ? { ...c, id: serverId } : c)));
       setActiveIdState(serverId);
       messagesLoadedFor.current = serverId;
     },

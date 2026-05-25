@@ -83,12 +83,7 @@ const DEFAULT_TENANTS = {
 
 const DEFAULT_SCAFFOLD_DEFAULTS = {
   languages: ['it', 'en'],
-  suggested_page_types: [
-    { id: 'source' },
-    { id: 'entity' },
-    { id: 'concept' },
-    { id: 'topic' },
-  ],
+  suggested_page_types: [{ id: 'source' }, { id: 'entity' }, { id: 'concept' }, { id: 'topic' }],
 };
 
 export async function installApiStubs(page: Page, stubs: ApiStubs = {}) {
@@ -101,19 +96,19 @@ export async function installApiStubs(page: Page, stubs: ApiStubs = {}) {
   const jobs = stubs.jobs ?? { count: 0, jobs: [] };
 
   await page.route('**/api/branding*', (route) =>
-    route.fulfill({ json: branding ?? { setup_mode: true } }),
+    route.fulfill({ json: branding ?? { setup_mode: true } })
   );
   await page.route('**/api/status*', (route) => route.fulfill({ json: status }));
   await page.route('**/api/conversations*', (route) => route.fulfill({ json: conversations }));
   await page.route('**/api/groups*', (route) => route.fulfill({ json: { groups: [] } }));
   await page.route('**/api/admin/scaffold/defaults*', (route) =>
-    route.fulfill({ json: scaffoldDefaults }),
+    route.fulfill({ json: scaffoldDefaults })
   );
   await page.route('**/api/admin/tenants*', (route) => route.fulfill({ json: tenants }));
   await page.route('**/api/ingest/raw/pending*', (route) => route.fulfill({ json: pendingRaw }));
   await page.route('**/api/ingest/raw/jobs*', (route) => route.fulfill({ json: jobs }));
   await page.route('**/api/raw/files*', (route) =>
-    route.fulfill({ json: { count: 0, files: [] } }),
+    route.fulfill({ json: { count: 0, files: [] } })
   );
   // Catch-all: stub anything else with 200 empty so the app doesn't fall over.
   await page.route('**/api/**', (route) => route.fulfill({ json: {} }));

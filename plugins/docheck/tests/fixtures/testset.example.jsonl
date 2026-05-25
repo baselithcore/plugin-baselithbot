@@ -1,0 +1,2 @@
+{"doc_path": "tests/fixtures/contract_01.md", "lang": "it", "policies": ["IT_GDPR_2026"], "expected_findings": [{"rule_id": "GDPR-Art-13", "chunk_text_contains": "trattamento", "severity": "FAIL"}]}
+{"doc_path": "tests/fixtures/contract_02.md", "lang": "it", "policies": ["IT_GDPR_2026", "IT_Codice_Civile_Contratti"], "expected_findings": [{"rule_id": "CC-Recesso", "chunk_text_contains": "recesso", "severity": "WARN"}]}

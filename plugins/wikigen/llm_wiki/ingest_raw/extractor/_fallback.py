@@ -82,7 +82,9 @@ def _extract_fallback(path: Path) -> ExtractedDocument:
     try:
         import pdfplumber  # type: ignore[import-not-found]
     except ImportError as exc:
-        raise ImportError("pdfplumber non installato (fallback). `pip install pdfplumber`") from exc
+        raise ImportError(
+            "pdfplumber non installato (fallback). `pip install pdfplumber`"
+        ) from exc
 
     pages: list[PageContent] = []
     md_parts: list[str] = []
@@ -104,7 +106,9 @@ def _extract_fallback(path: Path) -> ExtractedDocument:
                 rows = [[str(c or "").strip() for c in r] for r in tbl_raw[1:]]
                 md = _rows_to_markdown(header, rows)
                 tables.append(
-                    ExtractedTable(caption=None, page=i, header=header, rows=rows, markdown=md)
+                    ExtractedTable(
+                        caption=None, page=i, header=header, rows=rows, markdown=md
+                    )
                 )
 
     full_md = "".join(md_parts)

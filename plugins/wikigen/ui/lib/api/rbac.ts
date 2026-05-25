@@ -44,21 +44,16 @@ export interface UserWithRoles {
   domain_grants: DomainGrant[];
 }
 
-export const listPermissions = (): Promise<PermissionEntry[]> =>
-  json('/admin/rbac/permissions');
+export const listPermissions = (): Promise<PermissionEntry[]> => json('/admin/rbac/permissions');
 
 export const listRoles = (): Promise<RoleSummary[]> => json('/admin/rbac/roles');
 
 export const getRoleDetail = (roleId: string): Promise<RoleDetail> =>
   json(`/admin/rbac/roles/${encodeURIComponent(roleId)}`);
 
-export const listUsersWithRoles = (): Promise<UserWithRoles[]> =>
-  json('/admin/rbac/users');
+export const listUsersWithRoles = (): Promise<UserWithRoles[]> => json('/admin/rbac/users');
 
-export const setRolePermissions = (
-  roleId: string,
-  permissions: string[]
-): Promise<RoleDetail> =>
+export const setRolePermissions = (roleId: string, permissions: string[]): Promise<RoleDetail> =>
   json(`/admin/rbac/roles/${encodeURIComponent(roleId)}/permissions`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -79,10 +74,9 @@ export const revokeRole = (
   userId: string,
   roleId: string
 ): Promise<{ status: string; removed: boolean }> =>
-  json(
-    `/admin/rbac/users/${encodeURIComponent(userId)}/roles/${encodeURIComponent(roleId)}`,
-    { method: 'DELETE' }
-  );
+  json(`/admin/rbac/users/${encodeURIComponent(userId)}/roles/${encodeURIComponent(roleId)}`, {
+    method: 'DELETE',
+  });
 
 export const grantDomain = (
   userId: string,
@@ -140,7 +134,5 @@ export const setUserActive = (
     body: JSON.stringify({ is_active: isActive }),
   });
 
-export const deleteUser = (
-  userId: string
-): Promise<{ status: string; removed: boolean }> =>
+export const deleteUser = (userId: string): Promise<{ status: string; removed: boolean }> =>
   json(`/admin/rbac/users/${encodeURIComponent(userId)}`, { method: 'DELETE' });

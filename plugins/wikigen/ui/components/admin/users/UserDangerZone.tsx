@@ -69,9 +69,7 @@ export function UserDangerZone({ user, currentUserId, onChanged, onDeleted }: Pr
 
   return (
     <section className="mt-5 flex flex-col gap-2 border-t border-[var(--color-border)] pt-4">
-      <div className="text-[10px] uppercase font-semibold text-ink-subtle">
-        Operazioni
-      </div>
+      <div className="text-[10px] uppercase font-semibold text-ink-subtle">Operazioni</div>
       {isSelf && (
         <Callout tone="info">
           Non puoi disattivare o cancellare il tuo stesso account da qui.
@@ -104,8 +102,8 @@ export function UserDangerZone({ user, currentUserId, onChanged, onDeleted }: Pr
           Elimina utente
         </Button>
         <p className="text-[10px] text-ink-subtle">
-          Cancellazione definitiva. Cascade su conversations, memorie,
-          ruoli, group membership. Audit log preservato (anonimizzato).
+          Cancellazione definitiva. Cascade su conversations, memorie, ruoli, group membership.
+          Audit log preservato (anonimizzato).
         </p>
       </div>
     </section>

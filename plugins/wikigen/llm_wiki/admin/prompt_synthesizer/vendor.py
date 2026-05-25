@@ -19,7 +19,10 @@ def _synthesis_vendor() -> str:
     from llm_wiki import config as _cfg
 
     return (
-        _os.environ.get("INGEST_VENDOR") or _cfg.INGEST_VENDOR or _cfg.LLM_VENDOR or "ollama"
+        _os.environ.get("INGEST_VENDOR")
+        or _cfg.INGEST_VENDOR
+        or _cfg.LLM_VENDOR
+        or "ollama"
     ).lower()
 
 
@@ -55,5 +58,7 @@ def _parse_json_payload(raw: str) -> dict[str, Any]:
     except json.JSONDecodeError as exc:
         raise SynthesisError(f"LLM output is not valid JSON: {exc.msg}") from exc
     if not isinstance(data, dict):
-        raise SynthesisError(f"LLM output is not a JSON object (got {type(data).__name__})")
+        raise SynthesisError(
+            f"LLM output is not a JSON object (got {type(data).__name__})"
+        )
     return data

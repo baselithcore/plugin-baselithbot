@@ -14,10 +14,7 @@
 import { Download, RefreshCw, Search, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-import type {
-  FeedbackFilters,
-  FeedbackStatus,
-} from '../../../lib/api/feedback_admin';
+import type { FeedbackFilters, FeedbackStatus } from '../../../lib/api/feedback_admin';
 import { Button } from '../../ui';
 
 const STATUSES: Array<{ value: FeedbackStatus | ''; label: string }> = [
@@ -122,9 +119,7 @@ export function FeedbackFiltersBar({
       className="flex flex-wrap items-end gap-3 border-b border-[var(--color-border)] px-5 py-3"
     >
       <div className="flex flex-col gap-1">
-        <label className="text-[10px] uppercase tracking-wide text-ink-subtle">
-          Periodo
-        </label>
+        <label className="text-[10px] uppercase tracking-wide text-ink-subtle">Periodo</label>
         <div className="flex items-center gap-1 rounded-md bg-[var(--color-surface)] p-0.5">
           {(['24h', '7d', '30d', '90d', 'all'] as Preset[]).map((p) => (
             <button
@@ -184,9 +179,7 @@ export function FeedbackFiltersBar({
       )}
 
       <div className="flex flex-col gap-1">
-        <label className="text-[10px] uppercase tracking-wide text-ink-subtle">
-          Rating
-        </label>
+        <label className="text-[10px] uppercase tracking-wide text-ink-subtle">Rating</label>
         <div className="flex items-center gap-1 rounded-md bg-[var(--color-surface)] p-0.5">
           {(['', 'up', 'down'] as const).map((r) => (
             <button
@@ -207,10 +200,7 @@ export function FeedbackFiltersBar({
       </div>
 
       <div className="flex min-w-[220px] flex-1 flex-col gap-1">
-        <label
-          className="text-[10px] uppercase tracking-wide text-ink-subtle"
-          htmlFor="fb-search"
-        >
+        <label className="text-[10px] uppercase tracking-wide text-ink-subtle" htmlFor="fb-search">
           Cerca in domanda / risposta / motivazione
         </label>
         <div className="relative">
@@ -231,10 +221,7 @@ export function FeedbackFiltersBar({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label
-          className="text-[10px] uppercase tracking-wide text-ink-subtle"
-          htmlFor="fb-status"
-        >
+        <label className="text-[10px] uppercase tracking-wide text-ink-subtle" htmlFor="fb-status">
           Stato
         </label>
         <select
@@ -252,10 +239,7 @@ export function FeedbackFiltersBar({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label
-          className="text-[10px] uppercase tracking-wide text-ink-subtle"
-          htmlFor="fb-tag"
-        >
+        <label className="text-[10px] uppercase tracking-wide text-ink-subtle" htmlFor="fb-tag">
           Tag
         </label>
         <input
@@ -275,10 +259,7 @@ export function FeedbackFiltersBar({
       </div>
 
       <div className="flex flex-col gap-1">
-        <label
-          className="text-[10px] uppercase tracking-wide text-ink-subtle"
-          htmlFor="fb-userid"
-        >
+        <label className="text-[10px] uppercase tracking-wide text-ink-subtle" htmlFor="fb-userid">
           User ID (opzionale)
         </label>
         <input
@@ -296,13 +277,7 @@ export function FeedbackFiltersBar({
         <Button type="submit" variant="primary" size="sm" disabled={loading}>
           Applica
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={reset}
-          title="reset filtri"
-        >
+        <Button type="button" variant="ghost" size="sm" onClick={reset} title="reset filtri">
           <X size={13} />
         </Button>
         <Button

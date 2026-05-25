@@ -264,7 +264,9 @@ def test_entity_graph_comparative_path_boost(monkeypatch) -> None:
     assert bridge.get("via_graph_tier") == "INFERRED"
 
 
-def test_entity_graph_falls_back_to_first_chunk_for_pre_tagging_docs(monkeypatch) -> None:
+def test_entity_graph_falls_back_to_first_chunk_for_pre_tagging_docs(
+    monkeypatch,
+) -> None:
     """Doc senza ``entities_mentioned`` (pre-Wave-A): la scroll prima
     tenta il filtro, ottiene 0 risultati, poi fa il fallback al primo
     chunk del doc. L'hit emette ``graph_expanded=True`` ma niente
@@ -283,7 +285,9 @@ def test_entity_graph_falls_back_to_first_chunk_for_pre_tagging_docs(monkeypatch
         calls: list = []
 
         def scroll(self, *, collection_name, scroll_filter, limit, with_payload):  # noqa: ANN201, ARG002
-            self.calls.append({"limit": limit, "has_should": bool(scroll_filter.should)})
+            self.calls.append(
+                {"limit": limit, "has_should": bool(scroll_filter.should)}
+            )
             # Primo tentativo (filtro entities_mentioned) → vuoto.
             if scroll_filter.should:
                 return [], None
@@ -319,11 +323,16 @@ def test_auto_enable_skipped_for_default_graph_spec(monkeypatch) -> None:
     NON deve attivare i flag. Override esplicito sempre rispettato."""
     from llm_wiki import config as _config
     from llm_wiki.domain.pack import _default_graph_spec
-    from llm_wiki.domain.registry import _auto_enable_graph_flags, _has_custom_graph_spec
+    from llm_wiki.domain.registry import (
+        _auto_enable_graph_flags,
+        _has_custom_graph_spec,
+    )
 
     monkeypatch.setattr(_config, "GRAPH_EXTRACT_ENABLED", False, raising=False)
     monkeypatch.setattr(_config, "GRAPH_RAG_ENABLED", False, raising=False)
-    monkeypatch.setattr(_config, "GRAPH_CHUNK_ENTITY_TAGGING_ENABLED", False, raising=False)
+    monkeypatch.setattr(
+        _config, "GRAPH_CHUNK_ENTITY_TAGGING_ENABLED", False, raising=False
+    )
     monkeypatch.delenv("GRAPH_EXTRACT_ENABLED", raising=False)
     monkeypatch.delenv("GRAPH_RAG_ENABLED", raising=False)
     monkeypatch.delenv("GRAPH_CHUNK_ENTITY_TAGGING_ENABLED", raising=False)
@@ -342,11 +351,16 @@ def test_auto_enable_skipped_for_default_graph_spec(monkeypatch) -> None:
 def test_auto_enable_fires_for_custom_graph_spec(monkeypatch) -> None:
     from llm_wiki import config as _config
     from llm_wiki.domain.pack import GraphEntityType, GraphRelationType, GraphSpec
-    from llm_wiki.domain.registry import _auto_enable_graph_flags, _has_custom_graph_spec
+    from llm_wiki.domain.registry import (
+        _auto_enable_graph_flags,
+        _has_custom_graph_spec,
+    )
 
     monkeypatch.setattr(_config, "GRAPH_EXTRACT_ENABLED", False, raising=False)
     monkeypatch.setattr(_config, "GRAPH_RAG_ENABLED", False, raising=False)
-    monkeypatch.setattr(_config, "GRAPH_CHUNK_ENTITY_TAGGING_ENABLED", False, raising=False)
+    monkeypatch.setattr(
+        _config, "GRAPH_CHUNK_ENTITY_TAGGING_ENABLED", False, raising=False
+    )
     monkeypatch.delenv("GRAPH_EXTRACT_ENABLED", raising=False)
     monkeypatch.delenv("GRAPH_RAG_ENABLED", raising=False)
     monkeypatch.delenv("GRAPH_CHUNK_ENTITY_TAGGING_ENABLED", raising=False)

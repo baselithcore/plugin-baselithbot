@@ -103,7 +103,9 @@ export function IdentityStep({
                   <div className="truncate text-[10.5px] text-ink-subtle">
                     {t.language.toUpperCase()} · {t.page_types.length} tipi di pagina
                   </div>
-                  <div className="mt-0.5 truncate text-[10.5px] text-ink-muted">{t.description}</div>
+                  <div className="mt-0.5 truncate text-[10.5px] text-ink-muted">
+                    {t.description}
+                  </div>
                 </div>
                 <button
                   onClick={() => onForkSeed(t.name)}

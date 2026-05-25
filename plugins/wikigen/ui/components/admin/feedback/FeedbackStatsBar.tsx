@@ -11,13 +11,7 @@
  *    loop ingest ↔ moderazione).
  */
 
-import {
-  AlertTriangle,
-  Inbox,
-  MessageSquare,
-  ThumbsDown,
-  ThumbsUp,
-} from 'lucide-react';
+import { AlertTriangle, Inbox, MessageSquare, ThumbsDown, ThumbsUp } from 'lucide-react';
 
 import type {
   FeedbackSourceStat,
@@ -66,13 +60,7 @@ const STATUS_DEF: Array<{
   },
 ];
 
-export function FeedbackStatsBar({
-  stats,
-  sources,
-  loading,
-  sourcesLoading,
-  onPickStatus,
-}: Props) {
+export function FeedbackStatsBar({ stats, sources, loading, sourcesLoading, onPickStatus }: Props) {
   if (loading && !stats) {
     return (
       <div className="grid grid-cols-1 gap-3 px-5 py-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -132,11 +120,7 @@ export function FeedbackStatsBar({
           label="Negativi"
           value={stats.down}
           tone="danger"
-          hint={
-            stats.total
-              ? `${Math.round((stats.down / stats.total) * 100)}% del totale`
-              : '—'
-          }
+          hint={stats.total ? `${Math.round((stats.down / stats.total) * 100)}% del totale` : '—'}
           icon={<ThumbsDown size={14} />}
         />
         <div className="flex flex-col gap-2 rounded-lg bg-[var(--color-surface)] p-4 ring-1 ring-[var(--color-border)]">
@@ -164,9 +148,7 @@ export function FeedbackStatsBar({
             <span className="text-[10px] uppercase tracking-wide text-ink-subtle">
               Tasso positivo
             </span>
-            <span className="text-[10px] text-ink-subtle">
-              soglia salute ≥ 70%
-            </span>
+            <span className="text-[10px] text-ink-subtle">soglia salute ≥ 70%</span>
           </div>
           <PercentBar pct={stats.positive_rate} />
         </div>
@@ -185,14 +167,10 @@ export function FeedbackStatsBar({
           {topNegative ? (
             <p className="line-clamp-2 text-xs text-ink">
               {topNegative.question}
-              <span className="ml-2 text-ink-subtle">
-                ({topNegative.count} occorrenze)
-              </span>
+              <span className="ml-2 text-ink-subtle">({topNegative.count} occorrenze)</span>
             </p>
           ) : (
-            <p className="text-xs text-ink-subtle">
-              Nessuna domanda ricorrente nel periodo.
-            </p>
+            <p className="text-xs text-ink-subtle">Nessuna domanda ricorrente nel periodo.</p>
           )}
         </div>
       </div>
@@ -248,10 +226,7 @@ export function FeedbackStatsBar({
           ) : (
             <ul className="space-y-1">
               {sources.slice(0, 5).map((s) => (
-                <li
-                  key={s.document_id}
-                  className="flex items-center gap-2 text-[11px]"
-                >
+                <li key={s.document_id} className="flex items-center gap-2 text-[11px]">
                   <span
                     className={
                       'inline-block w-10 shrink-0 rounded px-1 py-0.5 text-center font-mono tabular-nums ' +

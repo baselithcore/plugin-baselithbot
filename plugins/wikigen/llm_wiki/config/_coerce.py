@@ -87,7 +87,13 @@ def _warn_shell_env_conflicts() -> None:
         env_file_values = dotenv_values()
     except Exception:
         return
-    suspicious = ("APP_DOMAIN", "WIKI_ROOT", "LLM_VENDOR", "OLLAMA_MODEL", "OPENAI_MODEL")
+    suspicious = (
+        "APP_DOMAIN",
+        "WIKI_ROOT",
+        "LLM_VENDOR",
+        "OLLAMA_MODEL",
+        "OPENAI_MODEL",
+    )
     for key in suspicious:
         env_val = os.environ.get(key)
         file_val = env_file_values.get(key)

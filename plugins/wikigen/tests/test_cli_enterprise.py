@@ -218,7 +218,9 @@ def test_doctor_strict_flag_upgrades_warnings(monkeypatch: pytest.MonkeyPatch) -
     assert payload_strict["ok"] is False
 
 
-def test_log_format_json_emits_json_log_records(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_log_format_json_emits_json_log_records(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """A simple --log-format json invocation must not crash."""
     runner = CliRunner()
     result = runner.invoke(app, ["--log-format", "json", "--version"])

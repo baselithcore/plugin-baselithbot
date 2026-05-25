@@ -62,7 +62,9 @@ def split_frontmatter(text: str, rpt: LintReport) -> tuple[dict[str, Any], str, 
         if not isinstance(fm, dict):
             raise yaml.YAMLError("frontmatter non è un dict")
     except yaml.YAMLError as exc:
-        rpt.add("frontmatter.invalid", f"YAML non parsabile: {exc}", Severity.ERROR, line=1)
+        rpt.add(
+            "frontmatter.invalid", f"YAML non parsabile: {exc}", Severity.ERROR, line=1
+        )
         return {}, text[m.end() :], text[: m.end()].count("\n")
     return fm, text[m.end() :], text[: m.end()].count("\n")
 
@@ -133,7 +135,9 @@ def check_frontmatter(fm: dict[str, Any], rpt: LintReport) -> None:
             )
 
 
-def check_sections(body: str, fm: dict[str, Any], rpt: LintReport, *, offset_line: int) -> None:
+def check_sections(
+    body: str, fm: dict[str, Any], rpt: LintReport, *, offset_line: int
+) -> None:
     ptype = fm.get("type")
     subtype = fm.get("subtype")
     if ptype == "concept" and subtype in {"garanzia-assicurativa", "pack-opzionale"}:
@@ -158,7 +162,9 @@ def _section_present(body: str, header: str) -> bool:
     # Pagine "umbrella" (es. Eventi Catastrofali 5.1 + 5.2) usano H3 sotto H2 di sub-garanzia.
     level_prefix = header.count("#")
     text = header.lstrip("# ").strip()
-    pat = re.compile(rf"^#{{{level_prefix},6}}\s+{re.escape(text)}\b", re.MULTILINE | re.IGNORECASE)
+    pat = re.compile(
+        rf"^#{{{level_prefix},6}}\s+{re.escape(text)}\b", re.MULTILINE | re.IGNORECASE
+    )
     return pat.search(body) is not None
 
 
@@ -193,7 +199,9 @@ def check_citations(body: str, rpt: LintReport, *, offset_line: int) -> None:
     lines = body.splitlines()
     for idx, line in enumerate(lines, start=1):
         stripped = line.strip()
-        if not stripped or stripped.startswith((">", "#", "|", "```", "yaml", "-", "*")):
+        if not stripped or stripped.startswith(
+            (">", "#", "|", "```", "yaml", "-", "*")
+        ):
             continue
         # tratta anche bullet "- ..."
         content = stripped.lstrip("-* ").strip()
@@ -214,7 +222,11 @@ def check_citations(body: str, rpt: LintReport, *, offset_line: int) -> None:
 
 def _has_quantitative_claim(text: str) -> bool:
     return bool(
-        re.search(r"(€|EUR)\s*\d|\d+\s*%|\d+\s+(giorn|mes|ann)i?|\bmassimal", text, re.IGNORECASE)
+        re.search(
+            r"(€|EUR)\s*\d|\d+\s*%|\d+\s+(giorn|mes|ann)i?|\bmassimal",
+            text,
+            re.IGNORECASE,
+        )
     )
 
 
@@ -235,7 +247,9 @@ def check_rule_callouts(body: str, rpt: LintReport, *, offset_line: int) -> None
         missing = []
         if not re.search(r"\*\*Condizione\*\*", block, re.IGNORECASE):
             missing.append("Condizione")
-        if not re.search(r"\*\*Valore/effetto\*\*|\*\*Effetto\*\*", block, re.IGNORECASE):
+        if not re.search(
+            r"\*\*Valore/effetto\*\*|\*\*Effetto\*\*", block, re.IGNORECASE
+        ):
             missing.append("Valore/effetto")
         if not re.search(r"\*\*Fonte\*\*", block, re.IGNORECASE):
             missing.append("Fonte")
@@ -361,7 +375,9 @@ def check_cover_exclusion_pair(
     if fm.get("subtype") not in {"garanzia-assicurativa", "pack-opzionale"}:
         return
     # entrambe sezioni devono esistere
-    has_copre = "## Cosa copre" in body or re.search(r"^###\s+Cosa copre", body, re.MULTILINE)
+    has_copre = "## Cosa copre" in body or re.search(
+        r"^###\s+Cosa copre", body, re.MULTILINE
+    )
     has_non = "## Cosa NON copre" in body or re.search(
         r"^###\s+Esclusioni|^###\s+Cosa NON copre", body, re.MULTILINE
     )
@@ -374,7 +390,9 @@ def check_cover_exclusion_pair(
         )
 
 
-def check_wikilinks(body: str, rpt: LintReport, *, expected: set[str], offset_line: int) -> None:
+def check_wikilinks(
+    body: str, rpt: LintReport, *, expected: set[str], offset_line: int
+) -> None:
     seen = WIKILINK_RE.findall(body)
     # no hard-fail su risoluzione perché molti target possono essere del piano;
     # segnala solo wikilink con caratteri strani

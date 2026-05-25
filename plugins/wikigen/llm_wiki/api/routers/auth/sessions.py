@@ -79,7 +79,9 @@ def register(
         logger.info("[auth] admin %s sta registrando %s", admin["email"], body.email)
 
     tenant_slug_base = (
-        slugify(body.tenant_name) if body.tenant_name else slugify(body.email.split("@")[0])
+        slugify(body.tenant_name)
+        if body.tenant_name
+        else slugify(body.email.split("@")[0])
     )
 
     tenant_slug = tenant_slug_base
@@ -176,7 +178,9 @@ def login(body: LoginRequest, request: Request, response: Response) -> TokenResp
     tenant_id = str(user["tenant_id"])
     role = user["role"]
 
-    access, access_exp = issue_access_token(user_id=user_id, tenant_id=tenant_id, role=role)
+    access, access_exp = issue_access_token(
+        user_id=user_id, tenant_id=tenant_id, role=role
+    )
     refresh, refresh_exp, _family = issue_refresh_token(
         user_id=user_id,
         tenant_id=tenant_id,
@@ -228,9 +232,13 @@ def refresh(request: Request, response: Response) -> TokenResponse:
             ip_address=ip,
             user_agent=ua(request),
         )
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc)
+        ) from exc
 
-    set_refresh_cookie(response, result["refresh_token"], result["refresh_token_expires_at"])
+    set_refresh_cookie(
+        response, result["refresh_token"], result["refresh_token_expires_at"]
+    )
 
     from llm_wiki.db.users import get_user_by_id
 
@@ -294,7 +302,9 @@ def me(user: dict = Depends(require_user)) -> UserMeResponse:
         from llm_wiki.db.groups import get_user_groups
 
         groups = [
-            GroupRef(id=g["id"], slug=g["slug"], name=g["name"], is_system=g["is_system"])
+            GroupRef(
+                id=g["id"], slug=g["slug"], name=g["name"], is_system=g["is_system"]
+            )
             for g in get_user_groups(user["id"])
         ]
     except Exception as exc:  # noqa: BLE001 — degrade graceful

@@ -42,7 +42,9 @@ def configure_logging(*, level: str, fmt: str) -> None:
     if fmt_lower == "json":
         handler.setFormatter(_JsonFormatter())
     else:
-        handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s"))
+        handler.setFormatter(
+            logging.Formatter("%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+        )
     root = logging.getLogger()
     for old in list(root.handlers):
         root.removeHandler(old)

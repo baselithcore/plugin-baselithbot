@@ -142,17 +142,17 @@ export function UploadModal({ open, onClose, onIngestComplete }: Props) {
               if (ev.status === 'done') onIngestComplete?.();
             } else if (ev.type === 'status') {
               setActiveJob((prev) =>
-                prev ? { ...prev, status: ev.status, summary: ev.message } : prev,
+                prev ? { ...prev, status: ev.status, summary: ev.message } : prev
               );
             }
           },
-          ctrl.signal,
+          ctrl.signal
         );
       } catch (err) {
         if ((err as Error).name !== 'AbortError') console.warn('stream error', err);
       }
     },
-    [onIngestComplete, refresh],
+    [onIngestComplete, refresh]
   );
 
   const replaceDoc = (idx: number, patch: Partial<DocUploadState>) => {
@@ -229,9 +229,13 @@ export function UploadModal({ open, onClose, onIngestComplete }: Props) {
     if (ctrl.signal.aborted) {
       toast.info('Upload annullato.');
     } else if (okCount > 0 && koCount === 0) {
-      toast.success(`${okCount} document${okCount > 1 ? 'i' : 'o'} caricat${okCount > 1 ? 'i' : 'o'}. Ingestion avviata.`);
+      toast.success(
+        `${okCount} document${okCount > 1 ? 'i' : 'o'} caricat${okCount > 1 ? 'i' : 'o'}. Ingestion avviata.`
+      );
     } else if (okCount > 0) {
-      toast.warning(`${okCount}/${files.length} caricati, ${koCount} fallit${koCount > 1 ? 'i' : 'o'}.`);
+      toast.warning(
+        `${okCount}/${files.length} caricati, ${koCount} fallit${koCount > 1 ? 'i' : 'o'}.`
+      );
     } else {
       toast.error('Nessun upload completato.');
     }

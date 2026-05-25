@@ -44,7 +44,9 @@ def sample_pages(
 
     ordered_folders = _ordered_page_folders(page_types)
     if not ordered_folders:
-        ordered_folders = [(p.name, "page") for p in sorted(wiki_dir.iterdir()) if p.is_dir()]
+        ordered_folders = [
+            (p.name, "page") for p in sorted(wiki_dir.iterdir()) if p.is_dir()
+        ]
 
     seen: set[str] = set()
     samples: list[PageSample] = []
@@ -141,7 +143,9 @@ def _excerpt(body: str, max_chars: int) -> str:
     ``"che cos'è sources/foo-bar?"`` — readable, but ugly. The bare
     name reads cleanly.
     """
-    cleaned = _WIKILINK_RE.sub(lambda m: m.group(1).split("/")[-1].replace("-", " "), body).strip()
+    cleaned = _WIKILINK_RE.sub(
+        lambda m: m.group(1).split("/")[-1].replace("-", " "), body
+    ).strip()
     if len(cleaned) <= max_chars:
         return cleaned
     cut = cleaned[:max_chars].rsplit("\n", 1)[0].rstrip()

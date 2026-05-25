@@ -1,13 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  BookOpen,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Pin,
-  Plus,
-  Search,
-  X,
-} from 'lucide-react';
+import { BookOpen, PanelLeftClose, PanelLeftOpen, Pin, Plus, Search, X } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useBranding } from '../contexts/BrandingContext';
 import { useDomain } from '../contexts/DomainContext';
@@ -295,7 +287,8 @@ export function Sidebar({
           {/* Footer */}
           <div className="flex items-center justify-between border-t border-white/10 px-4 py-3 text-[10px] text-white/45">
             <span>
-              {conversations.length} {conversations.length === 1 ? 'conversazione' : 'conversazioni'}
+              {conversations.length}{' '}
+              {conversations.length === 1 ? 'conversazione' : 'conversazioni'}
               {query && filtered.length !== conversations.length && (
                 <span> · {filtered.length} filtrate</span>
               )}

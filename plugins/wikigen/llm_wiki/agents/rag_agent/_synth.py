@@ -79,7 +79,9 @@ def synthesize_from_hits(
     context = apply_intent_warning(context, intent_report)
     memories = agent._load_memories(question)
     memories_block = build_memories_block(memories)
-    history_turns = prefetched_history if prefetched_history is not None else agent._load_history()
+    history_turns = (
+        prefetched_history if prefetched_history is not None else agent._load_history()
+    )
     history_block = build_history_block(history_turns)
 
     if not hits:
@@ -100,10 +102,14 @@ def synthesize_from_hits(
         history_block=history_block,
     )
     answer = _generate(messages=messages, options=rag_sampling_options())
-    answer, _report = maybe_repair_citations(answer=answer, sources=sources, messages=messages)
+    answer, _report = maybe_repair_citations(
+        answer=answer, sources=sources, messages=messages
+    )
     groundedness = maybe_score_groundedness(answer, context)
     if groundedness and groundedness.below_threshold and RAG_GROUNDEDNESS_REPAIR:
-        from llm_wiki.agents.groundedness import repair_feedback as groundedness_repair_feedback
+        from llm_wiki.agents.groundedness import (
+            repair_feedback as groundedness_repair_feedback,
+        )
 
         feedback = groundedness_repair_feedback(groundedness)
         if feedback:
@@ -162,7 +168,9 @@ def stream_synthesis_from_hits(
         }
         yield {"type": "memories", "items": memories}
 
-    history_turns = prefetched_history if prefetched_history is not None else agent._load_history()
+    history_turns = (
+        prefetched_history if prefetched_history is not None else agent._load_history()
+    )
     if history_turns and prefetched_history is None:
         # Solo annuncia se NON pre-fetched (il caller ha già emesso lo
         # step "Memoria conversazione: N turni" — evita duplicato UX).
@@ -244,7 +252,9 @@ def stream_synthesis_from_hits(
             "ratio": gr.supported_ratio,
             "threshold": gr.threshold,
             "summary": gr.summary(),
-            "unsupported": [{"text": c.text, "note": c.note} for c in gr.unsupported_claims()],
+            "unsupported": [
+                {"text": c.text, "note": c.note} for c in gr.unsupported_claims()
+            ],
         }
 
     cb = maybe_check_code_blocks(full_answer, context)

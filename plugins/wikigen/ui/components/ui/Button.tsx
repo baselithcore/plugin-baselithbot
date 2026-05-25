@@ -42,7 +42,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     type = 'button',
     ...rest
   },
-  ref,
+  ref
 ) {
   const iconSize = size === 'sm' ? 11 : 12;
   return (
@@ -56,7 +56,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         'transition-colors disabled:cursor-not-allowed',
         SIZES[size],
         VARIANTS[variant],
-        className,
+        className
       )}
       {...rest}
     >

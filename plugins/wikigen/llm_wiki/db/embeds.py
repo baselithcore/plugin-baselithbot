@@ -116,7 +116,9 @@ def list_embeds(tenant_id: str) -> list[dict[str, Any]]:
     return [_format(r) for r in rows]
 
 
-def get_embed_by_id(embed_id: str, tenant_id: str | None = None) -> dict[str, Any] | None:
+def get_embed_by_id(
+    embed_id: str, tenant_id: str | None = None
+) -> dict[str, Any] | None:
     """Lookup admin per id. Se ``tenant_id`` fornito, valida tenant match."""
     if not config.POSTGRES_ENABLED:
         return None

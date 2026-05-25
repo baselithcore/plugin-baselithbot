@@ -20,8 +20,7 @@ export function JobCard({
   compact?: boolean;
   onRetry?: (job: IngestJob) => void;
 }) {
-  const total =
-    job.pages_written + job.pages_needs_review + job.pages_conflict + job.pages_error;
+  const total = job.pages_written + job.pages_needs_review + job.pages_conflict + job.pages_error;
   const showRetry = onRetry && (job.status === 'error' || job.pages_error > 0);
 
   return (
@@ -58,9 +57,7 @@ export function JobCard({
           {job.pages_conflict > 0 && (
             <PageStat label="conflitti" value={job.pages_conflict} tone="warning" />
           )}
-          {job.pages_error > 0 && (
-            <PageStat label="errori" value={job.pages_error} tone="danger" />
-          )}
+          {job.pages_error > 0 && <PageStat label="errori" value={job.pages_error} tone="danger" />}
         </div>
       )}
 
@@ -101,7 +98,7 @@ function PageStat({
     <span
       className={cn(
         'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium',
-        cls,
+        cls
       )}
     >
       <span className="tabular-nums">{value}</span>
@@ -125,7 +122,8 @@ function ErrorList({ errors }: { errors: NonNullable<IngestJob['errors']> }) {
           className={cn('transition-transform', open && 'rotate-180')}
           aria-hidden
         />
-        {errors.length} {errors.length === 1 ? 'errore' : 'errori'} riscontrat{errors.length === 1 ? 'o' : 'i'}
+        {errors.length} {errors.length === 1 ? 'errore' : 'errori'} riscontrat
+        {errors.length === 1 ? 'o' : 'i'}
       </summary>
       <ul className="border-t border-rose-500/20 px-2 py-1 space-y-0.5 text-[10.5px] text-rose-700 dark:text-rose-300">
         {errors.slice(0, 8).map((e, i) => (
@@ -134,9 +132,7 @@ function ErrorList({ errors }: { errors: NonNullable<IngestJob['errors']> }) {
           </li>
         ))}
         {errors.length > 8 && (
-          <li className="text-[9.5px] italic text-ink-subtle">
-            … e altri {errors.length - 8}
-          </li>
+          <li className="text-[9.5px] italic text-ink-subtle">… e altri {errors.length - 8}</li>
         )}
       </ul>
     </details>
@@ -146,8 +142,7 @@ function ErrorList({ errors }: { errors: NonNullable<IngestJob['errors']> }) {
 function StatusIcon({ status }: { status: IngestJob['status'] }) {
   if (status === 'running' || status === 'queued')
     return <Loader2 size={13} className="animate-spin text-[var(--color-brand)]" aria-hidden />;
-  if (status === 'done')
-    return <CheckCircle2 size={13} className="text-emerald-500" aria-hidden />;
+  if (status === 'done') return <CheckCircle2 size={13} className="text-emerald-500" aria-hidden />;
   return <AlertCircle size={13} className="text-rose-500" aria-hidden />;
 }
 
@@ -162,7 +157,7 @@ function StatusBadge({ status }: { status: IngestJob['status'] }) {
     <span
       className={cn(
         'shrink-0 rounded-full px-2 py-[2px] text-[10px] font-semibold uppercase tracking-wide',
-        style,
+        style
       )}
     >
       {STATUS_LABEL[status]}
@@ -250,15 +245,13 @@ export function EventTimeline({ events }: { events: IngestStreamEvent[] }) {
                       ? 'bg-rose-500'
                       : phase === 'final'
                         ? 'bg-emerald-500'
-                        : 'bg-[var(--color-brand)]',
+                        : 'bg-[var(--color-brand)]'
                   )}
                   aria-hidden
                 />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-ink">
-                      {PHASE_LABEL[phase] ?? phase}
-                    </span>
+                    <span className="font-semibold text-ink">{PHASE_LABEL[phase] ?? phase}</span>
                     <span className="font-mono text-[9.5px] tabular-nums text-ink-subtle">
                       {new Date(last.t * 1000).toLocaleTimeString('it-IT')}
                     </span>

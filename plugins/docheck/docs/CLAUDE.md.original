@@ -1,0 +1,168 @@
+# CLAUDE.md — doCheck Project Conventions
+
+Guida operativa per Claude Code in questo repository. Leggere prima di ogni implementazione.
+
+---
+
+## 1. Vincoli di Codice
+
+### 1.1 Limite LOC per file: **500 righe max**
+
+- Nessun file sorgente deve superare **500 LOC** (escluso commenti/blank lines? **incluse** — limite hard).
+- Se un file si avvicina al limite → **modularizzare** subito:
+  - Estrarre classi/funzioni correlate in modulo dedicato.
+  - Raggruppare per responsabilità (parsing, validation, persistence, transport).
+  - Preferire composizione su file monolitici.
+- Vale per: `.py`, `.ts`, `.tsx`, `.sql` (escluse seed migrations), `.yaml` config grandi.
+- Eccezioni motivate (schema generato, lockfile, snapshot test) → annotare con commento `# noqa: file-loc reason="..."` in cima.
+
+### 1.2 Naming modularizzazione
+
+Quando split di un file, seguire pattern:
+
+```
+services/parser.py (>500 LOC)
+  → services/parsers/__init__.py
+    services/parsers/pdf.py
+    services/parsers/docx.py
+    services/parsers/xlsx.py
+    services/parsers/text.py
+```
+
+Ri-esportare API pubblica nel `__init__.py` per non rompere import esistenti.
+
+---
+
+## 2. Documentazione del Sistema
+
+### 2.1 Ogni implementazione importante richiede documentazione
+
+**"Importante" = una di queste:**
+- Nuovo agente, modulo, servizio core.
+- Modifica al flusso dati end-to-end.
+- Nuovo schema persistito (DB table, JSON contract).
+- Cambio interfaccia API pubblica (HTTP, WebSocket, gRPC).
+- Modifica modello sicurezza (auth, RBAC, audit, signing).
+- Integrazione nuova dipendenza esterna (LLM, vector DB, OCR engine).
+
+### 2.2 Dove scrivere la documentazione
+
+| Tipo | Path | Quando |
+|------|------|--------|
+| Architettura/decisioni | `blueprint/NN_topic.md` (esistenti) | Aggiornare se la nuova impl cambia il blueprint |
+| Decisioni puntuali | `docs/adr/NNNN-titolo.md` (ADR) | Per ogni scelta tecnica non banale |
+| API reference | `docs/api/<area>.md` | Endpoint nuovi/modificati |
+| Modulo runtime | docstring modulo + `docs/modules/<name>.md` se complesso | Nuovo agente/servizio |
+| Operativo (deploy/runbook) | `docs/runbooks/<topic>.md` | Procedure manuali ricorrenti |
+
+### 2.3 Formato ADR (Architecture Decision Record)
+
+```markdown
+# ADR-NNNN: <titolo decisione>
+
+**Status:** Proposed | Accepted | Superseded by ADR-XXXX
+**Date:** YYYY-MM-DD
+**Context:** problema/forza tecnica
+**Decision:** scelta presa
+**Consequences:** trade-off, conseguenze positive/negative
+**Alternatives considered:** opzioni scartate + motivo
+```
+
+### 2.4 Docstring obbligatorie
+
+- **Modulo**: 1 riga top-of-file che spiega responsabilità.
+- **Funzione/classe pubblica**: docstring se contratto non ovvio dal nome+tipi.
+- Niente docstring rumorose che ripetono la signature.
+
+---
+
+## 3. Stack Vincolato (no drift)
+
+- **Backend:** Python 3.12, FastAPI, LangGraph, SQLAlchemy 2.0 async, SQLCipher.
+- **LLM serving:** vLLM (DGX Spark). Client OpenAI-compatible.
+- **Embedding:** BGE-M3 multilingue. **Vector DB:** ChromaDB (MVP), Qdrant (post-MVP).
+- **OCR:** PaddleOCR (default), Tesseract (fallback).
+- **Frontend:** Next.js 15 + React 19 + Tailwind + shadcn/ui + Zustand + TanStack Query.
+- **Desktop:** Electron (workstation). Docker Compose (server DGX).
+- **Crypto:** PyNaCl (Ed25519).
+
+Cambio stack → ADR obbligatorio.
+
+---
+
+## 4. Sicurezza (non negoziabile)
+
+- **Zero egress** durante analisi. Validato in CI con `tcpdump`.
+- **No API esterne** per LLM/embedding/OCR. Tutto on-prem.
+- **Audit log immutabile** (trigger SQLite + hash chain Ed25519).
+- **CSP Electron strict**: `default-src 'self'`, no `nodeIntegration`, sandbox on.
+- **Master key** in OS keychain (mai in codice/env files committed).
+- **Pen-test** prima di ogni release GA.
+
+---
+
+## 5. Glass Box (pillar prodotto)
+
+- Ogni `Finding` **DEVE** avere: `evidence.bbox`, `policy_ref.excerpt` verbatim, `reasoning` chain.
+- Validation Pydantic rifiuta finding non tracciabili.
+- Se LLM output non valido → 1 retry con repair prompt → failover deterministico (skip nodo, log warning).
+- Mai inventare excerpt policy: enforce sub-string match contro retrieval result.
+
+---
+
+## 6. Convenzioni Codice
+
+### Python
+- `ruff` lint + format. `mypy --strict`.
+- Type hints obbligatori su public API.
+- Pydantic v2 per ogni boundary (request, response, agent I/O).
+- `async`/`await` end-to-end (no sync in handler async).
+- Logging via `structlog` JSON. Mai `print()`.
+
+### TypeScript
+- `strict: true`. No `any` se non con commento `// @ts-expect-error reason`.
+- Componenti React: server component default; `'use client'` solo se serve.
+- Tailwind classes via `cn()` helper. No inline styles tranne valori dinamici.
+- API client tipato sul JSON Schema condiviso.
+
+### SQL
+- Migrations Alembic, mai modifica manuale schema in prod.
+- Indici espliciti per ogni FK + colonne filtrate.
+- Constraint CHECK per enum-like.
+
+---
+
+## 7. Test
+
+- Unit: ogni servizio/agente con behavior non banale.
+- Integration: pipeline end-to-end agent + DB in-memory.
+- Property-based (`hypothesis`) per parser/regex critici.
+- Test set annotato 50 contratti IT per regression precision/recall.
+- **CI gate**: zero pacchetti rete uscenti durante test E2E (tcpdump in container).
+
+---
+
+## 8. Git Workflow
+
+- Branch: `feat/<area>-<short>`, `fix/<area>-<short>`, `chore/<area>`.
+- Commit Conventional Commits: `feat(agents): add structurer agent`.
+- PR descrive **why**, non solo what. Link blueprint/ADR rilevante.
+- Mai force push su `main`. Mai skip hooks (`--no-verify`).
+
+---
+
+## 9. Performance Budget
+
+- Analisi doc 20pp: **< 90s P95** su DGX Spark.
+- Click finding → highlight: **< 300ms**.
+- Cache hit ratio target: **≥ 60%** dopo warmup.
+- LCP UI: **< 2s** primo render.
+
+---
+
+## 10. Quando in dubbio
+
+1. Leggere [blueprint/](blueprint/) — specifica autoritativa.
+2. Cercare ADR esistente in `docs/adr/`.
+3. Se serve scelta nuova → proporre via ADR prima di implementare.
+4. Mai introdurre dipendenze esterne senza giustificazione esplicita.

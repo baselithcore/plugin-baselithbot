@@ -24,7 +24,9 @@ class _EnabledStore:
 
     def __init__(self) -> None:
         self._entities: dict[str, EntityRecord] = {
-            "entity:foo": EntityRecord(id="entity:foo", name="Foo", kind="entity", aliases=[]),
+            "entity:foo": EntityRecord(
+                id="entity:foo", name="Foo", kind="entity", aliases=[]
+            ),
             "concept:bar": EntityRecord(
                 id="concept:bar", name="Bar", kind="concept", aliases=["barbar"]
             ),

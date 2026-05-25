@@ -42,13 +42,19 @@ from llm_wiki.ingest_raw.schemas import (
 logger = logging.getLogger(__name__)
 
 
-def classify_document(doc: ExtractedDocument, *, model: str | None = None) -> Classification:
+def classify_document(
+    doc: ExtractedDocument, *, model: str | None = None
+) -> Classification:
     """Classify the source document using the active pack's subtype enum."""
     pack = get_pack()
     schema = build_classification_schema(pack)
-    bundle = classify_bundle(metadata_hints=doc.metadata, first_pages_md=doc.markdown[:3500])
+    bundle = classify_bundle(
+        metadata_hints=doc.metadata, first_pages_md=doc.markdown[:3500]
+    )
     cls = generate_structured(schema, messages=bundle.as_messages(), model=model)
-    logger.info("classify: %s | ed=%s | modello=%s", cls.source_type, cls.edizione, cls.modello)
+    logger.info(
+        "classify: %s | ed=%s | modello=%s", cls.source_type, cls.edizione, cls.modello
+    )
     return cls
 
 
@@ -72,7 +78,9 @@ def plan_document(
         verbatim_atoms=atoms,
     )
     plan = generate_structured(schema, messages=bundle.as_messages(), model=model)
-    plan = _normalize_plan(plan, source_path=str(doc.source_path), classification=classification)
+    plan = _normalize_plan(
+        plan, source_path=str(doc.source_path), classification=classification
+    )
     plan = _cap_derived_pages(plan, doc=doc)
     plan.source_pages_count = doc.n_pages
     logger.info(
@@ -226,7 +234,9 @@ _ORDERED_LIST_RE = re.compile(
 )
 
 
-def _extract_step_blocks(markdown: str, *, per_block_cap: int = 1200) -> list[tuple[int, str]]:
+def _extract_step_blocks(
+    markdown: str, *, per_block_cap: int = 1200
+) -> list[tuple[int, str]]:
     """Return ``(start_offset, block_text)`` for each multilingual step
     marker found in ``markdown``.
 
@@ -317,7 +327,9 @@ def extract_verbatim_atoms(markdown: str, *, max_chars: int | None = None) -> st
     for m in _CLI_LINE_RE.finditer(markdown):
         spans.append((m.start(), "cli", m.group(0)))
     for token in _CLI_TOKENS:
-        for m in re.finditer(rf"^[^\n#`>|]*{re.escape(token)}[^\n]+$", markdown, re.MULTILINE):
+        for m in re.finditer(
+            rf"^[^\n#`>|]*{re.escape(token)}[^\n]+$", markdown, re.MULTILINE
+        ):
             spans.append((m.start(), "cli", m.group(0).strip()))
     for start, text in _extract_step_blocks(markdown):
         spans.append((start, "step", text))
@@ -340,7 +352,9 @@ def extract_verbatim_atoms(markdown: str, *, max_chars: int | None = None) -> st
         # awareness of block context. Skip a CLI atom when its text is
         # already contained within a previously kept code/callout atom —
         # those provide richer framing for the same instruction.
-        if kind == "cli" and any(key in t for k, t in deduped if k in {"code", "callout"}):
+        if kind == "cli" and any(
+            key in t for k, t in deduped if k in {"code", "callout"}
+        ):
             continue
         seen.add(key)
         deduped.append((kind, text))

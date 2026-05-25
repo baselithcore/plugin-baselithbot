@@ -150,7 +150,9 @@ class _JobRegistry:
             pass
 
     @staticmethod
-    def _safe_put(q: asyncio.Queue[dict[str, Any] | None], event: dict[str, Any]) -> None:
+    def _safe_put(
+        q: asyncio.Queue[dict[str, Any] | None], event: dict[str, Any]
+    ) -> None:
         try:
             q.put_nowait(event)
         except asyncio.QueueFull:

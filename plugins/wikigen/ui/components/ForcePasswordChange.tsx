@@ -63,9 +63,7 @@ export function ForcePasswordChange({ onComplete }: Props) {
       await logout();
       onComplete();
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : 'Errore cambio password.'
-      );
+      setError(err instanceof Error ? err.message : 'Errore cambio password.');
     } finally {
       setBusy(false);
     }
@@ -76,12 +74,9 @@ export function ForcePasswordChange({ onComplete }: Props) {
       <div className="w-full max-w-md rounded-2xl border border-[var(--color-border)] bg-[var(--color-canvas-raised)] p-8 shadow-xl">
         <header className="mb-6 flex flex-col items-center gap-2 text-center">
           <ShieldAlert size={32} className="text-[var(--color-brand)]" />
-          <h1 className="text-lg font-semibold text-ink">
-            Cambio password obbligatorio
-          </h1>
+          <h1 className="text-lg font-semibold text-ink">Cambio password obbligatorio</h1>
           <p className="text-xs text-ink-subtle">
-            Per la sicurezza dell'account, devi impostare una nuova password
-            prima di proseguire.
+            Per la sicurezza dell'account, devi impostare una nuova password prima di proseguire.
           </p>
         </header>
 

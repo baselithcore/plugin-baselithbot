@@ -104,7 +104,12 @@ def search_entities(
 ) -> dict[str, Any]:
     store = _ensure_enabled()
     rows = store.search_entities(q, kind=kind, limit=limit)
-    return {"query": q, "kind": kind, "count": len(rows), "results": [_entity_dto(r) for r in rows]}
+    return {
+        "query": q,
+        "kind": kind,
+        "count": len(rows),
+        "results": [_entity_dto(r) for r in rows],
+    }
 
 
 @router.get("/neighbors/{entity_id}")

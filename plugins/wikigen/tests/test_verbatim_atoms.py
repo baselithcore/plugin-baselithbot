@@ -132,7 +132,9 @@ def test_extract_returns_empty_on_zero_budget() -> None:
 # --- DefaultPageTypeStrategy dispatch ---------------------------------------
 
 
-def _make_ctx(*, page_type: str, markdown: str, title: str = "Demo") -> GenerationContext:
+def _make_ctx(
+    *, page_type: str, markdown: str, title: str = "Demo"
+) -> GenerationContext:
     plan_entry = PagePlan(
         page_type=page_type,
         target_path=f"wiki/{'sources' if page_type == 'source' else 'concepts'}/demo.md",
@@ -156,7 +158,7 @@ def _make_ctx(*, page_type: str, markdown: str, title: str = "Demo") -> Generati
         derived_pages=[] if page_type == "source" else [plan_entry],
     )
     doc = ExtractedDocument(
-        source_path=Path("/tmp/raw/source-doc.pdf"),
+        source_path=Path("/tmp/raw/source-doc.pdf"),  # nosec B108 — test mock path
         backend="fallback",
         markdown=markdown,
         pages=[],

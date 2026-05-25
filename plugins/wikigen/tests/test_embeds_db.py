@@ -130,7 +130,12 @@ def test_create_returns_plaintext_once(tenant_a: dict) -> None:
 
 
 def test_list_get_update(tenant_a: dict) -> None:
-    from llm_wiki.db.embeds import create_embed, get_embed_by_id, list_embeds, update_embed
+    from llm_wiki.db.embeds import (
+        create_embed,
+        get_embed_by_id,
+        list_embeds,
+        update_embed,
+    )
 
     record, _ = create_embed(
         tenant_id=tenant_a["tenant_id"],

@@ -106,7 +106,9 @@ def search(
         # campo di stato (la maggior parte delle pagine concept) restano incluse.
         for state_key in ("stato", "edizione-stato"):
             for dead_state in ("superata", "abrogata"):
-                must_not.append(FieldCondition(key=state_key, match=MatchValue(value=dead_state)))
+                must_not.append(
+                    FieldCondition(key=state_key, match=MatchValue(value=dead_state))
+                )
     qfilter: Filter | None = None
     if must or must_not:
         qfilter = Filter(must=must or None, must_not=must_not or None)
@@ -140,7 +142,9 @@ def search(
                 seen_q.add(key)
                 queries.append(v)
     if len(queries) > 1:
-        logger.info("[query-expansion] '%s' → %d varianti totali", query[:40], len(queries))
+        logger.info(
+            "[query-expansion] '%s' → %d varianti totali", query[:40], len(queries)
+        )
 
     # Stage 1.5: query→page_type inference (heuristic, zero LLM call).
     # Quando il caller non ha già passato un page_type esplicito e l'env è
@@ -178,9 +182,13 @@ def search(
                 )
                 assert inf.page_type_id is not None
                 inferred_must = list(must) + [
-                    FieldCondition(key="page_type", match=MatchValue(value=inf.page_type_id))
+                    FieldCondition(
+                        key="page_type", match=MatchValue(value=inf.page_type_id)
+                    )
                 ]
-                inferred_qfilter = Filter(must=inferred_must or None, must_not=must_not or None)
+                inferred_qfilter = Filter(
+                    must=inferred_must or None, must_not=must_not or None
+                )
             elif inf.archetype != "unknown" and inf.confidence != "none":
                 # Diagnostica: archetype riconosciuto ma nessun page_type del
                 # pack matcha (mappa heuristica del classifier non copre il

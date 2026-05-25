@@ -33,37 +33,41 @@ export function GraphEmptyState({ onReload }: GraphEmptyStateProps) {
       <div className="flex flex-col gap-1">
         <h2 className="text-lg font-semibold text-ink">Il grafo è vuoto</h2>
         <p className="text-sm text-ink-muted leading-relaxed">
-          Nessuna entità estratta dalle pagine wiki. Il grafo si popola
-          automaticamente durante l'ingest quando l'estrazione è attiva,
-          oppure manualmente da CLI sulle pagine già caricate.
+          Nessuna entità estratta dalle pagine wiki. Il grafo si popola automaticamente durante
+          l'ingest quando l'estrazione è attiva, oppure manualmente da CLI sulle pagine già
+          caricate.
         </p>
       </div>
 
       <Callout tone="info" title="Cos'è il knowledge graph" className="w-full text-left">
         <ul className="mt-1 list-disc space-y-1 pl-4 text-[11.5px]">
           <li>
-            <strong>Entità</strong> (nodi): persone, concetti, sistemi, norme citati
-            nelle pagine.
+            <strong>Entità</strong> (nodi): persone, concetti, sistemi, norme citati nelle pagine.
           </li>
           <li>
             <strong>Relazioni</strong> (archi): legami tipati con confidence
             <span className="mx-1 font-mono text-[10.5px]">EXTRACTED / INFERRED / AMBIGUOUS</span>.
           </li>
           <li>
-            <strong>Community</strong>: cluster di entità densamente collegate —
-            colorate uniformemente sulla canvas.
+            <strong>Community</strong>: cluster di entità densamente collegate — colorate
+            uniformemente sulla canvas.
           </li>
           <li>
-            <strong>Surprising connections</strong>: archi ad alta confidence fra
-            community diverse — i ponti concettuali più informativi.
+            <strong>Surprising connections</strong>: archi ad alta confidence fra community diverse
+            — i ponti concettuali più informativi.
           </li>
         </ul>
       </Callout>
 
-      <Callout tone="neutral" title="Estrai entità dalle pagine" icon={Terminal} className="w-full text-left">
+      <Callout
+        tone="neutral"
+        title="Estrai entità dalle pagine"
+        icon={Terminal}
+        className="w-full text-left"
+      >
         <p>
-          Esegui dal terminale, una volta sola — è idempotente e riusa il
-          modello LLM configurato per l'ingest.
+          Esegui dal terminale, una volta sola — è idempotente e riusa il modello LLM configurato
+          per l'ingest.
         </p>
         <pre className="mt-2 overflow-x-auto rounded-md border border-[var(--color-border)] bg-[var(--color-canvas)] px-2.5 py-1.5 font-mono text-[11px] text-ink">
           wiki-wl graph rebuild

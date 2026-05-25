@@ -69,7 +69,9 @@ def _existing_content_hash(client: Any, document_id: str) -> str | None:
 
         res, _ = client.scroll(
             collection_name=COLLECTION_NAME,
-            scroll_filter=_F(must=[_FC(key="document_id", match=_MV(value=document_id))]),
+            scroll_filter=_F(
+                must=[_FC(key="document_id", match=_MV(value=document_id))]
+            ),
             limit=1,
             with_payload=["content_hash"],
         )
@@ -107,7 +109,9 @@ async def index_page(
     if not force:
         existing = await asyncio.to_thread(_existing_content_hash, client, document_id)
         if existing == new_hash:
-            logger.info("[vectorstore] %s invariato (hash=%s) — skip", document_id, new_hash)
+            logger.info(
+                "[vectorstore] %s invariato (hash=%s) — skip", document_id, new_hash
+            )
             return 0
 
     delete_document_points(document_id)
@@ -201,9 +205,13 @@ async def index_page(
             )
         )
 
-    inserted = await asyncio.to_thread(upsert_in_batches, points, collection=COLLECTION_NAME)
+    inserted = await asyncio.to_thread(
+        upsert_in_batches, points, collection=COLLECTION_NAME
+    )
     if inserted == 0 and points:
-        logger.error("[vectorstore] upsert %s fallito (0/%d inseriti)", document_id, len(points))
+        logger.error(
+            "[vectorstore] upsert %s fallito (0/%d inseriti)", document_id, len(points)
+        )
         return 0
 
     t_end = time.perf_counter()
@@ -318,7 +326,9 @@ async def index_pages_batched(
         for doc_id, _, _, _ in to_process:
             chunks_doc = [raw for did, _, raw, _, _ in flat if did == doc_id]
             full_content = next(c for did, _, _, _, c in flat if did == doc_id)
-            ctx_results = await asyncio.to_thread(contextualize_chunks, full_content, chunks_doc)
+            ctx_results = await asyncio.to_thread(
+                contextualize_chunks, full_content, chunks_doc
+            )
             for i, res in enumerate(ctx_results):
                 ctx_map[(doc_id, i)] = res.context_prefix
     t_ctx_done = time.perf_counter()
@@ -381,10 +391,14 @@ async def index_pages_batched(
             )
         )
 
-    inserted = await asyncio.to_thread(upsert_in_batches, points, collection=COLLECTION_NAME)
+    inserted = await asyncio.to_thread(
+        upsert_in_batches, points, collection=COLLECTION_NAME
+    )
     if inserted < len(points):
         logger.warning(
-            "[vectorstore] upsert batch parziale: %d/%d points inseriti", inserted, len(points)
+            "[vectorstore] upsert batch parziale: %d/%d points inseriti",
+            inserted,
+            len(points),
         )
     # Diag temp: per-doc breakdown — quale doc è stato incluso, con quanti chunk.
     # Permette di spottare doc silenziosamente saltati (chunk_count=0) o

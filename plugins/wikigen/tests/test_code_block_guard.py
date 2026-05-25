@@ -85,7 +85,9 @@ def test_strip_fabricated_removes_all_fences_when_context_has_none() -> None:
 
 def test_strip_fabricated_keeps_valid_langs() -> None:
     # Risposta Python (valido) + bash (fabbricato). Strip rimuove solo bash.
-    answer = "Step 1:\n```python\nclient.go()\n```\n\nStep 2:\n```bash\nfake-command\n```\n"
+    answer = (
+        "Step 1:\n```python\nclient.go()\n```\n\nStep 2:\n```bash\nfake-command\n```\n"
+    )
     report = g.analyze(answer, _operational_context_python())
     stripped = g.strip_fabricated_fences(answer, report)
     assert "client.go()" in stripped  # python preserved

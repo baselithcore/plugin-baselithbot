@@ -35,7 +35,9 @@ class PromptBundle:
 # --- classify ---------------------------------------------------------------
 
 
-def classify_bundle(*, metadata_hints: dict[str, Any], first_pages_md: str) -> PromptBundle:
+def classify_bundle(
+    *, metadata_hints: dict[str, Any], first_pages_md: str
+) -> PromptBundle:
     return PromptBundle(
         system=render("ingest/classify_system.j2"),
         user=render(
@@ -159,7 +161,9 @@ def source_page_bundle(
             classification=classification,
             source_path=source_path,
             outline=outline,
-            examples_block="\n\n".join(examples_blocks) if examples_blocks else "(nessuno)",
+            examples_block="\n\n".join(examples_blocks)
+            if examples_blocks
+            else "(nessuno)",
             today_iso=today_iso,
             verbatim_atoms=verbatim_atoms,
         ),
@@ -189,7 +193,9 @@ def garanzia_page_bundle(
             today_iso=today_iso,
             section_markdown=section_markdown,
             tables_json=tables_json,
-            examples_block="\n\n".join(examples_blocks) if examples_blocks else "(nessuno)",
+            examples_block="\n\n".join(examples_blocks)
+            if examples_blocks
+            else "(nessuno)",
         ),
     )
 

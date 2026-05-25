@@ -1,0 +1,87 @@
+# doCheck Helm values
+
+global:
+  airGapped: true     # disables any external image pulls / telemetry
+  storageClass: ""    # "" → use cluster default
+
+engine:
+  image:
+    repository: docheck/engine
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  replicas: 1
+  resources:
+    requests: { cpu: "500m", memory: "1Gi" }
+    limits:   { cpu: "2",    memory: "4Gi" }
+  env:
+    DOCHECK_LLM_BASE_URL: "http://docheck-vllm:8000/v1"
+    DOCHECK_LLM_PRIMARY_MODEL: "llama-3.3-70b-instruct-q4km"
+    DOCHECK_BIND_TCP: "0.0.0.0:8765"
+  persistence:
+    size: 50Gi
+    mountPath: /data
+
+vllm:
+  enabled: true
+  image:
+    repository: vllm/vllm-openai
+    tag: "latest"
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+  args:
+    - "--model=meta-llama/Llama-3.3-70B-Instruct"
+    - "--quantization=awq"
+    - "--max-model-len=8192"
+  modelCache:
+    size: 100Gi
+
+ui:
+  image:
+    repository: docheck/ui
+    tag: "0.1.0"
+  replicas: 1
+  ingress:
+    enabled: false
+    host: docheck.example.local
+    tls: false
+
+# Multi-tenant (post-MVP)
+multiTenant:
+  enabled: false
+  postgres:
+    host: ""
+    database: docheck
+    secretRef: docheck-postgres-credentials
+  qdrant:
+    host: ""
+    port: 6333
+  oidc:
+    issuer: ""
+    clientId: ""
+    clientSecretRef: docheck-oidc-secret
+  tenantIsolation: namespace   # namespace | row-level
+
+# Network policy (egress lockdown)
+networkPolicy:
+  enabled: true
+  allowEgress:
+    - to: cluster-dns
+    - to: vllm
+    - to: postgres   # solo se multiTenant.enabled
+    - to: qdrant     # solo se multiTenant.enabled
+  denyAllOther: true
+
+# Audit
+audit:
+  signingKeySecret: docheck-audit-signing-key
+  rotationDays: 90
+
+# Observability
+observability:
+  metrics:
+    enabled: true
+    serviceMonitor: false
+  tracing:
+    enabled: true
+    exporter: file   # file | otlp-internal (no cloud)

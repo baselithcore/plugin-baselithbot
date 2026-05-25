@@ -230,7 +230,9 @@ def classify_context_register(context_text: str) -> tuple[str, dict[str, int]]:
     operational_marker_hits = _count_signals(context_text, _OPERATIONAL_CHUNK_MARKERS)
     conceptual_marker_hits = _count_signals(context_text, _CONCEPTUAL_CHUNK_MARKERS)
 
-    operational_signal = code_blocks * 3 + shell_lines + cli_flags + operational_marker_hits
+    operational_signal = (
+        code_blocks * 3 + shell_lines + cli_flags + operational_marker_hits
+    )
     diagnostics = {
         "code_blocks": code_blocks,
         "cli_tokens": shell_lines + cli_flags,
@@ -267,7 +269,11 @@ def majority_register_from_hits(hits: list[dict[str, Any]]) -> str:
             counts[reg] += 1
     if not counts:
         return "unknown"
-    if counts.get("mixed", 0) > 0 and counts.get("operational", 0) and counts.get("conceptual", 0):
+    if (
+        counts.get("mixed", 0) > 0
+        and counts.get("operational", 0)
+        and counts.get("conceptual", 0)
+    ):
         return "mixed"
     op = counts.get("operational", 0)
     co = counts.get("conceptual", 0)

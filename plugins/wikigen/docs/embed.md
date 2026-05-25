@@ -6,7 +6,7 @@ token + origin allowlist + iframe-sandbox mini-app.
 
 ## Architettura
 
-```
+```text
 host page (https://acme.com)
   └── <script src="https://wiki.example.com/embed.js"
               data-token="emb_xxx"
@@ -33,6 +33,7 @@ verify_token rifiuta se l'`Origin` HTTP header non è nell'allowlist.
 ## Setup admin
 
 Prerequisito: ruolo con permesso `admin.embed.manage` (seed `superuser`
+
 + `admin` in mig 017).
 
 1. Login admin → `/admin/embeds`.
@@ -93,8 +94,9 @@ Body: `{ "embed_token": "emb_..." }`. Risponde `{ embed_id, name, theme,
 welcome_message, suggested_questions, pack, rate_limit_per_minute }`.
 
 Errori:
-- 401: token invalido o Origin assente/non-allowlisted.
-- 503: Postgres disabilitato (setup mode).
+
++ 401: token invalido o Origin assente/non-allowlisted.
++ 503: Postgres disabilitato (setup mode).
 
 ### `POST /api/embed/chat`
 
@@ -115,12 +117,12 @@ eventi `conversation` / `message_id` (no persistenza). Eventi emessi:
 Tutti sotto `/api/admin/embeds/*`. Gated `admin.embed.manage` +
 `rate_limit=admin`. Filtrano per `actor.tenant_id`.
 
-- `GET /` → list
-- `POST /` → create (response include `embed_token` plaintext)
-- `GET /{id}` → detail
-- `PATCH /{id}` → update (name/description/origin_allowlist/theme/...)
-- `DELETE /{id}` → delete
-- `POST /{id}/rotate-token` → new plaintext, vecchio invalidato
++ `GET /` → list
++ `POST /` → create (response include `embed_token` plaintext)
++ `GET /{id}` → detail
++ `PATCH /{id}` → update (name/description/origin_allowlist/theme/...)
++ `DELETE /{id}` → delete
++ `POST /{id}/rotate-token` → new plaintext, vecchio invalidato
 
 Audit events: `embed.created`, `embed.updated`, `embed.deleted`,
 `embed.token.rotated`.
@@ -130,9 +132,9 @@ Audit events: `embed.created`, `embed.updated`, `embed.deleted`,
 1. **Token unguessable.** 256 bit entropy. `secrets.token_hex(32)` →
    sha256 storage. Plaintext mai loggato.
 2. **Origin allowlist.** `verify_token(token, origin)` rifiuta:
-   - origin assente,
-   - origin non in allowlist,
-   - allowlist vuota (deny-by-default).
+   + origin assente,
+   + origin non in allowlist,
+   + allowlist vuota (deny-by-default).
 3. **Rate limit.** `(embed_id, ip)` bucket. Default 30 req/min, max
    600. Usa lo stesso backend (`memory` / `redis`) del rate-limiter
    globale.
@@ -180,13 +182,13 @@ widget.
 
 ## Limiti noti
 
-- **No multi-tenant cross-pack.** Un widget vive nel tenant in cui è
++ **No multi-tenant cross-pack.** Un widget vive nel tenant in cui è
   stato creato; il pack RAG è quello del processo (`APP_DOMAIN`). Per
   servire pack diversi servono processi distinti.
-- **No fonti deep-link.** Le source page citate nello stream sono
++ **No fonti deep-link.** Le source page citate nello stream sono
   visibili come metadata ma non aperte (l'iframe non può navigare il
   host page e l'app full non è accessibile senza login).
-- **Bundle size.** Il mini-app embed pesa ~8 KB ma carica anche le
++ **Bundle size.** Il mini-app embed pesa ~8 KB ma carica anche le
   chunk React/markdown condivise (~100 KB markdown + ~57 KB react). Per
   un widget più leggero si potrebbe forkare ulteriormente la chain
   (no markdown rendering, solo text plain).

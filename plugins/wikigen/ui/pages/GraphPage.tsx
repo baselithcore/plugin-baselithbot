@@ -15,12 +15,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, ArrowLeft, RefreshCcw } from 'lucide-react';
 import { navigate } from '../hooks/useLocation';
-import {
-  getData,
-  GraphUnavailableError,
-  type GraphData,
-  type GraphNode,
-} from '../lib/api/graph';
+import { getData, GraphUnavailableError, type GraphData, type GraphNode } from '../lib/api/graph';
 import { GraphCanvas, type ViewMode } from '../components/graph/GraphCanvas';
 import { GraphEmptyState } from '../components/graph/GraphEmptyState';
 import { GraphFilters } from '../components/graph/GraphFilters';
@@ -145,9 +140,7 @@ export function GraphPage() {
           />
         )}
         {!loading && error && <CenterBanner kind="error" text={error} />}
-        {!loading && data && data.nodes.length === 0 && (
-          <GraphEmptyState onReload={load} />
-        )}
+        {!loading && data && data.nodes.length === 0 && <GraphEmptyState onReload={load} />}
         {!loading && data && data.nodes.length > 0 && (
           <>
             <GraphFilters
@@ -163,21 +156,16 @@ export function GraphPage() {
             />
 
             <section className="flex flex-1 min-w-0 flex-col gap-2">
-              <Hint
-                id="graph.first_visit"
-                tone="info"
-                title="Esplora il knowledge graph"
-              >
+              <Hint id="graph.first_visit" tone="info" title="Esplora il knowledge graph">
                 <span className="block">
-                  Ogni nodo è un'entità estratta dalle pagine; gli archi sono
-                  relazioni tipate. Colore = community, dimensione = PageRank,
-                  spessore arco = confidence.
+                  Ogni nodo è un'entità estratta dalle pagine; gli archi sono relazioni tipate.
+                  Colore = community, dimensione = PageRank, spessore arco = confidence.
                 </span>
                 <span className="mt-1 block text-[10.5px] text-ink-subtle">
-                  Toggle in alto a destra: 2D force / 3D orbit / Layout
-                  deterministico. Hover sui nodi per vedere il vicinato (auto-off
-                  sui grafi densi). Click per il dettaglio · filtri a sinistra ·
-                  «connessioni sorprendenti» a destra finché non selezioni un nodo.
+                  Toggle in alto a destra: 2D force / 3D orbit / Layout deterministico. Hover sui
+                  nodi per vedere il vicinato (auto-off sui grafi densi). Click per il dettaglio ·
+                  filtri a sinistra · «connessioni sorprendenti» a destra finché non selezioni un
+                  nodo.
                 </span>
               </Hint>
               <div className="min-h-0 flex-1">
@@ -241,8 +229,7 @@ function CenterBanner({ kind, text }: CenterBannerProps) {
   return (
     <div
       className={
-        'm-auto flex max-w-md items-center gap-2 rounded-2xl border px-4 py-3 text-sm ' +
-        colour
+        'm-auto flex max-w-md items-center gap-2 rounded-2xl border px-4 py-3 text-sm ' + colour
       }
       role="status"
     >

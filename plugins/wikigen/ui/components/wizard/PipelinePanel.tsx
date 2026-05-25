@@ -234,7 +234,9 @@ export function PipelinePanel({
 }
 
 function FileStatusIcon({ status }: { status: 'queued' | 'running' | 'done' | 'error' }) {
-  if (status === 'done') return <CheckCircle2 size={12} className="text-[var(--color-success)] shrink-0" />;
-  if (status === 'error') return <AlertCircle size={12} className="text-[var(--color-danger)] shrink-0" />;
+  if (status === 'done')
+    return <CheckCircle2 size={12} className="text-[var(--color-success)] shrink-0" />;
+  if (status === 'error')
+    return <AlertCircle size={12} className="text-[var(--color-danger)] shrink-0" />;
   return <Loader2 size={12} className="animate-spin text-[var(--color-brand)] shrink-0" />;
 }

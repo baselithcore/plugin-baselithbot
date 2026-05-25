@@ -12,7 +12,9 @@ import pytest
 
 
 class _FakePoint:
-    def __init__(self, pid: str, doc_id: str, heading: str, chunk_index: int, text: str) -> None:
+    def __init__(
+        self, pid: str, doc_id: str, heading: str, chunk_index: int, text: str
+    ) -> None:
         self.id = pid
         self.payload = {
             "document_id": doc_id,
@@ -74,7 +76,9 @@ def test_no_section_heading_skipped(monkeypatch: pytest.MonkeyPatch) -> None:
     assert fake.calls == []
 
 
-def test_appends_siblings_sorted_by_chunk_index(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_appends_siblings_sorted_by_chunk_index(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     monkeypatch.setattr("llm_wiki.config.PARENT_RETRIEVAL_ENABLED", True)
     monkeypatch.setattr("llm_wiki.config.PARENT_RETRIEVAL_MAX_EXTRA", 6)
     monkeypatch.setattr("llm_wiki.config.PARENT_RETRIEVAL_PER_HIT_CAP", 3)
@@ -119,10 +123,12 @@ def test_per_hit_cap_respected(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("llm_wiki.config.PARENT_RETRIEVAL_PER_HIT_CAP", 1)
 
     siblings = [
-        _FakePoint(f"p{i}", "concepts/foo", "Casi d'uso", i + 10, f"caso {i}") for i in range(5)
+        _FakePoint(f"p{i}", "concepts/foo", "Casi d'uso", i + 10, f"caso {i}")
+        for i in range(5)
     ]
     monkeypatch.setattr(
-        "llm_wiki.vectorstore.expansions.get_qdrant", lambda: _FakeQdrant(points=siblings)
+        "llm_wiki.vectorstore.expansions.get_qdrant",
+        lambda: _FakeQdrant(points=siblings),
     )
 
     from llm_wiki.vectorstore.expansions import expand_to_parent_section
@@ -150,9 +156,13 @@ def test_global_max_extra_respected(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr("llm_wiki.config.PARENT_RETRIEVAL_PER_HIT_CAP", 5)
 
     # Due section diverse, 5 sibling ciascuna — tetto globale 2 deve fermare.
-    siblings = [_FakePoint(f"a{i}", "concepts/foo", "Sezione A", i + 10, f"a{i}") for i in range(5)]
+    siblings = [
+        _FakePoint(f"a{i}", "concepts/foo", "Sezione A", i + 10, f"a{i}")
+        for i in range(5)
+    ]
     monkeypatch.setattr(
-        "llm_wiki.vectorstore.expansions.get_qdrant", lambda: _FakeQdrant(points=siblings)
+        "llm_wiki.vectorstore.expansions.get_qdrant",
+        lambda: _FakeQdrant(points=siblings),
     )
 
     from llm_wiki.vectorstore.expansions import expand_to_parent_section

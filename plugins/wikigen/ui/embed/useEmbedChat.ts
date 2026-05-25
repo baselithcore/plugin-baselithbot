@@ -125,9 +125,7 @@ export function useEmbedChat(opts: UseEmbedChatOptions) {
         }
         if (ev.type === 'sources') {
           const items = (ev as { items: EmbedSource[] }).items ?? [];
-          setMessages((prev) =>
-            prev.map((m) => (m.id === asstId ? { ...m, sources: items } : m))
-          );
+          setMessages((prev) => prev.map((m) => (m.id === asstId ? { ...m, sources: items } : m)));
           return;
         }
         if (ev.type === 'error') {

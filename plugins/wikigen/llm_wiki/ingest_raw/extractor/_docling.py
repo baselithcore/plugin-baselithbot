@@ -50,7 +50,9 @@ def _extract_docling_generic(path: Path) -> ExtractedDocument:
     if hasattr(doc, "pages") and doc.pages:
         for page_no, page in sorted(doc.pages.items()):
             page_text = getattr(page, "text", "") or ""
-            pages.append(PageContent(number=int(page_no), markdown=page_text, text=page_text))
+            pages.append(
+                PageContent(number=int(page_no), markdown=page_text, text=page_text)
+            )
     else:
         pages.append(PageContent(number=1, markdown=full_md, text=full_md))
 
@@ -70,7 +72,9 @@ def _extract_docling_generic(path: Path) -> ExtractedDocument:
                 )
             )
         except Exception as exc:
-            logger.debug("docling tabella non serializzabile (%s): %s", path.suffix, exc)
+            logger.debug(
+                "docling tabella non serializzabile (%s): %s", path.suffix, exc
+            )
             continue
 
     metadata = _extract_metadata(path, full_md)
@@ -112,7 +116,9 @@ def _extract_docling(path: Path, *, ocr: bool) -> ExtractedDocument:
                 format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=opts)}
             )
         except ImportError:
-            logger.info("docling opzioni OCR non disponibili in questa versione; uso default")
+            logger.info(
+                "docling opzioni OCR non disponibili in questa versione; uso default"
+            )
             converter = DocumentConverter()
     else:
         converter = DocumentConverter()
@@ -125,7 +131,9 @@ def _extract_docling(path: Path, *, ocr: bool) -> ExtractedDocument:
     if hasattr(doc, "pages") and doc.pages:
         for page_no, page in sorted(doc.pages.items()):
             page_text = getattr(page, "text", "") or ""
-            pages.append(PageContent(number=int(page_no), markdown=page_text, text=page_text))
+            pages.append(
+                PageContent(number=int(page_no), markdown=page_text, text=page_text)
+            )
     else:
         pages.append(PageContent(number=1, markdown=full_md, text=full_md))
 
@@ -172,7 +180,10 @@ def _docling_table_to_rows(tbl: Any) -> tuple[list[str], list[list[str]]]:
     grid = getattr(getattr(tbl, "data", None), "grid", None)
     if grid:
         header = [str(c.text) if hasattr(c, "text") else str(c) for c in grid[0]]
-        rows = [[str(c.text) if hasattr(c, "text") else str(c) for c in row] for row in grid[1:]]
+        rows = [
+            [str(c.text) if hasattr(c, "text") else str(c) for c in row]
+            for row in grid[1:]
+        ]
         return header, rows
     return [], []
 

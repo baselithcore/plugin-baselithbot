@@ -24,13 +24,7 @@ interface Props {
   onChanged: () => void;
 }
 
-export function GroupDetailPanel({
-  groupId,
-  allRoles,
-  allUsers,
-  canAssignRole,
-  onChanged,
-}: Props) {
+export function GroupDetailPanel({ groupId, allRoles, allUsers, canAssignRole, onChanged }: Props) {
   const [detail, setDetail] = useState<GroupDetail | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -135,9 +129,7 @@ export function GroupDetailPanel({
               <div className="min-w-0 flex-1">
                 <div className="truncate">{m.email}</div>
                 {m.display_name && (
-                  <div className="truncate text-[10px] text-ink-subtle">
-                    {m.display_name}
-                  </div>
+                  <div className="truncate text-[10px] text-ink-subtle">{m.display_name}</div>
                 )}
               </div>
               <button
@@ -205,9 +197,7 @@ export function GroupDetailPanel({
                   />
                   <span className="font-mono">{r.slug}</span>
                   {r.is_system && (
-                    <span className="ml-auto text-[9px] text-ink-subtle uppercase">
-                      system
-                    </span>
+                    <span className="ml-auto text-[9px] text-ink-subtle uppercase">system</span>
                   )}
                 </label>
               </li>

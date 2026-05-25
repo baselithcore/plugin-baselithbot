@@ -157,7 +157,9 @@ def test_scaffolded_pack_validates_frontmatter(scaffolded: tuple[str, Path]) -> 
     assert any("title" in e for e in bad)
 
 
-def test_scaffolded_pack_dispatches_default_strategy(scaffolded: tuple[str, Path]) -> None:
+def test_scaffolded_pack_dispatches_default_strategy(
+    scaffolded: tuple[str, Path],
+) -> None:
     name, _ = scaffolded
     load_pack(name, force=True)
     strat = select_page_type_strategy(page_type="concept", subtype=None)

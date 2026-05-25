@@ -19,7 +19,9 @@ class _FakeStore:
     def __init__(self, *, enabled: bool = True) -> None:
         self.enabled = enabled
         self._entities: dict[str, EntityRecord] = {
-            "entity:foo": EntityRecord(id="entity:foo", name="Foo", kind="entity", aliases=[]),
+            "entity:foo": EntityRecord(
+                id="entity:foo", name="Foo", kind="entity", aliases=[]
+            ),
             "entity:bar": EntityRecord(
                 id="entity:bar", name="Bar", kind="entity", aliases=["Barr"]
             ),
@@ -209,7 +211,9 @@ def test_surprising_endpoint(client: TestClient) -> None:
     assert "results" in body
 
 
-def test_report_endpoint(client: TestClient, tmp_path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_report_endpoint(
+    client: TestClient, tmp_path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     pytest.importorskip("networkx")
     monkeypatch.setattr("llm_wiki.config.GRAPH_REPORT_DIR", str(tmp_path))
     # Force the report module to pick up the patched dir at call time.
@@ -238,7 +242,9 @@ def test_data_endpoint_returns_full_payload(client: TestClient) -> None:
     assert body["stats"]["node_count"] == len(body["nodes"])
 
 
-def test_data_endpoint_disabled_returns_empty_lists(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_data_endpoint_disabled_returns_empty_lists(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     fake = _FakeStore(enabled=False)
     monkeypatch.setattr("llm_wiki.api.routers.graph.get_kg_store", lambda: fake)
     from llm_wiki.api.routers.graph import router

@@ -138,9 +138,8 @@ function buildQuery(filters: FeedbackFilters): string {
   return q ? `?${q}` : '';
 }
 
-export const listFeedback = (
-  filters: FeedbackFilters = {}
-): Promise<FeedbackListResponse> => json(`${BASE_PATH}${buildQuery(filters)}`);
+export const listFeedback = (filters: FeedbackFilters = {}): Promise<FeedbackListResponse> =>
+  json(`${BASE_PATH}${buildQuery(filters)}`);
 
 export const getFeedback = (id: string): Promise<FeedbackItem> =>
   json(`${BASE_PATH}/${encodeURIComponent(id)}`);

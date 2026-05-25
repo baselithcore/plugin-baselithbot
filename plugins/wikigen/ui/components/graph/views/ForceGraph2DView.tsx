@@ -53,7 +53,7 @@ export function ForceGraph2DView({
   const fg = useMemo(
     () => buildFGData(data, { visibleKinds, visibleCommunities, confidenceMin }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data],
+    [data]
   );
 
   useEffect(() => {
@@ -62,19 +62,26 @@ export function ForceGraph2DView({
 
   const visibleNodeIds = useMemo(() => {
     const set = new Set<string>();
-    for (const n of fg.nodes) if (isNodeVisible(n, { visibleKinds, visibleCommunities, confidenceMin }, search)) set.add(n.id);
+    for (const n of fg.nodes)
+      if (isNodeVisible(n, { visibleKinds, visibleCommunities, confidenceMin }, search))
+        set.add(n.id);
     return set;
   }, [fg.nodes, visibleKinds, visibleCommunities, confidenceMin, search]);
 
   const nodeCount = fg.nodes.length;
   const linkCount = fg.links.length;
 
-  const { hoverId, onNodeHover, enabled: hoverEnabled, mode: hoverMode, setMode: setHoverMode } =
-    useHoverGuard<FGNode>({
-      containerRef: wrapRef,
-      nodeCount,
-      autoDisableAbove: HOVER_AUTO_DISABLE_NODES_2D,
-    });
+  const {
+    hoverId,
+    onNodeHover,
+    enabled: hoverEnabled,
+    mode: hoverMode,
+    setMode: setHoverMode,
+  } = useHoverGuard<FGNode>({
+    containerRef: wrapRef,
+    nodeCount,
+    autoDisableAbove: HOVER_AUTO_DISABLE_NODES_2D,
+  });
 
   // Tune d3 forces by sqrt(n) once nodes are mounted. Function args only —
   // passing functions to d3Force can crash the sim while link source/target
@@ -121,7 +128,10 @@ export function ForceGraph2DView({
   }, [selectedNodeId, fg.nodes]);
 
   return (
-    <div ref={wrapRef} className="relative h-full w-full overflow-hidden rounded-2xl border border-[var(--color-border)] bg-canvas-raised">
+    <div
+      ref={wrapRef}
+      className="relative h-full w-full overflow-hidden rounded-2xl border border-[var(--color-border)] bg-canvas-raised"
+    >
       {size.w > 0 && size.h > 0 && (
         <ForceGraph2D<FGNode, FGLink>
           ref={fgRef}
@@ -213,7 +223,11 @@ export function ForceGraph2DView({
           onBackgroundClick={() => onSelectNode(null)}
         />
       )}
-      <Legend nodes={nodeCount} edges={linkCount} hint={hoverEnabled ? 'hover per vicini' : 'click per dettaglio'} />
+      <Legend
+        nodes={nodeCount}
+        edges={linkCount}
+        hint={hoverEnabled ? 'hover per vicini' : 'click per dettaglio'}
+      />
       <LabelToggle mode={labelMode} onChange={setLabelMode} />
       <HoverToggle mode={hoverMode} enabled={hoverEnabled} onChange={setHoverMode} bottomPx={56} />
     </div>

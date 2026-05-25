@@ -54,7 +54,9 @@ def status(ctx: typer.Context) -> None:
         raise
 
     qdrant_endpoint = (
-        str(config.QDRANT_PATH) if config.QDRANT_MODE == "embedded" else config.QDRANT_URL
+        str(config.QDRANT_PATH)
+        if config.QDRANT_MODE == "embedded"
+        else config.QDRANT_URL
     )
     if octx.json_output:
         emit_json(
@@ -99,7 +101,9 @@ def status(ctx: typer.Context) -> None:
     t.add_row("Page types", ", ".join(pt.id for pt in pack.page_types))
     t.add_row("Grouping rules", ", ".join(r.key for r in pack.grouping) or "(none)")
     t.add_row("Vault root", str(config.WIKI_ROOT))
-    t.add_row("Qdrant", f"{config.QDRANT_MODE} → {qdrant_endpoint} / {config.COLLECTION_NAME}")
+    t.add_row(
+        "Qdrant", f"{config.QDRANT_MODE} → {qdrant_endpoint} / {config.COLLECTION_NAME}"
+    )
     t.add_row("LLM vendor", config.LLM_VENDOR)
     t.add_row("Embedder", config.EMBEDDER_MODEL)
     t.add_row("Graph DB", "on" if config.GRAPH_DB_ENABLED else "off")
@@ -110,7 +114,8 @@ def status(ctx: typer.Context) -> None:
     overrides = _detect_env_overrides(env_path)
     if overrides:
         octx.console.print(
-            "[yellow]![/yellow] Shell-exported variables override .env: " + ", ".join(overrides)
+            "[yellow]![/yellow] Shell-exported variables override .env: "
+            + ", ".join(overrides)
         )
 
 

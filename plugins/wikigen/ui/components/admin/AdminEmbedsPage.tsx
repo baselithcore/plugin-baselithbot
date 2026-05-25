@@ -260,11 +260,7 @@ export function AdminEmbedsPage() {
       </section>
 
       {selected && (
-        <EmbedDetailPanel
-          key={selected.id}
-          embed={selected}
-          onChanged={() => void refresh()}
-        />
+        <EmbedDetailPanel key={selected.id} embed={selected} onChanged={() => void refresh()} />
       )}
 
       <CreateEmbedDialog
@@ -277,26 +273,14 @@ export function AdminEmbedsPage() {
         }}
       />
 
-      <TokenRevealDialog
-        result={revealed}
-        onClose={() => setRevealed(null)}
-      />
+      <TokenRevealDialog result={revealed} onClose={() => setRevealed(null)} />
 
-      {snippetOpen && (
-        <SnippetDialog embed={snippetOpen} onClose={() => setSnippetOpen(null)} />
-      )}
+      {snippetOpen && <SnippetDialog embed={snippetOpen} onClose={() => setSnippetOpen(null)} />}
     </div>
   );
 }
 
-
-function SnippetDialog({
-  embed,
-  onClose,
-}: {
-  embed: EmbedSummary;
-  onClose: () => void;
-}) {
+function SnippetDialog({ embed, onClose }: { embed: EmbedSummary; onClose: () => void }) {
   const origin = window.location.origin;
   // Il token plaintext NON è disponibile dopo la creazione; lo snippet
   // mostra un placeholder e ricorda all'admin che il token va recuperato
@@ -319,8 +303,8 @@ function SnippetDialog({
     <ModalShell open onClose={onClose} title={`Snippet HTML — ${embed.name}`} width="lg">
       <div className="space-y-3 p-1">
         <p className="text-sm text-ink-subtle">
-          Incolla nel sito autorizzato (origin in allowlist). Il token plaintext si recupera
-          solo dall'evento di creazione o tramite "Ruota token".
+          Incolla nel sito autorizzato (origin in allowlist). Il token plaintext si recupera solo
+          dall'evento di creazione o tramite "Ruota token".
         </p>
         <pre className="rounded-md border border-[var(--color-border)] bg-zinc-50 p-3 font-mono text-[11px] leading-relaxed text-ink overflow-x-auto">
           {snippet}

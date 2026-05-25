@@ -265,7 +265,9 @@ def test_revoke_last_superuser_atomic_guard(fresh_user: dict) -> None:
         revoke_role_from_user,
     )
 
-    su_role = next(r for r in list_roles() if r["slug"] == "superuser" and r["is_system"])
+    su_role = next(
+        r for r in list_roles() if r["slug"] == "superuser" and r["is_system"]
+    )
     assign_role_to_user(fresh_user["id"], su_role["id"])
 
     # Conta gli altri superuser. Se questo è l'unico → expect raise.
@@ -317,7 +319,9 @@ def test_per_domain_perms_grant_role_overrides(fresh_user: dict) -> None:
 
     roles = list_roles()
     user_role = next(r for r in roles if r["slug"] == "user" and r["is_system"])
-    moderator_role = next(r for r in roles if r["slug"] == "moderator" and r["is_system"])
+    moderator_role = next(
+        r for r in roles if r["slug"] == "moderator" and r["is_system"]
+    )
 
     # Global: user
     assign_role_to_user(fresh_user["id"], user_role["id"])
@@ -327,7 +331,9 @@ def test_per_domain_perms_grant_role_overrides(fresh_user: dict) -> None:
     grant_domain_access(fresh_user["id"], "insurance")
 
     perms_legal = set(get_user_permissions(fresh_user["id"], domain_slug="legal"))
-    perms_insurance = set(get_user_permissions(fresh_user["id"], domain_slug="insurance"))
+    perms_insurance = set(
+        get_user_permissions(fresh_user["id"], domain_slug="insurance")
+    )
     perms_global = set(get_user_permissions(fresh_user["id"]))
 
     # Legal: union global(user) + moderator
@@ -354,7 +360,9 @@ def test_per_domain_perms_no_global_role(fresh_user: dict) -> None:
         list_roles,
     )
 
-    admin_role = next(r for r in list_roles() if r["slug"] == "admin" and r["is_system"])
+    admin_role = next(
+        r for r in list_roles() if r["slug"] == "admin" and r["is_system"]
+    )
     grant_domain_access(fresh_user["id"], "medical", role_id=admin_role["id"])
 
     perms_medical = set(get_user_permissions(fresh_user["id"], domain_slug="medical"))

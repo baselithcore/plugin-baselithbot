@@ -105,7 +105,9 @@ class RAGAgent:
         hits = search(condensed.query, limit=limit, expand_with_graph=self.use_graph)
         return self._synthesize_from_hits(question, hits, prefetched_history=history)
 
-    def stream(self, question: str, *, limit: int = RETRIEVAL_TOP_K) -> Iterator[dict[str, Any]]:
+    def stream(
+        self, question: str, *, limit: int = RETRIEVAL_TOP_K
+    ) -> Iterator[dict[str, Any]]:
         """Event stream: ``agent`` → ``step*`` → ``query_rewrite?`` →
         ``hits`` → ``memories`` → ``agent`` → ``step`` → ``token*`` →
         ``sources`` → ``done``."""
@@ -132,13 +134,18 @@ class RAGAgent:
                 "rewritten": condensed.query,
             }
 
-        yield {"type": "step", "content": "Hybrid retrieval (dense + sparse + ColBERT)…"}
+        yield {
+            "type": "step",
+            "content": "Hybrid retrieval (dense + sparse + ColBERT)…",
+        }
 
         hits = search(condensed.query, limit=limit, expand_with_graph=self.use_graph)
         yield {"type": "step", "content": f"Trovati {len(hits)} chunk rilevanti"}
         yield {"type": "hits", "count": len(hits)}
 
-        yield from self._stream_synthesis_from_hits(question, hits, prefetched_history=history)
+        yield from self._stream_synthesis_from_hits(
+            question, hits, prefetched_history=history
+        )
 
     # --- hooks for subclasses (e.g. AgenticRAGAgent) -----------------------
 
@@ -156,7 +163,9 @@ class RAGAgent:
         ``prefetched_history``: se passata, sostituisce il load DB
         interno (evita roundtrip doppio quando il chiamante ha già
         caricato history per condense / planning)."""
-        return synthesize_from_hits(self, question, hits, prefetched_history=prefetched_history)
+        return synthesize_from_hits(
+            self, question, hits, prefetched_history=prefetched_history
+        )
 
     def _stream_synthesis_from_hits(
         self,
@@ -216,10 +225,14 @@ class RAGAgent:
         ]
 
     def _load_memories(self, question: str) -> list[dict[str, Any]]:
-        return load_memories(user_id=self.user_id, question=question, top_k=self.memories_top_k)
+        return load_memories(
+            user_id=self.user_id, question=question, top_k=self.memories_top_k
+        )
 
     def _load_history(self) -> list[dict[str, Any]]:
-        return load_history(conversation_id=self.conversation_id, max_turns=self.history_turns)
+        return load_history(
+            conversation_id=self.conversation_id, max_turns=self.history_turns
+        )
 
 
 __all__ = ["RAGAgent", "RAGResult"]

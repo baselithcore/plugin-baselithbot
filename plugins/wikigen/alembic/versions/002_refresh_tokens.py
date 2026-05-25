@@ -47,7 +47,9 @@ def upgrade() -> None:
         "CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user "
         "ON refresh_tokens (user_id) WHERE revoked_at IS NULL"
     )
-    op.execute("CREATE INDEX IF NOT EXISTS idx_refresh_tokens_family ON refresh_tokens (family_id)")
+    op.execute(
+        "CREATE INDEX IF NOT EXISTS idx_refresh_tokens_family ON refresh_tokens (family_id)"
+    )
     op.execute(
         "CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires "
         "ON refresh_tokens (expires_at) WHERE revoked_at IS NULL"

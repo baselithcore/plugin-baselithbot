@@ -49,9 +49,7 @@ export function WhatsNewModal() {
         const data = (await r.json()) as Manifest;
         if (cancelled) return;
         const seen = lastSeenVersion();
-        const fresh = (data.entries ?? []).filter(
-          (e) => !seen || cmpVersion(e.version, seen) > 0,
-        );
+        const fresh = (data.entries ?? []).filter((e) => !seen || cmpVersion(e.version, seen) > 0);
         if (fresh.length === 0) {
           // Initial load on a brand-new install: silently mark latest seen so
           // existing users don't get spammed on first deploy of the modal.

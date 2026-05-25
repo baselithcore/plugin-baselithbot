@@ -281,7 +281,9 @@ def activate_tenant(name: str) -> ActivateResponse:
     if info is None:
         raise HTTPException(status_code=404, detail=f"tenant `{name}` not found")
     if not info.valid:
-        raise HTTPException(status_code=422, detail=f"tenant `{name}` invalid: {info.error}")
+        raise HTTPException(
+            status_code=422, detail=f"tenant `{name}` invalid: {info.error}"
+        )
 
     rr = repo_root()
     env_path = rr / ".env"
@@ -295,7 +297,9 @@ def activate_tenant(name: str) -> ActivateResponse:
         ctx = reg.load_context(name)
         vault_root = str(ctx.vault_root)
     except Exception as exc:  # pragma: no cover — best effort sync
-        logger.warning("[admin] activate: could not resolve vault for %s: %s", name, exc)
+        logger.warning(
+            "[admin] activate: could not resolve vault for %s: %s", name, exc
+        )
 
     def _mutate(base: str) -> str:
         base = _upsert(base, "APP_DOMAIN", name)

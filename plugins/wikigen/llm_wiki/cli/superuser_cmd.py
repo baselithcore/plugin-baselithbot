@@ -64,7 +64,9 @@ def _prompt_password() -> str:
     while True:
         pw = getpass.getpass(f"password (min {PASSWORD_MIN_LEN} char): ")
         if len(pw) < PASSWORD_MIN_LEN:
-            sys.stderr.write(f"Password troppo corta ({len(pw)} < {PASSWORD_MIN_LEN}).\n")
+            sys.stderr.write(
+                f"Password troppo corta ({len(pw)} < {PASSWORD_MIN_LEN}).\n"
+            )
             continue
         confirm = getpass.getpass("confirm: ")
         if pw != confirm:

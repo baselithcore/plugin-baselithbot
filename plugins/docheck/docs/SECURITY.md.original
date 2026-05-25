@@ -1,0 +1,119 @@
+# Security Policy
+
+doCheck è prodotto compliance per documenti aziendali sensibili. La sicurezza è requisito primario, non feature.
+
+## Disclosure responsabile
+
+Per segnalare vulnerabilità: **NON** aprire issue pubbliche, **NON** discutere su forum o social.
+
+Email: **security@gdservices.tech** (PGP key fingerprint: TBD pre-GA).
+
+Indica:
+- Versione affetta (commit hash o tag).
+- Componente (engine, ui, helm, agent specifico).
+- Riproduzione minimale.
+- Impatto stimato (data exfiltration, privilege escalation, integrity break, DoS).
+
+SLA risposta iniziale: **72h lavorative**. Patch coordinata: target ≤ 30 giorni per high/critical.
+
+## Threat model
+
+### Attori
+
+1. **Insider non privilegiato** (`reader`) — tenta accesso a documenti/policy fuori scope.
+2. **Insider privilegiato** (`compliance_officer`, `dpo`) — può leggere audit, scrivere policy. Tampering audit deve essere rilevato.
+3. **Attaccante esterno (network)** — assunto comunque su rete on-prem segmentata; mitigazione = zero egress + Unix socket default.
+4. **Operatore malevolo del nodo** (host root) — out-of-scope per MVP single-tenant. Mitigazione parziale via SQLCipher + master key in OS keychain.
+5. **Tenant cross-leak** (multi-tenant) — tenant A non deve vedere dati tenant B. Enforcement: tenant_id colonna + Postgres RLS + vector collection prefix.
+
+### Asset
+
+- **Documenti sorgente** caricati dagli utenti (PDF/DOCX/XLSX/...).
+- **Findings** (output LLM strutturato — può rivelare contenuto del doc).
+- **Policy** (può contenere know-how aziendale interno).
+- **Audit log** (chain integrity = non-ripudio operazioni).
+- **Master signing key** Ed25519 (firma report + audit chain).
+- **Master DB encryption key** (SQLCipher single-tenant).
+
+## Controlli di sicurezza
+
+### Network — zero egress
+
+- Trasporto FE↔BE: **Unix socket** di default (`storage/docheck.sock`). TCP loopback `DOCHECK_BIND_TCP=127.0.0.1:8765` solo su opt-in esplicito per dev.
+- Nessuna API esterna durante analisi: LLM (vLLM/Ollama on-prem), embedding (BGE-M3 locale), OCR (PaddleOCR locale), vector DB (Chroma/Qdrant locale).
+- **Egress lockdown gate** in CI: `tcpdump` durante test E2E. PR fail se ≥ 1 pacchetto in uscita verso non-loopback.
+- Helm chart: `NetworkPolicy` deny-egress default, allow-list solo `vllm`/`qdrant` interni.
+
+### Identità & autorizzazione
+
+- AuthN: argon2id (`passlib`) password hash; **JWT EdDSA** (Ed25519) post-login. Bearer token + fallback `X-User-Id` header (legacy MVP).
+- AuthZ: RBAC `(resource, action)` enforced via FastAPI dependency `require()` ([api/deps.py](docheck-engine/src/docheck/api/deps.py)). Ruoli: `admin`, `compliance_officer`, `dpo`, `reader`.
+- OIDC stub pronto (Keycloak); attivato impostando `DOCHECK_OIDC_ISSUER`. Claim `tid` per multi-tenant.
+
+### Audit log immutabile
+
+- Append-only. Schema record: `seq, ts, tenant_id, user_id, action, resource, payload_hash, prev_hash, entry_hash, signature(Ed25519)`.
+- `entry_hash = SHA256(prev_hash || canonical_json({tenant_id, user_id, action, resource, payload_hash}))`.
+- Trigger SQLite `BEFORE UPDATE/DELETE` → `RAISE FAIL`. Postgres: `RULE` + revoke `UPDATE/DELETE` su `audit_log`.
+- Per-tenant chain: tampering record di tenant A non rompe chain di tenant B.
+- Verifica: `GET /api/v1/audit/verify` ricalcola integrità end-to-end. Job giornaliero schedulato.
+
+### Crypto
+
+- **Ed25519** (PyNaCl) per: report signing + audit chain signature + JWT EdDSA.
+- **Master signing key**: file `storage/audit_ed25519.key` mode 0600 generato al primo avvio. **Production target**: OS keychain (macOS Keychain / Windows DPAPI / Linux secret-service via `keyring`). Vedi [docs/runbooks/rotate-keys.md](docs/runbooks/rotate-keys.md).
+- **DB encryption at-rest**: SQLCipher (`cipher_page_size=4096`, `kdf_iter=256000`, `cipher_hmac_algorithm=HMAC_SHA512`) attivo via `DOCHECK_DB_ENCRYPTION_ENABLED=true`. Master DB key in keyring (`DOCHECK_DB_KEY_KEYRING_*`).
+- Vedi [ADR-0008 — Encryption-at-rest strategy](docs/adr/0008-encryption-at-rest-strategy.md).
+
+### Glass-box guardrail
+
+- Validazione Pydantic obbligatoria su ogni `Finding`: rifiuta record senza `evidence.bbox`, `policy_ref.excerpt`, `reasoning` chain.
+- Sub-string match enforced: `policy_ref.excerpt` deve essere presente verbatim nei retrieval result. Previene allucinazioni LLM.
+- LLM output non valido → 1 retry con repair prompt → failover deterministico (skip nodo, log warning, push errore in `state.errors`).
+
+### Multi-tenant isolation (post-MVP)
+
+- Colonna `tenant_id` su tutte le tabelle dati ([db/models.py](docheck-engine/src/docheck/db/models.py) `TenantMixin`).
+- `current_tenant()` async-safe via `ContextVar`, propagato da `TenantMiddleware` (header `X-Tenant-Id` o claim JWT `tid`).
+- Postgres: **Row-Level Security** policies attivate via Alembic migration 0003. GUC `app.tenant_id` settato per session.
+- Vector store: collection prefix `{tenant_id}__{name}`.
+- Vedi [ADR-0006 — Postgres RLS multitenant](docs/adr/0006-postgres-rls-multitenant.md), [ADR-0005 — Vector store abstraction](docs/adr/0005-vector-store-abstraction.md).
+
+### Frontend (Electron + Next.js)
+
+- **CSP strict**: `default-src 'self'; connect-src 'self' ws://unix-socket; script-src 'self'`.
+- `nodeIntegration: false`, `contextIsolation: true`, `sandbox: true`. Preload narrow API surface.
+- Origin allow-list lato engine (`app://docheck`, `vscode-webview://*`, `tauri://*`, `file://*`).
+- Bearer JWT + header `X-Tenant-Id` propagati dal client API tipato.
+
+### Headers & middleware
+
+`SecurityHeadersMiddleware` ([api/middleware.py](docheck-engine/src/docheck/api/middleware.py)) inserisce:
+
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: no-referrer`
+- `Permissions-Policy: geolocation=(), camera=(), microphone=()`
+
+`RequestIdMiddleware` propaga `X-Request-Id` per trace correlation.
+
+## Dipendenze
+
+- `uv lock` + `pnpm-lock.yaml` committati. CI fail su lock drift.
+- Dependabot / Renovate-equivalente: TBD pre-GA. Manual quarterly review intanto.
+- Nessuna dipendenza esterna senza ADR ([CLAUDE.md §3](CLAUDE.md)).
+
+## Versioni supportate
+
+| Versione | Stato | Security patch |
+|----------|-------|----------------|
+| 0.1.x (MVP) | Active | sì |
+| < 0.1 | EOL | no |
+
+## Pen-test
+
+Pen-test interno obbligatorio prima di ogni release GA. Scope: egress lockdown, CSP Electron, audit tampering, RBAC bypass, JWT replay/forge, multi-tenant cross-leak.
+
+## Contatti
+
+`security@gdservices.tech` · maintainer: g.ippolito@gdservices.tech

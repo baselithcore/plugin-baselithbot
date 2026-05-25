@@ -153,7 +153,9 @@ def load_pack(app_domain: str | None = None, *, force: bool = False) -> DomainPa
         )
 
 
-_DEFAULT_GRAPH_ENTITY_IDS: Final[frozenset[str]] = frozenset({"concept", "entity", "source"})
+_DEFAULT_GRAPH_ENTITY_IDS: Final[frozenset[str]] = frozenset(
+    {"concept", "entity", "source"}
+)
 _DEFAULT_GRAPH_RELATION_IDS: Final[frozenset[str]] = frozenset(
     {"RELATES_TO", "PART_OF", "DERIVES_FROM", "DEFINED_BY"}
 )

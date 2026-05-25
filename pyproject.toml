@@ -149,11 +149,28 @@ version = {attr = "core._version.__version__"}
 "*" = [
     "static/**/*",
     "ui/dist/**/*",
+    "ui/out/**/*",
+    "ui/.next/**/*",
     "manifest.yaml",
     "manifest.yml",
     "manifest.json",
     "README.md",
     "py.typed",
+]
+
+[tool.setuptools.exclude-package-data]
+docheck = [
+    "ui/src/**",
+    "ui/node_modules/**",
+    "ui/electron/**",
+    "ui/*.config.ts",
+    "ui/*.config.js",
+    "ui/tsconfig*.json",
+    "ui/package-lock.json",
+    "ui/pnpm-lock.yaml",
+    "tests/**",
+    "docs/**",
+    "deploy/**",
 ]
 
 [tool.bandit]

@@ -192,7 +192,9 @@ def leiden_communities(
     communities: list[Community] = []
     for cid, members_idx in enumerate(partition):
         members = [id_map[i] for i in members_idx]
-        communities.append(Community(id=cid, members=members, cohesion=_cohesion(g, set(members))))
+        communities.append(
+            Community(id=cid, members=members, cohesion=_cohesion(g, set(members)))
+        )
     # Largest first — UX shows substantive communities, then long-tail.
     communities.sort(key=lambda c: len(c.members), reverse=True)
     return communities
@@ -210,7 +212,9 @@ def _fallback_communities(g: Any) -> list[Community]:
     out: list[Community] = []
     for cid, comp in enumerate(components):
         members = sorted(comp)
-        out.append(Community(id=cid, members=members, cohesion=_cohesion(g, set(members))))
+        out.append(
+            Community(id=cid, members=members, cohesion=_cohesion(g, set(members)))
+        )
     out.sort(key=lambda c: len(c.members), reverse=True)
     return out
 

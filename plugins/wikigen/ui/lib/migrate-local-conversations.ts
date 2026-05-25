@@ -22,11 +22,7 @@
  * legacy resta nel browser; l'utente vede UI vuota e può continuare.
  */
 
-import {
-  type ApiConversation,
-  createConversation,
-  updateConversation,
-} from './api/conversations';
+import { type ApiConversation, createConversation, updateConversation } from './api/conversations';
 import { authFetch } from './api/client';
 
 const LEGACY_KEY = 'llm-wiki:conversations';
@@ -57,9 +53,7 @@ export interface MigrationResult {
   skipped: boolean;
 }
 
-export async function migrateLegacyConversations(
-  userId: string
-): Promise<MigrationResult> {
+export async function migrateLegacyConversations(userId: string): Promise<MigrationResult> {
   const result: MigrationResult = {
     conversations_imported: 0,
     messages_imported: 0,
@@ -122,9 +116,9 @@ export async function migrateLegacyConversations(
       }
 
       // Append messages in ordine cronologico.
-      const msgs = (conv.messages ?? []).slice().sort(
-        (a, b) => (a.createdAt ?? 0) - (b.createdAt ?? 0)
-      );
+      const msgs = (conv.messages ?? [])
+        .slice()
+        .sort((a, b) => (a.createdAt ?? 0) - (b.createdAt ?? 0));
       for (const m of msgs) {
         if (!m.content?.trim()) continue;
         try {
@@ -135,15 +129,11 @@ export async function migrateLegacyConversations(
           });
           result.messages_imported += 1;
         } catch (err) {
-          result.errors.push(
-            `messaggio in conv "${conv.title}": ${(err as Error).message}`
-          );
+          result.errors.push(`messaggio in conv "${conv.title}": ${(err as Error).message}`);
         }
       }
     } catch (err) {
-      result.errors.push(
-        `conversation "${conv.title}": ${(err as Error).message}`
-      );
+      result.errors.push(`conversation "${conv.title}": ${(err as Error).message}`);
     }
   }
 
@@ -162,13 +152,10 @@ async function postMessage(
   conversationId: string,
   body: { role: string; content: string; sources?: unknown[] | null }
 ): Promise<void> {
-  const r = await authFetch(
-    `/conversations/${encodeURIComponent(conversationId)}/messages`,
-    {
-      method: 'POST',
-      body: JSON.stringify(body),
-    }
-  );
+  const r = await authFetch(`/conversations/${encodeURIComponent(conversationId)}/messages`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
   if (!r.ok) {
     throw new Error(`HTTP ${r.status}`);
   }

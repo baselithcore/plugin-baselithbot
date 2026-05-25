@@ -68,8 +68,7 @@ export function App() {
   const { branding, refresh: refreshBranding } = useDomain();
   const { user, ready: authReady, can } = useAuth();
   const setupRequired =
-    scaffoldInFlight ||
-    (!!branding && (branding.setup_mode === true || branding.domain === ''));
+    scaffoldInFlight || (!!branding && (branding.setup_mode === true || branding.domain === ''));
   // Auth gate: se Postgres+auth abilitati, l'AuthContext bootstrap fa
   // refresh con cookie. Quando finisce e user è null → AuthPage SEMPRE
   // (anche in setup mode), perché il SetupWizard chiama /api/admin/*
@@ -99,8 +98,7 @@ export function App() {
   // al momento dell'init hook. Usiamo ref aggiornati dagli effect dopo
   // che useConversations ha popolato `activeId` e `attachServerConversationId`.
   const conversationIdRef = useRef<string | null>(null);
-  const attachServerConversationIdRef =
-    useRef<((id: string) => void) | null>(null);
+  const attachServerConversationIdRef = useRef<((id: string) => void) | null>(null);
 
   const { messages, isStreaming, send, regenerate, editAndResend, stop, setMessages } = useChat({
     graph: useGraph,
@@ -215,9 +213,7 @@ export function App() {
   // l'URL, vede form set-password, attiva account. Token consumato
   // single-use server-side. Override: se already-logged ignoriamo
   // (trattato come URL vecchia mail aperta dopo).
-  const inviteToken = !user
-    ? new URLSearchParams(window.location.search).get('token')
-    : null;
+  const inviteToken = !user ? new URLSearchParams(window.location.search).get('token') : null;
   const isInvitePath = window.location.pathname.startsWith('/setup/invite');
   if (!user && isInvitePath && inviteToken) {
     return (
@@ -257,7 +253,11 @@ export function App() {
   if (user?.must_change_password) {
     return (
       <>
-        <ForcePasswordChange onComplete={() => { /* logout reload */ }} />
+        <ForcePasswordChange
+          onComplete={() => {
+            /* logout reload */
+          }}
+        />
         <AppToaster styled={false} />
       </>
     );
@@ -385,12 +385,7 @@ export function App() {
         Vai al contenuto
       </a>
 
-      <main
-        id="main-content"
-        className={cn(
-          'flex flex-1 flex-col min-w-0 relative bg-canvas'
-        )}
-      >
+      <main id="main-content" className={cn('flex flex-1 flex-col min-w-0 relative bg-canvas')}>
         <AppHeader
           active={active}
           messageUserCount={messages.filter((m) => m.role === 'user').length}
@@ -428,11 +423,7 @@ export function App() {
           />
         )}
 
-        <Composer
-          onSend={handleSend}
-          onStop={stop}
-          isStreaming={isStreaming}
-        />
+        <Composer onSend={handleSend} onStop={stop} isStreaming={isStreaming} />
       </main>
 
       <SourcesDrawer

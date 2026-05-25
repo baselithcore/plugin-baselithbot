@@ -87,7 +87,8 @@ def get_qdrant() -> QdrantClient | None:
                 kwargs["prefer_grpc"] = True
                 kwargs["grpc_port"] = QDRANT_GRPC_PORT
                 logger.info(
-                    "[qdrant] connessione via gRPC su porta %d (preferred)", QDRANT_GRPC_PORT
+                    "[qdrant] connessione via gRPC su porta %d (preferred)",
+                    QDRANT_GRPC_PORT,
                 )
             if QDRANT_API_KEY:
                 kwargs["api_key"] = QDRANT_API_KEY
@@ -144,7 +145,9 @@ def upsert_in_batches(
             msg = str(exc)
             # Qdrant rifiuta payload > limit con "JSON payload (N bytes) is larger
             # than allowed". Auto-retry dimezzando finché batch ≥ 1.
-            is_payload_too_big = "Payload error" in msg or "is larger than allowed" in msg
+            is_payload_too_big = (
+                "Payload error" in msg or "is larger than allowed" in msg
+            )
             if is_payload_too_big and current_batch > 1:
                 new_batch = max(1, current_batch // 2)
                 logger.warning(
@@ -261,7 +264,9 @@ def create_collection(collection: str = COLLECTION_NAME) -> None:
             vectors_config[COLBERT_VECTOR] = VectorParams(
                 size=dim,
                 distance=Distance.COSINE,
-                multivector_config=MultiVectorConfig(comparator=MultiVectorComparator.MAX_SIM),
+                multivector_config=MultiVectorConfig(
+                    comparator=MultiVectorComparator.MAX_SIM
+                ),
             )
         sparse_config = {SPARSE_VECTOR: SparseVectorParams()}
         logger.info(
@@ -314,7 +319,11 @@ def delete_document_points(document_id: str, collection: str = COLLECTION_NAME) 
             collection_name=collection,
             points_selector=FilterSelector(
                 filter=Filter(
-                    must=[FieldCondition(key="document_id", match=MatchValue(value=document_id))]
+                    must=[
+                        FieldCondition(
+                            key="document_id", match=MatchValue(value=document_id)
+                        )
+                    ]
                 )
             ),
             wait=True,

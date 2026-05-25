@@ -214,7 +214,7 @@ fallito, Qdrant timeout) → ritorna gli hits originali invariati.
 
 | Endpoint                          | Descrizione                                              |
 | --------------------------------- | -------------------------------------------------------- |
-| `GET /api/graph/centrality`       | Top-N PageRank/degree (`metric=pagerank|degree`).        |
+| `GET /api/graph/centrality`       | Top-N PageRank/degree (`metric=pagerank\|degree`).        |
 | `GET /api/graph/communities`      | Leiden partition (`resolution`, `members_preview`).      |
 | `GET /api/graph/surprising`       | Cross-community high-conf edges (`confidence_min`).      |
 | `POST /api/graph/report`          | Genera GRAPH_REPORT.md + graph.json on demand.           |

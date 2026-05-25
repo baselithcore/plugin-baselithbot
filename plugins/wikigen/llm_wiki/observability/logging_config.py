@@ -62,7 +62,9 @@ class JsonFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         payload: dict[str, Any] = {
-            "timestamp": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
+            "timestamp": datetime.fromtimestamp(
+                record.created, tz=timezone.utc
+            ).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -72,7 +74,9 @@ class JsonFormatter(logging.Formatter):
             "process": record.process,
             "thread": record.thread,
         }
-        payload["request_id"] = getattr(record, "request_id", None) or _safe_request_id()
+        payload["request_id"] = (
+            getattr(record, "request_id", None) or _safe_request_id()
+        )
         payload["tenant_id"] = getattr(record, "tenant_id", None) or _safe_tenant_id()
 
         if record.exc_info:
@@ -80,7 +84,9 @@ class JsonFormatter(logging.Formatter):
             payload["exception"] = {
                 "type": exc_type.__name__ if exc_type else None,
                 "message": str(exc_val) if exc_val else None,
-                "traceback": "".join(traceback.format_exception(exc_type, exc_val, exc_tb)),
+                "traceback": "".join(
+                    traceback.format_exception(exc_type, exc_val, exc_tb)
+                ),
             }
 
         for key, value in record.__dict__.items():

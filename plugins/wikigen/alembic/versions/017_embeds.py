@@ -85,12 +85,15 @@ def upgrade() -> None:
         """
     )
     op.execute(
-        "CREATE UNIQUE INDEX IF NOT EXISTS uq_embeds_tenant_slug " "ON embeds (tenant_id, slug)"
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_embeds_tenant_slug "
+        "ON embeds (tenant_id, slug)"
     )
     # Lookup pubblico va via token_hash — indicizzato + UNIQUE per
     # difesa "stesso secret riusato due volte" (impossibile con secrets
     # 32 byte ma fail-fast comunque).
-    op.execute("CREATE UNIQUE INDEX IF NOT EXISTS uq_embeds_token_hash " "ON embeds (token_hash)")
+    op.execute(
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_embeds_token_hash ON embeds (token_hash)"
+    )
     op.execute("CREATE INDEX IF NOT EXISTS idx_embeds_tenant ON embeds (tenant_id)")
 
     op.execute(

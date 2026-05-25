@@ -63,9 +63,7 @@ export function ReviewStep({
             >
               <OpKindBadge kind={op.kind} />
               <span className="truncate">{shorten(op.target)}</span>
-              {op.note && (
-                <span className="ml-auto text-[10px] text-ink-subtle">{op.note}</span>
-              )}
+              {op.note && <span className="ml-auto text-[10px] text-ink-subtle">{op.note}</span>}
             </li>
           ))}
         </ul>
@@ -141,21 +139,20 @@ function SynthesisToggle({
           <span className="mt-0.5 block text-[10.5px] text-ink-subtle">
             {disabled ? (
               <>
-                Disabilitato per i fork da esempio: il pack <strong>{fromSeed}</strong> ha
-                già un prompt curato per il suo dominio.
+                Disabilitato per i fork da esempio: il pack <strong>{fromSeed}</strong> ha già un
+                prompt curato per il suo dominio.
               </>
             ) : synthesizePrompts ? (
               <>
                 All'apply il provider configurato genererà uno <em>system prompt</em>
-                tarato sul dominio scelto (slot, gerarchie di fonti, pairing,
-                disclaimer) invece dello scheletro generico. Aggiunge ~5-15s al
-                processo di creazione. In caso di errore si torna al template.
+                tarato sul dominio scelto (slot, gerarchie di fonti, pairing, disclaimer) invece
+                dello scheletro generico. Aggiunge ~5-15s al processo di creazione. In caso di
+                errore si torna al template.
               </>
             ) : (
               <>
-                Verrà usato lo scheletro generico di <code>_template</code>: i
-                segnaposto andranno riempiti a mano in{' '}
-                <code>domains/&lt;nome&gt;/prompts/system.j2</code>.
+                Verrà usato lo scheletro generico di <code>_template</code>: i segnaposto andranno
+                riempiti a mano in <code>domains/&lt;nome&gt;/prompts/system.j2</code>.
               </>
             )}
           </span>

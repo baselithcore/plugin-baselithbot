@@ -117,8 +117,7 @@ export function buildFGData(data: GraphData, _opts: BuildOptions): FGData {
  */
 export function isNodeVisible(node: FGNode, opts: BuildOptions, search: string): boolean {
   const kindOk = opts.visibleKinds.size === 0 || opts.visibleKinds.has(node.kind);
-  const commOk =
-    opts.visibleCommunities.size === 0 || opts.visibleCommunities.has(node.community);
+  const commOk = opts.visibleCommunities.size === 0 || opts.visibleCommunities.has(node.community);
   if (!kindOk || !commOk) return false;
   const q = search.trim().toLowerCase();
   if (!q) return true;
@@ -128,7 +127,7 @@ export function isNodeVisible(node: FGNode, opts: BuildOptions, search: string):
 export function isLinkVisible(
   link: FGLink,
   visibleNodeIds: Set<string>,
-  confidenceMin: number,
+  confidenceMin: number
 ): boolean {
   if (link.confidence < confidenceMin) return false;
   const src = typeof link.source === 'object' ? (link.source as FGNode).id : link.source;

@@ -100,7 +100,9 @@ def render_markdown(snap: GraphSnapshot) -> str:
                 if size <= _REPORT_MEMBERS_PER_COMMUNITY
                 else f" … (+{size - _REPORT_MEMBERS_PER_COMMUNITY} more)"
             )
-            lines.append(f"- **Community {c.id}** — {size} members, cohesion {c.cohesion:.2f}")
+            lines.append(
+                f"- **Community {c.id}** — {size} members, cohesion {c.cohesion:.2f}"
+            )
             lines.append(f"  - {preview}{more}")
     else:
         lines.append("_No communities computed (install `leidenalg` for Leiden)._")
@@ -122,7 +124,9 @@ def render_markdown(snap: GraphSnapshot) -> str:
                 f"{s.src_community} ↔ {s.dst_community} |"
             )
     else:
-        lines.append("_None — try lowering `GRAPH_CONFIDENCE_MIN` or ingest more pages._")
+        lines.append(
+            "_None — try lowering `GRAPH_CONFIDENCE_MIN` or ingest more pages._"
+        )
     lines.append("")
     return "\n".join(lines)
 
@@ -181,7 +185,12 @@ def render_json(graph: Any, snap: GraphSnapshot) -> str:
         "nodes": nodes,
         "edges": edges,
         "communities": [
-            {"id": c.id, "size": len(c.members), "cohesion": c.cohesion, "members": c.members}
+            {
+                "id": c.id,
+                "size": len(c.members),
+                "cohesion": c.cohesion,
+                "members": c.members,
+            }
             for c in snap.communities
         ],
         "surprising": [

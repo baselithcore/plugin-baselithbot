@@ -35,41 +35,41 @@ export function WizardFooter({
   return (
     <footer className="border-t border-[var(--color-border)] bg-[var(--color-canvas-raised)] px-4 py-3 sm:px-5">
       <div className="flex items-center justify-between gap-3">
-      <Button
-        variant="ghost"
-        leadingIcon={ArrowLeft}
-        disabled={!canBack || applyLoading}
-        onClick={onBack}
-      >
-        Indietro
-      </Button>
-      <div className="hidden min-w-0 flex-1 text-center sm:block">
-        <div className="text-[11px] font-medium text-ink-muted">{footerTitle(step)}</div>
-        <div className="text-[10px] text-ink-subtle">
-          {stepIdx + 1}/{STEPS.length} · {footerHint(step)}
+        <Button
+          variant="ghost"
+          leadingIcon={ArrowLeft}
+          disabled={!canBack || applyLoading}
+          onClick={onBack}
+        >
+          Indietro
+        </Button>
+        <div className="hidden min-w-0 flex-1 text-center sm:block">
+          <div className="text-[11px] font-medium text-ink-muted">{footerTitle(step)}</div>
+          <div className="text-[10px] text-ink-subtle">
+            {stepIdx + 1}/{STEPS.length} · {footerHint(step)}
+          </div>
         </div>
-      </div>
-      {step === 'review' ? (
-        <Button
-          variant="primary"
-          leadingIcon={Sparkles}
-          disabled={!hasPlan || !isValid}
-          loading={applyLoading}
-          onClick={onApply}
-        >
-          {applyLoading ? phaseLabel(applyPhase) : 'Crea wiki'}
-        </Button>
-      ) : (
-        <Button
-          variant="primary"
-          trailingIcon={ArrowRight}
-          disabled={canNext === false && step !== 'provider'}
-          loading={planLoading}
-          onClick={onNext}
-        >
-          {step === 'provider' ? 'Rivedi e crea' : 'Avanti'}
-        </Button>
-      )}
+        {step === 'review' ? (
+          <Button
+            variant="primary"
+            leadingIcon={Sparkles}
+            disabled={!hasPlan || !isValid}
+            loading={applyLoading}
+            onClick={onApply}
+          >
+            {applyLoading ? phaseLabel(applyPhase) : 'Crea wiki'}
+          </Button>
+        ) : (
+          <Button
+            variant="primary"
+            trailingIcon={ArrowRight}
+            disabled={canNext === false && step !== 'provider'}
+            loading={planLoading}
+            onClick={onNext}
+          >
+            {step === 'provider' ? 'Rivedi e crea' : 'Avanti'}
+          </Button>
+        )}
       </div>
     </footer>
   );
@@ -99,7 +99,7 @@ function footerTitle(step: Step): string {
     case 'vault':
       return 'Scegli dove salvare la knowledge base';
     case 'branding':
-      return 'Personalizza l\'aspetto';
+      return "Personalizza l'aspetto";
     case 'documents':
       return 'Aggiungi i primi documenti';
     case 'provider':

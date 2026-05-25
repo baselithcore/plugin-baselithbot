@@ -163,7 +163,9 @@ def expand_with_entity_graph(
     neighbor_ids: set[str] = set()
     for eid in seed_entity_ids[:20]:
         try:
-            for n in store.neighbors(eid, hops=eff_hops, confidence_min=eff_conf, limit=10):
+            for n in store.neighbors(
+                eid, hops=eff_hops, confidence_min=eff_conf, limit=10
+            ):
                 neighbor_ids.add(n.id)
         except Exception:
             continue
@@ -173,7 +175,9 @@ def expand_with_entity_graph(
     path_entity_ids: set[str] = set()
     if query_entities and len(query_entities) >= 2:
         qe = [e for e in query_entities if e]
-        pairs = [(qe[i], qe[j]) for i in range(len(qe)) for j in range(i + 1, len(qe))][:3]
+        pairs = [(qe[i], qe[j]) for i in range(len(qe)) for j in range(i + 1, len(qe))][
+            :3
+        ]
         for src, dst in pairs:
             try:
                 path = store.shortest_path(src, dst, max_hops=4)
@@ -215,9 +219,15 @@ def expand_with_entity_graph(
                 results, _ = client.scroll(
                     collection_name=COLLECTION_NAME,
                     scroll_filter=Filter(
-                        must=[FieldCondition(key="document_id", match=MatchValue(value=did))],
+                        must=[
+                            FieldCondition(
+                                key="document_id", match=MatchValue(value=did)
+                            )
+                        ],
                         should=[
-                            FieldCondition(key="entities_mentioned", match=MatchValue(value=eid))
+                            FieldCondition(
+                                key="entities_mentioned", match=MatchValue(value=eid)
+                            )
                             for eid in candidate_list[:25]
                         ],
                     ),
@@ -229,7 +239,9 @@ def expand_with_entity_graph(
             results, _ = client.scroll(
                 collection_name=COLLECTION_NAME,
                 scroll_filter=Filter(
-                    must=[FieldCondition(key="document_id", match=MatchValue(value=did))]
+                    must=[
+                        FieldCondition(key="document_id", match=MatchValue(value=did))
+                    ]
                 ),
                 limit=1,
                 with_payload=True,

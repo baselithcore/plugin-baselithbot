@@ -16,7 +16,18 @@ Backend = Literal["docling", "marker", "fallback"]
 # ImportError esplicito.
 SUPPORTED_PDF_EXTENSIONS = frozenset({".pdf"})
 SUPPORTED_DOCLING_ONLY_EXTENSIONS = frozenset(
-    {".docx", ".pptx", ".html", ".htm", ".md", ".xlsx", ".png", ".jpg", ".jpeg", ".tiff"}
+    {
+        ".docx",
+        ".pptx",
+        ".html",
+        ".htm",
+        ".md",
+        ".xlsx",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".tiff",
+    }
 )
 SUPPORTED_EXTENSIONS = SUPPORTED_PDF_EXTENSIONS | SUPPORTED_DOCLING_ONLY_EXTENSIONS
 

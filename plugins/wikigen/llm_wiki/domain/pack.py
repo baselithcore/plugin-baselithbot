@@ -243,7 +243,9 @@ class GraphSpec(BaseModel):
 
     @field_validator("relation_types")
     @classmethod
-    def _unique_relation_ids(cls, v: list[GraphRelationType]) -> list[GraphRelationType]:
+    def _unique_relation_ids(
+        cls, v: list[GraphRelationType]
+    ) -> list[GraphRelationType]:
         ids = [r.id for r in v]
         if len(ids) != len(set(ids)):
             dupes = sorted({i for i in ids if ids.count(i) > 1})
@@ -259,9 +261,15 @@ def _default_graph_spec() -> GraphSpec:
     """
     return GraphSpec(
         entity_types=[
-            GraphEntityType(id="concept", label="Concetto", examples=["clausola", "principio"]),
-            GraphEntityType(id="entity", label="Entità", examples=["organizzazione", "persona"]),
-            GraphEntityType(id="source", label="Fonte", examples=["documento", "sentenza"]),
+            GraphEntityType(
+                id="concept", label="Concetto", examples=["clausola", "principio"]
+            ),
+            GraphEntityType(
+                id="entity", label="Entità", examples=["organizzazione", "persona"]
+            ),
+            GraphEntityType(
+                id="source", label="Fonte", examples=["documento", "sentenza"]
+            ),
         ],
         relation_types=[
             GraphRelationType(id="RELATES_TO", label="è correlato a"),

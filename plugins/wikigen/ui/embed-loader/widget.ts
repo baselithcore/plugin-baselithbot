@@ -55,7 +55,8 @@ function readConfig(): WidgetConfig | null {
     return null;
   }
 
-  const rawPosition = (script.dataset.position ?? 'bottom-right') as typeof POSITION_VALUES[number];
+  const rawPosition = (script.dataset.position ??
+    'bottom-right') as (typeof POSITION_VALUES)[number];
   const position = POSITION_VALUES.includes(rawPosition) ? rawPosition : 'bottom-right';
 
   const color = script.dataset.color ?? '#0ea5e9';

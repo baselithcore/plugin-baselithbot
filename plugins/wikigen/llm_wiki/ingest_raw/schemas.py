@@ -25,7 +25,14 @@ from __future__ import annotations
 from datetime import date as Date
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, create_model, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    create_model,
+    field_validator,
+    model_validator,
+)
 
 from llm_wiki.domain.pack import DomainPack
 

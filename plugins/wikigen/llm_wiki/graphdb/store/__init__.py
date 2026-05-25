@@ -92,9 +92,7 @@ class KnowledgeGraphStore:
         if not self.enabled:
             return eid
         aliases_str = ",".join(sorted({a for a in (aliases or []) if a}))
-        cypher = (
-            "MERGE (e:Entity {id: $id}) SET e.name = $name, e.kind = $kind, e.aliases = $aliases"
-        )
+        cypher = "MERGE (e:Entity {id: $id}) SET e.name = $name, e.kind = $kind, e.aliases = $aliases"
         self._g.query(
             cypher,
             {"id": eid, "name": name, "kind": kind, "aliases": aliases_str},
@@ -195,7 +193,12 @@ class KnowledgeGraphStore:
         entities = self._count("MATCH (e:Entity) RETURN count(e)")
         mentions = self._count("MATCH ()-[m:MENTIONS]->() RETURN count(m)")
         relations = self._count("MATCH ()-[r:R]->() RETURN count(r)")
-        return {**base, "entities": entities, "mentions": mentions, "relations": relations}
+        return {
+            **base,
+            "entities": entities,
+            "mentions": mentions,
+            "relations": relations,
+        }
 
     def _count(self, cypher: str) -> int:
         try:
@@ -231,7 +234,9 @@ class KnowledgeGraphStore:
     def get_entity(self, entity_id: str) -> EntityRecord | None:
         if not self.enabled:
             return None
-        cypher = "MATCH (e:Entity {id: $id}) RETURN e.id, e.name, e.kind, e.aliases LIMIT 1"
+        cypher = (
+            "MATCH (e:Entity {id: $id}) RETURN e.id, e.name, e.kind, e.aliases LIMIT 1"
+        )
         rows = self._rows(self._g.query(cypher, {"id": entity_id}))
         if not rows:
             return None
@@ -258,7 +263,9 @@ class KnowledgeGraphStore:
             f"  AND b.id <> $id "
             f"RETURN DISTINCT b.id, b.name, b.kind, b.aliases LIMIT $lim"
         )
-        rows = self._rows(self._g.query(cypher, {"id": entity_id, "conf": conf, "lim": int(limit)}))
+        rows = self._rows(
+            self._g.query(cypher, {"id": entity_id, "conf": conf, "lim": int(limit)})
+        )
         return [_entity_from_row(r) for r in rows]
 
     def entities_for_page(
@@ -278,7 +285,9 @@ class KnowledgeGraphStore:
             "RETURN e.id, e.name, e.kind, e.aliases, m.confidence, m.tier "
             "ORDER BY m.confidence DESC LIMIT $lim"
         )
-        rows = self._rows(self._g.query(cypher, {"pid": page_id, "conf": conf, "lim": int(limit)}))
+        rows = self._rows(
+            self._g.query(cypher, {"pid": page_id, "conf": conf, "lim": int(limit)})
+        )
         out: list[tuple[EntityRecord, float, str]] = []
         for r in rows:
             if not r or len(r) < 4:
@@ -308,7 +317,9 @@ class KnowledgeGraphStore:
             "RETURN DISTINCT p.id, max(m.confidence) AS s "
             "ORDER BY s DESC LIMIT $lim"
         )
-        rows = self._rows(self._g.query(cypher, {"ids": ids, "conf": conf, "lim": int(limit)}))
+        rows = self._rows(
+            self._g.query(cypher, {"ids": ids, "conf": conf, "lim": int(limit)})
+        )
         out: list[str] = []
         for r in rows:
             if r:
@@ -354,7 +365,9 @@ class KnowledgeGraphStore:
             return None
 
         g = nx.DiGraph()
-        ent_rows = self._rows(self._g.query("MATCH (e:Entity) RETURN e.id, e.name, e.kind"))
+        ent_rows = self._rows(
+            self._g.query("MATCH (e:Entity) RETURN e.id, e.name, e.kind")
+        )
         for row in ent_rows:
             if not row:
                 continue
@@ -380,7 +393,9 @@ class KnowledgeGraphStore:
             kind = _scalar(row[2])
             conf = _scalar(row[3])
             if isinstance(src, str) and isinstance(dst, str):
-                g.add_edge(src, dst, kind=str(kind or ""), confidence=float(conf or 0.0))
+                g.add_edge(
+                    src, dst, kind=str(kind or ""), confidence=float(conf or 0.0)
+                )
         return g
 
     # --- low-level helpers (kept on the class for back-compat) --------------
