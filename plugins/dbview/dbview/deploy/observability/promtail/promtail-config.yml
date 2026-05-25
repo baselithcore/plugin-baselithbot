@@ -1,0 +1,74 @@
+---
+# Promtail: ship Docker JSON logs → Loki.
+# Extract request_id, level, logger from structured JSON logs (LOG_FORMAT=json).
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: info
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    batchwait: 1s
+    batchsize: 1048576
+
+scrape_configs:
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 15s
+        filters:
+          - name: label
+            values: ['observability.scrape=true']
+
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: container
+
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+        target_label: service
+
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_project']
+        target_label: compose_project
+
+      - source_labels: ['__meta_docker_container_label_observability_component']
+        target_label: component
+
+    pipeline_stages:
+      - docker: {}
+
+      - match:
+          selector: '{service=~"api|dbview-api"}'
+          stages:
+            - json:
+                expressions:
+                  timestamp: time
+                  level: level
+                  logger: name
+                  message: msg
+                  request_id: request_id
+
+            - labels:
+                level:
+                logger:
+
+            - timestamp:
+                source: timestamp
+                format: UnixMs
+                fallback_formats:
+                  - RFC3339Nano
+                  - RFC3339
+
+            - output:
+                source: message
+
+  - job_name: system
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: varlogs
+          __path__: /var/log/{syslog,auth.log,messages}

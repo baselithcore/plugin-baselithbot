@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "users": [
+    {
+      "id": "ebe16012-4cf5-436a-89fc-89e2712d74b5",
+      "email": "admin@example.com",
+      "emailLower": "admin@example.com",
+      "passwordHash": "$argon2id$v=19$m=19456,t=2,p=1$EH6nX2OIy6GLlGcjzeb0Iw$3yxLyaMRWjaLGmBlyPO3Kd8eXD9TOxa6pQ0IuVW+QSs",
+      "displayName": "Admin",
+      "role": "admin",
+      "isActive": true,
+      "createdAt": "2026-05-25T17:16:39.146Z",
+      "lastLoginAt": null,
+      "mustChangePassword": false
+    }
+  ]
+}

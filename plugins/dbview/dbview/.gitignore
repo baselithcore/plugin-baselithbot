@@ -1,0 +1,18 @@
+node_modules
+dist
+.next
+.turbo
+coverage
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+.vscode
+
+# Runtime data (DBVIEW_DATA_DIR) — connections, history, user uploads.
+# Contains encrypted secrets + user-uploaded DB blobs; never commit.
+# apps/api/data/connections.json
+# apps/api/data/history.json
+# apps/api/data/uploads/
+apps/api/data/*

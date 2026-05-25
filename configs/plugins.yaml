@@ -6,6 +6,10 @@ wikigen:
   enabled: true
 docheck:
   enabled: true
+dbview:
+  enabled: true
+  # Override DBVIEW_PLUGIN_MODE. Valid: prod | dev.
+  mode: prod
 browser_agent:
   enabled: true
 goals:

@@ -157,6 +157,14 @@ version = {attr = "core._version.__version__"}
     "README.md",
     "py.typed",
 ]
+# dbview embeds the upstream TypeScript monorepo verbatim. Ship the full
+# source tree so operators can ``pnpm install && pnpm -r build`` after a
+# fresh wheel install; any pre-built dist/ artefacts present at packaging
+# time are also included (so an offline-only deployment can ship a wheel
+# with everything already compiled).
+dbview = [
+    "dbview/**/*",
+]
 
 [tool.setuptools.exclude-package-data]
 docheck = [
@@ -171,6 +179,19 @@ docheck = [
     "tests/**",
     "docs/**",
     "deploy/**",
+]
+# Drop derived/vendored artefacts that would balloon the wheel by
+# hundreds of MB. node_modules are reinstalled by pnpm post-extract;
+# .turbo and *.tsbuildinfo are pure incremental-build state; logs and
+# .git carry zero runtime value.
+dbview = [
+    "dbview/**/node_modules/**",
+    "dbview/**/.turbo/**",
+    "dbview/**/.next/**",
+    "dbview/**/.git/**",
+    "dbview/**/logs/**",
+    "dbview/**/*.tsbuildinfo",
+    "dbview/.husky/_/**",
 ]
 
 [tool.bandit]
