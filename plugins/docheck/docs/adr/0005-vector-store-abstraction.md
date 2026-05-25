@@ -23,11 +23,13 @@ Introdotto `services/vectorstores/` package:
 ## Consequences
 
 **Positive**
+
 - Switch backend = `DOCHECK_VECTOR_BACKEND=qdrant` + `DOCHECK_QDRANT_URL=...`.
 - Tenant scoping centralizzato (un solo punto da auditare).
 - Test possibile mockare `VectorStore` Protocol senza dipendenze Chroma/Qdrant.
 
 **Negative**
+
 - API surface comune limita a feature subset (Chroma `where_document` text search non esposto).
 - Qdrant `id` deve essere int o UUID — wrapping `str(hit.id)` per uniformità API.
 

@@ -32,7 +32,9 @@ async def get_verdict(db: AsyncSession, key: str) -> dict[str, Any] | None:
 
 
 async def set_verdict(db: AsyncSession, key: str, finding: dict[str, Any]) -> None:
-    db.add(VerdictCache(cache_key=key, finding_json=json.dumps(finding, sort_keys=True)))
+    db.add(
+        VerdictCache(cache_key=key, finding_json=json.dumps(finding, sort_keys=True))
+    )
     try:
         await db.commit()
     except Exception:

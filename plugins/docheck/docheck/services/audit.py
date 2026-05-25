@@ -53,7 +53,12 @@ async def append_audit(
 
     tenant_id = current_tenant()
     last = (
-        await db.execute(select(AuditLog).where(AuditLog.tenant_id == tenant_id).order_by(desc(AuditLog.seq)).limit(1))
+        await db.execute(
+            select(AuditLog)
+            .where(AuditLog.tenant_id == tenant_id)
+            .order_by(desc(AuditLog.seq))
+            .limit(1)
+        )
     ).scalar_one_or_none()
     prev_hash = last.entry_hash if last else GENESIS_HASH
 
@@ -89,7 +94,13 @@ async def verify_chain(db: AsyncSession) -> tuple[bool, int | None]:
     verify_key: VerifyKey = _signing_key.verify_key
     tenant_id = current_tenant()
     rows = (
-        (await db.execute(select(AuditLog).where(AuditLog.tenant_id == tenant_id).order_by(AuditLog.seq)))
+        (
+            await db.execute(
+                select(AuditLog)
+                .where(AuditLog.tenant_id == tenant_id)
+                .order_by(AuditLog.seq)
+            )
+        )
         .scalars()
         .all()
     )

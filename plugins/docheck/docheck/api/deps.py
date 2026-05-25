@@ -27,7 +27,9 @@ async def current_principal(
         try:
             claims = await verify_token(token)
         except Exception as exc:
-            raise HTTPException(status.HTTP_401_UNAUTHORIZED, f"Invalid token: {exc}") from exc
+            raise HTTPException(
+                status.HTTP_401_UNAUTHORIZED, f"Invalid token: {exc}"
+            ) from exc
         user_id = claims.get("sub")
         tenant_id = claims.get("tid", "default")
         set_tenant(tenant_id)

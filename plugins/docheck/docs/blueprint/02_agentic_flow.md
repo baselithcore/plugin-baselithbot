@@ -106,32 +106,38 @@ Validazione Pydantic obbligatoria su output di ogni nodo. Findings senza `eviden
 ## 2.3 Agenti
 
 ### ParserAgent
+
 - Routing per mime-type: `pdfplumber` (PDF nativo), **PaddleOCR** (PDF scan, layout-aware tabelle), `python-docx` (DOCX con revisioni), `openpyxl` (XLSX), markdown-it (MD).
 - Output: `chunks` con coordinate `{page, line_start, line_end, bbox}` per highlight UI preciso.
 - Detection lingua chunk via `lingua-py` → popola `state.lang`.
 
 ### StructurerAgent (LLM)
+
 - Prompt template `B.1` (vedi `07_prompt_templates.md`).
 - Estrae gerarchia titoli/articoli/clausole numerate.
 - Critico per riferimento "Art. 7.2 contratto".
 
 ### LegalComplianceAgent (ReAct + tools)
+
 - RAG su policy IT/EU/world preindicizzate + custom.
 - Tools:
-  - `retrieve_policy(query, policy_scope, top_k=5)` → list di rule
-  - `check_clause_presence(clause_type, chunks)` → bool + chunk_ids
-  - `extract_obligation(text)` → list `{actor, obligation, deadline?}`
+    - `retrieve_policy(query, policy_scope, top_k=5)` → list di rule
+    - `check_clause_presence(clause_type, chunks)` → bool + chunk_ids
+    - `extract_obligation(text)` → list `{actor, obligation, deadline?}`
 - Hard rules: NEVER inventare policy, citare verbatim.
 
 ### TechnicalComplianceAgent
+
 - Deterministic-first: regex (codice fiscale, partita IVA, IBAN IT, email, date ISO), numeric limits (XLSX), format checks (font, header/footer markers, branding).
 - Semantic fallback solo per regole tipo `presence` o `style`.
 
 ### PIIDetectorAgent (ensemble)
+
 - Pipeline: regex → NER (`xlm-roberta-large-finetuned-conll03` locale) → LLM verifier per ridurre falsi positivi.
 - Reject candidati in contesto "esempio", "placeholder", "registro pubblico".
 
 ### SynthesizerAgent
+
 - Dedup findings (`chunk_id + rule_id` → keep highest confidence).
 - Score: `100 - (FAIL*8 + WARN*3)` floor 0.
 - Summary executive in `state.lang`, max 3 frasi, no nuovi claim.
@@ -148,16 +154,19 @@ Validazione Pydantic obbligatoria su output di ogni nodo. Findings senza `eviden
 Pacchetti seed indicizzati all'install:
 
 **Tier 1 — IT (preselezionate)**
+
 - `IT_GDPR_2026` — informativa, retention, base legale, DPIA
 - `IT_Codice_Civile_Contratti` — recesso, foro competente, limitazioni responsabilità
 - `IT_Codice_Consumo` — clausole vessatorie, diritto recesso B2C
 
 **Tier 2 — EU (selezionabili)**
+
 - `EU_GDPR_2016_679`
 - `EU_AI_Act_2024`
 - `EU_NIS2_Directive`
 
 **Tier 3 — World (opt-in)**
+
 - `ISO_27001_Annex_A`
 - `NIST_CSF_2.0`
 - `SOC2_Trust_Criteria`
@@ -165,6 +174,7 @@ Pacchetti seed indicizzati all'install:
 ## 2.6 Glass Box Garantita
 
 Ogni `Finding` impone schema con:
+
 - `evidence` (chunk_id, page, line_start/end, bbox) → click UI scroll+highlight
 - `policy_ref.excerpt` verbatim (no parafrasi)
 - `reasoning` chain (passi LLM con tool call log)

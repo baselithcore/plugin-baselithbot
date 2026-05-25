@@ -25,7 +25,9 @@ def reset_tenant(token: Any) -> None:
     _tenant_var.reset(token)
 
 
-def resolve_tenant_from_request(headers: dict[str, str], jwt_claims: dict[str, Any] | None = None) -> str:
+def resolve_tenant_from_request(
+    headers: dict[str, str], jwt_claims: dict[str, Any] | None = None
+) -> str:
     """Priority: JWT `tid` claim > header `X-Tenant-Id` > default."""
     if not settings.multitenant_enabled:
         return "default"

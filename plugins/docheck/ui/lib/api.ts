@@ -1,12 +1,12 @@
 // Barrel — splits per CLAUDE.md §1.2 LOC budget. Domain modules under lib/api/.
 
-export * from "./api/types";
-export * from "./api/documents";
-export type { AnalyzeOptions } from "./api/documents";
-export * from "./api/policies";
-export * from "./api/workspace";
-export * from "./api/findings";
-export * from "./api/health";
+export * from './api/types';
+export * from './api/documents';
+export type { AnalyzeOptions } from './api/documents';
+export * from './api/policies';
+export * from './api/workspace';
+export * from './api/findings';
+export * from './api/health';
 
 export type {
   AuditEntry,
@@ -16,7 +16,7 @@ export type {
   AuditFilters,
   ListAuditParams,
   ListAuditResult,
-} from "./api/audit";
+} from './api/audit';
 export {
   listAudit,
   listAuditPage,
@@ -26,4 +26,4 @@ export {
   getAuditEntry,
   exportAuditCsv,
   exportAuditJson,
-} from "./api/audit";
+} from './api/audit';

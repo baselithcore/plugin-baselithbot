@@ -28,7 +28,9 @@ def severity_overrides() -> dict[str, Severity]:
         rid_s = rid.strip()
         sev_s = sev.strip().upper()
         if not rid_s or sev_s not in _VALID:
-            log.warning("builtin.severity_override.invalid", rule_id=rid_s, severity=sev_s)
+            log.warning(
+                "builtin.severity_override.invalid", rule_id=rid_s, severity=sev_s
+            )
             continue
         out[rid_s] = sev_s  # type: ignore[assignment]
     return out

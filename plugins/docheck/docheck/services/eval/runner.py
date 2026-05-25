@@ -94,7 +94,9 @@ async def execute(
         except Exception as exc:
             error = f"{type(exc).__name__}: {exc}"
         latency_ms = (time.perf_counter() - t0) * 1000.0
-        case_scores.append(score_case(case, predicted, latency_ms=latency_ms, error=error))
+        case_scores.append(
+            score_case(case, predicted, latency_ms=latency_ms, error=error)
+        )
 
     finished = datetime.now(UTC).isoformat()
     cases_list = list(cases) if not isinstance(cases, list) else cases

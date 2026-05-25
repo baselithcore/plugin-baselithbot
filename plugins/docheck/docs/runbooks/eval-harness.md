@@ -70,6 +70,7 @@ wired" ed esce 2.
 
 1. Aggiungere il documento sotto `tests/fixtures/<doc>.md` (o sub-dir).
 2. Aggiungere una riga JSONL a `tests/eval/testset.jsonl`:
+
    ```json
    {"id": "case-NNN", "doc_path": "tests/fixtures/<doc>.md",
     "lang": "it", "policies": ["IT_GDPR_2026"],
@@ -80,12 +81,15 @@ wired" ed esce 2.
     ],
     "tags": ["gdpr"]}
    ```
+
 3. Aggiungere la predizione canned corrispondente in
    `tests/eval/predictions.canned.json` per il caso (mock mode).
 4. Eseguire i test:
+
    ```bash
    pytest tests/test_eval_harness.py tests/test_eval_regression.py -q
    ```
+
 5. Se la baseline va aggiornata, vedi §4.
 
 ---

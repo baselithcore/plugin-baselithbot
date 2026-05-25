@@ -1,11 +1,5 @@
-import { cn } from "@/lib/cn";
+import { cn } from '@/lib/cn';
 
-export function Kbd({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return <kbd className={cn("kbd", className)}>{children}</kbd>;
+export function Kbd({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <kbd className={cn('kbd', className)}>{children}</kbd>;
 }

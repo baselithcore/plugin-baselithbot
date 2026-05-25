@@ -60,6 +60,7 @@ class ParallelState(TypedDict, total=False):
 ### Technical ([agents/technical/](../../docheck-engine/src/docheck/agents/technical/))
 
 Modulo splittato per LOC limit:
+
 - `engine.py` — orchestratore.
 - `patterns.py` — regex dictionary (codice fiscale, P.IVA, IBAN, date format, ecc.).
 - `severity.py` — mapping severity per rule deterministica.
@@ -70,6 +71,7 @@ Confidence `1.0` su match deterministico (regex/numeric). Severity può essere F
 ### PII ([agents/pii.py](../../docheck-engine/src/docheck/agents/pii.py))
 
 Ensemble:
+
 1. Regex pre-filter (nomi, email, telefoni, codici fiscali, ecc.) → candidati.
 2. LLM verifier in JSON-mode → rifiuta candidati in contesto "esempio/placeholder/template" (riduce falsi positivi).
 
@@ -100,6 +102,7 @@ class Finding(BaseModel):
 ```
 
 Validator custom enforce:
+
 - `evidence.bbox` non-null (eccezione: testo plain TXT/MD senza layout → `bbox = (0, line_start, page_width, line_end)` sintetico).
 - `policy_ref.excerpt` substring di un retrieval result reale.
 - `reasoning` chain non-empty.
@@ -126,6 +129,7 @@ Frontend consuma via hook [useAnalysisStream](../../docheck-ui/lib/useAnalysisSt
 Budget: < 90s P95 per doc 20pp su DGX Spark con `Llama-3.3-70B Q4_K_M`.
 
 Ottimizzazioni:
+
 - Parallel fan-out (3 agent concurrent).
 - Verdict cache cross-document (`sha256(chunk_hash || rule_id || rule_version || model_id)`).
 - Retrieval k contestuale (chunks evidence-relevant, no full-policy dump).

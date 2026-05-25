@@ -1,6 +1,6 @@
-import { authHeaders } from "../auth";
+import { authHeaders } from '../auth';
 
-const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://127.0.0.1:8765/api/v1";
+const BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8765/api/v1';
 
 export interface RuntimeInfo {
   app_name: string;
@@ -54,7 +54,7 @@ export interface CacheState {
 
 export interface RetentionInfo {
   days: number;
-  source: "config" | "override";
+  source: 'config' | 'override';
 }
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
@@ -63,36 +63,32 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
     headers: { ...(init?.headers || {}), ...authHeaders() },
   });
   if (!res.ok) {
-    const txt = await res.text().catch(() => "");
+    const txt = await res.text().catch(() => '');
     throw new Error(`${path} ${res.status}: ${txt || res.statusText}`);
   }
   return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
 }
 
-export const getRuntimeInfo = () => api<RuntimeInfo>("/system/runtime");
-export const getStorageStats = () => api<StorageStats>("/system/storage");
-export const getCacheState = () => api<CacheState>("/system/cache");
-export const getRetention = () => api<RetentionInfo>("/system/retention");
+export const getRuntimeInfo = () => api<RuntimeInfo>('/system/runtime');
+export const getStorageStats = () => api<StorageStats>('/system/storage');
+export const getCacheState = () => api<CacheState>('/system/cache');
+export const getRetention = () => api<RetentionInfo>('/system/retention');
 
-export const probeLLM = () =>
-  api<LLMProbeResult>("/system/llm/probe", { method: "POST" });
+export const probeLLM = () => api<LLMProbeResult>('/system/llm/probe', { method: 'POST' });
 
 export const resetCacheMetrics = () =>
-  api<{ ok: boolean }>("/system/cache/reset", { method: "POST" });
+  api<{ ok: boolean }>('/system/cache/reset', { method: 'POST' });
 
 export const setRetentionDays = (days: number) =>
-  api<RetentionInfo>("/system/retention", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
+  api<RetentionInfo>('/system/retention', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ days }),
   });
 
-export const changePassword = (
-  current_password: string,
-  new_password: string,
-) =>
-  api<{ ok: boolean }>("/auth/change-password", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+export const changePassword = (current_password: string, new_password: string) =>
+  api<{ ok: boolean }>('/auth/change-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ current_password, new_password }),
   });

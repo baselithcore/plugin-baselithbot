@@ -45,7 +45,9 @@ class LegalRefMalformedRule:
             window = text[win_lo:win_hi]
             if HAS_NUM_YEAR.search(window) or HAS_VERBOSE_DATE.search(window):
                 continue
-            sev: Severity = resolve_severity(self.spec.rule_id, self.spec.default_severity)
+            sev: Severity = resolve_severity(
+                self.spec.rule_id, self.spec.default_severity
+            )
             reasoning = [
                 step(
                     1,
@@ -75,7 +77,9 @@ class LegalRefMalformedRule:
                     chunk=chunk,
                     severity=sev,
                     confidence=self.spec.default_confidence,
-                    explanation=(f"Riferimento '{m.group(0)}' senza numero/anno o data adiacente."),
+                    explanation=(
+                        f"Riferimento '{m.group(0)}' senza numero/anno o data adiacente."
+                    ),
                     suggestion="Specificare numero e anno (es. 'D.Lgs. n. 36/2023').",
                     reasoning=reasoning,
                     match_start=m.start(),

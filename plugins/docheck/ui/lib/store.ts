@@ -1,5 +1,5 @@
-import { create } from "zustand";
-import type { DecisionKind, Finding, Report } from "./api";
+import { create } from 'zustand';
+import type { DecisionKind, Finding, Report } from './api';
 
 interface AppState {
   selectedPolicies: string[];
@@ -40,7 +40,7 @@ export const useAppStore = create<AppState>((set) => ({
   detailOpen: false,
   setDetailOpen: (v) => set({ detailOpen: v }),
   openDetailFor: (f) => {
-    console.log("openDetailFor invoked with", f);
+    console.log('openDetailFor invoked with', f);
     set({ selectedFinding: f, detailOpen: true });
   },
 

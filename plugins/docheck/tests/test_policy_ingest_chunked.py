@@ -26,7 +26,8 @@ def _make_long_source(n_articles: int = 6) -> str:
     for i in range(1, n_articles + 1):
         paragraphs.append(
             f"Art. {i} — Obbligo numero {i}. "
-            f"Il contraente deve adempiere all'obbligo numero {i}. " + ("Contenuto di riempimento. " * 400)
+            f"Il contraente deve adempiere all'obbligo numero {i}. "
+            + ("Contenuto di riempimento. " * 400)
         )
     return "\n\n".join(paragraphs)
 
@@ -40,7 +41,10 @@ def test_long_source_triggers_chunked_extraction(monkeypatch) -> None:
     async def fake_extract(text: str, hint_title: str | None) -> dict[str, Any]:
         called_with.append(text)
         # Each chunk: extract a verbatim excerpt that lives inside that chunk.
-        m = re.search(r"Art\. (\d+) — Obbligo numero \d+\. Il contraente deve adempiere all'obbligo numero \d+\.", text)
+        m = re.search(
+            r"Art\. (\d+) — Obbligo numero \d+\. Il contraente deve adempiere all'obbligo numero \d+\.",
+            text,
+        )
         excerpt = m.group(0) if m else "Contenuto di riempimento."
         return {
             "id": "test-policy",

@@ -11,12 +11,14 @@ Procedura recovery quando `GET /api/v1/audit/verify` ritorna `ok=false` o si sos
 **Non agire d'impulso**. Prima di qualsiasi operazione:
 
 1. **Stop engine writes**:
+
    ```bash
    docker compose stop engine
    # Tenants in produzione: comunica downtime al cliente.
    ```
 
 2. **Snapshot DB e key correnti** (forensic copy, read-only):
+
    ```bash
    FORENSIC=/mnt/forensic/docheck/$(date +%Y%m%d_%H%M)
    mkdir -p "$FORENSIC"
@@ -67,6 +69,7 @@ Confronta `prev_hash`, `entry_hash` ricalcolato manualmente, `signature` validat
 ### Caso A — Corruzione DB / restore needed
 
 1. Identifica ultimo backup con chain valida:
+
    ```bash
    for d in /mnt/backup/docheck/*/; do
      ts=$(basename "$d")
@@ -80,6 +83,7 @@ Confronta `prev_hash`, `entry_hash` ricalcolato manualmente, `signature` validat
    ```
 
 2. Restore DB da snapshot ok:
+
    ```bash
    docker compose stop engine
    cp /opt/docheck/storage/docheck.db /opt/docheck/storage/docheck.db.broken
@@ -102,6 +106,7 @@ Confronta `prev_hash`, `entry_hash` ricalcolato manualmente, `signature` validat
        "incident_ticket": "SEC-2026-042"
      }'
    ```
+
    *(TODO endpoint admin pre-GA. Per ora: helper `scripts/audit_gap_record.py`.)*
 
 ### Caso B — Tampering deliberato

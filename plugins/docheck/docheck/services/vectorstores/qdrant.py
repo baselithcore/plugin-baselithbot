@@ -70,7 +70,12 @@ class QdrantStore:
         name = _scoped(collection)
         flt = None
         if where:
-            flt = qm.Filter(must=[qm.FieldCondition(key=k, match=qm.MatchValue(value=v)) for k, v in where.items()])
+            flt = qm.Filter(
+                must=[
+                    qm.FieldCondition(key=k, match=qm.MatchValue(value=v))
+                    for k, v in where.items()
+                ]
+            )
         res = _client().search(
             collection_name=name,
             query_vector=vector,

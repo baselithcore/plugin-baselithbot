@@ -21,7 +21,9 @@ async def run(state: CheckState) -> CheckState:
     await emit_phase_progress(state, "pii")
     doc_type = state.get("doc_type") or "other"
     if not agent_applies("pii", doc_type):
-        log.info("pii.skipped_by_doc_type", doc_id=state.get("doc_id"), doc_type=doc_type)
+        log.info(
+            "pii.skipped_by_doc_type", doc_id=state.get("doc_id"), doc_type=doc_type
+        )
         return {"findings": []}
     chunks = state.get("chunks", [])
     findings: list[Finding] = []
@@ -52,7 +54,9 @@ async def run(state: CheckState) -> CheckState:
 
     user = f'Candidates: {candidates}\n\nReturn {{"verified":[...],"rejected":[...]}}'
     try:
-        out = await chat_json_resilient(system=VERIFIER_SYSTEM, user=user, max_tokens=4096)
+        out = await chat_json_resilient(
+            system=VERIFIER_SYSTEM, user=user, max_tokens=4096
+        )
     except Exception as exc:
         log.warning("pii_agent.failed_soft", error=str(exc))
         return {"findings": []}
@@ -99,7 +103,9 @@ async def run(state: CheckState) -> CheckState:
     return {"findings": findings}
 
 
-def _build_citation(chunk: Chunk, v: dict[str, Any], spans: dict[tuple[str, str], tuple[int, int]]) -> Citation:
+def _build_citation(
+    chunk: Chunk, v: dict[str, Any], spans: dict[tuple[str, str], tuple[int, int]]
+) -> Citation:
     pii_type = v.get("pii_type") or v.get("type") or ""
     span = spans.get((chunk.id, pii_type))
     match_start, match_end, snippet = None, None, None

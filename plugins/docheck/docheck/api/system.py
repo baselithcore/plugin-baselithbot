@@ -195,7 +195,9 @@ async def llm_probe(
                 error=f"HTTP {res.status_code}: {res.text[:200]}",
             )
         data = res.json()
-        models = [m.get("id", "") for m in (data.get("data") or []) if isinstance(m, dict)]
+        models = [
+            m.get("id", "") for m in (data.get("data") or []) if isinstance(m, dict)
+        ]
         return LLMProbeResult(
             ok=True,
             base_url=settings.llm_base_url,

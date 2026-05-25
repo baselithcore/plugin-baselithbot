@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
 export function CloneDialog({
   open,
@@ -19,7 +19,7 @@ export function CloneDialog({
   onClose: () => void;
   onConfirm: () => void;
 }) {
-  const t = useTranslations("policies.clone");
+  const t = useTranslations('policies.clone');
   if (!open) return null;
   return (
     <div
@@ -30,21 +30,19 @@ export function CloneDialog({
         onClick={(e) => e.stopPropagation()}
         className="w-[min(420px,92vw)] rounded-xl border border-border surface-elev p-5 shadow-popover"
       >
-        <div className="text-[10px] uppercase tracking-[0.2em] text-text-muted">
-          {t("eyebrow")}
-        </div>
-        <h3 className="mt-1 text-sm font-semibold">{t("title")}</h3>
-        <p className="mt-1 text-xs text-text-muted">{t("desc")}</p>
+        <div className="text-[10px] uppercase tracking-[0.2em] text-text-muted">{t('eyebrow')}</div>
+        <h3 className="mt-1 text-sm font-semibold">{t('title')}</h3>
+        <p className="mt-1 text-xs text-text-muted">{t('desc')}</p>
         <input
           autoFocus
           value={version}
           onChange={(e) => onChange(e.target.value)}
           className="mt-4 h-9 w-full rounded-md border border-border bg-bg-canvas px-3 text-xs outline-none focus:border-status-info/60 focus:ring-2 focus:ring-status-info/20"
-          placeholder={t("versionPlaceholder")}
+          placeholder={t('versionPlaceholder')}
         />
         <div className="mt-5 flex justify-end gap-2">
           <Button size="sm" variant="ghost" onClick={onClose} disabled={busy}>
-            {t("cancel")}
+            {t('cancel')}
           </Button>
           <Button
             size="sm"
@@ -52,7 +50,7 @@ export function CloneDialog({
             onClick={onConfirm}
             disabled={busy || !version.trim()}
           >
-            {t("confirm")}
+            {t('confirm')}
           </Button>
         </div>
       </div>
@@ -75,7 +73,7 @@ export function UrlIngestDialog({
   onClose: () => void;
   onConfirm: () => void;
 }) {
-  const t = useTranslations("policies.ingest");
+  const t = useTranslations('policies.ingest');
   if (!open) return null;
   return (
     <div
@@ -87,39 +85,33 @@ export function UrlIngestDialog({
         className="w-[min(520px,92vw)] rounded-xl border border-border surface-elev p-5 shadow-popover"
       >
         <div className="text-[10px] uppercase tracking-[0.2em] text-text-muted">
-          {t("fromUrlEyebrow")}
+          {t('fromUrlEyebrow')}
         </div>
-        <h3 className="mt-1 text-sm font-semibold">{t("fromUrlTitle")}</h3>
+        <h3 className="mt-1 text-sm font-semibold">{t('fromUrlTitle')}</h3>
         <p className="mt-1 text-xs text-text-muted">
-          {t("fromUrlDesc")} <span className="font-semibold">{t("draft")}</span>
-          .
+          {t('fromUrlDesc')} <span className="font-semibold">{t('draft')}</span>.
         </p>
         <input
           autoFocus
           value={url}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={t("urlPlaceholder")}
+          placeholder={t('urlPlaceholder')}
           className="mt-4 h-9 w-full rounded-md border border-border bg-bg-canvas px-3 text-xs outline-none focus:border-status-info/60 focus:ring-2 focus:ring-status-info/20"
         />
         {busy && (
           <div className="mt-3">
             <div className="text-[10px] uppercase tracking-wide text-text-muted">
-              {t("extracting")}
+              {t('extracting')}
             </div>
             <Progress className="mt-1.5" value={0} indeterminate />
           </div>
         )}
         <div className="mt-5 flex justify-end gap-2">
           <Button size="sm" variant="ghost" onClick={onClose} disabled={busy}>
-            {t("cancel")}
+            {t('cancel')}
           </Button>
-          <Button
-            size="sm"
-            variant="primary"
-            onClick={onConfirm}
-            disabled={busy || !url.trim()}
-          >
-            {busy ? t("extracting") : t("ingest")}
+          <Button size="sm" variant="primary" onClick={onConfirm} disabled={busy || !url.trim()}>
+            {busy ? t('extracting') : t('ingest')}
           </Button>
         </div>
       </div>

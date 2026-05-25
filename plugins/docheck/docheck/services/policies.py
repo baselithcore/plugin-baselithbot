@@ -44,15 +44,23 @@ def _validate_scope(scope: str) -> None:
 
 def _validate_rule_payload(p: dict[str, Any]) -> None:
     if p.get("rule_type") not in VALID_RULE_TYPES:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Invalid rule_type: {p.get('rule_type')}")
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, f"Invalid rule_type: {p.get('rule_type')}"
+        )
     if p.get("severity") not in VALID_SEVERITIES:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Invalid severity: {p.get('severity')}")
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, f"Invalid severity: {p.get('severity')}"
+        )
     if not (p.get("excerpt") or "").strip():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "excerpt required")
 
 
 async def _get_policy_or_404(db: AsyncSession, pid: str, version: str) -> Policy:
-    p = (await db.execute(select(Policy).where(Policy.id == pid, Policy.version == version))).scalar_one_or_none()
+    p = (
+        await db.execute(
+            select(Policy).where(Policy.id == pid, Policy.version == version)
+        )
+    ).scalar_one_or_none()
     if not p:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Policy not found")
     return p
@@ -72,7 +80,11 @@ async def _rule_count(db: AsyncSession, pid: str, version: str) -> int:
 
 
 async def list_all(db: AsyncSession) -> list[dict[str, Any]]:
-    rows = (await db.execute(select(Policy).order_by(Policy.id, Policy.version))).scalars().all()
+    rows = (
+        (await db.execute(select(Policy).order_by(Policy.id, Policy.version)))
+        .scalars()
+        .all()
+    )
     out: list[dict[str, Any]] = []
     for p in rows:
         out.append(
@@ -89,7 +101,9 @@ async def list_all(db: AsyncSession) -> list[dict[str, Any]]:
     return out
 
 
-async def list_rules(db: AsyncSession, pid: str, version: str | None) -> list[dict[str, Any]]:
+async def list_rules(
+    db: AsyncSession, pid: str, version: str | None
+) -> list[dict[str, Any]]:
     stmt = select(PolicyRule).where(PolicyRule.policy_id == pid)
     if version:
         stmt = stmt.where(PolicyRule.policy_version == version)
@@ -126,10 +140,14 @@ async def create_policy(
     if not (title or "").strip():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "title required")
     existing = (
-        await db.execute(select(Policy).where(Policy.id == pid, Policy.version == version))
+        await db.execute(
+            select(Policy).where(Policy.id == pid, Policy.version == version)
+        )
     ).scalar_one_or_none()
     if existing:
-        raise HTTPException(status.HTTP_409_CONFLICT, f"Policy {pid}@{version} already exists")
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, f"Policy {pid}@{version} already exists"
+        )
 
     db.add(
         Policy(
@@ -169,7 +187,9 @@ async def create_policy(
     }
 
 
-async def update_policy(db: AsyncSession, *, pid: str, version: str, patch: dict[str, Any]) -> dict[str, Any]:
+async def update_policy(
+    db: AsyncSession, *, pid: str, version: str, patch: dict[str, Any]
+) -> dict[str, Any]:
     p = await _get_policy_or_404(db, pid, version)
     if "title" in patch:
         title = (patch["title"] or "").strip()
@@ -193,12 +213,20 @@ async def update_policy(db: AsyncSession, *, pid: str, version: str, patch: dict
     }
 
 
-async def set_active(db: AsyncSession, *, pid: str, version: str, active: bool) -> dict[str, Any]:
+async def set_active(
+    db: AsyncSession, *, pid: str, version: str, active: bool
+) -> dict[str, Any]:
     p = await _get_policy_or_404(db, pid, version)
     p.active = 1 if active else 0
     await db.flush()
     rules = (
-        (await db.execute(select(PolicyRule).where(PolicyRule.policy_id == pid, PolicyRule.policy_version == version)))
+        (
+            await db.execute(
+                select(PolicyRule).where(
+                    PolicyRule.policy_id == pid, PolicyRule.policy_version == version
+                )
+            )
+        )
         .scalars()
         .all()
     )
@@ -206,13 +234,19 @@ async def set_active(db: AsyncSession, *, pid: str, version: str, active: bool) 
     return {"id": p.id, "version": p.version, "active": bool(p.active)}
 
 
-async def delete_policy(db: AsyncSession, *, pid: str, version: str, force: bool = False) -> None:
+async def delete_policy(
+    db: AsyncSession, *, pid: str, version: str, force: bool = False
+) -> None:
     p = await _get_policy_or_404(db, pid, version)
     # Block delete if any signed report references this policy version,
     # unless the caller explicitly forces (audit log preserves history).
     if not force:
         refs = (
-            await db.execute(select(func.count(Report.id)).where(Report.policies_applied.like(f'%"{pid}"%')))
+            await db.execute(
+                select(func.count(Report.id)).where(
+                    Report.policies_applied.like(f'%"{pid}"%')
+                )
+            )
         ).scalar_one()
         if refs > 0:
             raise HTTPException(
@@ -230,7 +264,11 @@ async def delete_policy(db: AsyncSession, *, pid: str, version: str, force: bool
             )
         ).all()
     ]
-    await db.execute(sql_delete(PolicyRule).where(PolicyRule.policy_id == pid, PolicyRule.policy_version == version))
+    await db.execute(
+        sql_delete(PolicyRule).where(
+            PolicyRule.policy_id == pid, PolicyRule.policy_version == version
+        )
+    )
     await db.delete(p)
     await db.flush()
     policy_index.delete_policy_rules(rule_ids)
@@ -242,7 +280,9 @@ async def clone_policy(
     _validate_version(new_version)
     src = await _get_policy_or_404(db, pid, version)
     existing = (
-        await db.execute(select(Policy).where(Policy.id == pid, Policy.version == new_version))
+        await db.execute(
+            select(Policy).where(Policy.id == pid, Policy.version == new_version)
+        )
     ).scalar_one_or_none()
     if existing:
         raise HTTPException(status.HTTP_409_CONFLICT, f"{pid}@{new_version} exists")
@@ -260,7 +300,13 @@ async def clone_policy(
         )
     )
     src_rules = (
-        (await db.execute(select(PolicyRule).where(PolicyRule.policy_id == pid, PolicyRule.policy_version == version)))
+        (
+            await db.execute(
+                select(PolicyRule).where(
+                    PolicyRule.policy_id == pid, PolicyRule.policy_version == version
+                )
+            )
+        )
         .scalars()
         .all()
     )
@@ -291,14 +337,21 @@ async def clone_policy(
 
 
 async def add_rule(
-    db: AsyncSession, *, pid: str, version: str, payload: dict[str, Any], _autoflush: bool = True
+    db: AsyncSession,
+    *,
+    pid: str,
+    version: str,
+    payload: dict[str, Any],
+    _autoflush: bool = True,
 ) -> dict[str, Any]:
     if _autoflush:
         await _get_policy_or_404(db, pid, version)
     _validate_rule_payload(payload)
     rid = (payload.get("id") or "").strip() or f"rule-{uuid.uuid4().hex[:10]}"
     _validate_id(rid, field="rule id")
-    exists = (await db.execute(select(PolicyRule).where(PolicyRule.id == rid))).scalar_one_or_none()
+    exists = (
+        await db.execute(select(PolicyRule).where(PolicyRule.id == rid))
+    ).scalar_one_or_none()
     if exists:
         raise HTTPException(status.HTTP_409_CONFLICT, f"Rule id {rid} exists")
     row = PolicyRule(
@@ -367,7 +420,9 @@ async def update_rule(
     }
 
 
-async def delete_rule(db: AsyncSession, *, pid: str, version: str, rule_id: str) -> None:
+async def delete_rule(
+    db: AsyncSession, *, pid: str, version: str, rule_id: str
+) -> None:
     r = (
         await db.execute(
             select(PolicyRule).where(
@@ -418,9 +473,15 @@ async def import_yaml(
     override_active: bool | None = None,
 ) -> dict[str, Any]:
     try:
-        data = yaml.safe_load(io.BytesIO(content)) if isinstance(content, bytes) else yaml.safe_load(content)
+        data = (
+            yaml.safe_load(io.BytesIO(content))
+            if isinstance(content, bytes)
+            else yaml.safe_load(content)
+        )
     except yaml.YAMLError as exc:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Invalid YAML: {exc}") from exc
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, f"Invalid YAML: {exc}"
+        ) from exc
     if not isinstance(data, dict):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Root must be a mapping")
     pid = str(data.get("id") or "").strip()
@@ -428,7 +489,11 @@ async def import_yaml(
     title = str(data.get("title") or "").strip()
     scope = str(data.get("scope") or "custom").strip()
     lang = str(data.get("lang") or "it").strip()
-    active = bool(data.get("active", False)) if override_active is None else bool(override_active)
+    active = (
+        bool(data.get("active", False))
+        if override_active is None
+        else bool(override_active)
+    )
     rules = data.get("rules") or []
     if not isinstance(rules, list):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "`rules` must be a list")

@@ -100,7 +100,9 @@ async def run(state: CheckState) -> CheckState:
             node = StructureNode(**raw)
         except Exception as exc:
             invalid += 1
-            log.warning("structurer.invalid_node", doc_id=doc_id, error=str(exc), raw=raw)
+            log.warning(
+                "structurer.invalid_node", doc_id=doc_id, error=str(exc), raw=raw
+            )
             continue
         if node.type not in allowed_set:
             invalid += 1

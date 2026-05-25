@@ -6,6 +6,7 @@
 ## Context
 
 Audit trail enterprise richiede:
+
 - Immutabilità (no tampering retroattivo).
 - Non-ripudio firme.
 - Verificabilità integrità chain end-to-end.
@@ -22,11 +23,13 @@ Audit trail enterprise richiede:
 ## Consequences
 
 **Positive**
+
 - Tampering rilevabile (job giornaliero ricalcola chain).
 - Firma Ed25519 fast (64-byte signatures), curve25519 production-grade.
 - Zero dipendenza esterna runtime.
 
 **Negative**
+
 - pysqlcipher3 build native richiede `libsqlcipher-dev`.
 - Master key recovery → richiede backup mnemonic durante setup wizard.
 

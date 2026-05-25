@@ -111,6 +111,7 @@ Scartata: viola il principio di operator-in-the-loop e Glass Box
 ("operator può sempre rifiutare").
 
 ### Opzione C — Estendere `POST /policies/ingest/*` con flag
+
 `merge_into=policy_id`
 
 Scartata: ambigua semantica (versioning, conflitti id), preferibile un

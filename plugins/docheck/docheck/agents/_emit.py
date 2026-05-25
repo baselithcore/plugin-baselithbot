@@ -21,8 +21,12 @@ async def emit_finding(state: CheckState, finding: Any) -> None:
     await emit(state, {"type": "finding", "finding": payload})
 
 
-async def emit_progress(state: CheckState, current: int, total: int, label: str | None = None) -> None:
-    await emit(state, {"type": "progress", "current": current, "total": total, "label": label})
+async def emit_progress(
+    state: CheckState, current: int, total: int, label: str | None = None
+) -> None:
+    await emit(
+        state, {"type": "progress", "current": current, "total": total, "label": label}
+    )
 
 
 _PHASE_ORDER = ["classifier", "structurer", "legal", "technical", "pii", "synthesizer"]

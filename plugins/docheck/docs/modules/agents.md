@@ -17,18 +17,23 @@ Stato condiviso: [`CheckState`](../../docheck-engine/src/docheck/schemas/state.p
 ## Agents
 
 ### structurer
+
 Estrae gerarchia (titoli, articoli, clausole) via LLM JSON-mode. Output: `state.structure: list[StructureNode]`.
 
 ### legal
+
 RAG su policy IT/EU/world. Tools: `retrieve_policy`, `check_clause_presence`, `extract_obligation`. Hard rule: cita SOLO excerpt restituiti da retrieval (no invenzioni).
 
 ### technical
+
 Deterministic checks (regex, numeric limits, format). Confidence 1.0 su match, ≤0.85 su semantic.
 
 ### pii
+
 Ensemble: regex pre-filter + LLM verifier. Riduce falsi positivi rifiutando candidati in contesto "esempio/placeholder".
 
 ### synthesizer
+
 Dedup `(chunk_id, rule_id) → max(confidence)`. Score `100 - FAIL*8 - WARN*3` (floor 0).
 
 ## Adding a new agent

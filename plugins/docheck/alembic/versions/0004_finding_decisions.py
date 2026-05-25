@@ -35,7 +35,9 @@ def upgrade() -> None:
         sa.Column("user_id", sa.String, sa.ForeignKey("users.id"), nullable=False),
         sa.Column("decided_at", sa.DateTime, nullable=False),
         sa.Column("tenant_id", sa.String, nullable=False, server_default="default"),
-        sa.CheckConstraint("decision IN ('accepted','rejected','muted')", name="ck_decision_kind"),
+        sa.CheckConstraint(
+            "decision IN ('accepted','rejected','muted')", name="ck_decision_kind"
+        ),
     )
     op.create_index("idx_decision_report", "finding_decisions", ["report_id"])
 

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
-export type NotificationTone = "info" | "success" | "warning" | "danger";
+export type NotificationTone = 'info' | 'success' | 'warning' | 'danger';
 
 export interface NotificationItem {
   id: string;
@@ -18,7 +18,7 @@ export interface NotificationItem {
 
 interface NotificationsState {
   items: NotificationItem[];
-  add: (n: Omit<NotificationItem, "id" | "ts" | "read">) => void;
+  add: (n: Omit<NotificationItem, 'id' | 'ts' | 'read'>) => void;
   markAllRead: () => void;
   markRead: (id: string) => void;
   remove: (id: string) => void;
@@ -28,7 +28,7 @@ interface NotificationsState {
 const MAX_ITEMS = 50;
 
 function makeId(): string {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return crypto.randomUUID();
   }
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
@@ -58,28 +58,24 @@ export const useNotifications = create<NotificationsState>()(
           }
           return { items: [next, ...s.items].slice(0, MAX_ITEMS) };
         }),
-      markAllRead: () =>
-        set((s) => ({ items: s.items.map((i) => ({ ...i, read: true })) })),
+      markAllRead: () => set((s) => ({ items: s.items.map((i) => ({ ...i, read: true })) })),
       markRead: (id) =>
         set((s) => ({
           items: s.items.map((i) => (i.id === id ? { ...i, read: true } : i)),
         })),
-      remove: (id) =>
-        set((s) => ({ items: s.items.filter((i) => i.id !== id) })),
+      remove: (id) => set((s) => ({ items: s.items.filter((i) => i.id !== id) })),
       clear: () => set({ items: [] }),
     }),
     {
-      name: "docheck:notifications",
+      name: 'docheck:notifications',
       storage: createJSONStorage(() =>
-        typeof window === "undefined"
-          ? (undefined as unknown as Storage)
-          : window.localStorage,
+        typeof window === 'undefined' ? (undefined as unknown as Storage) : window.localStorage
       ),
       partialize: (s) => ({ items: s.items }),
-    },
-  ),
+    }
+  )
 );
 
-export function notify(n: Omit<NotificationItem, "id" | "ts" | "read">): void {
+export function notify(n: Omit<NotificationItem, 'id' | 'ts' | 'read'>): void {
   useNotifications.getState().add(n);
 }

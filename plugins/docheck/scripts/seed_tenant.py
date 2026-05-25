@@ -3,6 +3,7 @@
 Usage:
   uv run python scripts/seed_tenant.py --tenant acme --email admin@acme.local
 """
+
 from __future__ import annotations
 import argparse
 import asyncio
@@ -63,18 +64,22 @@ async def main() -> None:
                 await db.rollback()
 
         uid = f"u-{uuid.uuid4().hex[:12]}"
-        db.add(User(
-            id=uid, tenant_id=args.tenant,
-            email=args.email, display_name=args.email.split("@")[0],
-            pw_hash=hash_password(pw),
-        ))
+        db.add(
+            User(
+                id=uid,
+                tenant_id=args.tenant,
+                email=args.email,
+                display_name=args.email.split("@")[0],
+                pw_hash=hash_password(pw),
+            )
+        )
         db.add(UserRole(user_id=uid, role_id="admin"))
         await db.commit()
 
         print(f"Tenant '{args.tenant}' seeded:")
         print(f"  user_id: {uid}")
         print(f"  email:   {args.email}")
-        print(f"  role:    admin")
+        print("  role:    admin")
 
 
 if __name__ == "__main__":

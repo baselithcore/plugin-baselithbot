@@ -19,11 +19,13 @@ Attivare **Row-Level Security** Postgres su tabelle scope-tenant:
 ## Consequences
 
 **Positive**
+
 - Cross-tenant leak prevented at DB level — impossibile bypassare via dimenticanza WHERE.
 - SQLite no-op → MVP single-tenant non impattato.
 - Audit-compliance ready (SOC2 trust criteria CC6).
 
 **Negative**
+
 - Connection pool: ogni checkout richiede SET — overhead trascurabile (~µs).
 - Postgres-specific → test multi-tenant richiedono Postgres real (no sqlite mock).
 - Migration manuale per cliente esistente con dati legacy (`UPDATE ... SET tenant_id`).

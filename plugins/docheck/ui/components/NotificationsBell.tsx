@@ -1,21 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import {
-  Bell,
-  CheckCheck,
-  CircleAlert,
-  CircleCheck,
-  Info,
-  TriangleAlert,
-  X,
-} from "lucide-react";
-import { useNotifications, type NotificationItem } from "@/lib/notifications";
-import { Button } from "./ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { cn } from "@/lib/cn";
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { Bell, CheckCheck, CircleAlert, CircleCheck, Info, TriangleAlert, X } from 'lucide-react';
+import { useNotifications, type NotificationItem } from '@/lib/notifications';
+import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip';
+import { cn } from '@/lib/cn';
 
 const TONE_ICON = {
   info: Info,
@@ -25,29 +17,29 @@ const TONE_ICON = {
 } as const;
 
 const TONE_CLASS = {
-  info: "text-status-info",
-  success: "text-status-success",
-  warning: "text-status-warning",
-  danger: "text-status-danger",
+  info: 'text-status-info',
+  success: 'text-status-success',
+  warning: 'text-status-warning',
+  danger: 'text-status-danger',
 } as const;
 
 function useRelTime() {
-  const t = useTranslations("notifications.ago");
+  const t = useTranslations('notifications.ago');
   return (ts: number): string => {
     const diff = Math.max(0, Date.now() - ts);
     const s = Math.floor(diff / 1000);
-    if (s < 60) return t("seconds", { count: s });
+    if (s < 60) return t('seconds', { count: s });
     const m = Math.floor(s / 60);
-    if (m < 60) return t("minutes", { count: m });
+    if (m < 60) return t('minutes', { count: m });
     const h = Math.floor(m / 60);
-    if (h < 24) return t("hours", { count: h });
+    if (h < 24) return t('hours', { count: h });
     const d = Math.floor(h / 24);
-    return t("days", { count: d });
+    return t('days', { count: d });
   };
 }
 
 export function NotificationsBell() {
-  const t = useTranslations("notifications");
+  const t = useTranslations('notifications');
   const relTime = useRelTime();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -63,17 +55,16 @@ export function NotificationsBell() {
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === 'Escape') setOpen(false);
     }
-    document.addEventListener("mousedown", onClick);
-    document.addEventListener("keydown", onKey);
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener("mousedown", onClick);
-      document.removeEventListener("keydown", onKey);
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
     };
   }, []);
 
@@ -110,7 +101,7 @@ export function NotificationsBell() {
           <Button
             variant="outline"
             size="icon-sm"
-            aria-label={t("title")}
+            aria-label={t('title')}
             aria-expanded={open}
             onClick={handleOpen}
             className="relative"
@@ -118,31 +109,27 @@ export function NotificationsBell() {
             <Bell className="w-4 h-4" />
             {unread > 0 && (
               <span
-                aria-label={t("unread", { count: unread })}
+                aria-label={t('unread', { count: unread })}
                 className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 inline-flex items-center justify-center rounded-full bg-status-danger text-[9px] font-semibold text-white border border-bg-panel"
               >
-                {unread > 9 ? "9+" : unread}
+                {unread > 9 ? '9+' : unread}
               </span>
             )}
           </Button>
         </TooltipTrigger>
-        <TooltipContent side="bottom">{t("title")}</TooltipContent>
+        <TooltipContent side="bottom">{t('title')}</TooltipContent>
       </Tooltip>
 
       {open && (
         <div
           role="dialog"
-          aria-label={t("title")}
+          aria-label={t('title')}
           className="absolute right-0 top-10 w-[360px] surface-elev border border-border rounded-lg shadow-popover z-40 animate-slide-up overflow-hidden"
         >
           <div className="flex items-center justify-between px-3 py-2.5 border-b border-border/50">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-text-primary">
-                {t("title")}
-              </span>
-              <span className="text-[10px] font-mono text-text-muted">
-                {items.length}
-              </span>
+              <span className="text-sm font-semibold text-text-primary">{t('title')}</span>
+              <span className="text-[10px] font-mono text-text-muted">{items.length}</span>
             </div>
             <div className="flex items-center gap-1">
               <button
@@ -151,7 +138,7 @@ export function NotificationsBell() {
                 disabled={unread === 0}
                 className="inline-flex items-center gap-1 px-2 h-7 text-[11px] text-text-secondary rounded hover:bg-bg-panel hover:text-text-primary transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
               >
-                <CheckCheck size={12} /> {t("markRead")}
+                <CheckCheck size={12} /> {t('markRead')}
               </button>
               <button
                 type="button"
@@ -159,7 +146,7 @@ export function NotificationsBell() {
                 disabled={items.length === 0}
                 className="inline-flex items-center gap-1 px-2 h-7 text-[11px] text-text-secondary rounded hover:bg-bg-panel hover:text-status-danger transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
               >
-                {t("clear")}
+                {t('clear')}
               </button>
             </div>
           </div>
@@ -168,10 +155,8 @@ export function NotificationsBell() {
             {items.length === 0 ? (
               <div className="px-4 py-10 text-center">
                 <Bell className="mx-auto mb-2 text-text-muted" size={20} />
-                <div className="text-xs text-text-muted">{t("noneYet")}</div>
-                <div className="text-[10px] text-text-muted mt-1">
-                  {t("systemHint")}
-                </div>
+                <div className="text-xs text-text-muted">{t('noneYet')}</div>
+                <div className="text-[10px] text-text-muted mt-1">{t('systemHint')}</div>
               </div>
             ) : (
               <ul className="divide-y divide-border/40">
@@ -181,19 +166,13 @@ export function NotificationsBell() {
                     <li
                       key={item.id}
                       className={cn(
-                        "group relative px-3 py-2.5 hover:bg-bg-panel transition-colors cursor-pointer",
-                        !item.read && "bg-status-info/[0.04]",
+                        'group relative px-3 py-2.5 hover:bg-bg-panel transition-colors cursor-pointer',
+                        !item.read && 'bg-status-info/[0.04]'
                       )}
                       onClick={() => handleClick(item)}
                     >
                       <div className="flex items-start gap-2.5">
-                        <Icon
-                          size={14}
-                          className={cn(
-                            "mt-0.5 shrink-0",
-                            TONE_CLASS[item.tone],
-                          )}
-                        />
+                        <Icon size={14} className={cn('mt-0.5 shrink-0', TONE_CLASS[item.tone])} />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-medium text-text-primary truncate">
@@ -220,7 +199,7 @@ export function NotificationsBell() {
                         </div>
                         <button
                           type="button"
-                          aria-label={t("dismiss")}
+                          aria-label={t('dismiss')}
                           onClick={(e) => {
                             e.stopPropagation();
                             remove(item.id);

@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
+import { useTranslations } from 'next-intl';
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/cn";
-import type { CoverageReport } from "@/lib/api/types";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { cn } from '@/lib/cn';
+import type { CoverageReport } from '@/lib/api/types';
 
 /**
  * ADR-0014 visualization.
@@ -28,19 +28,15 @@ export function CoverageBanner({
   coverage: CoverageReport;
   onDismiss: () => void;
 }) {
-  const t = useTranslations("policies.coverage");
+  const t = useTranslations('policies.coverage');
   const pct = Math.round(coverage.coverage_ratio * 100);
   const tone =
-    coverage.coverage_ratio >= 0.8
-      ? "ok"
-      : coverage.coverage_ratio >= 0.4
-        ? "warn"
-        : "bad";
+    coverage.coverage_ratio >= 0.8 ? 'ok' : coverage.coverage_ratio >= 0.4 ? 'warn' : 'bad';
 
   const toneClass = {
-    ok: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-    warn: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
-    bad: "bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30",
+    ok: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
+    warn: 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30',
+    bad: 'bg-red-500/15 text-red-700 dark:text-red-300 border-red-500/30',
   }[tone];
 
   const gaps = coverage.gaps.slice(0, 5);
@@ -51,17 +47,17 @@ export function CoverageBanner({
         <div className="flex items-center gap-3">
           <span
             className={cn(
-              "inline-flex h-7 items-center rounded-md border px-2 text-xs font-semibold",
-              toneClass,
+              'inline-flex h-7 items-center rounded-md border px-2 text-xs font-semibold',
+              toneClass
             )}
-            aria-label={t("ratioLabel", { pct })}
+            aria-label={t('ratioLabel', { pct })}
           >
             {pct}%
           </span>
           <div>
-            <CardTitle>{t("title")}</CardTitle>
+            <CardTitle>{t('title')}</CardTitle>
             <p className="mt-1 text-xs text-text-muted">
-              {t("subtitle", {
+              {t('subtitle', {
                 id: policyId,
                 version: policyVersion,
                 extracted: coverage.extracted_count,
@@ -74,15 +70,15 @@ export function CoverageBanner({
           type="button"
           onClick={onDismiss}
           className="text-xs text-text-muted hover:text-text-primary"
-          aria-label={t("dismiss")}
+          aria-label={t('dismiss')}
         >
-          {t("dismiss")}
+          {t('dismiss')}
         </button>
       </CardHeader>
       {gaps.length > 0 ? (
         <CardContent className="border-t border-border pt-3">
           <p className="mb-2 text-xs font-medium text-text-primary">
-            {t("gapsHeader", {
+            {t('gapsHeader', {
               shown: gaps.length,
               total: coverage.gaps.length,
             })}
@@ -95,7 +91,7 @@ export function CoverageBanner({
               >
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="text-xs font-semibold text-text-primary">
-                    {g.label || t("unnamedGap")}
+                    {g.label || t('unnamedGap')}
                   </span>
                   <span className="text-[10px] uppercase tracking-wide text-text-muted">
                     {g.severity_hint}
@@ -107,7 +103,7 @@ export function CoverageBanner({
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-[11px] text-text-muted">{t("hint")}</p>
+          <p className="mt-3 text-[11px] text-text-muted">{t('hint')}</p>
         </CardContent>
       ) : null}
     </Card>

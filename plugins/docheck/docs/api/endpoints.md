@@ -11,11 +11,13 @@ Schemi entità: [reference/schemas.md](../reference/schemas.md). Auth + RBAC: [e
 Login con credenziali locali. Public (no auth required).
 
 **Request**
+
 ```json
 { "email": "admin@local", "password": "<plaintext>" }
 ```
 
 **Response 200**
+
 ```json
 {
   "user_id": "u-abc",

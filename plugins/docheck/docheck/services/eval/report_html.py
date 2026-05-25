@@ -41,7 +41,11 @@ def _kpi(label: str, value: str) -> str:
 
 def _confusion_table(result: EvalResult) -> str:
     labels = result.confusion.labels
-    head = "<tr><th>expected ↓ / predicted →</th>" + "".join(f"<th>{escape(lab)}</th>" for lab in labels) + "</tr>"
+    head = (
+        "<tr><th>expected ↓ / predicted →</th>"
+        + "".join(f"<th>{escape(lab)}</th>" for lab in labels)
+        + "</tr>"
+    )
     body_rows: list[str] = []
     for exp in labels:
         cells = [f"<th>{escape(exp)}</th>"]
@@ -56,7 +60,15 @@ def _confusion_table(result: EvalResult) -> str:
 
 def _per_rule_table(result: EvalResult) -> str:
     rows = [
-        _row(r.rule_id, r.tp, r.fp, r.fn, f"{r.precision:.3f}", f"{r.recall:.3f}", f"{r.f1:.3f}")
+        _row(
+            r.rule_id,
+            r.tp,
+            r.fp,
+            r.fn,
+            f"{r.precision:.3f}",
+            f"{r.recall:.3f}",
+            f"{r.f1:.3f}",
+        )
         for r in result.per_rule
     ]
     head = "<tr><th>rule_id</th><th>TP</th><th>FP</th><th>FN</th><th>P</th><th>R</th><th>F1</th></tr>"
@@ -64,7 +76,9 @@ def _per_rule_table(result: EvalResult) -> str:
 
 
 def _per_agent_table(result: EvalResult) -> str:
-    rows = [_row(a.agent, a.findings_emitted, a.findings_matched) for a in result.per_agent]
+    rows = [
+        _row(a.agent, a.findings_emitted, a.findings_matched) for a in result.per_agent
+    ]
     head = "<tr><th>agent</th><th>emitted</th><th>matched</th></tr>"
     return f"<table>{head}{''.join(rows) or '<tr><td colspan=3 class=muted>no agent attribution</td></tr>'}</table>"
 
@@ -75,17 +89,26 @@ def _case_block(case_score: CaseScore) -> str:
         f"TP={case_score.tp} FP={case_score.fp} FN={case_score.fn} · "
         f"P={case_score.precision:.2f} R={case_score.recall:.2f} F1={case_score.f1:.2f} · "
         f"{case_score.latency_ms:.0f}ms"
-        + (f" · <span class=fail>error: {escape(case_score.error)}</span>" if case_score.error else "")
+        + (
+            f" · <span class=fail>error: {escape(case_score.error)}</span>"
+            if case_score.error
+            else ""
+        )
         + "</summary>"
     )
     matched = "".join(
-        _row(m.rule_id, m.severity, m.agent or "—", (m.matched_evidence or "")[:120]) for m in case_score.matched
+        _row(m.rule_id, m.severity, m.agent or "—", (m.matched_evidence or "")[:120])
+        for m in case_score.matched
     )
     spurious = "".join(
-        _row(m.rule_id, m.severity, m.agent or "—", (m.matched_evidence or "")[:120]) for m in case_score.spurious
+        _row(m.rule_id, m.severity, m.agent or "—", (m.matched_evidence or "")[:120])
+        for m in case_score.spurious
     )
     missed = "".join(
-        _row(m.rule_id, m.severity, m.policy_id or "—", (m.evidence_contains or "")[:120]) for m in case_score.missed
+        _row(
+            m.rule_id, m.severity, m.policy_id or "—", (m.evidence_contains or "")[:120]
+        )
+        for m in case_score.missed
     )
 
     def section(title: str, rows: str, cols: list[str]) -> str:
@@ -95,13 +118,25 @@ def _case_block(case_score: CaseScore) -> str:
 
     body = (
         section("Matched", matched, ["rule_id", "severity", "agent", "evidence"])
-        + section("Spurious (false positives)", spurious, ["rule_id", "severity", "agent", "evidence"])
-        + section("Missed (false negatives)", missed, ["rule_id", "severity", "policy_id", "expected_text"])
+        + section(
+            "Spurious (false positives)",
+            spurious,
+            ["rule_id", "severity", "agent", "evidence"],
+        )
+        + section(
+            "Missed (false negatives)",
+            missed,
+            ["rule_id", "severity", "policy_id", "expected_text"],
+        )
     )
     return f"<details>{head}{body}</details>"
 
 
-def render_html(result: EvalResult, gate: GateOutcome | None = None, title: str = "doCheck Eval Report") -> str:
+def render_html(
+    result: EvalResult,
+    gate: GateOutcome | None = None,
+    title: str = "doCheck Eval Report",
+) -> str:
     metric = result.metric_dict()
     gate_html = ""
     if gate is not None:

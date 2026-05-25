@@ -76,7 +76,9 @@ def test_suggest_filters_existing_excerpts(monkeypatch) -> None:
 
     monkeypatch.setattr(policy_ingest, "_llm_extract", fake_extract)
 
-    suggestions = asyncio.run(policy_suggest.suggest_more(db, pid="p", version="1.0.0", source_text=SRC))
+    suggestions = asyncio.run(
+        policy_suggest.suggest_more(db, pid="p", version="1.0.0", source_text=SRC)
+    )
 
     excerpts = {s["excerpt"] for s in suggestions}
     assert excerpts == {
@@ -90,13 +92,20 @@ def test_suggest_empty_source_raises() -> None:
         pass
 
     with pytest.raises(HTTPException) as exc:
-        asyncio.run(policy_suggest.suggest_more(_DB(), pid="p", version="1.0.0", source_text="   "))
+        asyncio.run(
+            policy_suggest.suggest_more(
+                _DB(), pid="p", version="1.0.0", source_text="   "
+            )
+        )
     assert exc.value.status_code == 400
 
 
 def test_suggest_caps_at_max(monkeypatch) -> None:
     # 50 distinct grounded suggestions in source; service must cap at MAX_SUGGESTIONS.
-    sentences = [f"Obbligo distinto numero {i} da rispettare entro tempi certi." for i in range(50)]
+    sentences = [
+        f"Obbligo distinto numero {i} da rispettare entro tempi certi."
+        for i in range(50)
+    ]
     src = " ".join(sentences)
 
     db, fake_list_rules = _make_db_with_rules([])
@@ -105,9 +114,16 @@ def test_suggest_caps_at_max(monkeypatch) -> None:
     monkeypatch.setattr(policy_svc, "list_rules", fake_list_rules)
 
     async def fake_extract(text, hint_title=None):
-        return {"rules": [{"rule_type": "semantic", "severity": "warn", "excerpt": s} for s in sentences]}
+        return {
+            "rules": [
+                {"rule_type": "semantic", "severity": "warn", "excerpt": s}
+                for s in sentences
+            ]
+        }
 
     monkeypatch.setattr(policy_ingest, "_llm_extract", fake_extract)
 
-    suggestions = asyncio.run(policy_suggest.suggest_more(db, pid="p", version="1.0.0", source_text=src))
+    suggestions = asyncio.run(
+        policy_suggest.suggest_more(db, pid="p", version="1.0.0", source_text=src)
+    )
     assert len(suggestions) == policy_suggest.MAX_SUGGESTIONS

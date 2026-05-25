@@ -52,7 +52,9 @@ async def app_with_user(monkeypatch, tmp_path):
 
 async def test_login_success_and_me(app_with_user) -> None:
     app, uid = app_with_user
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         res = await c.post(
             "/api/v1/auth/login",
             json={
@@ -73,7 +75,9 @@ async def test_login_success_and_me(app_with_user) -> None:
 
 async def test_login_wrong_password_rejects(app_with_user) -> None:
     app, _ = app_with_user
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         res = await c.post(
             "/api/v1/auth/login",
             json={
@@ -86,6 +90,8 @@ async def test_login_wrong_password_rejects(app_with_user) -> None:
 
 async def test_me_without_header_rejects(app_with_user) -> None:
     app, _ = app_with_user
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         res = await c.get("/api/v1/auth/me")
         assert res.status_code == 401

@@ -68,7 +68,9 @@ async def upsert_rule(db: AsyncSession, rule: PolicyRule) -> None:
         rule.embed_ref = text_hash(rule.excerpt)
     except Exception as exc:
         log.error("policy_index.upsert_failed", rule_id=rule.id, error=str(exc))
-        raise PolicyIndexError(f"vector index sync failed for rule {rule.id}: {exc}") from exc
+        raise PolicyIndexError(
+            f"vector index sync failed for rule {rule.id}: {exc}"
+        ) from exc
 
 
 async def upsert_many(db: AsyncSession, rules: list[PolicyRule]) -> int:
@@ -77,7 +79,11 @@ async def upsert_many(db: AsyncSession, rules: list[PolicyRule]) -> int:
     pids = {(r.policy_id, r.policy_version) for r in rules}
     policies: dict[tuple[str, str], Policy] = {}
     for pid, ver in pids:
-        p = (await db.execute(select(Policy).where(Policy.id == pid, Policy.version == ver))).scalar_one_or_none()
+        p = (
+            await db.execute(
+                select(Policy).where(Policy.id == pid, Policy.version == ver)
+            )
+        ).scalar_one_or_none()
         if p:
             policies[(pid, ver)] = p
     try:
@@ -85,7 +91,10 @@ async def upsert_many(db: AsyncSession, rules: list[PolicyRule]) -> int:
         _coll().upsert(
             ids=[r.id for r in rules],
             documents=[r.excerpt for r in rules],
-            metadatas=[_rule_metadata(r, policies.get((r.policy_id, r.policy_version))) for r in rules],
+            metadatas=[
+                _rule_metadata(r, policies.get((r.policy_id, r.policy_version)))
+                for r in rules
+            ],
             embeddings=vecs,
         )
         for r in rules:
@@ -93,7 +102,9 @@ async def upsert_many(db: AsyncSession, rules: list[PolicyRule]) -> int:
         return len(rules)
     except Exception as exc:
         log.error("policy_index.upsert_many_failed", count=len(rules), error=str(exc))
-        raise PolicyIndexError(f"vector index sync failed for {len(rules)} rule(s): {exc}") from exc
+        raise PolicyIndexError(
+            f"vector index sync failed for {len(rules)} rule(s): {exc}"
+        ) from exc
 
 
 def delete_rule(rule_id: str) -> None:
@@ -109,7 +120,9 @@ def delete_policy_rules(rule_ids: list[str]) -> None:
     try:
         _coll()._store.delete(COLLECTION, rule_ids)
     except Exception as exc:
-        log.warning("policy_index.delete_many_failed", count=len(rule_ids), error=str(exc))
+        log.warning(
+            "policy_index.delete_many_failed", count=len(rule_ids), error=str(exc)
+        )
 
 
 async def reindex_all(db: AsyncSession) -> int:

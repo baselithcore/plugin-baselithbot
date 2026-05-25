@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
-import { Sparkles, Link as LinkIcon, FileText } from "lucide-react";
+import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { Sparkles, Link as LinkIcon, FileText } from 'lucide-react';
 
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/cn";
-import type { SuggestedRule } from "@/lib/api/policies";
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/cn';
+import type { SuggestedRule } from '@/lib/api/policies';
 
-type SuggestMode = "url" | "file";
+type SuggestMode = 'url' | 'file';
 
 /**
  * ADR-0015: incremental rule discovery against an existing policy.
@@ -43,17 +43,17 @@ export function SuggestRulesDialog({
   onApply: (selected: SuggestedRule[]) => Promise<void> | void;
   onClose: () => void;
 }) {
-  const t = useTranslations("policies.suggest");
-  const [mode, setMode] = useState<SuggestMode>("url");
-  const [url, setUrl] = useState("");
+  const t = useTranslations('policies.suggest');
+  const [mode, setMode] = useState<SuggestMode>('url');
+  const [url, setUrl] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [selectedIdx, setSelectedIdx] = useState<Set<number>>(new Set());
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (!open) {
-      setMode("url");
-      setUrl("");
+      setMode('url');
+      setUrl('');
       setFile(null);
       setSelectedIdx(new Set());
     }
@@ -94,12 +94,12 @@ export function SuggestRulesDialog({
           <Sparkles size={16} className="mt-0.5 text-status-info" />
           <div>
             <div className="text-[10px] uppercase tracking-[0.2em] text-text-muted">
-              {t("eyebrow")}
+              {t('eyebrow')}
             </div>
             <h3 className="text-sm font-semibold">
-              {t("title", { id: policyId, version: policyVersion })}
+              {t('title', { id: policyId, version: policyVersion })}
             </h3>
-            <p className="mt-1 text-xs text-text-muted">{t("desc")}</p>
+            <p className="mt-1 text-xs text-text-muted">{t('desc')}</p>
           </div>
         </div>
 
@@ -108,9 +108,9 @@ export function SuggestRulesDialog({
             <div
               className="mt-4 inline-flex rounded-md border border-border p-0.5"
               role="tablist"
-              aria-label={t("modeAria")}
+              aria-label={t('modeAria')}
             >
-              {(["url", "file"] as SuggestMode[]).map((m) => (
+              {(['url', 'file'] as SuggestMode[]).map((m) => (
                 <button
                   key={m}
                   type="button"
@@ -119,27 +119,23 @@ export function SuggestRulesDialog({
                   onClick={() => setMode(m)}
                   disabled={fetching}
                   className={cn(
-                    "flex items-center gap-1.5 rounded px-3 py-1 text-xs",
+                    'flex items-center gap-1.5 rounded px-3 py-1 text-xs',
                     mode === m
-                      ? "bg-bg-panel-elev font-semibold text-text-primary"
-                      : "text-text-muted hover:text-text-primary",
+                      ? 'bg-bg-panel-elev font-semibold text-text-primary'
+                      : 'text-text-muted hover:text-text-primary'
                   )}
                 >
-                  {m === "url" ? (
-                    <LinkIcon size={12} />
-                  ) : (
-                    <FileText size={12} />
-                  )}
-                  {t(m === "url" ? "modeUrl" : "modeFile")}
+                  {m === 'url' ? <LinkIcon size={12} /> : <FileText size={12} />}
+                  {t(m === 'url' ? 'modeUrl' : 'modeFile')}
                 </button>
               ))}
             </div>
-            {mode === "url" ? (
+            {mode === 'url' ? (
               <input
                 autoFocus
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder={t("urlPlaceholder")}
+                placeholder={t('urlPlaceholder')}
                 className="mt-3 h-9 w-full rounded-md border border-border bg-bg-canvas px-3 text-xs outline-none focus:border-status-info/60 focus:ring-2 focus:ring-status-info/20"
                 disabled={fetching}
               />
@@ -152,7 +148,7 @@ export function SuggestRulesDialog({
                   className="hidden"
                   onChange={(e) => {
                     const f = e.target.files?.[0] ?? null;
-                    e.target.value = "";
+                    e.target.value = '';
                     setFile(f);
                   }}
                   disabled={fetching}
@@ -163,17 +159,17 @@ export function SuggestRulesDialog({
                   onClick={() => fileInputRef.current?.click()}
                   disabled={fetching}
                 >
-                  {t("chooseFile")}
+                  {t('chooseFile')}
                 </Button>
                 <span className="truncate text-xs text-text-muted">
-                  {file ? file.name : t("noFile")}
+                  {file ? file.name : t('noFile')}
                 </span>
               </div>
             )}
             {fetching && (
               <div className="mt-3">
                 <div className="text-[10px] uppercase tracking-wide text-text-muted">
-                  {t("fetching")}
+                  {t('fetching')}
                 </div>
                 <Progress className="mt-1.5" value={0} indeterminate />
               </div>
@@ -182,9 +178,7 @@ export function SuggestRulesDialog({
         ) : (
           <div className="mt-4 flex-1 overflow-auto rounded-md border border-border bg-bg-canvas">
             {suggestions.length === 0 ? (
-              <div className="p-6 text-center text-xs text-text-muted">
-                {t("noSuggestions")}
-              </div>
+              <div className="p-6 text-center text-xs text-text-muted">{t('noSuggestions')}</div>
             ) : (
               <ul className="divide-y divide-border">
                 {suggestions.map((s, i) => (
@@ -194,7 +188,7 @@ export function SuggestRulesDialog({
                       checked={selectedIdx.has(i)}
                       onChange={() => toggle(i)}
                       className="mt-1"
-                      aria-label={t("toggleAria", { excerpt: s.excerpt })}
+                      aria-label={t('toggleAria', { excerpt: s.excerpt })}
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 text-[10px] uppercase tracking-wide text-text-muted">
@@ -206,9 +200,7 @@ export function SuggestRulesDialog({
                         &ldquo;{s.excerpt}&rdquo;
                       </p>
                       {s.rationale ? (
-                        <p className="mt-1 text-[11px] text-text-muted leading-5">
-                          {s.rationale}
-                        </p>
+                        <p className="mt-1 text-[11px] text-text-muted leading-5">{s.rationale}</p>
                       ) : null}
                     </div>
                   </li>
@@ -221,43 +213,39 @@ export function SuggestRulesDialog({
         <div className="mt-5 flex items-center justify-between gap-2">
           <span className="text-[11px] text-text-muted">
             {hasResults
-              ? t("countSelected", {
+              ? t('countSelected', {
                   selected: selectedIdx.size,
                   total: suggestions?.length ?? 0,
                 })
-              : t("hintGrounding")}
+              : t('hintGrounding')}
           </span>
           <div className="flex gap-2">
             <Button size="sm" variant="ghost" onClick={onClose} disabled={busy}>
-              {t("cancel")}
+              {t('cancel')}
             </Button>
             {!hasResults ? (
               <Button
                 size="sm"
                 variant="primary"
                 onClick={() => {
-                  if (mode === "url") void onFetchUrl(url);
+                  if (mode === 'url') void onFetchUrl(url);
                   else if (file) void onFetchFile(file);
                 }}
-                disabled={fetching || (mode === "url" ? !url.trim() : !file)}
+                disabled={fetching || (mode === 'url' ? !url.trim() : !file)}
               >
-                {fetching ? t("fetching") : t("fetch")}
+                {fetching ? t('fetching') : t('fetch')}
               </Button>
             ) : (
               <Button
                 size="sm"
                 variant="primary"
                 onClick={() => {
-                  const picked = (suggestions ?? []).filter((_, i) =>
-                    selectedIdx.has(i),
-                  );
+                  const picked = (suggestions ?? []).filter((_, i) => selectedIdx.has(i));
                   void onApply(picked);
                 }}
                 disabled={applying || selectedIdx.size === 0}
               >
-                {applying
-                  ? t("applying")
-                  : t("applyN", { n: selectedIdx.size })}
+                {applying ? t('applying') : t('applyN', { n: selectedIdx.size })}
               </Button>
             )}
           </div>

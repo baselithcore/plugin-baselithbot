@@ -16,7 +16,9 @@ from .._base import RuleSpec, make_finding, step
 from ..patterns import CAP_IT
 from ..severity import is_enabled, resolve_severity
 
-ADDR_TRIGGER = re.compile(r"\b(via|viale|piazza|corso|cap|c\.a\.p\.|località)\b", re.IGNORECASE)
+ADDR_TRIGGER = re.compile(
+    r"\b(via|viale|piazza|corso|cap|c\.a\.p\.|località)\b", re.IGNORECASE
+)
 
 
 def cap_in_range(cap: str) -> bool:
@@ -54,7 +56,9 @@ class CapItRule:
             if key in seen:
                 continue
             seen.add(key)
-            sev: Severity = resolve_severity(self.spec.rule_id, self.spec.default_severity)
+            sev: Severity = resolve_severity(
+                self.spec.rule_id, self.spec.default_severity
+            )
             reasoning = [
                 step(
                     1,

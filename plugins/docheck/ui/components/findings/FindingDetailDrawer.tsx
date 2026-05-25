@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   Ban,
   Check,
@@ -20,31 +20,29 @@ import {
   Sparkles,
   X,
   type LucideIcon,
-} from "lucide-react";
-import { useAppStore } from "@/lib/store";
-import { setFindingDecision, type DecisionKind, type Finding } from "@/lib/api";
-import { SeverityBadge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/cn";
-import { EvidenceText } from "./EvidenceText";
+} from 'lucide-react';
+import { useAppStore } from '@/lib/store';
+import { setFindingDecision, type DecisionKind, type Finding } from '@/lib/api';
+import { SeverityBadge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/cn';
+import { EvidenceText } from './EvidenceText';
 
-const SEVERITY_TONE: Record<Finding["severity"], string> = {
-  FAIL: "border-status-danger/40 bg-status-danger/10 text-status-danger",
-  WARN: "border-status-warning/40 bg-status-warning/10 text-status-warning",
-  PASS: "border-status-success/40 bg-status-success/10 text-status-success",
-  INFO: "border-status-info/40 bg-status-info/10 text-status-info",
+const SEVERITY_TONE: Record<Finding['severity'], string> = {
+  FAIL: 'border-status-danger/40 bg-status-danger/10 text-status-danger',
+  WARN: 'border-status-warning/40 bg-status-warning/10 text-status-warning',
+  PASS: 'border-status-success/40 bg-status-success/10 text-status-success',
+  INFO: 'border-status-info/40 bg-status-info/10 text-status-info',
 };
 
 export function FindingDetailDrawer() {
-  const t = useTranslations("findings.detail");
+  const t = useTranslations('findings.detail');
   const finding = useAppStore((s) => s.selectedFinding);
   const open = useAppStore((s) => s.detailOpen);
   const setOpen = useAppStore((s) => s.setDetailOpen);
   const openReasoning = useAppStore((s) => s.openReasoningFor);
   const setAskFor = useAppStore((s) => s.setAskFor);
-  const decision = useAppStore((s) =>
-    finding ? s.decisions[finding.id] : undefined,
-  );
+  const decision = useAppStore((s) => (finding ? s.decisions[finding.id] : undefined));
   const setDecision = useAppStore((s) => s.setDecision);
   const report = useAppStore((s) => s.currentReport);
 
@@ -55,10 +53,10 @@ export function FindingDetailDrawer() {
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === 'Escape') setOpen(false);
     }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
   }, [open, setOpen]);
 
   useEffect(() => {
@@ -70,14 +68,14 @@ export function FindingDetailDrawer() {
   const tone = SEVERITY_TONE[finding.severity];
   const sev = (() => {
     switch (finding.severity) {
-      case "FAIL":
-        return { label: t("severity.failLabel"), hint: t("severity.failHint") };
-      case "WARN":
-        return { label: t("severity.warnLabel"), hint: t("severity.warnHint") };
-      case "PASS":
-        return { label: t("severity.passLabel"), hint: t("severity.passHint") };
-      case "INFO":
-        return { label: t("severity.infoLabel"), hint: t("severity.infoHint") };
+      case 'FAIL':
+        return { label: t('severity.failLabel'), hint: t('severity.failHint') };
+      case 'WARN':
+        return { label: t('severity.warnLabel'), hint: t('severity.warnHint') };
+      case 'PASS':
+        return { label: t('severity.passLabel'), hint: t('severity.passHint') };
+      case 'INFO':
+        return { label: t('severity.infoLabel'), hint: t('severity.infoHint') };
     }
   })();
   const conf = Math.round(finding.confidence * 100);
@@ -85,7 +83,7 @@ export function FindingDetailDrawer() {
 
   async function applyDecision(kind: DecisionKind) {
     if (!reportId || !finding) {
-      setError(t("errorReportUnavailable"));
+      setError(t('errorReportUnavailable'));
       return;
     }
     setBusy(kind);
@@ -94,7 +92,7 @@ export function FindingDetailDrawer() {
       await setFindingDecision(reportId, finding.id, kind);
       setDecision(finding.id, kind);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("errorGeneric"));
+      setError(err instanceof Error ? err.message : t('errorGeneric'));
     } finally {
       setBusy(null);
     }
@@ -124,20 +122,18 @@ export function FindingDetailDrawer() {
       />
       <aside
         role="dialog"
-        aria-label={t("title")}
+        aria-label={t('title')}
         className="fixed top-0 right-0 bottom-0 w-[min(640px,100vw)] surface-elev border-l border-border z-40 flex flex-col animate-slide-up shadow-popover"
       >
         <header className="px-5 py-4 border-b border-border">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-                {t("title")}
+                {t('title')}
               </div>
               <div className="mt-1.5 flex flex-wrap items-center gap-2">
                 <SeverityBadge severity={finding.severity} />
-                <span className="font-mono text-[11px] text-text-secondary">
-                  {finding.rule_id}
-                </span>
+                <span className="font-mono text-[11px] text-text-secondary">{finding.rule_id}</span>
                 <ConfidencePill value={conf} />
               </div>
               <h2 className="mt-2 text-[14px] font-semibold leading-snug text-text-primary">
@@ -147,7 +143,7 @@ export function FindingDetailDrawer() {
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label={t("close")}
+              aria-label={t('close')}
               className="p-1.5 rounded-md hover:bg-bg-panel-elev text-text-muted hover:text-text-primary transition-colors"
             >
               <X size={16} />
@@ -155,58 +151,51 @@ export function FindingDetailDrawer() {
           </div>
           <div
             className={cn(
-              "mt-3 flex items-start gap-2 rounded-md border px-3 py-2 text-[11px] leading-5",
-              tone,
+              'mt-3 flex items-start gap-2 rounded-md border px-3 py-2 text-[11px] leading-5',
+              tone
             )}
           >
             <ShieldCheck size={13} className="mt-0.5 shrink-0" />
             <div>
-              <strong className="font-semibold">{sev.label}.</strong>{" "}
+              <strong className="font-semibold">{sev.label}.</strong>{' '}
               <span className="text-text-secondary">{sev.hint}</span>
             </div>
           </div>
         </header>
 
         <div className="flex-1 overflow-auto px-5 py-5 space-y-5">
-          <Section icon={Lightbulb} title={t("howToFix")} tone="info">
+          <Section icon={Lightbulb} title={t('howToFix')} tone="info">
             {finding.suggestion ? (
               <div className="rounded-md border border-status-info/25 bg-status-info/8 p-3.5">
                 <div className="flex items-start gap-2 text-[13px] leading-6 text-text-primary">
-                  <ClipboardCheck
-                    size={14}
-                    className="mt-0.5 shrink-0 text-status-info"
-                  />
-                  <span className="whitespace-pre-wrap">
-                    {finding.suggestion}
-                  </span>
+                  <ClipboardCheck size={14} className="mt-0.5 shrink-0 text-status-info" />
+                  <span className="whitespace-pre-wrap">{finding.suggestion}</span>
                 </div>
                 <FixChecklist suggestion={finding.suggestion} />
               </div>
             ) : (
               <div className="rounded-md border border-dashed border-border bg-bg-canvas/60 p-3.5 text-[12px] text-text-muted">
-                {t("noAutoFix")}{" "}
+                {t('noAutoFix')}{' '}
                 <button
                   type="button"
                   onClick={() => setAskFor(finding)}
                   className="underline decoration-dotted text-status-info hover:text-status-info/80"
                 >
-                  {t("askLink")}
-                </button>{" "}
-                {t("askFallback")}
+                  {t('askLink')}
+                </button>{' '}
+                {t('askFallback')}
               </div>
             )}
           </Section>
 
-          <Section icon={Quote} title={t("policyReference")}>
+          <Section icon={Quote} title={t('policyReference')}>
             <div className="rounded-md border border-border bg-bg-canvas p-3">
               <div className="mb-2 flex items-center justify-between text-[10px] uppercase tracking-wide text-text-muted">
                 <span className="inline-flex items-center gap-1.5">
                   <FileSearch size={11} />
                   {finding.policy_ref.policy_id}@{finding.policy_ref.version}
                 </span>
-                <span className="font-mono normal-case">
-                  {finding.policy_ref.title}
-                </span>
+                <span className="font-mono normal-case">{finding.policy_ref.title}</span>
               </div>
               <pre className="whitespace-pre-wrap font-mono text-[11.5px] leading-5 text-text-secondary">
                 &quot;{finding.policy_ref.excerpt}&quot;
@@ -214,35 +203,27 @@ export function FindingDetailDrawer() {
             </div>
           </Section>
 
-          <Section icon={MapPin} title={t("evidenceInDoc")}>
+          <Section icon={MapPin} title={t('evidenceInDoc')}>
             <div className="rounded-md border border-border bg-bg-canvas p-3 space-y-2">
               <div className="grid grid-cols-3 gap-2">
+                <Meta label={t('metaPage')} value={String(finding.evidence.page)} />
                 <Meta
-                  label={t("metaPage")}
-                  value={String(finding.evidence.page)}
-                />
-                <Meta
-                  label={t("metaLines")}
+                  label={t('metaLines')}
                   value={`${finding.evidence.line_start}-${finding.evidence.line_end}`}
                 />
-                <Meta
-                  label={t("metaChunk")}
-                  value={finding.evidence.chunk_id.slice(0, 8)}
-                />
+                <Meta label={t('metaChunk')} value={finding.evidence.chunk_id.slice(0, 8)} />
               </div>
               {finding.evidence.text && (
                 <EvidenceText
                   evidence={finding.evidence}
-                  fallbackQuote={
-                    finding.evidence.snippet || finding.policy_ref.excerpt
-                  }
+                  fallbackQuote={finding.evidence.snippet || finding.policy_ref.excerpt}
                 />
               )}
             </div>
           </Section>
 
           {finding.reasoning?.length > 0 && (
-            <Section icon={ScrollText} title={t("reasoningChain")}>
+            <Section icon={ScrollText} title={t('reasoningChain')}>
               <div className="rounded-md border border-border bg-bg-canvas p-3">
                 <ol className="space-y-1.5">
                   {finding.reasoning.slice(0, 3).map((s) => (
@@ -250,18 +231,13 @@ export function FindingDetailDrawer() {
                       key={s.step}
                       className="flex items-start gap-2 text-[11.5px] leading-5 text-text-secondary"
                     >
-                      <Hash
-                        size={10}
-                        className="mt-1 shrink-0 text-text-muted"
-                      />
+                      <Hash size={10} className="mt-1 shrink-0 text-text-muted" />
                       <div className="min-w-0">
                         <span className="font-mono text-[10px] text-text-muted">
                           {s.agent}
-                          {s.action ? ` · ${s.action}` : ""}
+                          {s.action ? ` · ${s.action}` : ''}
                         </span>
-                        {s.thought && (
-                          <p className="mt-0.5 line-clamp-2">{s.thought}</p>
-                        )}
+                        {s.thought && <p className="mt-0.5 line-clamp-2">{s.thought}</p>}
                       </div>
                     </li>
                   ))}
@@ -274,8 +250,8 @@ export function FindingDetailDrawer() {
                   }}
                   className="mt-2.5 inline-flex items-center gap-1 text-[11px] text-status-info hover:text-status-info/80"
                 >
-                  <ExternalLink size={11} />{" "}
-                  {t("openTimeline", { count: finding.reasoning.length })}
+                  <ExternalLink size={11} />{' '}
+                  {t('openTimeline', { count: finding.reasoning.length })}
                 </button>
               </div>
             </Section>
@@ -290,31 +266,31 @@ export function FindingDetailDrawer() {
           )}
           <div className="flex flex-wrap items-center gap-2">
             <DecisionBtn
-              label={t("accept")}
+              label={t('accept')}
               icon={Check}
               tone="success"
-              active={decision === "accepted"}
-              loading={busy === "accepted"}
+              active={decision === 'accepted'}
+              loading={busy === 'accepted'}
               disabled={!reportId}
-              onClick={() => applyDecision("accepted")}
+              onClick={() => applyDecision('accepted')}
             />
             <DecisionBtn
-              label={t("reject")}
+              label={t('reject')}
               icon={X}
               tone="danger"
-              active={decision === "rejected"}
-              loading={busy === "rejected"}
+              active={decision === 'rejected'}
+              loading={busy === 'rejected'}
               disabled={!reportId}
-              onClick={() => applyDecision("rejected")}
+              onClick={() => applyDecision('rejected')}
             />
             <DecisionBtn
-              label={t("mute")}
+              label={t('mute')}
               icon={Ban}
               tone="muted"
-              active={decision === "muted"}
-              loading={busy === "muted"}
+              active={decision === 'muted'}
+              loading={busy === 'muted'}
               disabled={!reportId}
-              onClick={() => applyDecision("muted")}
+              onClick={() => applyDecision('muted')}
             />
             <div className="ml-auto flex items-center gap-2">
               <Button
@@ -323,10 +299,10 @@ export function FindingDetailDrawer() {
                 onClick={() => setAskFor(finding)}
                 disabled={!reportId}
               >
-                <MessageSquareText size={13} /> {t("ask")}
+                <MessageSquareText size={13} /> {t('ask')}
               </Button>
               <Button variant="outline" size="sm" onClick={copyAll}>
-                <Copy size={13} /> {copied ? t("copied") : t("copy")}
+                <Copy size={13} /> {copied ? t('copied') : t('copy')}
               </Button>
             </div>
           </div>
@@ -344,15 +320,15 @@ function Section({
 }: {
   icon: LucideIcon;
   title: string;
-  tone?: "info";
+  tone?: 'info';
   children: React.ReactNode;
 }) {
   return (
     <section>
       <h3
         className={cn(
-          "mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide",
-          tone === "info" ? "text-status-info" : "text-text-secondary",
+          'mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide',
+          tone === 'info' ? 'text-status-info' : 'text-text-secondary'
         )}
       >
         <Icon size={12} />
@@ -366,12 +342,8 @@ function Section({
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded border border-border bg-bg-panel-soft px-2 py-1.5">
-      <div className="text-[9px] uppercase tracking-wide text-text-muted">
-        {label}
-      </div>
-      <div className="mt-0.5 font-mono text-[11px] text-text-secondary truncate">
-        {value}
-      </div>
+      <div className="text-[9px] uppercase tracking-wide text-text-muted">{label}</div>
+      <div className="mt-0.5 font-mono text-[11px] text-text-secondary truncate">{value}</div>
     </div>
   );
 }
@@ -379,15 +351,15 @@ function Meta({ label, value }: { label: string; value: string }) {
 function ConfidencePill({ value }: { value: number }) {
   const tone =
     value >= 80
-      ? "text-status-success"
+      ? 'text-status-success'
       : value >= 60
-        ? "text-status-warning"
-        : "text-status-danger";
+        ? 'text-status-warning'
+        : 'text-status-danger';
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border border-border bg-bg-canvas px-1.5 py-0.5 text-[10px] font-mono",
-        tone,
+        'inline-flex items-center gap-1 rounded-full border border-border bg-bg-canvas px-1.5 py-0.5 text-[10px] font-mono',
+        tone
       )}
     >
       <Sparkles size={9} /> {value}%
@@ -404,12 +376,9 @@ function FixChecklist({ suggestion }: { suggestion: string }) {
   return (
     <ul className="mt-3 space-y-1.5 border-t border-status-info/20 pt-3">
       {lines.map((l, i) => (
-        <li
-          key={i}
-          className="flex items-start gap-2 text-[12px] leading-5 text-text-secondary"
-        >
+        <li key={i} className="flex items-start gap-2 text-[12px] leading-5 text-text-secondary">
           <span className="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-status-info" />
-          <span>{l.replace(/\.$/, "")}</span>
+          <span>{l.replace(/\.$/, '')}</span>
         </li>
       ))}
     </ul>
@@ -427,17 +396,16 @@ function DecisionBtn({
 }: {
   label: string;
   icon: LucideIcon;
-  tone: "success" | "danger" | "muted";
+  tone: 'success' | 'danger' | 'muted';
   active: boolean;
   loading: boolean;
   disabled: boolean;
   onClick: () => void;
 }) {
   const toneActive = {
-    success:
-      "border-status-success/40 bg-status-success/15 text-status-success",
-    danger: "border-status-danger/40 bg-status-danger/15 text-status-danger",
-    muted: "border-border bg-bg-panel-elev text-text-secondary",
+    success: 'border-status-success/40 bg-status-success/15 text-status-success',
+    danger: 'border-status-danger/40 bg-status-danger/15 text-status-danger',
+    muted: 'border-border bg-bg-panel-elev text-text-secondary',
   }[tone];
   return (
     <button
@@ -446,18 +414,14 @@ function DecisionBtn({
       disabled={disabled || loading}
       onClick={onClick}
       className={cn(
-        "inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-[11.5px] font-medium transition-colors ring-focus",
+        'inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-[11.5px] font-medium transition-colors ring-focus',
         active
           ? toneActive
-          : "border-border bg-bg-canvas text-text-secondary hover:bg-bg-panel-elev hover:text-text-primary",
-        disabled && "opacity-50 cursor-not-allowed",
+          : 'border-border bg-bg-canvas text-text-secondary hover:bg-bg-panel-elev hover:text-text-primary',
+        disabled && 'opacity-50 cursor-not-allowed'
       )}
     >
-      {loading ? (
-        <Loader2 size={12} className="animate-spin" />
-      ) : (
-        <Icon size={12} />
-      )}
+      {loading ? <Loader2 size={12} className="animate-spin" /> : <Icon size={12} />}
       {label}
     </button>
   );

@@ -1,20 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { Monitor, Moon, Sun, Check } from "lucide-react";
-import { useTheme, type Theme } from "@/lib/theme";
-import { cn } from "@/lib/cn";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "./ui/tooltip";
+import { useEffect, useRef, useState } from 'react';
+import { Monitor, Moon, Sun, Check } from 'lucide-react';
+import { useTheme, type Theme } from '@/lib/theme';
+import { cn } from '@/lib/cn';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 const OPTIONS: { key: Theme; icon: typeof Sun; label: string }[] = [
-  { key: "light", icon: Sun, label: "Light" },
-  { key: "dark", icon: Moon, label: "Dark" },
-  { key: "system", icon: Monitor, label: "System" },
+  { key: 'light', icon: Sun, label: 'Light' },
+  { key: 'dark', icon: Moon, label: 'Dark' },
+  { key: 'system', icon: Monitor, label: 'System' },
 ];
 
 export function ThemeToggle() {
@@ -24,14 +19,13 @@ export function ThemeToggle() {
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     }
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
   }, []);
 
-  const ActiveIcon = resolvedTheme === "dark" ? Moon : Sun;
+  const ActiveIcon = resolvedTheme === 'dark' ? Moon : Sun;
 
   return (
     <TooltipProvider delayDuration={150}>
@@ -45,9 +39,8 @@ export function ThemeToggle() {
               aria-expanded={open}
               onClick={() => setOpen((v) => !v)}
               className={cn(
-                "inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-bg-canvas text-text-secondary hover:bg-bg-panel-elev hover:text-text-primary transition-colors ring-focus",
-                open &&
-                  "bg-bg-panel-elev border-border-strong text-text-primary",
+                'inline-flex h-8 w-8 items-center justify-center rounded-md border border-border bg-bg-canvas text-text-secondary hover:bg-bg-panel-elev hover:text-text-primary transition-colors ring-focus',
+                open && 'bg-bg-panel-elev border-border-strong text-text-primary'
               )}
             >
               <ActiveIcon size={14} />
@@ -74,10 +67,10 @@ export function ThemeToggle() {
                     setOpen(false);
                   }}
                   className={cn(
-                    "w-full inline-flex items-center gap-2 px-2.5 h-8 text-sm rounded-md transition-colors",
+                    'w-full inline-flex items-center gap-2 px-2.5 h-8 text-sm rounded-md transition-colors',
                     active
-                      ? "bg-bg-panel text-text-primary"
-                      : "text-text-secondary hover:bg-bg-panel hover:text-text-primary",
+                      ? 'bg-bg-panel text-text-primary'
+                      : 'text-text-secondary hover:bg-bg-panel hover:text-text-primary'
                   )}
                 >
                   <Icon size={14} className="text-text-muted" />

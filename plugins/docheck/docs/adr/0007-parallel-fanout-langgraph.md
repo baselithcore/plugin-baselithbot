@@ -34,11 +34,13 @@ Agenti refactor: ritornano partial state delta `{"findings": [...nuovi]}` invece
 ## Consequences
 
 **Positive**
+
 - Latency reduction ~25% su workload tipico.
 - Fault isolation: failure di un branch non blocca altri (retorna `errors` partial state).
 - Synthesizer dedup garantisce idempotenza in caso double-run.
 
 **Negative**
+
 - WebSocket events possono arrivare interleaved (legal step 2 + pii step 1 mescolati). UI deve raggrupparli per agent name.
 - Verdict cache invalidation più complessa (concurrent checks di stessi chunks).
 - Mock test devono accumulate findings invece di mutate.

@@ -1,4 +1,4 @@
-export type Severity = "FAIL" | "WARN" | "PASS" | "INFO";
+export type Severity = 'FAIL' | 'WARN' | 'PASS' | 'INFO';
 
 export interface PolicyRef {
   id: string;
@@ -57,7 +57,7 @@ export interface PolicyRow {
   id: string;
   version: string;
   title: string;
-  scope: "global_default" | "eu" | "world" | "custom";
+  scope: 'global_default' | 'eu' | 'world' | 'custom';
   lang: string;
   active: boolean;
   rule_count: number;
@@ -67,7 +67,7 @@ export interface PolicyRow {
 export interface CoverageGap {
   label: string;
   excerpt: string;
-  severity_hint: "fail" | "warn" | "info";
+  severity_hint: 'fail' | 'warn' | 'info';
 }
 
 export interface CoverageReport {
@@ -81,13 +81,8 @@ export interface IngestPolicyRow extends PolicyRow {
   coverage?: CoverageReport | null;
 }
 
-export type RuleType =
-  | "presence"
-  | "absence"
-  | "format"
-  | "numeric_limit"
-  | "semantic";
-export type RuleSeverity = "fail" | "warn" | "info";
+export type RuleType = 'presence' | 'absence' | 'format' | 'numeric_limit' | 'semantic';
+export type RuleSeverity = 'fail' | 'warn' | 'info';
 
 export interface RuleRow {
   id: string;
@@ -111,7 +106,7 @@ export interface PolicyCreatePayload {
   id: string;
   version: string;
   title: string;
-  scope: PolicyRow["scope"];
+  scope: PolicyRow['scope'];
   lang: string;
   active: boolean;
   rules: RulePayload[];
@@ -119,7 +114,7 @@ export interface PolicyCreatePayload {
 
 export interface PolicyPatchPayload {
   title?: string;
-  scope?: PolicyRow["scope"];
+  scope?: PolicyRow['scope'];
   lang?: string;
 }
 
@@ -130,15 +125,15 @@ export interface LatestReportSummary {
 }
 
 export type DocType =
-  | "contract"
-  | "policy"
-  | "procedure"
-  | "dpia"
-  | "audit_report"
-  | "manual"
-  | "technical_spec"
-  | "regulatory_text"
-  | "other";
+  | 'contract'
+  | 'policy'
+  | 'procedure'
+  | 'dpia'
+  | 'audit_report'
+  | 'manual'
+  | 'technical_spec'
+  | 'regulatory_text'
+  | 'other';
 
 export interface DocumentRow {
   id: string;
@@ -200,7 +195,7 @@ export interface ActivePolicy {
   id: string;
   version: string;
   title: string;
-  scope: PolicyRow["scope"];
+  scope: PolicyRow['scope'];
   lang: string;
 }
 
@@ -212,7 +207,7 @@ export interface RecentActivity {
   signed_at: string;
 }
 
-export type DecisionKind = "accepted" | "rejected" | "muted";
+export type DecisionKind = 'accepted' | 'rejected' | 'muted';
 
 export interface Decision {
   decision: DecisionKind | null;
@@ -223,7 +218,7 @@ export interface Decision {
 
 export interface ReportSummary {
   report_id: string;
-  verdict: "compliant" | "attention" | "critical";
+  verdict: 'compliant' | 'attention' | 'critical';
   headline: string;
   assessment: string;
   top_risks: string[];

@@ -17,9 +17,27 @@ async def session() -> AsyncSession:
 
 
 async def test_chain_appends_and_verifies(session: AsyncSession) -> None:
-    await append_audit(session, action="login", user_id="u1", resource=None, payload={"ip": "127.0.0.1"})
-    await append_audit(session, action="upload", user_id="u1", resource="document:doc-abc", payload={"size": 1024})
-    await append_audit(session, action="analyze", user_id="u1", resource="document:doc-abc", payload={"score": 78})
+    await append_audit(
+        session,
+        action="login",
+        user_id="u1",
+        resource=None,
+        payload={"ip": "127.0.0.1"},
+    )
+    await append_audit(
+        session,
+        action="upload",
+        user_id="u1",
+        resource="document:doc-abc",
+        payload={"size": 1024},
+    )
+    await append_audit(
+        session,
+        action="analyze",
+        user_id="u1",
+        resource="document:doc-abc",
+        payload={"score": 78},
+    )
 
     ok, broken = await verify_chain(session)
     assert ok is True

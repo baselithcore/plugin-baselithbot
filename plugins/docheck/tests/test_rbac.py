@@ -27,7 +27,9 @@ async def session() -> AsyncSession:
         yield s
 
 
-async def _check(db: AsyncSession, principal: Principal, resource: str, action: str) -> bool:
+async def _check(
+    db: AsyncSession, principal: Principal, resource: str, action: str
+) -> bool:
     from fastapi import HTTPException
 
     dep = require(resource, action)

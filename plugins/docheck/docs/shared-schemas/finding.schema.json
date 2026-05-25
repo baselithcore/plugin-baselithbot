@@ -4,56 +4,66 @@
   "title": "Finding",
   "type": "object",
   "additionalProperties": false,
-  "required": ["id","severity","rule_id","policy_ref","evidence","explanation","confidence","reasoning"],
+  "required": [
+    "id",
+    "severity",
+    "rule_id",
+    "policy_ref",
+    "evidence",
+    "explanation",
+    "confidence",
+    "reasoning"
+  ],
   "properties": {
-    "id":          { "type": "string" },
-    "severity":    { "enum": ["FAIL","WARN","PASS","INFO"] },
-    "rule_id":     { "type": "string" },
+    "id": { "type": "string" },
+    "severity": { "enum": ["FAIL", "WARN", "PASS", "INFO"] },
+    "rule_id": { "type": "string" },
     "policy_ref": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id","policy_id","version","title","excerpt"],
+      "required": ["id", "policy_id", "version", "title", "excerpt"],
       "properties": {
-        "id":        { "type": "string" },
+        "id": { "type": "string" },
         "policy_id": { "type": "string" },
-        "version":   { "type": "string" },
-        "title":     { "type": "string" },
-        "excerpt":   { "type": "string", "minLength": 1 }
+        "version": { "type": "string" },
+        "title": { "type": "string" },
+        "excerpt": { "type": "string", "minLength": 1 }
       }
     },
     "evidence": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["chunk_id","page","line_start","line_end","bbox","text"],
+      "required": ["chunk_id", "page", "line_start", "line_end", "bbox", "text"],
       "properties": {
-        "chunk_id":   { "type": "string" },
-        "page":       { "type": "integer" },
+        "chunk_id": { "type": "string" },
+        "page": { "type": "integer" },
         "line_start": { "type": "integer" },
-        "line_end":   { "type": "integer" },
+        "line_end": { "type": "integer" },
         "bbox": {
           "type": "array",
-          "minItems": 4, "maxItems": 4,
+          "minItems": 4,
+          "maxItems": 4,
           "items": { "type": "number" }
         },
-        "text":       { "type": "string" }
+        "text": { "type": "string" }
       }
     },
     "explanation": { "type": "string" },
-    "suggestion":  { "type": ["string","null"] },
-    "confidence":  { "type": "number", "minimum": 0, "maximum": 1 },
+    "suggestion": { "type": ["string", "null"] },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
     "reasoning": {
       "type": "array",
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["step","agent"],
+        "required": ["step", "agent"],
         "properties": {
-          "step":   { "type": "integer" },
-          "agent":  { "type": "string" },
-          "action": { "type": ["string","null"] },
-          "input":  { "type": ["object","null"] },
-          "output": { "type": ["object","null"] },
-          "thought":{ "type": ["string","null"] }
+          "step": { "type": "integer" },
+          "agent": { "type": "string" },
+          "action": { "type": ["string", "null"] },
+          "input": { "type": ["object", "null"] },
+          "output": { "type": ["object", "null"] },
+          "thought": { "type": ["string", "null"] }
         }
       }
     }

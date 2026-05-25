@@ -1,15 +1,10 @@
-"use client";
+'use client';
 
-import { useMemo, useState } from "react";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  keepPreviousData,
-} from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useMemo, useState } from 'react';
+import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 import {
   ChevronLeft,
   ChevronRight,
@@ -22,36 +17,36 @@ import {
   Search,
   ShieldCheck,
   Trash2,
-} from "lucide-react";
-import { TopBar } from "@/components/TopBar";
-import { Dropzone } from "@/components/Dropzone";
-import { PageHeader } from "@/components/PageHeader";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+} from 'lucide-react';
+import { TopBar } from '@/components/TopBar';
+import { Dropzone } from '@/components/Dropzone';
+import { PageHeader } from '@/components/PageHeader';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Button } from '@/components/ui/button';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   analyzeDocument,
   deleteDocument,
   downloadDocument,
   listDocumentsPage,
   type DocumentRow,
-} from "@/lib/api";
-import { useAppStore } from "@/lib/store";
-import { cn } from "@/lib/cn";
+} from '@/lib/api';
+import { useAppStore } from '@/lib/store';
+import { cn } from '@/lib/cn';
 
 const PAGE_SIZE = 25;
 
 const STATUS_FILTERS: {
   value: string;
-  i18nKey: "all" | "uploaded" | "parsed" | "indexed" | "failed";
+  i18nKey: 'all' | 'uploaded' | 'parsed' | 'indexed' | 'failed';
 }[] = [
-  { value: "all", i18nKey: "all" },
-  { value: "uploaded", i18nKey: "uploaded" },
-  { value: "parsed", i18nKey: "parsed" },
-  { value: "indexed", i18nKey: "indexed" },
-  { value: "failed", i18nKey: "failed" },
+  { value: 'all', i18nKey: 'all' },
+  { value: 'uploaded', i18nKey: 'uploaded' },
+  { value: 'parsed', i18nKey: 'parsed' },
+  { value: 'indexed', i18nKey: 'indexed' },
+  { value: 'failed', i18nKey: 'failed' },
 ];
 
 function relativeTime(iso: string): string {
@@ -64,46 +59,46 @@ function relativeTime(iso: string): string {
 
 function statusTone(status: string): { fg: string; bd: string; bg: string } {
   switch (status) {
-    case "failed":
+    case 'failed':
       return {
-        fg: "text-status-danger",
-        bd: "border-status-danger/30",
-        bg: "bg-status-danger/10",
+        fg: 'text-status-danger',
+        bd: 'border-status-danger/30',
+        bg: 'bg-status-danger/10',
       };
-    case "uploaded":
+    case 'uploaded':
       return {
-        fg: "text-status-warning",
-        bd: "border-status-warning/30",
-        bg: "bg-status-warning/10",
+        fg: 'text-status-warning',
+        bd: 'border-status-warning/30',
+        bg: 'bg-status-warning/10',
       };
-    case "parsed":
-    case "indexed":
+    case 'parsed':
+    case 'indexed':
       return {
-        fg: "text-status-success",
-        bd: "border-status-success/30",
-        bg: "bg-status-success/10",
+        fg: 'text-status-success',
+        bd: 'border-status-success/30',
+        bg: 'bg-status-success/10',
       };
     default:
-      return { fg: "text-text-muted", bd: "border-border", bg: "bg-bg-panel" };
+      return { fg: 'text-text-muted', bd: 'border-border', bg: 'bg-bg-panel' };
   }
 }
 
 function scoreTone(score: number): string {
-  if (score >= 80) return "text-status-success";
-  if (score >= 60) return "text-status-warning";
-  return "text-status-danger";
+  if (score >= 80) return 'text-status-success';
+  if (score >= 60) return 'text-status-warning';
+  return 'text-status-danger';
 }
 
 export default function DocumentsPage() {
-  const t = useTranslations("documents");
+  const t = useTranslations('documents');
   const router = useRouter();
   const qc = useQueryClient();
   const setDocId = useAppStore((s) => s.setCurrentDocId);
   const setReport = useAppStore((s) => s.setCurrentReport);
   const policies = useAppStore((s) => s.selectedPolicies);
 
-  const [query, setQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [query, setQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [page, setPage] = useState(0);
   const [confirmDel, setConfirmDel] = useState<DocumentRow | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -113,13 +108,13 @@ export default function DocumentsPage() {
       limit: PAGE_SIZE,
       offset: page * PAGE_SIZE,
       q: query.trim() || undefined,
-      status: statusFilter === "all" ? undefined : [statusFilter],
+      status: statusFilter === 'all' ? undefined : [statusFilter],
     }),
-    [page, query, statusFilter],
+    [page, query, statusFilter]
   );
 
   const docs = useQuery({
-    queryKey: ["documents", params],
+    queryKey: ['documents', params],
     queryFn: () => listDocumentsPage(params),
     placeholderData: keepPreviousData,
   });
@@ -136,12 +131,11 @@ export default function DocumentsPage() {
   const deleteMut = useMutation({
     mutationFn: (docId: string) => deleteDocument(docId),
     onSuccess: () => {
-      toast.success(t("toastDeleted"));
-      qc.invalidateQueries({ queryKey: ["documents"] });
-      qc.invalidateQueries({ queryKey: ["workspace"] });
+      toast.success(t('toastDeleted'));
+      qc.invalidateQueries({ queryKey: ['documents'] });
+      qc.invalidateQueries({ queryKey: ['workspace'] });
     },
-    onError: (e) =>
-      toast.error(e instanceof Error ? e.message : t("toastDeleteFailed")),
+    onError: (e) => toast.error(e instanceof Error ? e.message : t('toastDeleteFailed')),
   });
 
   function open(d: DocumentRow) {
@@ -156,19 +150,19 @@ export default function DocumentsPage() {
 
   async function runAnalyze(d: DocumentRow) {
     setBusyId(d.id);
-    const tid = toast.loading(t("toastAnalyzing", { name: d.filename }));
+    const tid = toast.loading(t('toastAnalyzing', { name: d.filename }));
     try {
       const report = await analyzeMut.mutateAsync(d.id);
       setDocId(d.id);
       setReport(report);
-      toast.success(t("toastAnalysisDone", { score: report.score }), {
+      toast.success(t('toastAnalysisDone', { score: report.score }), {
         id: tid,
       });
-      qc.invalidateQueries({ queryKey: ["documents"] });
-      qc.invalidateQueries({ queryKey: ["workspace"] });
+      qc.invalidateQueries({ queryKey: ['documents'] });
+      qc.invalidateQueries({ queryKey: ['workspace'] });
       router.push(`/?doc=${d.id}&report=${report.report_id}`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("toastAnalysisFailed"), {
+      toast.error(e instanceof Error ? e.message : t('toastAnalysisFailed'), {
         id: tid,
       });
     } finally {
@@ -181,7 +175,7 @@ export default function DocumentsPage() {
     try {
       await downloadDocument(d.id, d.filename);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("toastDownloadFailed"));
+      toast.error(e instanceof Error ? e.message : t('toastDownloadFailed'));
     } finally {
       setBusyId(null);
     }
@@ -210,17 +204,17 @@ export default function DocumentsPage() {
       <main className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-7xl">
           <PageHeader
-            eyebrow={t("eyebrow")}
+            eyebrow={t('eyebrow')}
             eyebrowIcon={Database}
-            title={t("title")}
-            description={t("description")}
+            title={t('title')}
+            description={t('description')}
             actions={
               <label className="flex h-10 items-center gap-2 rounded-md border border-border bg-bg-panel px-3 text-xs text-text-muted w-full lg:w-[360px]">
                 <Search size={14} />
                 <input
                   value={query}
                   onChange={(e) => onSearchChange(e.target.value)}
-                  placeholder={t("search")}
+                  placeholder={t('search')}
                   className="min-w-0 flex-1 bg-transparent outline-none text-text-primary placeholder:text-text-muted"
                 />
               </label>
@@ -228,15 +222,12 @@ export default function DocumentsPage() {
           />
 
           <div className="mb-5 grid gap-3 md:grid-cols-3">
-            <VaultMetric label={t("metricTotal")} value={String(total)} />
+            <VaultMetric label={t('metricTotal')} value={String(total)} />
             <VaultMetric
-              label={t("metricPageSize")}
+              label={t('metricPageSize')}
               value={`${(totalSize / 1024 / 1024).toFixed(1)} MB`}
             />
-            <VaultMetric
-              label={t("metricRetention")}
-              value={t("retentionValue")}
-            />
+            <VaultMetric label={t('metricRetention')} value={t('retentionValue')} />
           </div>
 
           <Card className="mb-6 p-4">
@@ -252,10 +243,10 @@ export default function DocumentsPage() {
                     type="button"
                     onClick={() => onStatusChange(s.value)}
                     className={cn(
-                      "rounded px-2.5 py-1 text-[11px] font-medium transition-colors ring-focus",
+                      'rounded px-2.5 py-1 text-[11px] font-medium transition-colors ring-focus',
                       statusFilter === s.value
-                        ? "bg-bg-panel-elev text-text-primary"
-                        : "text-text-muted hover:text-text-primary",
+                        ? 'bg-bg-panel-elev text-text-primary'
+                        : 'text-text-muted hover:text-text-primary'
                     )}
                   >
                     {t(`filters.${s.i18nKey}`)}
@@ -264,8 +255,8 @@ export default function DocumentsPage() {
               </div>
               <span className="text-xs text-text-muted">
                 {total === 0
-                  ? t("zeroDocs")
-                  : t("rangeOf", {
+                  ? t('zeroDocs')
+                  : t('rangeOf', {
                       start: page * PAGE_SIZE + 1,
                       end: Math.min((page + 1) * PAGE_SIZE, total),
                       total,
@@ -283,7 +274,7 @@ export default function DocumentsPage() {
 
             {docs.isError && (
               <div className="p-6 text-xs text-status-danger">
-                {t("loadFailed")} {(docs.error as Error)?.message}
+                {t('loadFailed')} {(docs.error as Error)?.message}
               </div>
             )}
 
@@ -291,8 +282,7 @@ export default function DocumentsPage() {
               {rows.map((d) => {
                 const tone = statusTone(d.status);
                 const isBusy =
-                  busyId === d.id ||
-                  (analyzeMut.isPending && analyzeMut.variables === d.id);
+                  busyId === d.id || (analyzeMut.isPending && analyzeMut.variables === d.id);
                 return (
                   <div
                     key={d.id}
@@ -307,20 +297,17 @@ export default function DocumentsPage() {
                         <FileText className="w-4 h-4 text-status-info" />
                       </span>
                       <div className="min-w-0">
-                        <div className="truncate text-sm font-medium">
-                          {d.filename}
-                        </div>
+                        <div className="truncate text-sm font-medium">{d.filename}</div>
                         <div className="mt-0.5 truncate font-mono text-[11px] text-text-muted">
-                          {d.mime_type} · {(d.size_bytes / 1024).toFixed(1)} KB
-                          · {d.id}
+                          {d.mime_type} · {(d.size_bytes / 1024).toFixed(1)} KB · {d.id}
                         </div>
                       </div>
                     </button>
 
                     <div className="hidden items-center text-xs text-text-muted md:flex">
                       {d.pages !== undefined && d.pages !== null
-                        ? t("pages", { count: d.pages })
-                        : "—"}
+                        ? t('pages', { count: d.pages })
+                        : '—'}
                     </div>
 
                     <div className="hidden items-center gap-1 text-xs text-text-muted md:flex">
@@ -330,10 +317,10 @@ export default function DocumentsPage() {
                     <div className="flex items-center gap-2">
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium",
+                          'inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium',
                           tone.fg,
                           tone.bd,
-                          tone.bg,
+                          tone.bg
                         )}
                       >
                         <ShieldCheck size={12} />
@@ -344,10 +331,10 @@ export default function DocumentsPage() {
                           type="button"
                           onClick={() => viewReport(d)}
                           className={cn(
-                            "rounded-md border border-border bg-bg-panel px-2 py-1 text-[11px] font-mono tabular-nums hover:bg-bg-panel-elev ring-focus",
-                            scoreTone(d.latest_report.score),
+                            'rounded-md border border-border bg-bg-panel px-2 py-1 text-[11px] font-mono tabular-nums hover:bg-bg-panel-elev ring-focus',
+                            scoreTone(d.latest_report.score)
                           )}
-                          title={t("openReport", {
+                          title={t('openReport', {
                             id: d.latest_report.report_id,
                           })}
                         >
@@ -360,7 +347,7 @@ export default function DocumentsPage() {
                       <Button
                         size="icon-sm"
                         variant="ghost"
-                        title={t("runAnalysis")}
+                        title={t('runAnalysis')}
                         disabled={isBusy}
                         onClick={() => runAnalyze(d)}
                       >
@@ -373,7 +360,7 @@ export default function DocumentsPage() {
                       <Button
                         size="icon-sm"
                         variant="ghost"
-                        title={t("downloadOriginal")}
+                        title={t('downloadOriginal')}
                         disabled={isBusy}
                         onClick={() => runDownload(d)}
                       >
@@ -382,7 +369,7 @@ export default function DocumentsPage() {
                       <Button
                         size="icon-sm"
                         variant="ghost"
-                        title={t("openWorkspace")}
+                        title={t('openWorkspace')}
                         onClick={() => open(d)}
                       >
                         <FileText size={14} />
@@ -390,7 +377,7 @@ export default function DocumentsPage() {
                       <Button
                         size="icon-sm"
                         variant="ghost"
-                        title={t("deleteDoc")}
+                        title={t('deleteDoc')}
                         disabled={isBusy}
                         onClick={() => setConfirmDel(d)}
                         className="text-status-danger hover:text-status-danger"
@@ -407,15 +394,9 @@ export default function DocumentsPage() {
               <div className="p-6">
                 <EmptyState
                   icon={FileText}
-                  title={
-                    query || statusFilter !== "all"
-                      ? t("noMatchTitle")
-                      : t("vaultEmptyTitle")
-                  }
+                  title={query || statusFilter !== 'all' ? t('noMatchTitle') : t('vaultEmptyTitle')}
                   description={
-                    query || statusFilter !== "all"
-                      ? t("noMatchDesc")
-                      : t("vaultEmptyDesc")
+                    query || statusFilter !== 'all' ? t('noMatchDesc') : t('vaultEmptyDesc')
                   }
                 />
               </div>
@@ -424,7 +405,7 @@ export default function DocumentsPage() {
             {totalPages > 1 && (
               <div className="flex items-center justify-between border-t border-border px-4 py-2.5">
                 <span className="text-[11px] font-mono text-text-muted">
-                  {t("page", { page: page + 1, total: totalPages })}
+                  {t('page', { page: page + 1, total: totalPages })}
                 </span>
                 <div className="flex items-center gap-1">
                   <Button
@@ -439,9 +420,7 @@ export default function DocumentsPage() {
                     size="icon-sm"
                     variant="ghost"
                     disabled={page >= totalPages - 1}
-                    onClick={() =>
-                      setPage((p) => Math.min(totalPages - 1, p + 1))
-                    }
+                    onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                   >
                     <ChevronRight size={14} />
                   </Button>
@@ -455,13 +434,9 @@ export default function DocumentsPage() {
       <ConfirmDialog
         open={confirmDel !== null}
         onOpenChange={(v) => !v && setConfirmDel(null)}
-        title={t("deleteTitle")}
-        description={
-          confirmDel
-            ? t("deleteDescription", { name: confirmDel.filename })
-            : undefined
-        }
-        confirmLabel={t("deleteConfirm")}
+        title={t('deleteTitle')}
+        description={confirmDel ? t('deleteDescription', { name: confirmDel.filename }) : undefined}
+        confirmLabel={t('deleteConfirm')}
         destructive
         busy={deleteMut.isPending}
         onConfirm={async () => {
@@ -481,12 +456,8 @@ export default function DocumentsPage() {
 function VaultMetric({ label, value }: { label: string; value: string }) {
   return (
     <Card className="p-4">
-      <div className="text-[10px] uppercase tracking-wide text-text-muted">
-        {label}
-      </div>
-      <div className="mt-2 text-xl font-semibold tabular-nums tracking-tight">
-        {value}
-      </div>
+      <div className="text-[10px] uppercase tracking-wide text-text-muted">{label}</div>
+      <div className="mt-2 text-xl font-semibold tabular-nums tracking-tight">{value}</div>
     </Card>
   );
 }

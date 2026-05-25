@@ -75,6 +75,7 @@ Test [tests/test_vectorstore_isolation.py](../../docheck-engine/tests/test_vecto
 Chain hash include `tenant_id` in canonical JSON. `prev_hash` lookup filtra per `tenant_id == current_tenant()`.
 
 Conseguenze:
+
 - Chain di tenant A indipendente da chain di tenant B.
 - Tampering record di un tenant non rompe integrity di altri tenant.
 - `verify_chain()` opera per-tenant.

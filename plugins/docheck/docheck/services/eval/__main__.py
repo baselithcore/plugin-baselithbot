@@ -16,13 +16,23 @@ from .runner import CannedProvider, execute, load_cases
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="docheck.services.eval", description="Run the doCheck evaluation harness.")
+    p = argparse.ArgumentParser(
+        prog="docheck.services.eval", description="Run the doCheck evaluation harness."
+    )
     p.add_argument("--testset", type=Path, default=Path("tests/eval/testset.jsonl"))
     p.add_argument("--baseline", type=Path, default=Path("tests/eval/baseline.json"))
-    p.add_argument("--predictions", type=Path, help="JSON file mapping case_id -> [finding-like dicts] (mock mode)")
+    p.add_argument(
+        "--predictions",
+        type=Path,
+        help="JSON file mapping case_id -> [finding-like dicts] (mock mode)",
+    )
     p.add_argument("--update-baseline", action="store_true")
     p.add_argument("--html", type=Path, help="Write standalone HTML report to PATH")
-    p.add_argument("--live", action="store_true", help="Use real LangGraph pipeline (opt-in, requires vLLM)")
+    p.add_argument(
+        "--live",
+        action="store_true",
+        help="Use real LangGraph pipeline (opt-in, requires vLLM)",
+    )
     p.add_argument("--tolerance", type=float, default=0.02)
     return p
 
@@ -43,7 +53,10 @@ async def _run(args: argparse.Namespace) -> int:
     cases = load_cases(args.testset)
 
     if args.live:
-        print("live mode requires a doc_loader implementation; not yet wired", file=sys.stderr)
+        print(
+            "live mode requires a doc_loader implementation; not yet wired",
+            file=sys.stderr,
+        )
         return 2
     if not args.predictions:
         print("--predictions is required in mock mode (or use --live)", file=sys.stderr)
@@ -56,7 +69,9 @@ async def _run(args: argparse.Namespace) -> int:
 
     if args.update_baseline:
         version = datetime.now(UTC).strftime("%Y-%m-%d")
-        new_baseline = baseline_from_result(result, version=version, tolerance=args.tolerance)
+        new_baseline = baseline_from_result(
+            result, version=version, tolerance=args.tolerance
+        )
         save_baseline(args.baseline, new_baseline)
         print(f"baseline written to {args.baseline} ({new_baseline.metrics})")
     elif args.baseline.exists():

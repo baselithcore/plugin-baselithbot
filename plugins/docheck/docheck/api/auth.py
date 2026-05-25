@@ -20,7 +20,9 @@ router = APIRouter()
 
 class LoginRequest(BaseModel):
     # Plain str (not EmailStr) — EmailStr rejects reserved TLDs (.local) used in tests/intranet
-    email: str = Field(min_length=3, max_length=320, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+    email: str = Field(
+        min_length=3, max_length=320, pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+    )
     password: str = Field(min_length=1, max_length=512)
 
 
@@ -33,8 +35,12 @@ class LoginResponse(BaseModel):
 
 
 @router.post("/auth/login", response_model=LoginResponse)
-async def login(req: LoginRequest, db: AsyncSession = Depends(get_session)) -> LoginResponse:
-    user = (await db.execute(select(User).where(User.email == req.email))).scalar_one_or_none()
+async def login(
+    req: LoginRequest, db: AsyncSession = Depends(get_session)
+) -> LoginResponse:
+    user = (
+        await db.execute(select(User).where(User.email == req.email))
+    ).scalar_one_or_none()
 
     if user is None or user.disabled_at is not None or not user.pw_hash:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid credentials")

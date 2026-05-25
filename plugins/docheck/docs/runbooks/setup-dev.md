@@ -6,10 +6,10 @@
 - Node 20+, `pnpm 9+`.
 - **MVP usa SQLite plain** + FS-level encryption (LUKS/FileVault/BitLocker). Vedi [ADR-0008](../adr/0008-encryption-at-rest-strategy.md).
 - Optional DB-level encryption (extra `[encryption]`):
-  - macOS: `brew install sqlcipher`
-  - Linux: `sudo apt-get install libsqlcipher-dev`
-  - Install: `uv sync --extra encryption`
-  - Activate: `DOCHECK_DB_ENCRYPTION_ENABLED=true`
+    - macOS: `brew install sqlcipher`
+    - Linux: `sudo apt-get install libsqlcipher-dev`
+    - Install: `uv sync --extra encryption`
+    - Activate: `DOCHECK_DB_ENCRYPTION_ENABLED=true`
 - Server vLLM raggiungibile (locale o DGX Spark) o stub OpenAI-compatible per dev.
 
 ## Engine
@@ -27,6 +27,7 @@ uv run python -m docheck.main                # avvia su Unix socket
 ```
 
 Per dev browser-based:
+
 ```bash
 DOCHECK_BIND_TCP=127.0.0.1:8765 uv run python -m docheck.main
 ```

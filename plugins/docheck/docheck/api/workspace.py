@@ -29,7 +29,9 @@ async def workspace_queue(
     week_ago = datetime.now(UTC) - timedelta(days=7)
     month_ago = datetime.now(UTC) - timedelta(days=30)
 
-    reports_subq = select(Report.doc_id).where(Report.user_id == principal.user_id).subquery()
+    reports_subq = (
+        select(Report.doc_id).where(Report.user_id == principal.user_id).subquery()
+    )
 
     in_review = (
         await db.execute(
@@ -52,7 +54,10 @@ async def workspace_queue(
 
     pending_total = (
         await db.execute(
-            select(func.count()).select_from(Report).where(Report.user_id == principal.user_id).where(Report.score < 80)
+            select(func.count())
+            .select_from(Report)
+            .where(Report.user_id == principal.user_id)
+            .where(Report.score < 80)
         )
     ).scalar_one()
 
@@ -87,8 +92,14 @@ async def workspace_queue(
 
     return {
         "in_review": {"value": int(in_review), "trend_7d": int(in_review_recent)},
-        "pending_approval": {"value": int(pending_total), "trend_7d": int(pending_recent)},
-        "compliant": {"value": int(compliant_total), "trend_30d": int(compliant_recent)},
+        "pending_approval": {
+            "value": int(pending_total),
+            "trend_7d": int(pending_recent),
+        },
+        "compliant": {
+            "value": int(compliant_total),
+            "trend_30d": int(compliant_recent),
+        },
     }
 
 
@@ -99,7 +110,14 @@ async def workspace_active_policies(
 ) -> list[dict[str, Any]]:
     """Latest active policies summary (id, version, scope, lang, title) limited to 6 entries."""
     rows = (
-        (await db.execute(select(Policy).where(Policy.active == 1).order_by(desc(Policy.created_at)).limit(6)))
+        (
+            await db.execute(
+                select(Policy)
+                .where(Policy.active == 1)
+                .order_by(desc(Policy.created_at))
+                .limit(6)
+            )
+        )
         .scalars()
         .all()
     )

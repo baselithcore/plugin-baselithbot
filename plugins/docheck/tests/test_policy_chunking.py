@@ -20,7 +20,9 @@ def test_short_text_returns_single_chunk() -> None:
 def test_article_markers_force_structural_split() -> None:
     # Force chunking by passing a low target so the trigger fires even on
     # a synthetic input. The marker recognizer must split on each Art. N.
-    body = "\n\n".join(f"Art. {i} — Obbligo numero {i}. " + ("Contenuto. " * 200) for i in range(1, 6))
+    body = "\n\n".join(
+        f"Art. {i} — Obbligo numero {i}. " + ("Contenuto. " * 200) for i in range(1, 6)
+    )
     out = policy_chunking.split_for_extraction(body, target_chars=1_500, max_chunks=20)
     assert len(out) >= 4, f"expected one chunk per article, got {len(out)}"
     # Each non-preamble chunk starts with its article marker.
@@ -31,7 +33,10 @@ def test_article_markers_force_structural_split() -> None:
 
 def test_paragraph_fallback_when_no_markers() -> None:
     # No structural markers: must fall back to paragraph packing.
-    paragraphs = [f"Paragrafo numero {i}. " + ("Lorem ipsum dolor sit amet. " * 30) for i in range(1, 11)]
+    paragraphs = [
+        f"Paragrafo numero {i}. " + ("Lorem ipsum dolor sit amet. " * 30)
+        for i in range(1, 11)
+    ]
     body = "\n\n".join(paragraphs)
     out = policy_chunking.split_for_extraction(body, target_chars=1_500, max_chunks=20)
     assert len(out) >= 2

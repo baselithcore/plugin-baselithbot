@@ -19,7 +19,9 @@ def install_rls_hook() -> None:
         return
 
     @event.listens_for(engine.sync_engine, "checkout")
-    def _set_tenant_guc(dbapi_connection: Any, _conn_record: Any, _conn_proxy: Any) -> None:
+    def _set_tenant_guc(
+        dbapi_connection: Any, _conn_record: Any, _conn_proxy: Any
+    ) -> None:
         tenant = current_tenant()
         cur = dbapi_connection.cursor()
         try:

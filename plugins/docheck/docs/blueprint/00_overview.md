@@ -1,7 +1,7 @@
 # Document Compliance Checker — Blueprint Tecnico Enterprise
 
 **Stato:** Draft v0.1 · 2026-05-03
-**Owner:** g.ippolito@gdservices.tech
+**Owner:** <g.ippolito@gdservices.tech>
 **Target MVP:** workstation singola Electron + backend Python su NVIDIA DGX Spark dedicato. Path multi-tenant post-MVP.
 
 ---

@@ -57,7 +57,9 @@ def get_current_principal(
     return _dep
 
 
-async def has_permission(db: AsyncSession, principal: Principal, resource: str, action: str) -> bool:
+async def has_permission(
+    db: AsyncSession, principal: Principal, resource: str, action: str
+) -> bool:
     rows = await db.execute(
         select(Permission).where(
             Permission.role_id.in_(principal.roles),
@@ -75,7 +77,9 @@ def require_permission(
 
     def deco(fn: Callable[..., Awaitable[Any]]) -> Callable[..., Awaitable[Any]]:
         @wraps(fn)
-        async def wrapper(*args: Any, principal: Principal, db: AsyncSession, **kwargs: Any) -> Any:
+        async def wrapper(
+            *args: Any, principal: Principal, db: AsyncSession, **kwargs: Any
+        ) -> Any:
             if not await has_permission(db, principal, resource, action):
                 raise HTTPException(
                     status.HTTP_403_FORBIDDEN,

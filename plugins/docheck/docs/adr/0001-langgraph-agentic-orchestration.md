@@ -19,12 +19,14 @@ Adottare **LangGraph** (parte ecosistema LangChain) come orchestratore.
 ## Consequences
 
 **Positive**
+
 - Tracciabilità nativa: ogni transizione di stato osservabile (Glass Box).
 - Tipizzazione TypedDict + Pydantic per state schema.
 - Integrazione LangChain tools (`retrieve_policy` etc.).
 - Compilazione statica grafo → topologia ispezionabile pre-runtime.
 
 **Negative**
+
 - Nuova dipendenza ecosystem (LangChain core + langgraph).
 - Curva apprendimento per parallel branching.
 

@@ -29,7 +29,8 @@ def get_oidc_config() -> OIDCConfig:
     return OIDCConfig(
         issuer=issuer,
         audience=audience,
-        jwks_uri=jwks_uri or (issuer.rstrip("/") + "/.well-known/jwks.json" if issuer else ""),
+        jwks_uri=jwks_uri
+        or (issuer.rstrip("/") + "/.well-known/jwks.json" if issuer else ""),
         enabled=bool(issuer),
     )
 

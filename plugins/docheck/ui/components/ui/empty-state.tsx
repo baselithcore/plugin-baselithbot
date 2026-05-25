@@ -1,5 +1,5 @@
-import { type LucideIcon } from "lucide-react";
-import { cn } from "@/lib/cn";
+import { type LucideIcon } from 'lucide-react';
+import { cn } from '@/lib/cn';
 
 interface Props {
   icon?: LucideIcon;
@@ -9,18 +9,12 @@ interface Props {
   className?: string;
 }
 
-export function EmptyState({
-  icon: Icon,
-  title,
-  description,
-  action,
-  className,
-}: Props) {
+export function EmptyState({ icon: Icon, title, description, action, className }: Props) {
   return (
     <div
       className={cn(
-        "flex h-full w-full flex-col items-center justify-center rounded-lg border border-dashed border-border bg-bg-panel-soft px-6 py-12 text-center animate-fade-in",
-        className,
+        'flex h-full w-full flex-col items-center justify-center rounded-lg border border-dashed border-border bg-bg-panel-soft px-6 py-12 text-center animate-fade-in',
+        className
       )}
     >
       {Icon && (
@@ -30,9 +24,7 @@ export function EmptyState({
       )}
       <p className="text-sm font-semibold text-text-primary">{title}</p>
       {description && (
-        <p className="mt-1.5 max-w-sm text-xs leading-5 text-text-muted">
-          {description}
-        </p>
+        <p className="mt-1.5 max-w-sm text-xs leading-5 text-text-muted">{description}</p>
       )}
       {action && <div className="mt-5">{action}</div>}
     </div>

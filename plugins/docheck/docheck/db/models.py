@@ -1,6 +1,15 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import CheckConstraint, DateTime, Float, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -15,7 +24,9 @@ class Base(DeclarativeBase):
 class TenantMixin:
     """Mixin for multi-tenant scoped tables. `default` for single-tenant MVP."""
 
-    tenant_id: Mapped[str] = mapped_column(String, nullable=False, default="default", server_default="default")
+    tenant_id: Mapped[str] = mapped_column(
+        String, nullable=False, default="default", server_default="default"
+    )
 
 
 class User(Base, TenantMixin):
@@ -38,13 +49,19 @@ class Role(Base):
 
 class UserRole(Base):
     __tablename__ = "user_roles"
-    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
-    role_id: Mapped[str] = mapped_column(String, ForeignKey("roles.id"), primary_key=True)
+    user_id: Mapped[str] = mapped_column(
+        String, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    role_id: Mapped[str] = mapped_column(
+        String, ForeignKey("roles.id"), primary_key=True
+    )
 
 
 class Permission(Base):
     __tablename__ = "permissions"
-    role_id: Mapped[str] = mapped_column(String, ForeignKey("roles.id"), primary_key=True)
+    role_id: Mapped[str] = mapped_column(
+        String, ForeignKey("roles.id"), primary_key=True
+    )
     resource: Mapped[str] = mapped_column(String, primary_key=True)
     action: Mapped[str] = mapped_column(String, primary_key=True)
 
@@ -53,7 +70,9 @@ class Document(Base, TenantMixin):
     __tablename__ = "documents"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    owner_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False, index=True)
+    owner_id: Mapped[str] = mapped_column(
+        String, ForeignKey("users.id"), nullable=False, index=True
+    )
     filename: Mapped[str] = mapped_column(String, nullable=False)
     mime_type: Mapped[str] = mapped_column(String, nullable=False)
     sha256: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -68,7 +87,9 @@ class Document(Base, TenantMixin):
     doc_type: Mapped[str | None] = mapped_column(String)
     doc_type_confidence: Mapped[float | None] = mapped_column(Float)
 
-    chunks: Mapped[list["DocumentChunk"]] = relationship(back_populates="document", cascade="all, delete-orphan")
+    chunks: Mapped[list["DocumentChunk"]] = relationship(
+        back_populates="document", cascade="all, delete-orphan"
+    )
 
     __table_args__ = (
         CheckConstraint("status IN ('uploaded','parsed','indexed','failed','purged')"),
@@ -80,7 +101,9 @@ class DocumentChunk(Base):
     __tablename__ = "document_chunks"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    doc_id: Mapped[str] = mapped_column(String, ForeignKey("documents.id", ondelete="CASCADE"), nullable=False)
+    doc_id: Mapped[str] = mapped_column(
+        String, ForeignKey("documents.id", ondelete="CASCADE"), nullable=False
+    )
     ord: Mapped[int] = mapped_column(Integer, nullable=False)
     page: Mapped[int | None] = mapped_column(Integer)
     line_start: Mapped[int | None] = mapped_column(Integer)
@@ -112,7 +135,9 @@ class Policy(Base, TenantMixin):
     applicable_doc_types: Mapped[str | None] = mapped_column(Text)
     frameworks: Mapped[str | None] = mapped_column(Text)
 
-    __table_args__ = (CheckConstraint("scope IN ('global_default','eu','world','custom')"),)
+    __table_args__ = (
+        CheckConstraint("scope IN ('global_default','eu','world','custom')"),
+    )
 
 
 class PolicyRule(Base):
@@ -128,7 +153,9 @@ class PolicyRule(Base):
     embed_ref: Mapped[str | None] = mapped_column(String)
 
     __table_args__ = (
-        CheckConstraint("rule_type IN ('presence','absence','format','numeric_limit','semantic')"),
+        CheckConstraint(
+            "rule_type IN ('presence','absence','format','numeric_limit','semantic')"
+        ),
         CheckConstraint("severity IN ('fail','warn','info')"),
         Index("idx_rule_policy", "policy_id", "policy_version"),
     )
@@ -138,8 +165,12 @@ class Report(Base, TenantMixin):
     __tablename__ = "reports"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    doc_id: Mapped[str] = mapped_column(String, ForeignKey("documents.id"), nullable=False, index=True)
-    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False, index=True)
+    doc_id: Mapped[str] = mapped_column(
+        String, ForeignKey("documents.id"), nullable=False, index=True
+    )
+    user_id: Mapped[str] = mapped_column(
+        String, ForeignKey("users.id"), nullable=False, index=True
+    )
     engine_version: Mapped[str] = mapped_column(String, nullable=False)
     model_id: Mapped[str] = mapped_column(String, nullable=False)
     embedding_model: Mapped[str] = mapped_column(String, nullable=False)
@@ -157,8 +188,12 @@ class FindingRow(Base):
     report_id: Mapped[str] = mapped_column(
         String, ForeignKey("reports.id", ondelete="CASCADE"), nullable=False, index=True
     )
-    rule_id: Mapped[str] = mapped_column(String, ForeignKey("policy_rules.id"), nullable=False)
-    chunk_id: Mapped[str] = mapped_column(String, ForeignKey("document_chunks.id"), nullable=False)
+    rule_id: Mapped[str] = mapped_column(
+        String, ForeignKey("policy_rules.id"), nullable=False
+    )
+    chunk_id: Mapped[str] = mapped_column(
+        String, ForeignKey("document_chunks.id"), nullable=False
+    )
     severity: Mapped[str] = mapped_column(String, nullable=False)
     confidence: Mapped[float] = mapped_column(Float, nullable=False)
     explanation: Mapped[str] = mapped_column(Text, nullable=False)
@@ -180,12 +215,16 @@ class FindingDecision(Base, TenantMixin):
 
     __tablename__ = "finding_decisions"
 
-    report_id: Mapped[str] = mapped_column(String, ForeignKey("reports.id", ondelete="CASCADE"), primary_key=True)
+    report_id: Mapped[str] = mapped_column(
+        String, ForeignKey("reports.id", ondelete="CASCADE"), primary_key=True
+    )
     finding_id: Mapped[str] = mapped_column(String, primary_key=True)
     decision: Mapped[str] = mapped_column(String, nullable=False)
     note: Mapped[str | None] = mapped_column(Text)
     user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False)
-    decided_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, nullable=False)
+    decided_at: Mapped[datetime] = mapped_column(
+        DateTime, default=utcnow, nullable=False
+    )
 
     __table_args__ = (
         CheckConstraint("decision IN ('accepted','rejected','muted')"),
@@ -198,7 +237,9 @@ class AuditLog(Base, TenantMixin):
 
     seq: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     ts: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)
-    user_id: Mapped[str | None] = mapped_column(String, ForeignKey("users.id"), index=True)
+    user_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("users.id"), index=True
+    )
     action: Mapped[str] = mapped_column(String, nullable=False, index=True)
     resource: Mapped[str | None] = mapped_column(String)
     payload_hash: Mapped[str] = mapped_column(String, nullable=False)

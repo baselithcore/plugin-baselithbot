@@ -51,11 +51,13 @@ else:
 ## Consequences
 
 **Positive**
+
 - MVP install zero-friction su Python 3.12.
 - Compliance-grade deploy ottenibile con FS encryption (riconosciuto da ISO 27001 / SOC2).
 - Path encryption native pronto per cliente che la richiede esplicitamente.
 
 **Negative**
+
 - Default install non protegge da attaccante con FS read access.
 - Documentazione deve essere chiara: FS encryption obbligatoria in prod.
 - Test integration encryption on richiede setup dedicato (skippato in CI default).

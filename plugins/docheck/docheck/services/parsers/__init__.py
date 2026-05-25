@@ -45,7 +45,9 @@ def parse(path: Path, mime_type: str) -> list[Chunk]:
         case s if s.startswith("text/"):
             return text.parse(path)
         case _:
-            raise ValueError(f"Unsupported mime: {mime_type or '(missing)'} (ext={path.suffix})")
+            raise ValueError(
+                f"Unsupported mime: {mime_type or '(missing)'} (ext={path.suffix})"
+            )
 
 
 __all__ = ["parse"]

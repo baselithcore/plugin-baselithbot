@@ -74,7 +74,9 @@ async def test_login_upload_analyze_audit(app_with_admin) -> None:
             return canned_synth
         return {}
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         login = await c.post(
             "/api/v1/auth/login",
             json={
@@ -86,7 +88,9 @@ async def test_login_upload_analyze_audit(app_with_admin) -> None:
         token = login.json()["token"]
         headers = {"X-User-Id": token}
 
-        files = {"file": ("test.md", io.BytesIO(b"# Sample\nContenuto."), "text/markdown")}
+        files = {
+            "file": ("test.md", io.BytesIO(b"# Sample\nContenuto."), "text/markdown")
+        }
         up = await c.post("/api/v1/documents", headers=headers, files=files)
         assert up.status_code == 200
         doc_id = up.json()["id"]

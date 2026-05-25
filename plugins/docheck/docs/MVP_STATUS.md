@@ -2,7 +2,7 @@
 
 **Versione blueprint:** 0.1.0
 **Data finalizzazione scaffold:** 2026-05-03
-**Owner:** g.ippolito@gdservices.tech
+**Owner:** <g.ippolito@gdservices.tech>
 
 ---
 
@@ -81,22 +81,26 @@
 ## Cosa serve completare prima GA
 
 ### F2 late (agentic refinement)
+
 - [ ] StructurerAgent: prompt tuning IT contracts
 - [ ] Parallel branch fan-out legal/technical/pii in LangGraph
 - [ ] Verdict cache hit-ratio metrics
 
 ### F3 finishing
+
 - [ ] pdf.js viewer reale (oggi placeholder rendering chunks)
 - [ ] Drag&drop multi-file
 - [ ] Export PDF report con highlight rendering
 
 ### F4 hardening
+
 - [ ] OIDC end-to-end con Keycloak
 - [ ] Pen-test interno (egress, CSP Electron, audit tampering)
 - [ ] Master key custody → OS keychain (oggi file 0600)
 - [ ] CSP rules Electron production-grade
 
 ### F5+ multi-tenant
+
 - [ ] Test integration RLS Postgres real
 - [ ] Tenant onboarding flow (admin + setup wizard)
 - [ ] Quota / rate limiting per tenant
@@ -104,6 +108,7 @@
 - [ ] Backfill migration script clienti legacy
 
 ### Quality gate MVP
+
 - [ ] Test set 50 contratti IT annotati
 - [ ] KPI gate: precision ≥0.85, recall ≥0.80, F1 baseline
 - [ ] Soak test 100 doc concorrenti su DGX Spark

@@ -1,9 +1,5 @@
-import { AppShell } from "@/components/AppShell";
+import { AppShell } from '@/components/AppShell';
 
-export default function AuthedLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthedLayout({ children }: { children: React.ReactNode }) {
   return <AppShell>{children}</AppShell>;
 }

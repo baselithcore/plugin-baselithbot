@@ -32,7 +32,14 @@ class FakeStore:
         coll = self.collections.get(collection, {})
         out = []
         for _id, row in list(coll.items())[:top_k]:
-            out.append({"id": _id, "score": 0.0, "document": row["document"], "metadata": row["metadata"]})
+            out.append(
+                {
+                    "id": _id,
+                    "score": 0.0,
+                    "document": row["document"],
+                    "metadata": row["metadata"],
+                }
+            )
         return out
 
     def delete_collection(self, collection):
@@ -76,8 +83,20 @@ def test_collections_namespaced_per_tenant() -> None:
 def test_query_only_returns_current_tenant_data() -> None:
     store = FakeStore()
 
-    store.upsert("acme__policy_rules", ids=["r1"], vectors=[[1, 0]], documents=["acme"], metadatas=[{}])
-    store.upsert("globex__policy_rules", ids=["r2"], vectors=[[0, 1]], documents=["globex"], metadatas=[{}])
+    store.upsert(
+        "acme__policy_rules",
+        ids=["r1"],
+        vectors=[[1, 0]],
+        documents=["acme"],
+        metadatas=[{}],
+    )
+    store.upsert(
+        "globex__policy_rules",
+        ids=["r2"],
+        vectors=[[0, 1]],
+        documents=["globex"],
+        metadatas=[{}],
+    )
 
     acme_hits = store.query("acme__policy_rules", [1, 0])
     globex_hits = store.query("globex__policy_rules", [0, 1])

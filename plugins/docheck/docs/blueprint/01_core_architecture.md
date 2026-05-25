@@ -32,6 +32,7 @@ Sistema layered, modulare, deployabile come monorepo con due artefatti principal
 ## 1.2 Componenti Produzione
 
 ### Identity & RBAC
+
 - Ruoli: `admin`, `compliance_officer`, `dpo`, `reader`.
 - Tabelle `users`, `roles`, `user_roles`, `permissions` (vedi `06_db_schema.sql`).
 - Enforcement via decoratore Python `@require_role` su endpoint FastAPI.
@@ -39,6 +40,7 @@ Sistema layered, modulare, deployabile come monorepo con due artefatti principal
 - Local auth MVP: argon2id password hash.
 
 ### Audit Trail (hash-chained, append-only)
+
 - Tutti eventi rilevanti loggati: `login`, `upload`, `analyze`, `policy_create`, `policy_activate`, `view_finding`, `report_export`.
 - Schema record: `seq, ts, user_id, action, resource, payload_hash, prev_hash, entry_hash, signature(Ed25519)`.
 - Hash chain stile Merkle per non-ripudio.
@@ -47,22 +49,26 @@ Sistema layered, modulare, deployabile come monorepo con due artefatti principal
 - Export report firmati Ed25519 (chiave privata in OS keychain).
 
 ### Caching (3 livelli)
+
 1. **embedding_cache** — key `sha256(text) + model_id` → vector ref Chroma. LRU su disco.
 2. **policy_index_cache** — Chroma persistente per policy indicizzate, invalidato su `policy.version` bump.
 3. **verdict_cache** — key `sha256(chunk_hash || rule_id || rule_version || model_id)` → Finding JSON. Riutilizzabile fra documenti simili.
 
 ### Document Storage
+
 - Volume cifrato a livello FS (LUKS / FileVault / BitLocker).
 - File originali in `storage/docs/<sha256>` riferiti da `documents.storage_uri`.
 - Metadati + offset mapping in SQLite.
 - Auto-purge configurabile via `purge_at` (TTL retention).
 
 ### Observability
+
 - OpenTelemetry locale, trace export su file (no exporter cloud).
 - Dashboard Grafana opzionale via Docker compose (profilo `--profile observability`).
 - Prometheus metrics endpoint solo su Unix socket.
 
 ### Packaging
+
 - **Workstation MVP:** Electron installer firmato (notarized macOS, signed Windows). LLM scaricabile post-install via wizard.
 - **Server DGX:** Docker Compose multi-container (`engine`, `vllm`, `chroma`, `ui-static`, `audit-db`). Helm chart pianificato per multi-tenant.
 - **Air-gapped install:** mirror locale di pesi modelli e dipendenze Python (wheel cache).

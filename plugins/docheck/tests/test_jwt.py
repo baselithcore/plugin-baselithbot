@@ -43,7 +43,12 @@ def test_wrong_audience_rejected() -> None:
     from docheck.core.jwt import _private_pem
 
     bad = jwt.encode(
-        {"sub": "u", "iss": "docheck-local", "aud": "other", "exp": int(time.time()) + 60},
+        {
+            "sub": "u",
+            "iss": "docheck-local",
+            "aud": "other",
+            "exp": int(time.time()) + 60,
+        },
         _private_pem(),
         algorithm="EdDSA",
     )

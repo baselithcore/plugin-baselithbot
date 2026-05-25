@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { create } from "zustand";
-import { persist, createJSONStorage } from "zustand/middleware";
-import { DEFAULT_LOCALE, STORAGE_KEY, type Locale, isLocale } from "./config";
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { DEFAULT_LOCALE, STORAGE_KEY, type Locale, isLocale } from './config';
 
 interface LocaleState {
   locale: Locale;
@@ -26,6 +26,6 @@ export const useLocaleStore = create<LocaleState>()(
           locale: isLocale(p?.locale) ? p!.locale! : current.locale,
         };
       },
-    },
-  ),
+    }
+  )
 );

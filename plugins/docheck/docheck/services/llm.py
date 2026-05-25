@@ -38,7 +38,13 @@ def get_client() -> AsyncOpenAI:
 
 def _supports_native_json(provider: str) -> bool:
     # Ollama (>=0.1.34) and vLLM both expose `response_format=json_object`.
-    return provider.lower() in {"ollama", "vllm", "openai", "openai-compatible", "lmstudio"}
+    return provider.lower() in {
+        "ollama",
+        "vllm",
+        "openai",
+        "openai-compatible",
+        "lmstudio",
+    }
 
 
 async def chat_json(
@@ -58,7 +64,9 @@ async def chat_json(
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ],
-        "temperature": temperature if temperature is not None else settings.llm_temperature,
+        "temperature": temperature
+        if temperature is not None
+        else settings.llm_temperature,
         "top_p": settings.llm_top_p,
         "max_tokens": max_tokens,
     }
@@ -173,7 +181,9 @@ async def chat_text_stream(
                 {"role": "system", "content": system},
                 {"role": "user", "content": user},
             ],
-            temperature=temperature if temperature is not None else settings.llm_temperature,
+            temperature=temperature
+            if temperature is not None
+            else settings.llm_temperature,
             top_p=settings.llm_top_p,
             max_tokens=max_tokens,
             stream=True,
@@ -218,7 +228,9 @@ async def chat_text(
             {"role": "system", "content": system},
             {"role": "user", "content": user},
         ],
-        temperature=temperature if temperature is not None else settings.llm_temperature,
+        temperature=temperature
+        if temperature is not None
+        else settings.llm_temperature,
         top_p=settings.llm_top_p,
         max_tokens=max_tokens,
     )

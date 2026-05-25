@@ -1,16 +1,14 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { getSession } from '@/lib/auth';
 
-const PUBLIC_PATHS = ["/login", "/onboarding"];
+const PUBLIC_PATHS = ['/login', '/onboarding'];
 
 function isPublic(pathname: string | null): boolean {
   if (!pathname) return false;
-  return PUBLIC_PATHS.some(
-    (p) => pathname === p || pathname.startsWith(p + "/"),
-  );
+  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));
 }
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
@@ -20,7 +18,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const s = getSession();
     if (!s && !isPublic(pathname)) {
-      window.location.replace("/login");
+      window.location.replace('/login');
       return;
     }
     setChecked(true);

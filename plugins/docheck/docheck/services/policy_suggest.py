@@ -26,7 +26,9 @@ from . import policy_coverage, policy_ingest
 MAX_SUGGESTIONS = 30
 
 
-async def _gather_existing_excerpts(db: AsyncSession, pid: str, version: str) -> list[str]:
+async def _gather_existing_excerpts(
+    db: AsyncSession, pid: str, version: str
+) -> list[str]:
     rows = await policy_svc.list_rules(db, pid, version)
     return [str(r.get("excerpt", "")).strip() for r in rows if r.get("excerpt")]
 
@@ -48,7 +50,9 @@ async def suggest_more(
     # Reuse the same single-shot / chunked extraction path so behavior on
     # long sources matches the initial ingest exactly (ADR-0013).
     if len(source_text) > policy_ingest._CHUNK_TRIGGER_CHARS:
-        _header, raw_rules = await policy_ingest._chunked_extract(source_text, hint_title=pid)
+        _header, raw_rules = await policy_ingest._chunked_extract(
+            source_text, hint_title=pid
+        )
     else:
         extracted = await policy_ingest._llm_extract(source_text, hint_title=pid)
         rules = extracted.get("rules") or []

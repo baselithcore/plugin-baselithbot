@@ -116,7 +116,9 @@ def _safe_float(v: object) -> float:
     return f
 
 
-def _result(doc_type: DocType, confidence: float, low_conf: bool, rationale: str = "") -> CheckState:
+def _result(
+    doc_type: DocType, confidence: float, low_conf: bool, rationale: str = ""
+) -> CheckState:
     return {
         "doc_type": doc_type.value,
         "doc_type_confidence": confidence,

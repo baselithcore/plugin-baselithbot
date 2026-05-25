@@ -1,6 +1,6 @@
-import { authHeaders } from "../auth";
-import { BASE } from "./_base";
-import type { ActivePolicy, RecentActivity, WorkspaceQueue } from "./types";
+import { authHeaders } from '../auth';
+import { BASE } from './_base';
+import type { ActivePolicy, RecentActivity, WorkspaceQueue } from './types';
 
 export async function getWorkspaceQueue(): Promise<WorkspaceQueue> {
   const res = await fetch(`${BASE}/workspace/queue`, {

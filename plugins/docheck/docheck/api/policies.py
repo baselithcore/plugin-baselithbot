@@ -150,7 +150,9 @@ async def export_yaml(
     return Response(
         content=body,
         media_type="application/x-yaml",
-        headers={"Content-Disposition": f'attachment; filename="{policy_id}-{version}.yaml"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="{policy_id}-{version}.yaml"'
+        },
     )
 
 
@@ -195,7 +197,9 @@ async def update_policy(
 ) -> Any:
     _guard_system(policy_id)
     patch = body.model_dump(exclude_unset=True)
-    out = await policy_svc.update_policy(db, pid=policy_id, version=version, patch=patch)
+    out = await policy_svc.update_policy(
+        db, pid=policy_id, version=version, patch=patch
+    )
     await db.commit()
     await audit.append_audit(
         db,
@@ -216,7 +220,9 @@ async def set_active(
     db: AsyncSession = Depends(get_session),
 ) -> dict[str, Any]:
     _guard_system(policy_id)
-    out = await policy_svc.set_active(db, pid=policy_id, version=version, active=body.active)
+    out = await policy_svc.set_active(
+        db, pid=policy_id, version=version, active=body.active
+    )
     await db.commit()
     await audit.append_audit(
         db,
@@ -228,7 +234,9 @@ async def set_active(
     return out
 
 
-@router.post("/policies/{policy_id}/{version}/clone", response_model=PolicyOut, status_code=201)
+@router.post(
+    "/policies/{policy_id}/{version}/clone", response_model=PolicyOut, status_code=201
+)
 async def clone_policy(
     policy_id: str,
     version: str,
@@ -279,7 +287,9 @@ async def delete_policy(
 # ---------- Write: rule lifecycle ----------
 
 
-@router.post("/policies/{policy_id}/{version}/rules", response_model=RuleOut, status_code=201)
+@router.post(
+    "/policies/{policy_id}/{version}/rules", response_model=RuleOut, status_code=201
+)
 async def add_rule(
     policy_id: str,
     version: str,
@@ -409,7 +419,9 @@ async def ingest_from_url(
     return out
 
 
-@router.post("/policies/ingest/document", response_model=IngestPolicyOut, status_code=201)
+@router.post(
+    "/policies/ingest/document", response_model=IngestPolicyOut, status_code=201
+)
 async def ingest_from_document(
     file: UploadFile = File(...),
     principal: Principal = Depends(require("policy", "write")),
@@ -473,7 +485,9 @@ async def suggest_rules(
     if bool(body.source_url) == bool(body.source_text):
         raise HTTPException(400, "Provide exactly one of source_url or source_text")
     if body.source_url:
-        suggestions = await policy_suggest.suggest_from_url(db, pid=policy_id, version=version, url=body.source_url)
+        suggestions = await policy_suggest.suggest_from_url(
+            db, pid=policy_id, version=version, url=body.source_url
+        )
     else:
         assert body.source_text is not None  # guarded by xor check above
         suggestions = await policy_suggest.suggest_more(

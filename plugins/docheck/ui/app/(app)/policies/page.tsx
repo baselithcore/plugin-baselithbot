@@ -1,29 +1,20 @@
-"use client";
+'use client';
 
-import { useMemo, useRef, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { useTranslations } from "next-intl";
+import { useMemo, useRef, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
-import { TopBar } from "@/components/TopBar";
-import {
-  PolicyEditorModal,
-  type PolicyMetaForm,
-} from "@/components/policy/PolicyEditorModal";
-import { RuleEditorModal } from "@/components/policy/RuleEditorModal";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import {
-  CloneDialog,
-  UrlIngestDialog,
-} from "@/components/policy/PolicyDialogs";
-import { bumpVersion } from "@/components/policy/PolicyBits";
-import {
-  PolicyListAside,
-  type ScopeFilter,
-} from "@/components/policy/PolicyListAside";
-import { PolicyDetailPane } from "@/components/policy/PolicyDetailPane";
-import { CoverageBanner } from "@/components/policy/CoverageBanner";
-import { SuggestRulesDialog } from "@/components/policy/SuggestRulesDialog";
+import { TopBar } from '@/components/TopBar';
+import { PolicyEditorModal, type PolicyMetaForm } from '@/components/policy/PolicyEditorModal';
+import { RuleEditorModal } from '@/components/policy/RuleEditorModal';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { CloneDialog, UrlIngestDialog } from '@/components/policy/PolicyDialogs';
+import { bumpVersion } from '@/components/policy/PolicyBits';
+import { PolicyListAside, type ScopeFilter } from '@/components/policy/PolicyListAside';
+import { PolicyDetailPane } from '@/components/policy/PolicyDetailPane';
+import { CoverageBanner } from '@/components/policy/CoverageBanner';
+import { SuggestRulesDialog } from '@/components/policy/SuggestRulesDialog';
 import {
   addRule,
   clonePolicy,
@@ -44,50 +35,46 @@ import {
   type PolicyRow,
   type RulePayload,
   type RuleRow,
-} from "@/lib/api";
-import type { SuggestedRule } from "@/lib/api/policies";
-import type { CoverageReport } from "@/lib/api/types";
+} from '@/lib/api';
+import type { SuggestedRule } from '@/lib/api/policies';
+import type { CoverageReport } from '@/lib/api/types';
 
 export default function PoliciesPage() {
-  const t = useTranslations("policies");
+  const t = useTranslations('policies');
   const qc = useQueryClient();
   const [selected, setSelected] = useState<PolicyRow | null>(null);
-  const [query, setQuery] = useState("");
-  const [scopeFilter, setScopeFilter] = useState<ScopeFilter>("all");
+  const [query, setQuery] = useState('');
+  const [scopeFilter, setScopeFilter] = useState<ScopeFilter>('all');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
   const [urlDialogOpen, setUrlDialogOpen] = useState(false);
-  const [ingestUrl, setIngestUrl] = useState("");
+  const [ingestUrl, setIngestUrl] = useState('');
 
   const [editorOpen, setEditorOpen] = useState(false);
-  const [editorMode, setEditorMode] = useState<"create" | "edit">("create");
+  const [editorMode, setEditorMode] = useState<'create' | 'edit'>('create');
   const [ruleEditorOpen, setRuleEditorOpen] = useState(false);
-  const [ruleEditorMode, setRuleEditorMode] = useState<"create" | "edit">(
-    "create",
-  );
+  const [ruleEditorMode, setRuleEditorMode] = useState<'create' | 'edit'>('create');
   const [editingRule, setEditingRule] = useState<RuleRow | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<
-    null | { kind: "policy" } | { kind: "rule"; rule: RuleRow }
+    null | { kind: 'policy' } | { kind: 'rule'; rule: RuleRow }
   >(null);
   const [confirmClone, setConfirmClone] = useState(false);
-  const [cloneVersion, setCloneVersion] = useState("");
+  const [cloneVersion, setCloneVersion] = useState('');
   const [suggestOpen, setSuggestOpen] = useState(false);
-  const [suggestResults, setSuggestResults] = useState<SuggestedRule[] | null>(
-    null,
-  );
+  const [suggestResults, setSuggestResults] = useState<SuggestedRule[] | null>(null);
   const [lastCoverage, setLastCoverage] = useState<{
     policyId: string;
     policyVersion: string;
     report: CoverageReport;
   } | null>(null);
   const [ingestProgress, setIngestProgress] = useState<{
-    phase: "uploading" | "processing";
+    phase: 'uploading' | 'processing';
     pct: number;
   } | null>(null);
 
-  const policies = useQuery({ queryKey: ["policies"], queryFn: listPolicies });
+  const policies = useQuery({ queryKey: ['policies'], queryFn: listPolicies });
   const rules = useQuery({
-    queryKey: ["rules", selected?.id, selected?.version],
+    queryKey: ['rules', selected?.id, selected?.version],
     queryFn: () => listRules(selected!.id, selected!.version),
     enabled: !!selected,
   });
@@ -96,31 +83,26 @@ export default function PoliciesPage() {
     const list = policies.data ?? [];
     const q = query.trim().toLowerCase();
     return list.filter((p) => {
-      if (scopeFilter !== "all" && p.scope !== scopeFilter) return false;
+      if (scopeFilter !== 'all' && p.scope !== scopeFilter) return false;
       if (!q) return true;
-      return (
-        p.title.toLowerCase().includes(q) || p.id.toLowerCase().includes(q)
-      );
+      return p.title.toLowerCase().includes(q) || p.id.toLowerCase().includes(q);
     });
   }, [policies.data, query, scopeFilter]);
 
   const active = (policies.data ?? []).filter((p) => p.active).length;
 
   function refreshPolicies() {
-    return qc.invalidateQueries({ queryKey: ["policies"] });
+    return qc.invalidateQueries({ queryKey: ['policies'] });
   }
   function refreshRules() {
     if (!selected) return Promise.resolve();
     return qc.invalidateQueries({
-      queryKey: ["rules", selected.id, selected.version],
+      queryKey: ['rules', selected.id, selected.version],
     });
   }
 
   const createMut = useMutation({
-    mutationFn: async (args: {
-      form: PolicyMetaForm;
-      firstRule: RulePayload | null;
-    }) =>
+    mutationFn: async (args: { form: PolicyMetaForm; firstRule: RulePayload | null }) =>
       createPolicy({
         id: args.form.id,
         version: args.form.version,
@@ -131,7 +113,7 @@ export default function PoliciesPage() {
         rules: args.firstRule ? [args.firstRule] : [],
       }),
     onSuccess: async (row) => {
-      toast.success(t("toast.created", { id: row.id, version: row.version }));
+      toast.success(t('toast.created', { id: row.id, version: row.version }));
       setEditorOpen(false);
       await refreshPolicies();
       setSelected(row);
@@ -140,18 +122,14 @@ export default function PoliciesPage() {
   });
 
   const updateMut = useMutation({
-    mutationFn: async (args: {
-      id: string;
-      version: string;
-      patch: PolicyMetaForm;
-    }) =>
+    mutationFn: async (args: { id: string; version: string; patch: PolicyMetaForm }) =>
       updatePolicy(args.id, args.version, {
         title: args.patch.title,
         scope: args.patch.scope,
         lang: args.patch.lang,
       }),
     onSuccess: async (row) => {
-      toast.success(t("toast.updated"));
+      toast.success(t('toast.updated'));
       setEditorOpen(false);
       await refreshPolicies();
       setSelected(row);
@@ -160,25 +138,12 @@ export default function PoliciesPage() {
   });
 
   const activeMut = useMutation({
-    mutationFn: ({
-      id,
-      version,
-      active,
-    }: {
-      id: string;
-      version: string;
-      active: boolean;
-    }) => setPolicyActive(id, version, active),
+    mutationFn: ({ id, version, active }: { id: string; version: string; active: boolean }) =>
+      setPolicyActive(id, version, active),
     onSuccess: async (_d, vars) => {
-      toast.success(
-        vars.active ? t("toast.activated") : t("toast.deactivated"),
-      );
+      toast.success(vars.active ? t('toast.activated') : t('toast.deactivated'));
       await refreshPolicies();
-      if (
-        selected &&
-        selected.id === vars.id &&
-        selected.version === vars.version
-      ) {
+      if (selected && selected.id === vars.id && selected.version === vars.version) {
         setSelected({ ...selected, active: vars.active });
       }
     },
@@ -196,9 +161,9 @@ export default function PoliciesPage() {
       newVersion: string;
     }) => clonePolicy(id, version, newVersion),
     onSuccess: async (row) => {
-      toast.success(t("toast.cloned", { id: row.id, version: row.version }));
+      toast.success(t('toast.cloned', { id: row.id, version: row.version }));
       setConfirmClone(false);
-      setCloneVersion("");
+      setCloneVersion('');
       await refreshPolicies();
       setSelected(row);
     },
@@ -206,17 +171,10 @@ export default function PoliciesPage() {
   });
 
   const deleteMut = useMutation({
-    mutationFn: ({
-      id,
-      version,
-      force,
-    }: {
-      id: string;
-      version: string;
-      force?: boolean;
-    }) => deletePolicy(id, version, force),
+    mutationFn: ({ id, version, force }: { id: string; version: string; force?: boolean }) =>
+      deletePolicy(id, version, force),
     onSuccess: async () => {
-      toast.success(t("toast.deleted"));
+      toast.success(t('toast.deleted'));
       setConfirmDelete(null);
       setSelected(null);
       await refreshPolicies();
@@ -225,7 +183,7 @@ export default function PoliciesPage() {
       if (e.status === 409 && !vars.force) {
         const msg = e.detail || e.message;
         if (
-          typeof window !== "undefined" &&
+          typeof window !== 'undefined' &&
           window.confirm(`${msg}\n\nForzare la cancellazione?`)
         ) {
           deleteMut.mutate({ ...vars, force: true });
@@ -237,10 +195,9 @@ export default function PoliciesPage() {
   });
 
   const ruleAddMut = useMutation({
-    mutationFn: (payload: RulePayload) =>
-      addRule(selected!.id, selected!.version, payload),
+    mutationFn: (payload: RulePayload) => addRule(selected!.id, selected!.version, payload),
     onSuccess: async () => {
-      toast.success(t("toast.ruleAdded"));
+      toast.success(t('toast.ruleAdded'));
       setRuleEditorOpen(false);
       await Promise.all([refreshRules(), refreshPolicies()]);
     },
@@ -251,7 +208,7 @@ export default function PoliciesPage() {
     mutationFn: (args: { ruleId: string; patch: Partial<RulePayload> }) =>
       updateRule(selected!.id, selected!.version, args.ruleId, args.patch),
     onSuccess: async () => {
-      toast.success(t("toast.ruleUpdated"));
+      toast.success(t('toast.ruleUpdated'));
       setRuleEditorOpen(false);
       await refreshRules();
     },
@@ -259,10 +216,9 @@ export default function PoliciesPage() {
   });
 
   const ruleDeleteMut = useMutation({
-    mutationFn: (rule: RuleRow) =>
-      deleteRule(rule.policy_id, rule.policy_version, rule.id),
+    mutationFn: (rule: RuleRow) => deleteRule(rule.policy_id, rule.policy_version, rule.id),
     onSuccess: async () => {
-      toast.success(t("toast.ruleDeleted"));
+      toast.success(t('toast.ruleDeleted'));
       setConfirmDelete(null);
       await Promise.all([refreshRules(), refreshPolicies()]);
     },
@@ -271,17 +227,17 @@ export default function PoliciesPage() {
 
   const importMut = useMutation({
     mutationFn: async (file: File) => {
-      setIngestProgress({ phase: "uploading", pct: 0 });
+      setIngestProgress({ phase: 'uploading', pct: 0 });
       try {
         return await importPolicyYaml(file, (e) =>
-          setIngestProgress({ phase: e.phase, pct: e.pct }),
+          setIngestProgress({ phase: e.phase, pct: e.pct })
         );
       } finally {
         setIngestProgress(null);
       }
     },
     onSuccess: async (row) => {
-      toast.success(t("toast.imported", { id: row.id, version: row.version }));
+      toast.success(t('toast.imported', { id: row.id, version: row.version }));
       await refreshPolicies();
       setSelected(row);
     },
@@ -290,7 +246,7 @@ export default function PoliciesPage() {
 
   const ingestUrlMut = useMutation({
     mutationFn: async (url: string) => {
-      setIngestProgress({ phase: "processing", pct: 0 });
+      setIngestProgress({ phase: 'processing', pct: 0 });
       try {
         return await ingestPolicyFromUrl(url);
       } finally {
@@ -298,9 +254,9 @@ export default function PoliciesPage() {
       }
     },
     onSuccess: async (row) => {
-      toast.success(t("toast.ingestUrl", { id: row.id, version: row.version }));
+      toast.success(t('toast.ingestUrl', { id: row.id, version: row.version }));
       setUrlDialogOpen(false);
-      setIngestUrl("");
+      setIngestUrl('');
       await refreshPolicies();
       setSelected(row);
       if (row.coverage) {
@@ -316,17 +272,17 @@ export default function PoliciesPage() {
 
   const ingestDocMut = useMutation({
     mutationFn: async (file: File) => {
-      setIngestProgress({ phase: "uploading", pct: 0 });
+      setIngestProgress({ phase: 'uploading', pct: 0 });
       try {
         return await ingestPolicyFromDocument(file, (e) =>
-          setIngestProgress({ phase: e.phase, pct: e.pct }),
+          setIngestProgress({ phase: e.phase, pct: e.pct })
         );
       } finally {
         setIngestProgress(null);
       }
     },
     onSuccess: async (row) => {
-      toast.success(t("toast.ingestDoc", { id: row.id, version: row.version }));
+      toast.success(t('toast.ingestDoc', { id: row.id, version: row.version }));
       await refreshPolicies();
       setSelected(row);
       if (row.coverage) {
@@ -342,7 +298,7 @@ export default function PoliciesPage() {
 
   const suggestFetchMut = useMutation({
     mutationFn: async (url: string) => {
-      if (!selected) throw new Error("no policy selected");
+      if (!selected) throw new Error('no policy selected');
       return await suggestRulesFromUrl(selected.id, selected.version, url);
     },
     onSuccess: (rows) => setSuggestResults(rows),
@@ -351,12 +307,8 @@ export default function PoliciesPage() {
 
   const suggestFetchDocMut = useMutation({
     mutationFn: async (file: File) => {
-      if (!selected) throw new Error("no policy selected");
-      return await suggestRulesFromDocument(
-        selected.id,
-        selected.version,
-        file,
-      );
+      if (!selected) throw new Error('no policy selected');
+      return await suggestRulesFromDocument(selected.id, selected.version, file);
     },
     onSuccess: (rows) => setSuggestResults(rows),
     onError: (e: Error) => toast.error(e.message),
@@ -364,13 +316,13 @@ export default function PoliciesPage() {
 
   const suggestApplyMut = useMutation({
     mutationFn: async (picked: SuggestedRule[]) => {
-      if (!selected) throw new Error("no policy selected");
+      if (!selected) throw new Error('no policy selected');
       // Sequential add: keeps audit log ordering deterministic and avoids
       // bursts against the LLM-free CRUD endpoint.
       for (const r of picked) {
         await addRule(selected.id, selected.version, {
-          rule_type: r.rule_type as RulePayload["rule_type"],
-          severity: r.severity as RulePayload["severity"],
+          rule_type: r.rule_type as RulePayload['rule_type'],
+          severity: r.severity as RulePayload['severity'],
           excerpt: r.excerpt,
           matcher: r.matcher ?? null,
         });
@@ -378,12 +330,12 @@ export default function PoliciesPage() {
       return picked.length;
     },
     onSuccess: async (n) => {
-      toast.success(t("toast.suggestApplied", { n }));
+      toast.success(t('toast.suggestApplied', { n }));
       setSuggestOpen(false);
       setSuggestResults(null);
       if (selected) {
         await qc.invalidateQueries({
-          queryKey: ["rules", selected.id, selected.version],
+          queryKey: ['rules', selected.id, selected.version],
         });
       }
     },
@@ -395,7 +347,7 @@ export default function PoliciesPage() {
   }
   function onFilePicked(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
-    e.target.value = "";
+    e.target.value = '';
     if (f) importMut.mutate(f);
   }
   function onIngestDocClick() {
@@ -403,7 +355,7 @@ export default function PoliciesPage() {
   }
   function onDocPicked(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
-    e.target.value = "";
+    e.target.value = '';
     if (f) ingestDocMut.mutate(f);
   }
   async function onExport() {
@@ -411,25 +363,25 @@ export default function PoliciesPage() {
     try {
       await exportPolicyYaml(selected.id, selected.version);
     } catch (ex) {
-      toast.error(ex instanceof Error ? ex.message : t("toast.exportFailed"));
+      toast.error(ex instanceof Error ? ex.message : t('toast.exportFailed'));
     }
   }
   function openCreate() {
-    setEditorMode("create");
+    setEditorMode('create');
     setEditorOpen(true);
   }
   function openEdit() {
     if (!selected) return;
-    setEditorMode("edit");
+    setEditorMode('edit');
     setEditorOpen(true);
   }
   function openRuleCreate() {
-    setRuleEditorMode("create");
+    setRuleEditorMode('create');
     setEditingRule(null);
     setRuleEditorOpen(true);
   }
   function openRuleEdit(r: RuleRow) {
-    setRuleEditorMode("edit");
+    setRuleEditorMode('edit');
     setEditingRule(r);
     setRuleEditorOpen(true);
   }
@@ -494,7 +446,7 @@ export default function PoliciesPage() {
               setConfirmClone(true);
             }}
             onExport={onExport}
-            onDeletePolicy={() => setConfirmDelete({ kind: "policy" })}
+            onDeletePolicy={() => setConfirmDelete({ kind: 'policy' })}
             onCreateRule={openRuleCreate}
             onSuggestRules={() => {
               if (!selected) return;
@@ -502,7 +454,7 @@ export default function PoliciesPage() {
               setSuggestOpen(true);
             }}
             onEditRule={openRuleEdit}
-            onDeleteRule={(r) => setConfirmDelete({ kind: "rule", rule: r })}
+            onDeleteRule={(r) => setConfirmDelete({ kind: 'rule', rule: r })}
           />
         </div>
       </main>
@@ -511,7 +463,7 @@ export default function PoliciesPage() {
         open={editorOpen}
         mode={editorMode}
         initial={
-          editorMode === "edit" && selected
+          editorMode === 'edit' && selected
             ? {
                 id: selected.id,
                 version: selected.version,
@@ -532,7 +484,7 @@ export default function PoliciesPage() {
         progress={ingestProgress}
         onClose={() => setEditorOpen(false)}
         onSubmit={async (form, firstRule) => {
-          if (editorMode === "create") {
+          if (editorMode === 'create') {
             await createMut.mutateAsync({ form, firstRule });
           } else if (selected) {
             await updateMut.mutateAsync({
@@ -544,9 +496,9 @@ export default function PoliciesPage() {
           setEditorOpen(false);
         }}
         onIngest={async (payload) => {
-          if (payload.kind === "url") {
+          if (payload.kind === 'url') {
             await ingestUrlMut.mutateAsync(payload.url);
-          } else if (payload.kind === "doc") {
+          } else if (payload.kind === 'doc') {
             await ingestDocMut.mutateAsync(payload.file);
           } else {
             await importMut.mutateAsync(payload.file);
@@ -562,7 +514,7 @@ export default function PoliciesPage() {
         busy={ruleAddMut.isPending || ruleUpdateMut.isPending}
         onClose={() => setRuleEditorOpen(false)}
         onSubmit={async (payload) => {
-          if (ruleEditorMode === "create") {
+          if (ruleEditorMode === 'create') {
             await ruleAddMut.mutateAsync(payload);
           } else if (editingRule) {
             await ruleUpdateMut.mutateAsync({
@@ -579,17 +531,17 @@ export default function PoliciesPage() {
       />
 
       <ConfirmDialog
-        open={confirmDelete?.kind === "policy"}
+        open={confirmDelete?.kind === 'policy'}
         onOpenChange={(v) => {
           if (!v) setConfirmDelete(null);
         }}
-        title={t("delete.title", {
-          id: selected?.id ?? "",
-          version: selected?.version ?? "",
+        title={t('delete.title', {
+          id: selected?.id ?? '',
+          version: selected?.version ?? '',
         })}
-        description={t("delete.description")}
+        description={t('delete.description')}
         destructive
-        confirmLabel={t("delete.confirm")}
+        confirmLabel={t('delete.confirm')}
         busy={deleteMut.isPending}
         onConfirm={() => {
           if (!selected) return;
@@ -598,22 +550,19 @@ export default function PoliciesPage() {
       />
 
       <ConfirmDialog
-        open={confirmDelete?.kind === "rule"}
+        open={confirmDelete?.kind === 'rule'}
         onOpenChange={(v) => {
           if (!v) setConfirmDelete(null);
         }}
         title={
-          confirmDelete?.kind === "rule"
-            ? t("deleteRule.title", { id: confirmDelete.rule.id })
-            : ""
+          confirmDelete?.kind === 'rule' ? t('deleteRule.title', { id: confirmDelete.rule.id }) : ''
         }
-        description={t("deleteRule.description")}
+        description={t('deleteRule.description')}
         destructive
-        confirmLabel={t("deleteRule.confirm")}
+        confirmLabel={t('deleteRule.confirm')}
         busy={ruleDeleteMut.isPending}
         onConfirm={() => {
-          if (confirmDelete?.kind === "rule")
-            ruleDeleteMut.mutate(confirmDelete.rule);
+          if (confirmDelete?.kind === 'rule') ruleDeleteMut.mutate(confirmDelete.rule);
         }}
       />
 

@@ -44,10 +44,18 @@ def test_resolution_priority(monkeypatch) -> None:
     importlib.reload(config)
 
     # JWT claim wins
-    assert resolve_tenant_from_request({"x-tenant-id": "header-t"}, jwt_claims={"tid": "jwt-t"}) == "jwt-t"
+    assert (
+        resolve_tenant_from_request(
+            {"x-tenant-id": "header-t"}, jwt_claims={"tid": "jwt-t"}
+        )
+        == "jwt-t"
+    )
 
     # Header fallback
-    assert resolve_tenant_from_request({"x-tenant-id": "header-t"}, jwt_claims=None) == "header-t"
+    assert (
+        resolve_tenant_from_request({"x-tenant-id": "header-t"}, jwt_claims=None)
+        == "header-t"
+    )
 
     # Default fallback
     assert resolve_tenant_from_request({}, jwt_claims=None) == "default"
@@ -61,4 +69,9 @@ def test_disabled_multitenant_always_default(monkeypatch) -> None:
 
     importlib.reload(config)
 
-    assert resolve_tenant_from_request({"x-tenant-id": "ignored"}, jwt_claims={"tid": "ignored"}) == "default"
+    assert (
+        resolve_tenant_from_request(
+            {"x-tenant-id": "ignored"}, jwt_claims={"tid": "ignored"}
+        )
+        == "default"
+    )

@@ -28,7 +28,9 @@ class AskIn(BaseModel):
     question: str = Field(min_length=2, max_length=2000)
 
 
-def _payload_finding(report_payload: dict[str, Any], finding_id: str) -> dict[str, Any] | None:
+def _payload_finding(
+    report_payload: dict[str, Any], finding_id: str
+) -> dict[str, Any] | None:
     for f in report_payload.get("findings", []):
         if f.get("id") == finding_id:
             result: dict[str, Any] = f
@@ -131,7 +133,15 @@ async def list_decisions(
     db: AsyncSession = Depends(get_session),
 ) -> dict[str, dict[str, Any]]:
     await _load_report(db, report_id, principal.user_id)
-    rows = (await db.execute(select(FindingDecision).where(FindingDecision.report_id == report_id))).scalars().all()
+    rows = (
+        (
+            await db.execute(
+                select(FindingDecision).where(FindingDecision.report_id == report_id)
+            )
+        )
+        .scalars()
+        .all()
+    )
     return {
         r.finding_id: {
             "decision": r.decision,
@@ -303,7 +313,10 @@ async def ask_finding_stream(
                 temperature=0.1,
             ):
                 accum.append(delta)
-                yield (json.dumps({"type": "token", "text": delta}, ensure_ascii=False) + "\n")
+                yield (
+                    json.dumps({"type": "token", "text": delta}, ensure_ascii=False)
+                    + "\n"
+                )
         except Exception as exc:
             log.warning(
                 "finding.ask_stream.llm_failed",

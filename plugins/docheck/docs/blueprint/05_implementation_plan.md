@@ -8,6 +8,7 @@
 ### F1 — Foundation (settimane 1-3)
 
 **Deliverable:**
+
 - Monorepo setup (`docheck-engine`, `docheck-ui`, `docheck-shared-schemas`).
 - FastAPI scaffold con health, auth stub, gRPC Unix socket.
 - Electron shell + Next.js statico embedded.
@@ -18,6 +19,7 @@
 - Seed policy default (IT GDPR, Codice Civile, Codice Consumo).
 
 **Criteri accettazione:**
+
 - Doc upload via UI → chunks visibili con bbox sovrapposte in viewer.
 - Indicizzazione policy seed verificata (3 policy IT, ~50 rule attive).
 - Test E2E "upload + parse + index" su 5 doc campione.
@@ -25,6 +27,7 @@
 ### F2 — Agentic Core (settimane 4-7)
 
 **Deliverable:**
+
 - LangGraph state machine con 6 agenti.
 - vLLM serving Llama-3.3-70B Q4_K_M su DGX Spark, fallback Llama-3.1-8B.
 - Schema Finding validato Pydantic.
@@ -33,6 +36,7 @@
 - Verdict cache + embedding cache.
 
 **Criteri accettazione:**
+
 - E2E: contratto test → ≥10 findings tracciabili.
 - Score deterministico (stesso input → stesso output, temperature 0.1).
 - Tempo analisi 20pp < 90s su DGX Spark.
@@ -41,6 +45,7 @@
 ### F3 — UI Glass Box (settimane 8-11)
 
 **Deliverable:**
+
 - Layout 60/40 con `react-resizable-panels`.
 - Document Viewer con highlight bbox via SVG overlay su pdf.js.
 - Findings Panel virtualizzata (`react-virtuoso`).
@@ -52,6 +57,7 @@
 - Export report (PDF + MD + JSON firmato).
 
 **Criteri accettazione:**
+
 - Click finding → highlight evidence < 300ms.
 - Usability test interno (5 utenti, task completion ≥ 80%).
 - WCAG AA verificato (axe-core CI).
@@ -60,6 +66,7 @@
 ### F4 — Hardening & Packaging (settimane 12-14)
 
 **Deliverable:**
+
 - RBAC completo (4 ruoli) + permission enforcement.
 - SQLCipher audit trail con hash chain Ed25519.
 - Job verifica integrità chain.
@@ -71,6 +78,7 @@
 - CI/CD: lint, type-check, unit, integration, E2E, security scan.
 
 **Criteri accettazione:**
+
 - Pen-test interno superato.
 - Audit log immutabile (trigger SQLite verificato).
 - Zero pacchetti rete uscenti durante analisi (validazione tcpdump in CI).
@@ -108,6 +116,7 @@
 ## 5.5 Path Multi-Tenant Post-MVP
 
 Pianificato fase **F5+** (post-GA):
+
 - Swap SQLite → Postgres.
 - Keycloak OIDC live (multi-IdP).
 - Qdrant cluster con namespace per tenant.

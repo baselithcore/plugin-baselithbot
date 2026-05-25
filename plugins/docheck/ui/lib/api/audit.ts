@@ -1,6 +1,6 @@
-import { authHeaders } from "../auth";
+import { authHeaders } from '../auth';
 
-const BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://127.0.0.1:8765/api/v1";
+const BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://127.0.0.1:8765/api/v1';
 
 export interface AuditEntry {
   seq: number;
@@ -55,15 +55,13 @@ export interface ListAuditResult {
 function buildQS(params: Record<string, string | number | undefined>): string {
   const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
-    if (v === undefined || v === null || v === "") continue;
+    if (v === undefined || v === null || v === '') continue;
     qs.set(k, String(v));
   }
   return qs.toString();
 }
 
-export async function listAuditPage(
-  params: ListAuditParams = {},
-): Promise<ListAuditResult> {
+export async function listAuditPage(params: ListAuditParams = {}): Promise<ListAuditResult> {
   const qs = buildQS({
     limit: params.limit ?? 100,
     offset: params.offset ?? 0,
@@ -77,15 +75,12 @@ export async function listAuditPage(
     headers: { ...authHeaders() },
   });
   if (!res.ok) throw new Error(`audit list failed: ${res.status}`);
-  const total = Number(res.headers.get("X-Total-Count") ?? "0");
+  const total = Number(res.headers.get('X-Total-Count') ?? '0');
   const rows = (await res.json()) as AuditEntry[];
   return { rows, total };
 }
 
-export async function listAudit(
-  limit = 100,
-  offset = 0,
-): Promise<AuditEntry[]> {
+export async function listAudit(limit = 100, offset = 0): Promise<AuditEntry[]> {
   const { rows } = await listAuditPage({ limit, offset });
   return rows;
 }
@@ -125,12 +120,12 @@ export async function getAuditEntry(seq: number): Promise<AuditEntryDetail> {
 async function downloadBlob(url: string, filename: string): Promise<void> {
   const res = await fetch(url, { headers: { ...authHeaders() } });
   if (!res.ok) {
-    const txt = await res.text().catch(() => "");
+    const txt = await res.text().catch(() => '');
     throw new Error(`export failed: ${res.status} ${txt}`);
   }
   const blob = await res.blob();
   const objUrl = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  const a = document.createElement('a');
   a.href = objUrl;
   a.download = filename;
   document.body.appendChild(a);
@@ -139,18 +134,14 @@ async function downloadBlob(url: string, filename: string): Promise<void> {
   URL.revokeObjectURL(objUrl);
 }
 
-export async function exportAuditCsv(
-  filters: AuditFilters = {},
-): Promise<void> {
+export async function exportAuditCsv(filters: AuditFilters = {}): Promise<void> {
   const qs = buildQS({ ...filters });
-  const ts = new Date().toISOString().replace(/[:.]/g, "-");
+  const ts = new Date().toISOString().replace(/[:.]/g, '-');
   await downloadBlob(`${BASE}/audit/export.csv?${qs}`, `audit-${ts}.csv`);
 }
 
-export async function exportAuditJson(
-  filters: AuditFilters = {},
-): Promise<void> {
+export async function exportAuditJson(filters: AuditFilters = {}): Promise<void> {
   const qs = buildQS({ ...filters });
-  const ts = new Date().toISOString().replace(/[:.]/g, "-");
+  const ts = new Date().toISOString().replace(/[:.]/g, '-');
   await downloadBlob(`${BASE}/audit/export.json?${qs}`, `audit-${ts}.json`);
 }

@@ -12,7 +12,9 @@
         "bbox": [0, 0, 100, 20],
         "text": "I dati saranno trattati per finalità contrattuali. Le parti si impegnano al rispetto della normativa applicabile."
       },
-      "reasoning": [{"step": 1, "agent": "LegalComplianceAgent", "thought": "Informativa Art.13 mancante"}]
+      "reasoning": [
+        { "step": 1, "agent": "LegalComplianceAgent", "thought": "Informativa Art.13 mancante" }
+      ]
     }
   ],
   "case-002": [
@@ -28,7 +30,7 @@
         "bbox": [0, 0, 100, 20],
         "text": "Diritto di recesso non disciplinato esplicitamente."
       },
-      "reasoning": [{"step": 1, "agent": "LegalComplianceAgent", "thought": "Recesso non chiaro"}]
+      "reasoning": [{ "step": 1, "agent": "LegalComplianceAgent", "thought": "Recesso non chiaro" }]
     }
   ],
   "case-003": [
@@ -44,7 +46,7 @@
         "bbox": [0, 0, 100, 20],
         "text": "Il presente contratto disciplina la fornitura di servizi cloud tra le parti."
       },
-      "reasoning": [{"step": 1, "agent": "LegalComplianceAgent", "thought": "DPA non presente"}]
+      "reasoning": [{ "step": 1, "agent": "LegalComplianceAgent", "thought": "DPA non presente" }]
     }
   ]
 }

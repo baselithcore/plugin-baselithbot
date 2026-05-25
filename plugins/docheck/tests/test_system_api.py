@@ -57,7 +57,9 @@ async def app_with_admin(monkeypatch, tmp_path):
 
 async def test_runtime_info(app_with_admin) -> None:
     app, uid = app_with_admin
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         res = await c.get("/api/v1/system/runtime", headers={"X-User-Id": uid})
         assert res.status_code == 200, res.text
         data = res.json()
@@ -70,7 +72,9 @@ async def test_runtime_info(app_with_admin) -> None:
 
 async def test_storage_stats(app_with_admin) -> None:
     app, uid = app_with_admin
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         res = await c.get("/api/v1/system/storage", headers={"X-User-Id": uid})
         assert res.status_code == 200, res.text
         data = res.json()
@@ -82,7 +86,9 @@ async def test_storage_stats(app_with_admin) -> None:
 async def test_retention_get_set(app_with_admin) -> None:
     app, uid = app_with_admin
     h = {"X-User-Id": uid, "Content-Type": "application/json"}
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         r1 = await c.get("/api/v1/system/retention", headers=h)
         assert r1.status_code == 200
         assert r1.json()["source"] == "config"
@@ -98,14 +104,18 @@ async def test_retention_get_set(app_with_admin) -> None:
 async def test_retention_validation(app_with_admin) -> None:
     app, uid = app_with_admin
     h = {"X-User-Id": uid, "Content-Type": "application/json"}
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         r = await c.put("/api/v1/system/retention", json={"days": 0}, headers=h)
         assert r.status_code == 422
 
 
 async def test_cache_state_and_reset(app_with_admin) -> None:
     app, uid = app_with_admin
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         r1 = await c.get("/api/v1/system/cache", headers={"X-User-Id": uid})
         assert r1.status_code == 200
         assert "metrics" in r1.json()
@@ -117,7 +127,9 @@ async def test_cache_state_and_reset(app_with_admin) -> None:
 
 async def test_change_password_flow(app_with_admin) -> None:
     app, uid = app_with_admin
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         # wrong current
         bad = await c.post(
             "/api/v1/auth/change-password",
@@ -137,7 +149,10 @@ async def test_change_password_flow(app_with_admin) -> None:
         # success
         ok = await c.post(
             "/api/v1/auth/change-password",
-            json={"current_password": "S3curePassw0rd!", "new_password": "NewPassw0rd!"},
+            json={
+                "current_password": "S3curePassw0rd!",
+                "new_password": "NewPassw0rd!",
+            },
             headers={"X-User-Id": uid},
         )
         assert ok.status_code == 200, ok.text
@@ -180,12 +195,21 @@ async def test_system_requires_permission(monkeypatch, tmp_path) -> None:
         db.add(Role(id="reader", label="Reader"))
         # no system permission
         uid = f"u-{uuid.uuid4().hex[:8]}"
-        db.add(User(id=uid, email="r@test.local", display_name="r", pw_hash=hash_password("xxxxxxxx")))
+        db.add(
+            User(
+                id=uid,
+                email="r@test.local",
+                display_name="r",
+                pw_hash=hash_password("xxxxxxxx"),
+            )
+        )
         db.add(UserRole(user_id=uid, role_id="reader"))
         await db.commit()
 
     from docheck.main import app
 
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as c:
         res = await c.get("/api/v1/system/runtime", headers={"X-User-Id": uid})
         assert res.status_code == 403

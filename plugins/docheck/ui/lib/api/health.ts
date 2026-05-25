@@ -1,6 +1,6 @@
-import { authHeaders } from "../auth";
-import { BASE } from "./_base";
-import type { CacheMetrics, HealthInfo } from "./types";
+import { authHeaders } from '../auth';
+import { BASE } from './_base';
+import type { CacheMetrics, HealthInfo } from './types';
 
 export async function getHealth(): Promise<HealthInfo> {
   const res = await fetch(`${BASE}/health`);

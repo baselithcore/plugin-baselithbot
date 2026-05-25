@@ -81,6 +81,7 @@ Aggiungere un harness di valutazione modulare composto da:
      - per-agent attribution via `trace[].agent`.
 
 4. **Baseline + gate** — `tests/eval/baseline.json` (committato):
+
    ```json
    {
      "version": "2026-05-14",
@@ -88,6 +89,7 @@ Aggiungere un harness di valutazione modulare composto da:
      "tolerance": 0.02
    }
    ```
+
    Test pytest `test_eval_regression.py` carica baseline, esegue
    harness, fallisce se `metric_current < metric_baseline - tolerance`.
 
@@ -163,13 +165,13 @@ metric secondaria opt-in.
 ## Implementation notes
 
 - Modulo: `docheck-engine/src/docheck/services/eval/` (package).
-  - `__init__.py` (re-export API)
-  - `models.py` — Pydantic `EvalCase`, `CaseScore`, `EvalResult`
-  - `runner.py` — orchestrazione case → graph
-  - `scorer.py` — TP/FP/FN, confusion matrix, F1
-  - `baseline.py` — load/save/compare baseline
-  - `report_html.py` — HTML render
-  - `__main__.py` — CLI entry
+    - `__init__.py` (re-export API)
+    - `models.py` — Pydantic `EvalCase`, `CaseScore`, `EvalResult`
+    - `runner.py` — orchestrazione case → graph
+    - `scorer.py` — TP/FP/FN, confusion matrix, F1
+    - `baseline.py` — load/save/compare baseline
+    - `report_html.py` — HTML render
+    - `__main__.py` — CLI entry
 - Test: `tests/test_eval_harness.py` (unit + integration con fixtures
   esistenti `contract_01.md`, `contract_02.md`).
 - Test gate: `tests/test_eval_regression.py` (load baseline, fail su

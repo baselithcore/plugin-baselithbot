@@ -36,7 +36,12 @@ def upgrade() -> None:
     )
     op.create_table(
         "user_roles",
-        sa.Column("user_id", sa.String, sa.ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+        sa.Column(
+            "user_id",
+            sa.String,
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            primary_key=True,
+        ),
         sa.Column("role_id", sa.String, sa.ForeignKey("roles.id"), primary_key=True),
     )
     op.create_table(
@@ -59,7 +64,9 @@ def upgrade() -> None:
         sa.Column("uploaded_at", sa.DateTime, nullable=False),
         sa.Column("purge_at", sa.DateTime, nullable=True),
         sa.Column("status", sa.String, nullable=False, server_default="uploaded"),
-        sa.CheckConstraint("status IN ('uploaded','parsed','indexed','failed','purged')"),
+        sa.CheckConstraint(
+            "status IN ('uploaded','parsed','indexed','failed','purged')"
+        ),
     )
     op.create_index("idx_doc_owner", "documents", ["owner_id"])
     op.create_index("idx_doc_sha", "documents", ["sha256"])
@@ -68,7 +75,12 @@ def upgrade() -> None:
     op.create_table(
         "document_chunks",
         sa.Column("id", sa.String, primary_key=True),
-        sa.Column("doc_id", sa.String, sa.ForeignKey("documents.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "doc_id",
+            sa.String,
+            sa.ForeignKey("documents.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.Column("ord", sa.Integer, nullable=False),
         sa.Column("page", sa.Integer, nullable=True),
         sa.Column("line_start", sa.Integer, nullable=True),
@@ -103,7 +115,9 @@ def upgrade() -> None:
         sa.Column("excerpt", sa.Text, nullable=False),
         sa.Column("matcher", sa.Text, nullable=True),
         sa.Column("embed_ref", sa.String, nullable=True),
-        sa.CheckConstraint("rule_type IN ('presence','absence','format','numeric_limit','semantic')"),
+        sa.CheckConstraint(
+            "rule_type IN ('presence','absence','format','numeric_limit','semantic')"
+        ),
         sa.CheckConstraint("severity IN ('fail','warn','info')"),
     )
     op.create_index("idx_rule_policy", "policy_rules", ["policy_id", "policy_version"])
@@ -128,9 +142,18 @@ def upgrade() -> None:
     op.create_table(
         "findings",
         sa.Column("id", sa.String, primary_key=True),
-        sa.Column("report_id", sa.String, sa.ForeignKey("reports.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("rule_id", sa.String, sa.ForeignKey("policy_rules.id"), nullable=False),
-        sa.Column("chunk_id", sa.String, sa.ForeignKey("document_chunks.id"), nullable=False),
+        sa.Column(
+            "report_id",
+            sa.String,
+            sa.ForeignKey("reports.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "rule_id", sa.String, sa.ForeignKey("policy_rules.id"), nullable=False
+        ),
+        sa.Column(
+            "chunk_id", sa.String, sa.ForeignKey("document_chunks.id"), nullable=False
+        ),
         sa.Column("severity", sa.String, nullable=False),
         sa.Column("confidence", sa.Float, nullable=False),
         sa.Column("explanation", sa.Text, nullable=False),

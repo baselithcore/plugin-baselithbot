@@ -10,7 +10,10 @@ PATTERNS: dict[str, re.Pattern[str]] = {
 }
 
 # Italian month names (full form). Used for verbose date detection.
-IT_MONTHS = r"gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|" r"settembre|ottobre|novembre|dicembre"
+IT_MONTHS = (
+    r"gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|"
+    r"settembre|ottobre|novembre|dicembre"
+)
 
 EN_MONTHS = (
     r"january|february|march|april|may|june|july|august|"
@@ -46,7 +49,9 @@ AMOUNT_WITH_CURRENCY = re.compile(
 )
 
 # Bare amount candidates near currency-relevant lemmas (importo, prezzo, ecc.)
-BARE_AMOUNT = re.compile(r"(?<![\w.,])\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{2})?(?![\w])|\d+[.,]\d{2}\b")
+BARE_AMOUNT = re.compile(
+    r"(?<![\w.,])\d{1,3}(?:[.,]\d{3})+(?:[.,]\d{2})?(?![\w])|\d+[.,]\d{2}\b"
+)
 
 CURRENCY_TRIGGERS = re.compile(
     r"\b(importo|prezzo|costo|canone|corrispettivo|amount|price|fee|cost)\b",

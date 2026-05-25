@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { AgentPipeline } from "./AgentPipeline";
+import { AgentPipeline } from './AgentPipeline';
 
 interface Props {
   phase: string;

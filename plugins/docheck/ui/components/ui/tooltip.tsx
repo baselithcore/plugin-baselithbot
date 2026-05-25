@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import { cn } from "@/lib/cn";
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import { cn } from '@/lib/cn';
 
 export const TooltipProvider = TooltipPrimitive.Provider;
 export const Tooltip = TooltipPrimitive.Root;
@@ -17,9 +17,9 @@ export function TooltipContent({
       <TooltipPrimitive.Content
         sideOffset={sideOffset}
         className={cn(
-          "z-50 max-w-[260px] rounded-md border border-border bg-bg-panel-elev px-2.5 py-1.5 text-xs text-text-primary shadow-popover",
-          "data-[state=delayed-open]:animate-fade-in data-[side=top]:animate-slide-up",
-          className,
+          'z-50 max-w-[260px] rounded-md border border-border bg-bg-panel-elev px-2.5 py-1.5 text-xs text-text-primary shadow-popover',
+          'data-[state=delayed-open]:animate-fade-in data-[side=top]:animate-slide-up',
+          className
         )}
         {...props}
       />

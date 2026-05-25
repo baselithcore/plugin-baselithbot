@@ -18,7 +18,11 @@ async def run(state: CheckState) -> CheckState:
     await emit_phase_progress(state, "technical")
     doc_type = state.get("doc_type") or "other"
     if not agent_applies("technical", doc_type):
-        log.info("technical.skipped_by_doc_type", doc_id=state.get("doc_id"), doc_type=doc_type)
+        log.info(
+            "technical.skipped_by_doc_type",
+            doc_id=state.get("doc_id"),
+            doc_type=doc_type,
+        )
         return {"findings": []}
 
     chunks = state.get("chunks", [])

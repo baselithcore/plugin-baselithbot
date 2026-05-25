@@ -13,6 +13,7 @@ Test set format: JSONL, one row per document.
 Usage:
   uv run python scripts/kpi.py --testset tests/fixtures/testset.jsonl --report kpi_report.json
 """
+
 from __future__ import annotations
 import argparse
 import asyncio
@@ -45,10 +46,14 @@ async def evaluate_doc(row: dict) -> tuple[int, int, int]:
     chunks = parser.parse(doc_path, mime)
 
     state: CheckState = {
-        "doc_id": doc_path.stem, "lang": row.get("lang", "it"),
-        "chunks": chunks, "structure": [],
+        "doc_id": doc_path.stem,
+        "lang": row.get("lang", "it"),
+        "chunks": chunks,
+        "structure": [],
         "selected_policies": row.get("policies", []),
-        "findings": [], "trace": [], "errors": [],
+        "findings": [],
+        "trace": [],
+        "errors": [],
     }
     final_state = await get_graph().ainvoke(state)
     findings = final_state.get("findings", [])
@@ -72,11 +77,11 @@ async def evaluate_doc(row: dict) -> tuple[int, int, int]:
 
 def _guess_mime(path: Path) -> str:
     return {
-        ".pdf":  "application/pdf",
+        ".pdf": "application/pdf",
         ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        ".md":   "text/markdown",
-        ".txt":  "text/plain",
+        ".md": "text/markdown",
+        ".txt": "text/plain",
     }.get(path.suffix.lower(), "application/octet-stream")
 
 
@@ -86,30 +91,38 @@ async def main() -> None:
     ap.add_argument("--report", type=Path, default=Path("kpi_report.json"))
     args = ap.parse_args()
 
-    rows = [json.loads(line) for line in args.testset.read_text().splitlines() if line.strip()]
+    rows = [
+        json.loads(line)
+        for line in args.testset.read_text().splitlines()
+        if line.strip()
+    ]
     total_tp = total_fp = total_fn = 0
     per_doc: list[dict] = []
 
     for row in rows:
         tp, fp, fn = await evaluate_doc(row)
-        total_tp += tp; total_fp += fp; total_fn += fn
+        total_tp += tp
+        total_fp += fp
+        total_fn += fn
         per_doc.append({"doc": row["doc_path"], "tp": tp, "fp": fp, "fn": fn})
         print(f"{row['doc_path']}: TP={tp} FP={fp} FN={fn}")
 
     precision = total_tp / (total_tp + total_fp) if (total_tp + total_fp) else 0.0
-    recall    = total_tp / (total_tp + total_fn) if (total_tp + total_fn) else 0.0
-    f1        = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
+    recall = total_tp / (total_tp + total_fn) if (total_tp + total_fn) else 0.0
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
 
     summary = {
         "total_docs": len(rows),
-        "tp": total_tp, "fp": total_fp, "fn": total_fn,
+        "tp": total_tp,
+        "fp": total_fp,
+        "fn": total_fn,
         "precision": round(precision, 3),
         "recall": round(recall, 3),
         "f1": round(f1, 3),
         "per_doc": per_doc,
     }
     args.report.write_text(json.dumps(summary, indent=2))
-    print(f"\n=== KPI ===")
+    print("\n=== KPI ===")
     print(f"Precision: {precision:.3f}  Recall: {recall:.3f}  F1: {f1:.3f}")
     print(f"Report → {args.report}")
 

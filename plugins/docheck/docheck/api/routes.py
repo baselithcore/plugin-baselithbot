@@ -62,10 +62,14 @@ async def list_documents(
     db: AsyncSession = Depends(get_session),
 ) -> Response:
     stmt = select(Document).where(Document.owner_id == principal.user_id)
-    cnt_stmt = select(func.count(Document.id)).where(Document.owner_id == principal.user_id)
+    cnt_stmt = select(func.count(Document.id)).where(
+        Document.owner_id == principal.user_id
+    )
     if q:
         like = f"%{q.lower()}%"
-        cond = or_(func.lower(Document.filename).like(like), func.lower(Document.id).like(like))
+        cond = or_(
+            func.lower(Document.filename).like(like), func.lower(Document.id).like(like)
+        )
         stmt = stmt.where(cond)
         cnt_stmt = cnt_stmt.where(cond)
     if status:
@@ -75,7 +79,15 @@ async def list_documents(
             cnt_stmt = cnt_stmt.where(Document.status.in_(statuses))
 
     total = (await db.execute(cnt_stmt)).scalar_one()
-    rows = (await db.execute(stmt.order_by(desc(Document.uploaded_at)).limit(limit).offset(offset))).scalars().all()
+    rows = (
+        (
+            await db.execute(
+                stmt.order_by(desc(Document.uploaded_at)).limit(limit).offset(offset)
+            )
+        )
+        .scalars()
+        .all()
+    )
 
     doc_ids = [d.id for d in rows]
     latest_map: dict[str, dict[str, Any]] = {}
@@ -92,7 +104,15 @@ async def list_documents(
         ).all()
         keys = set(latest_per_doc)
         if keys:
-            reports = (await db.execute(select(ReportRow).where(ReportRow.doc_id.in_(doc_ids)))).scalars().all()
+            reports = (
+                (
+                    await db.execute(
+                        select(ReportRow).where(ReportRow.doc_id.in_(doc_ids))
+                    )
+                )
+                .scalars()
+                .all()
+            )
             for r in reports:
                 if (r.doc_id, r.signed_at) in keys:
                     latest_map[r.doc_id] = {
@@ -136,7 +156,10 @@ async def get_document(
         raise HTTPException(404, "Document not found")
     latest = (
         await db.execute(
-            select(ReportRow).where(ReportRow.doc_id == doc_id).order_by(desc(ReportRow.signed_at)).limit(1)
+            select(ReportRow)
+            .where(ReportRow.doc_id == doc_id)
+            .order_by(desc(ReportRow.signed_at))
+            .limit(1)
         )
     ).scalar_one_or_none()
     return {
@@ -175,7 +198,9 @@ async def download_document(
     storage_path = Path(d.storage_uri.removeprefix("file://"))
     if not storage_path.exists():
         raise HTTPException(410, "Stored file missing")
-    return FileResponse(path=str(storage_path), media_type=d.mime_type, filename=d.filename)
+    return FileResponse(
+        path=str(storage_path), media_type=d.mime_type, filename=d.filename
+    )
 
 
 @router.get("/documents/{doc_id}/reports")
@@ -188,7 +213,13 @@ async def list_document_reports(
     if not d or d.owner_id != principal.user_id:
         raise HTTPException(404, "Document not found")
     rows = (
-        (await db.execute(select(ReportRow).where(ReportRow.doc_id == doc_id).order_by(desc(ReportRow.signed_at))))
+        (
+            await db.execute(
+                select(ReportRow)
+                .where(ReportRow.doc_id == doc_id)
+                .order_by(desc(ReportRow.signed_at))
+            )
+        )
         .scalars()
         .all()
     )
@@ -222,7 +253,9 @@ async def delete_document(
     await db.delete(d)
     await db.flush()
 
-    siblings = (await db.execute(select(func.count(Document.id)).where(Document.sha256 == sha))).scalar_one()
+    siblings = (
+        await db.execute(select(func.count(Document.id)).where(Document.sha256 == sha))
+    ).scalar_one()
     if siblings == 0 and storage_path.exists():
         try:
             storage_path.unlink()
@@ -247,7 +280,13 @@ async def get_chunks(
     db: AsyncSession = Depends(get_session),
 ) -> list[dict[str, Any]]:
     rows = (
-        (await db.execute(select(DocumentChunk).where(DocumentChunk.doc_id == doc_id).order_by(DocumentChunk.ord)))
+        (
+            await db.execute(
+                select(DocumentChunk)
+                .where(DocumentChunk.doc_id == doc_id)
+                .order_by(DocumentChunk.ord)
+            )
+        )
         .scalars()
         .all()
     )
@@ -321,10 +360,14 @@ async def analyze_document(
     requested_policies: list[str] = list(body.get("policies") or [])
     lang_override = body.get("lang")
     if lang_override is not None and not isinstance(lang_override, str):
-        raise HTTPException(422, {"code": "invalid_lang", "message": "lang must be a string"})
+        raise HTTPException(
+            422, {"code": "invalid_lang", "message": "lang must be a string"}
+        )
     # Auto-select all active policies for the tenant when caller passes none.
     if not requested_policies:
-        active_rows = (await db.execute(select(Policy).where(Policy.active == 1))).scalars().all()
+        active_rows = (
+            (await db.execute(select(Policy).where(Policy.active == 1))).scalars().all()
+        )
         requested_policies = sorted({p.id for p in active_rows})
     if not requested_policies:
         raise HTTPException(
@@ -345,7 +388,11 @@ async def analyze_document(
     except ValueError as exc:
         raise HTTPException(
             415,
-            {"code": "unsupported_mime", "message": str(exc), "mime_type": doc.mime_type},
+            {
+                "code": "unsupported_mime",
+                "message": str(exc),
+                "mime_type": doc.mime_type,
+            },
         ) from exc
     except Exception as exc:
         log.error("analyze.parse_failed", doc_id=doc_id, error=str(exc))
@@ -418,7 +465,9 @@ async def analyze_document(
         doc.doc_type = detected_doc_type
         doc.doc_type_confidence = final_state.get("doc_type_confidence")
 
-    final_list_raw: Any = final_state.get("final_findings") or final_state.get("findings", [])
+    final_list_raw: Any = final_state.get("final_findings") or final_state.get(
+        "findings", []
+    )
     findings = [f.model_dump() for f in final_list_raw]
     engine_errors: list[str] = list(final_state.get("errors") or [])
     payload = {
@@ -469,7 +518,9 @@ async def ws_analysis(websocket: WebSocket, doc_id: str) -> None:
     await websocket.accept()
     try:
         async with events.subscribe(doc_id) as queue:
-            await websocket.send_json({"type": "phase", "phase": "subscribed", "doc_id": doc_id})
+            await websocket.send_json(
+                {"type": "phase", "phase": "subscribed", "doc_id": doc_id}
+            )
             while True:
                 event = await queue.get()
                 await websocket.send_json(event)

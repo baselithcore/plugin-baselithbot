@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { NextIntlClientProvider } from "next-intl";
-import { useLocaleStore } from "@/lib/i18n/store";
-import { MESSAGES } from "@/lib/i18n/messages";
+import { useEffect } from 'react';
+import { NextIntlClientProvider } from 'next-intl';
+import { useLocaleStore } from '@/lib/i18n/store';
+import { MESSAGES } from '@/lib/i18n/messages';
 
 export function IntlProvider({ children }: { children: React.ReactNode }) {
   const locale = useLocaleStore((s) => s.locale);
 
   useEffect(() => {
-    if (typeof document !== "undefined") {
+    if (typeof document !== 'undefined') {
       document.documentElement.lang = locale;
     }
   }, [locale]);

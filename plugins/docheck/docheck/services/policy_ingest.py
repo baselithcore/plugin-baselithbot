@@ -107,7 +107,9 @@ def _clip(text: str) -> str:
 async def _fetch_url(url: str) -> tuple[str, str]:
     """Return (text, content_type). Blocks non-http schemes; enforces size cap."""
     if not re.match(r"^https?://", url, re.IGNORECASE):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Only http/https URLs are allowed")
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "Only http/https URLs are allowed"
+        )
     try:
         async with (
             httpx.AsyncClient(
@@ -126,7 +128,9 @@ async def _fetch_url(url: str) -> tuple[str, str]:
                     raise HTTPException(413, "Remote payload too large (>10MB)")
             raw = bytes(buf)
     except httpx.HTTPError as exc:
-        raise HTTPException(status.HTTP_502_BAD_GATEWAY, f"Fetch failed: {exc}") from exc
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY, f"Fetch failed: {exc}"
+        ) from exc
 
     if "yaml" in ctype or url.lower().endswith((".yml", ".yaml")):
         return raw.decode("utf-8", errors="replace"), "yaml"
@@ -153,7 +157,9 @@ def _norm_loose(s: str) -> str:
     return _PUNCT_RE.sub("", s).lower()
 
 
-def _enforce_excerpts(rules: list[dict[str, Any]], source_text: str) -> list[dict[str, Any]]:
+def _enforce_excerpts(
+    rules: list[dict[str, Any]], source_text: str
+) -> list[dict[str, Any]]:
     """Keep rules whose excerpt is recoverable from source text.
     Two-tier match: strict whitespace-collapsed, then loose punctuation-stripped.
     Loose match accepts PDF artifacts (hyphenation, line breaks mid-phrase)
@@ -206,7 +212,9 @@ async def _llm_extract(source_text: str, hint_title: str | None) -> dict[str, An
             f"LLM extraction failed: {exc}. Verify the LLM runtime is reachable.",
         ) from exc
     if not isinstance(out, dict) or "rules" not in out:
-        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "LLM returned invalid policy shape")
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY, "LLM returned invalid policy shape"
+        )
     return out
 
 
@@ -228,7 +236,9 @@ def _dedupe_rules(rules: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], in
     return unique, dropped
 
 
-async def _chunked_extract(source_text: str, hint_title: str | None) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+async def _chunked_extract(
+    source_text: str, hint_title: str | None
+) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Run per-chunk extraction over a long source, merging rules.
 
     Returns:
@@ -264,7 +274,11 @@ async def _chunked_extract(source_text: str, hint_title: str | None) -> tuple[di
             continue
 
         if not header:
-            header = {k: extracted.get(k) for k in ("id", "version", "title", "scope", "lang") if extracted.get(k)}
+            header = {
+                k: extracted.get(k)
+                for k in ("id", "version", "title", "scope", "lang")
+                if extracted.get(k)
+            }
         chunk_rules = [r for r in (extracted.get("rules") or []) if isinstance(r, dict)]
         merged_rules.extend(chunk_rules)
         per_chunk_counts.append(len(chunk_rules))
@@ -319,7 +333,11 @@ async def ingest(
         raw_rules = extracted.get("rules") or []
         if not isinstance(raw_rules, list):
             raise HTTPException(status.HTTP_502_BAD_GATEWAY, "LLM rules must be a list")
-        header = {k: extracted.get(k) for k in ("id", "version", "title", "scope", "lang") if extracted.get(k)}
+        header = {
+            k: extracted.get(k)
+            for k in ("id", "version", "title", "scope", "lang")
+            if extracted.get(k)
+        }
         rules_raw = [r for r in raw_rules if isinstance(r, dict)]
 
     # Glass Box invariant: every excerpt must be a verbatim substring of the
@@ -349,7 +367,9 @@ async def ingest(
         str(header.get("id") or hint_title),
         fallback=f"pol-{uuid.uuid4().hex[:8]}",
     )
-    version = override_version or str(header.get("version") or "1.0.0").strip() or "1.0.0"
+    version = (
+        override_version or str(header.get("version") or "1.0.0").strip() or "1.0.0"
+    )
     title = (str(header.get("title") or hint_title)).strip() or pid
     lang = str(header.get("lang") or "it").strip()[:8] or "it"
 

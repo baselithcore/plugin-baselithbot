@@ -25,14 +25,18 @@ def test_detected_matches_extracted_both_directions() -> None:
         "Il pagamento avviene entro 60 giorni dalla fattura.",
     ]
     # detected is substring of extracted -> match.
-    assert policy_coverage._detected_matches_extracted("entro 30 giorni dalla stipula", extracted)
+    assert policy_coverage._detected_matches_extracted(
+        "entro 30 giorni dalla stipula", extracted
+    )
     # extracted is substring of detected -> still match (direction-agnostic).
     assert policy_coverage._detected_matches_extracted(
         "Il fornitore deve consegnare entro 30 giorni dalla stipula del contratto entrante.",
         extracted,
     )
     # No overlap -> no match.
-    assert not policy_coverage._detected_matches_extracted("Risoluzione per inadempimento.", extracted)
+    assert not policy_coverage._detected_matches_extracted(
+        "Risoluzione per inadempimento.", extracted
+    )
 
 
 def test_dedupe_obligations() -> None:

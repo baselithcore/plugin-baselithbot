@@ -104,7 +104,9 @@ def _base_query(
 async def _email_map(db: AsyncSession, user_ids: set[str]) -> dict[str, str]:
     if not user_ids:
         return {}
-    rows = (await db.execute(select(User.id, User.email).where(User.id.in_(user_ids)))).all()
+    rows = (
+        await db.execute(select(User.id, User.email).where(User.id.in_(user_ids)))
+    ).all()
     return dict(rows)  # type: ignore[arg-type]
 
 
@@ -132,8 +134,18 @@ async def list_audit(
         date_from=df,
         date_to=dt_,
     )
-    total = (await db.execute(select(func.count()).select_from(base.subquery()))).scalar_one()
-    rows = (await db.execute(base.order_by(desc(AuditLog.seq)).limit(limit).offset(offset))).scalars().all()
+    total = (
+        await db.execute(select(func.count()).select_from(base.subquery()))
+    ).scalar_one()
+    rows = (
+        (
+            await db.execute(
+                base.order_by(desc(AuditLog.seq)).limit(limit).offset(offset)
+            )
+        )
+        .scalars()
+        .all()
+    )
     emails = await _email_map(db, {r.user_id for r in rows if r.user_id})
     items = [
         AuditEntry(
@@ -162,7 +174,11 @@ async def list_actions(
     _: Principal = Depends(require("audit", "read")),
     db: AsyncSession = Depends(get_session),
 ) -> list[str]:
-    rows = (await db.execute(select(AuditLog.action).distinct().order_by(AuditLog.action))).scalars().all()
+    rows = (
+        (await db.execute(select(AuditLog.action).distinct().order_by(AuditLog.action)))
+        .scalars()
+        .all()
+    )
     return list(rows)
 
 
@@ -171,13 +187,22 @@ async def list_audit_users(
     _: Principal = Depends(require("audit", "read")),
     db: AsyncSession = Depends(get_session),
 ) -> list[AuditUserOption]:
-    sub = select(AuditLog.user_id).where(AuditLog.user_id.is_not(None)).distinct().subquery()
+    sub = (
+        select(AuditLog.user_id)
+        .where(AuditLog.user_id.is_not(None))
+        .distinct()
+        .subquery()
+    )
     rows = (
         await db.execute(
-            select(User.id, User.email, User.display_name).join(sub, sub.c.user_id == User.id).order_by(User.email)
+            select(User.id, User.email, User.display_name)
+            .join(sub, sub.c.user_id == User.id)
+            .order_by(User.email)
         )
     ).all()
-    return [AuditUserOption(user_id=uid, email=em, display_name=dn) for uid, em, dn in rows]
+    return [
+        AuditUserOption(user_id=uid, email=em, display_name=dn) for uid, em, dn in rows
+    ]
 
 
 @router.get("/audit/verify", response_model=ChainStatus)
@@ -329,7 +354,9 @@ async def get_audit_entry(
     _: Principal = Depends(require("audit", "read")),
     db: AsyncSession = Depends(get_session),
 ) -> AuditEntryDetail:
-    row = (await db.execute(select(AuditLog).where(AuditLog.seq == seq))).scalar_one_or_none()
+    row = (
+        await db.execute(select(AuditLog).where(AuditLog.seq == seq))
+    ).scalar_one_or_none()
     if row is None:
         raise HTTPException(404, "Not found")
     ok, broken = await verify_chain(db)

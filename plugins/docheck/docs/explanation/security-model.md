@@ -56,6 +56,7 @@ Helm chart: `NetworkPolicy` deny-egress default. Solo `vllm`, `qdrant`, `postgre
 `POST /api/v1/auth/login` → `{email, password}` → verifica argon2id (`passlib`) → emette **JWT EdDSA** (Ed25519, [`core/jwt.py`](../../docheck-engine/src/docheck/core/jwt.py)).
 
 Claims:
+
 - `sub` — user_id
 - `email`
 - `roles` — frozenset
@@ -154,6 +155,7 @@ Master DB key in keyring (`DOCHECK_DB_KEY_KEYRING_SERVICE`, `_USER`).
 ### Postgres (multi-tenant)
 
 Encryption at-rest via:
+
 - LUKS/dm-crypt sul volume.
 - Postgres `pgcrypto` per colonne sensibili specifiche.
 - Backup cifrati (pg_basebackup + age/gpg).
@@ -182,6 +184,7 @@ Engine CORS allow-list: `app://docheck`, `vscode-webview://*`, `tauri://*`, `fil
 ### Headers
 
 `SecurityHeadersMiddleware`:
+
 - `X-Content-Type-Options: nosniff`
 - `X-Frame-Options: DENY`
 - `Referrer-Policy: no-referrer`
@@ -192,6 +195,7 @@ Engine CORS allow-list: `app://docheck`, `vscode-webview://*`, `tauri://*`, `fil
 Vedi [multitenant.md](multitenant.md) per dettagli.
 
 Sintesi:
+
 - `tenant_id` colonna su tutte le tabelle dati (`TenantMixin`).
 - ContextVar per propagazione async-safe.
 - Postgres RLS policies attive (Alembic 0003).

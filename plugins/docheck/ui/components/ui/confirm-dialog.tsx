@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import * as Dialog from "@radix-ui/react-dialog";
-import { AlertTriangle, Loader2 } from "lucide-react";
-import { Button } from "./button";
+import * as Dialog from '@radix-ui/react-dialog';
+import { AlertTriangle, Loader2 } from 'lucide-react';
+import { Button } from './button';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -21,8 +21,8 @@ export function ConfirmDialog({
   onOpenChange,
   title,
   description,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel = 'Confirm',
+  cancelLabel = 'Cancel',
   destructive,
   busy,
   onConfirm,
@@ -33,7 +33,7 @@ export function ConfirmDialog({
         <Dialog.Overlay className="fixed inset-0 z-40 bg-bg-canvas/60 backdrop-blur-[2px] animate-fade-in" />
         <Dialog.Content
           className="fixed left-1/2 top-1/2 z-50 w-[min(440px,92vw)] surface-elev rounded-xl border border-border p-5 shadow-popover animate-dialog-in"
-          style={{ transform: "translate(-50%, -50%)" }}
+          style={{ transform: 'translate(-50%, -50%)' }}
         >
           <div className="flex items-start gap-3">
             {destructive && (
@@ -42,9 +42,7 @@ export function ConfirmDialog({
               </span>
             )}
             <div className="min-w-0">
-              <Dialog.Title className="text-sm font-semibold">
-                {title}
-              </Dialog.Title>
+              <Dialog.Title className="text-sm font-semibold">{title}</Dialog.Title>
               {description && (
                 <Dialog.Description className="mt-1.5 text-xs leading-5 text-text-muted">
                   {description}
@@ -53,17 +51,12 @@ export function ConfirmDialog({
             </div>
           </div>
           <div className="mt-5 flex justify-end gap-2">
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => onOpenChange(false)}
-              disabled={busy}
-            >
+            <Button size="sm" variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
               {cancelLabel}
             </Button>
             <Button
               size="sm"
-              variant={destructive ? "danger" : "primary"}
+              variant={destructive ? 'danger' : 'primary'}
               onClick={onConfirm}
               disabled={busy}
             >

@@ -1,7 +1,7 @@
-import it from "@/messages/it.json";
-import en from "@/messages/en.json";
-import fr from "@/messages/fr.json";
-import type { Locale } from "./config";
+import it from '@/messages/it.json';
+import en from '@/messages/en.json';
+import fr from '@/messages/fr.json';
+import type { Locale } from './config';
 
 export type Messages = typeof it;
 

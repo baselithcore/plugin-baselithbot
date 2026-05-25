@@ -6,6 +6,7 @@
 ## Context
 
 The Policies tab originally exposed read-only listing. Production use requires:
+
 - Compliance officers must author and version policies without DB access.
 - Admins must seed shipped catalogues (GDPR, ISO, NIS2) reproducibly.
 - Each rule keeps verbatim policy excerpts (Glass Box pillar) — a portable,

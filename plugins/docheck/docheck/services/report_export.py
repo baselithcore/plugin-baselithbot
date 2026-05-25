@@ -16,7 +16,9 @@ def report_to_markdown(report: dict[str, Any]) -> str:
     lines.append(f"**Score:** {report.get('score', 0)}/100  ")
     lines.append(f"**Report ID:** `{report.get('report_id', '—')}`  ")
     lines.append(f"**Document SHA-256:** `{doc.get('sha256', '—')}`  ")
-    lines.append(f"**Engine:** `{report.get('audit', {}).get('engine_version', '?')}`  ")
+    lines.append(
+        f"**Engine:** `{report.get('audit', {}).get('engine_version', '?')}`  "
+    )
     lines.append(f"**Model:** `{report.get('audit', {}).get('model', '?')}`")
     lines.append("")
 
@@ -41,7 +43,9 @@ def report_to_markdown(report: dict[str, Any]) -> str:
         )
         lines.append(f"- **Confidence:** {f.get('confidence', 0):.2f}")
         ref = f.get("policy_ref", {})
-        lines.append(f"- **Policy:** `{ref.get('policy_id')}@{ref.get('version')}` — {ref.get('title')}")
+        lines.append(
+            f"- **Policy:** `{ref.get('policy_id')}@{ref.get('version')}` — {ref.get('title')}"
+        )
         lines.append("")
         lines.append("**Excerpt:**")
         lines.append(f"> {ref.get('excerpt', '')}")

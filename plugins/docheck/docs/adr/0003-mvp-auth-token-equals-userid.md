@@ -6,6 +6,7 @@
 ## Context
 
 MVP target = workstation singola. RBAC enforcement comunque richiesto per:
+
 - Validare flusso permission matrix end-to-end.
 - Auditare azioni con `principal.user_id` reale (non "system").
 - Predisporre swap a OIDC senza refactor route signatures.
@@ -21,16 +22,19 @@ MVP target = workstation singola. RBAC enforcement comunque richiesto per:
 ## Consequences
 
 **Positive**
+
 - Flusso completo (login → permission check → audit con user reale) testabile subito.
 - Refactor a JWT/OIDC = swap solo `current_principal` impl.
 - Nessuna sessione persistita server-side (stateless).
 
 **Negative**
+
 - Token = user_id → no scadenza, no revoca puntuale (logout client-side only).
 - Nessuna protezione replay.
 - Vulnerabilità se header logged in chiaro.
 
 **Mitigazioni MVP**
+
 - Trasporto solo Unix socket o loopback TCP.
 - Audit log ogni login (timestamp, email).
 - Migrazione obbligatoria a JWT firmato Ed25519 entro F4 hardening.

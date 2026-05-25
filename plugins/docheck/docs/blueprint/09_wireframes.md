@@ -43,9 +43,9 @@ Specifica handoff diretta a designer/frontend. Token-driven (vedi `08_design_tok
 - Sidebar nav 56px collapsed (icons): Home, Documents, Policies, Audit, Settings
 - Hero dropzone full-width 240px high, dashed border `border/strong`, hover state highlight `info`
 - Grid recent docs 3 col, gap 16px, card 280×160:
-  - Header: filename mono, ts relative
-  - Center: ScoreGauge circolare 80px
-  - Footer: badge severity counts
+    - Header: filename mono, ts relative
+    - Center: ScoreGauge circolare 80px
+    - Footer: badge severity counts
 
 ---
 
@@ -80,17 +80,18 @@ Specifica handoff diretta a designer/frontend. Token-driven (vedi `08_design_tok
 ```
 
 **Componenti:**
+
 - Resizable split (60/40 default), min 40% / max 80% per pane
 - Document Viewer:
-  - Toolbar 40px: zoom, page nav, search, toggle structure tree, toggle annotations
-  - Sidebar tree 200px collapsibile
-  - Canvas pdf.js + SVG overlay highlight bbox
-  - Highlight on click finding: fade-in 200ms, soft pulse 1x
+    - Toolbar 40px: zoom, page nav, search, toggle structure tree, toggle annotations
+    - Sidebar tree 200px collapsibile
+    - Canvas pdf.js + SVG overlay highlight bbox
+    - Highlight on click finding: fade-in 200ms, soft pulse 1x
 - Findings Panel:
-  - Sticky header con Summary card
-  - Filter chips height 28px, gap 6px
-  - Virtual list (`react-virtuoso`)
-  - Sticky footer con Export button primary
+    - Sticky header con Summary card
+    - Filter chips height 28px, gap 6px
+    - Virtual list (`react-virtuoso`)
+    - Sticky footer con Export button primary
 
 ---
 
@@ -112,6 +113,7 @@ Specifica handoff diretta a designer/frontend. Token-driven (vedi `08_design_tok
 ```
 
 **Variants:**
+
 - Severity: `fail` | `warn` | `pass` | `info`
 - State: `default` | `hover` (bg `panel_elev`) | `expanded` | `selected` (outline `info` 2px)
 - Density: `compact` (96px) | `expanded` (240-320px)
@@ -212,6 +214,7 @@ Specifica handoff diretta a designer/frontend. Token-driven (vedi `08_design_tok
 ## F7 — Empty / Loading / Error States
 
 **Empty findings:**
+
 ```
 ┌─────────────────────────────────────┐
 │         ✓                            │
@@ -222,6 +225,7 @@ Specifica handoff diretta a designer/frontend. Token-driven (vedi `08_design_tok
 ```
 
 **Loading streaming:**
+
 ```
 ┌─────────────────────────────────────┐
 │  ⟳ Analisi in corso · 14/187 chunk  │
@@ -234,6 +238,7 @@ Specifica handoff diretta a designer/frontend. Token-driven (vedi `08_design_tok
 ```
 
 **Error:**
+
 ```
 ┌─────────────────────────────────────┐
 │  ⚠ Errore durante l'analisi         │
@@ -248,6 +253,7 @@ Specifica handoff diretta a designer/frontend. Token-driven (vedi `08_design_tok
 ## F8 — Settings
 
 Tabs:
+
 - **Engine** — model primary/fallback, temperature, max tokens
 - **OCR** — engine selector (PaddleOCR default), pre-processing toggles
 - **Storage** — retention TTL, vault path, encrypted volume status
@@ -260,6 +266,7 @@ Tabs:
 ## F9 — Onboarding Wizard (primo avvio)
 
 Steps:
+
 1. Welcome + privacy assurance ("All processing local")
 2. Model setup (download Llama-3.3-70B, progress bar, ~40GB)
 3. Default policy selection (preset IT pre-checked)
@@ -291,6 +298,7 @@ Steps:
 | `Tree` (custom) | Document structure sidebar | nuovo componente |
 
 **Componenti custom nuovi:**
+
 - `FindingCard` — wrapper Card con severity variant
 - `DocumentViewer` — wrap pdf.js + SVG overlay highlight
 - `ReasoningTimeline` — vertical timeline steps
@@ -311,12 +319,12 @@ Severity: `pass`, `warn`, `fail`, `info`.
 - Focus ring sempre visibile.
 - ARIA: `role="list"` findings, `role="listitem"` card, `aria-expanded`, drawer `role="dialog"` + focus trap.
 - Keyboard shortcuts:
-  - `J/K` next/prev finding
-  - `Enter` espandi finding
-  - `V` view in document
-  - `R` toggle reasoning drawer
-  - `Esc` close drawer/modal
-  - `Cmd/Ctrl+K` command palette
-  - `Cmd/Ctrl+E` export report
+    - `J/K` next/prev finding
+    - `Enter` espandi finding
+    - `V` view in document
+    - `R` toggle reasoning drawer
+    - `Esc` close drawer/modal
+    - `Cmd/Ctrl+K` command palette
+    - `Cmd/Ctrl+E` export report
 - Screen reader: severity announce `aria-label="Violazione critica, GDPR articolo 13, riga 142"`.
 - Reduced motion: respect `prefers-reduced-motion` → disable highlights pulse, drawer slide.

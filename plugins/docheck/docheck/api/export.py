@@ -18,7 +18,12 @@ router = APIRouter()
 
 async def _latest_report(db: AsyncSession, doc_id: str) -> Report | None:
     return (
-        await db.execute(select(Report).where(Report.doc_id == doc_id).order_by(desc(Report.signed_at)).limit(1))
+        await db.execute(
+            select(Report)
+            .where(Report.doc_id == doc_id)
+            .order_by(desc(Report.signed_at))
+            .limit(1)
+        )
     ).scalar_one_or_none()
 
 

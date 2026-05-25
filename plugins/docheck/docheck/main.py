@@ -84,7 +84,9 @@ def main() -> None:
             reload=settings.debug,
             # Watch only source. Avoids reload storm from site-packages cache files.
             reload_dirs=["src/docheck"] if settings.debug else None,
-            reload_excludes=["*.pyc", "__pycache__/*", "storage/*"] if settings.debug else None,
+            reload_excludes=["*.pyc", "__pycache__/*", "storage/*"]
+            if settings.debug
+            else None,
         )
     else:
         # Unix domain socket — no TCP exposure

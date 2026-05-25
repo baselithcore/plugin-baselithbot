@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ShieldAlert, Sparkles, X } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { askFindingStream, type Finding } from "@/lib/api";
-import { useAppStore } from "@/lib/store";
-import { SeverityBadge } from "@/components/ui/badge";
-import { Banner, ThinkingIndicator, type T } from "./ask/atoms";
-import { ChatTurn, type QA } from "./ask/ChatTurn";
-import { Composer } from "./ask/Composer";
-import { ContextInspector } from "./ask/ContextInspector";
-import { EmptyState } from "./ask/EmptyState";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ShieldAlert, Sparkles, X } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { askFindingStream, type Finding } from '@/lib/api';
+import { useAppStore } from '@/lib/store';
+import { SeverityBadge } from '@/components/ui/badge';
+import { Banner, ThinkingIndicator, type T } from './ask/atoms';
+import { ChatTurn, type QA } from './ask/ChatTurn';
+import { Composer } from './ask/Composer';
+import { ContextInspector } from './ask/ContextInspector';
+import { EmptyState } from './ask/EmptyState';
 
 const MAX_CHARS = 2000;
 
 export function AskModal() {
-  const t = useTranslations("ask");
+  const t = useTranslations('ask');
   const finding = useAppStore((s) => s.askFor);
   const setAskFor = useAppStore((s) => s.setAskFor);
   const report = useAppStore((s) => s.currentReport);
 
-  const [question, setQuestion] = useState("");
+  const [question, setQuestion] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<QA[]>([]);
@@ -31,7 +31,7 @@ export function AskModal() {
 
   useEffect(() => {
     if (finding) {
-      setQuestion("");
+      setQuestion('');
       setError(null);
       setHistory([]);
       setContextOpen(false);
@@ -43,17 +43,17 @@ export function AskModal() {
   useEffect(() => {
     if (!finding) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setAskFor(null);
+      if (e.key === 'Escape') setAskFor(null);
     }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
   }, [finding, setAskFor]);
 
   // Auto-resize textarea up to a sensible cap.
   useEffect(() => {
     const el = inputRef.current;
     if (!el) return;
-    el.style.height = "auto";
+    el.style.height = 'auto';
     el.style.height = `${Math.min(el.scrollHeight, 180)}px`;
   }, [question]);
 
@@ -61,27 +61,18 @@ export function AskModal() {
   useEffect(() => {
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
+      behavior: 'smooth',
     });
   }, [history.length, busy]);
 
   const reportId = report?.report_id;
   const charCount = question.length;
   const overLimit = charCount > MAX_CHARS;
-  const canSubmit =
-    !!reportId && !busy && question.trim().length > 1 && !overLimit;
+  const canSubmit = !!reportId && !busy && question.trim().length > 1 && !overLimit;
 
   const suggestions = useMemo(
-    () =>
-      finding
-        ? [
-            t("suggestion1"),
-            t("suggestion2"),
-            t("suggestion3"),
-            t("suggestion4"),
-          ]
-        : [],
-    [finding, t],
+    () => (finding ? [t('suggestion1'), t('suggestion2'), t('suggestion3'), t('suggestion4')] : []),
+    [finding, t]
   );
 
   if (!finding) return null;
@@ -92,14 +83,11 @@ export function AskModal() {
     if (!q) return;
     setBusy(true);
     setError(null);
-    setQuestion("");
+    setQuestion('');
 
     // Optimistic user turn + empty assistant placeholder marked streaming.
     const ts = Date.now();
-    setHistory((h) => [
-      ...h,
-      { q, a: "", grounded: false, ts, streaming: true },
-    ]);
+    setHistory((h) => [...h, { q, a: '', grounded: false, ts, streaming: true }]);
 
     const updateLast = (mut: (qa: QA) => QA) =>
       setHistory((h) => {
@@ -126,7 +114,7 @@ export function AskModal() {
       });
     } catch (err) {
       updateLast((qa) => ({ ...qa, streaming: false }));
-      setError(err instanceof Error ? err.message : t("errorFailed"));
+      setError(err instanceof Error ? err.message : t('errorFailed'));
     } finally {
       setBusy(false);
     }
@@ -152,7 +140,7 @@ export function AskModal() {
       />
       <aside
         role="dialog"
-        aria-label={t("title")}
+        aria-label={t('title')}
         className="fixed top-0 right-0 bottom-0 w-[min(680px,100vw)] surface-elev border-l border-border z-40 flex flex-col animate-slide-up shadow-popover"
       >
         <Header finding={finding} onClose={() => setAskFor(null)} t={t} />
@@ -164,23 +152,15 @@ export function AskModal() {
           t={t}
         />
 
-        <div
-          ref={scrollRef}
-          className="flex-1 overflow-auto px-5 py-5 space-y-5 scroll-smooth"
-        >
+        <div ref={scrollRef} className="flex-1 overflow-auto px-5 py-5 space-y-5 scroll-smooth">
           {!reportId && (
             <Banner tone="warning" icon={ShieldAlert}>
-              {t("noReport")}
+              {t('noReport')}
             </Banner>
           )}
 
           {history.length === 0 && reportId && (
-            <EmptyState
-              t={t}
-              suggestions={suggestions}
-              onPick={(s) => runAsk(s)}
-              disabled={busy}
-            />
+            <EmptyState t={t} suggestions={suggestions} onPick={(s) => runAsk(s)} disabled={busy} />
           )}
 
           {history.map((qa, i) => (
@@ -193,9 +173,7 @@ export function AskModal() {
             />
           ))}
 
-          {busy && !history[history.length - 1]?.streaming && (
-            <ThinkingIndicator t={t} />
-          )}
+          {busy && !history[history.length - 1]?.streaming && <ThinkingIndicator t={t} />}
 
           {error && (
             <Banner tone="danger" icon={ShieldAlert}>
@@ -224,22 +202,14 @@ export function AskModal() {
   );
 }
 
-function Header({
-  finding,
-  onClose,
-  t,
-}: {
-  finding: Finding;
-  onClose: () => void;
-  t: T;
-}) {
+function Header({ finding, onClose, t }: { finding: Finding; onClose: () => void; t: T }) {
   return (
     <header className="px-5 py-4 border-b border-border bg-gradient-to-b from-bg-panel-elev/40 to-transparent">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted inline-flex items-center gap-1.5">
             <Sparkles size={12} className="text-status-info" />
-            {t("title")}
+            {t('title')}
           </div>
           <div className="mt-1.5 flex items-center gap-2">
             <SeverityBadge severity={finding.severity} />
@@ -257,7 +227,7 @@ function Header({
         <button
           type="button"
           onClick={onClose}
-          aria-label={t("close")}
+          aria-label={t('close')}
           className="p-1.5 rounded-md hover:bg-bg-panel-elev text-text-muted hover:text-text-primary transition-colors ring-focus"
         >
           <X size={16} />

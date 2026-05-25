@@ -41,7 +41,9 @@ class IbanRule:
             value = m.group(0)
             if iban_mod97_valid(value):
                 continue
-            sev: Severity = resolve_severity(self.spec.rule_id, self.spec.default_severity)
+            sev: Severity = resolve_severity(
+                self.spec.rule_id, self.spec.default_severity
+            )
             reasoning = [
                 step(
                     1,

@@ -10,14 +10,14 @@ export function ScoreGauge({ score, size = 64, indeterminate = false }: Props) {
   const radius = size / 2 - stroke;
   const circumference = 2 * Math.PI * radius;
   const dash = indeterminate ? 0 : (score / 100) * circumference;
-  const id = `gauge-${score}-${size}-${indeterminate ? "i" : "n"}`;
+  const id = `gauge-${score}-${size}-${indeterminate ? 'i' : 'n'}`;
   const stops = indeterminate
-    ? ["#5A6472", "#778190"]
+    ? ['#5A6472', '#778190']
     : score >= 85
-      ? ["#10B981", "#34D399"]
+      ? ['#10B981', '#34D399']
       : score >= 60
-        ? ["#F59E0B", "#FBBF24"]
-        : ["#EF4444", "#F97373"];
+        ? ['#F59E0B', '#FBBF24']
+        : ['#EF4444', '#F97373'];
 
   return (
     <svg
@@ -51,7 +51,7 @@ export function ScoreGauge({ score, size = 64, indeterminate = false }: Props) {
         strokeLinecap="round"
         transform={`rotate(-90 ${size / 2} ${size / 2})`}
         style={{
-          transition: "stroke-dasharray 600ms cubic-bezier(0.22,1,0.36,1)",
+          transition: 'stroke-dasharray 600ms cubic-bezier(0.22,1,0.36,1)',
         }}
       />
       <text
@@ -63,7 +63,7 @@ export function ScoreGauge({ score, size = 64, indeterminate = false }: Props) {
         fill="rgb(var(--text-primary))"
         fontFamily="var(--font-inter), Inter, sans-serif"
       >
-        {indeterminate ? "—" : score}
+        {indeterminate ? '—' : score}
       </text>
       <text
         x={size / 2}

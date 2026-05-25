@@ -1,32 +1,32 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 
-import Link from "next/link";
-import { ChevronRight, FileText } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { AgentPipeline } from "@/components/AgentPipeline";
-import { TopBar } from "@/components/TopBar";
-import { AskModal } from "@/components/findings/AskModal";
-import { FindingDetailDrawer } from "@/components/findings/FindingDetailDrawer";
-import { FindingsPanel } from "@/components/findings/FindingsPanel";
-import { Landing } from "@/components/home/Landing";
-import { ReasoningDrawer } from "@/components/reasoning/ReasoningDrawer";
-import { Button } from "@/components/ui/button";
-import { DocumentViewer } from "@/components/viewer/DocumentViewer";
-import { getReport, listDecisions } from "@/lib/api";
-import { useAppStore } from "@/lib/store";
-import { useAnalysisStream } from "@/lib/useAnalysisStream";
+import Link from 'next/link';
+import { ChevronRight, FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { AgentPipeline } from '@/components/AgentPipeline';
+import { TopBar } from '@/components/TopBar';
+import { AskModal } from '@/components/findings/AskModal';
+import { FindingDetailDrawer } from '@/components/findings/FindingDetailDrawer';
+import { FindingsPanel } from '@/components/findings/FindingsPanel';
+import { Landing } from '@/components/home/Landing';
+import { ReasoningDrawer } from '@/components/reasoning/ReasoningDrawer';
+import { Button } from '@/components/ui/button';
+import { DocumentViewer } from '@/components/viewer/DocumentViewer';
+import { getReport, listDecisions } from '@/lib/api';
+import { useAppStore } from '@/lib/store';
+import { useAnalysisStream } from '@/lib/useAnalysisStream';
 
 export default function HomePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const urlDocId = searchParams.get("doc");
-  const urlReportId = searchParams.get("report");
-  const tNav = useTranslations("nav.items");
+  const urlDocId = searchParams.get('doc');
+  const urlReportId = searchParams.get('report');
+  const tNav = useTranslations('nav.items');
 
   const docId = useAppStore((s) => s.currentDocId);
   const setDocId = useAppStore((s) => s.setCurrentDocId);
@@ -47,12 +47,11 @@ export default function HomePage() {
   // different one — prevents showing prior findings under the new doc.
   useEffect(() => {
     if (!urlReportId && report) setReport(null);
-    else if (urlReportId && report && report.report_id !== urlReportId)
-      setReport(null);
+    else if (urlReportId && report && report.report_id !== urlReportId) setReport(null);
   }, [urlReportId, report, setReport]);
 
   const reportQuery = useQuery({
-    queryKey: ["report", urlReportId],
+    queryKey: ['report', urlReportId],
     queryFn: () => getReport(urlReportId as string),
     enabled: !!urlReportId && report?.report_id !== urlReportId,
     staleTime: 5 * 60 * 1000,
@@ -76,7 +75,7 @@ export default function HomePage() {
     listDecisions(report.report_id)
       .then((m) => {
         if (cancelled) return;
-        const map: Record<string, "accepted" | "rejected" | "muted"> = {};
+        const map: Record<string, 'accepted' | 'rejected' | 'muted'> = {};
         Object.entries(m).forEach(([fid, d]) => {
           if (d.decision) map[fid] = d.decision;
         });
@@ -103,7 +102,7 @@ export default function HomePage() {
             className="inline-flex items-center gap-1.5 rounded px-1.5 py-0.5 hover:bg-bg-panel-elev hover:text-text-primary transition-colors ring-focus"
           >
             <FileText size={11} />
-            {tNav("documents.label")}
+            {tNav('documents.label')}
           </Link>
           <ChevronRight size={11} className="text-text-muted/60" />
           <span className="font-mono text-text-secondary">{urlDocId}</span>
@@ -152,7 +151,7 @@ export default function HomePage() {
             onClick={() => {
               setDocId(null);
               setReport(null);
-              router.replace("/");
+              router.replace('/');
             }}
           >
             ← New analysis

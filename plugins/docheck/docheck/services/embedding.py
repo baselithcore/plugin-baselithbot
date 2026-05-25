@@ -51,7 +51,9 @@ class _ChromaCollectionShim:
         n_results: int = 5,
         where: dict[str, Any] | None = None,
     ) -> dict[str, list[list[Any]]]:
-        hits = self._store.query(self._name, query_embeddings[0], top_k=n_results, where=where)
+        hits = self._store.query(
+            self._name, query_embeddings[0], top_k=n_results, where=where
+        )
         return {
             "ids": [[h["id"] for h in hits]],
             "distances": [[h["score"] for h in hits]],

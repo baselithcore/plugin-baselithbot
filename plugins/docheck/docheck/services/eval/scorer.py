@@ -34,7 +34,9 @@ def _norm(text: str) -> str:
 
 
 def _evidence_text(predicted: Any) -> str:
-    ev = getattr(predicted, "evidence", None) or (predicted.get("evidence") if isinstance(predicted, dict) else None)
+    ev = getattr(predicted, "evidence", None) or (
+        predicted.get("evidence") if isinstance(predicted, dict) else None
+    )
     if ev is None:
         return ""
     text = getattr(ev, "text", None)
@@ -62,7 +64,11 @@ def _matches(predicted: Any, expected: ExpectedFinding) -> bool:
 def _agent_of(predicted: Any) -> str | None:
     reasoning = _attr(predicted, "reasoning") or []
     for step in reasoning:
-        agent = step.get("agent") if isinstance(step, dict) else getattr(step, "agent", None)
+        agent = (
+            step.get("agent")
+            if isinstance(step, dict)
+            else getattr(step, "agent", None)
+        )
         if agent:
             return str(agent)
     return None

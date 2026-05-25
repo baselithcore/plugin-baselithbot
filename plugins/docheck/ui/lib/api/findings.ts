@@ -1,28 +1,23 @@
-import { authHeaders } from "../auth";
-import { BASE } from "./_base";
-import type { Decision, DecisionKind, ReportSummary } from "./types";
+import { authHeaders } from '../auth';
+import { BASE } from './_base';
+import type { Decision, DecisionKind, ReportSummary } from './types';
 
 export async function setFindingDecision(
   reportId: string,
   findingId: string,
   decision: DecisionKind,
-  note?: string,
+  note?: string
 ): Promise<{ ok: boolean; decision: DecisionKind }> {
-  const res = await fetch(
-    `${BASE}/reports/${reportId}/findings/${findingId}/decision`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify({ decision, note }),
-    },
-  );
+  const res = await fetch(`${BASE}/reports/${reportId}/findings/${findingId}/decision`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ decision, note }),
+  });
   if (!res.ok) throw new Error(`decision failed: ${res.status}`);
   return res.json();
 }
 
-export async function listDecisions(
-  reportId: string,
-): Promise<Record<string, Decision>> {
+export async function listDecisions(reportId: string): Promise<Record<string, Decision>> {
   const res = await fetch(`${BASE}/reports/${reportId}/decisions`, {
     headers: { ...authHeaders() },
   });
@@ -33,18 +28,15 @@ export async function listDecisions(
 export async function askFinding(
   reportId: string,
   findingId: string,
-  question: string,
+  question: string
 ): Promise<{ answer: string; grounded: boolean }> {
-  const res = await fetch(
-    `${BASE}/reports/${reportId}/findings/${findingId}/ask`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify({ question }),
-    },
-  );
+  const res = await fetch(`${BASE}/reports/${reportId}/findings/${findingId}/ask`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ question }),
+  });
   if (!res.ok) {
-    const txt = await res.text().catch(() => "");
+    const txt = await res.text().catch(() => '');
     throw new Error(`ask failed: ${res.status} ${txt}`);
   }
   return res.json();
@@ -61,27 +53,24 @@ export async function askFindingStream(
   reportId: string,
   findingId: string,
   question: string,
-  handlers: AskStreamHandlers,
+  handlers: AskStreamHandlers
 ): Promise<void> {
-  const res = await fetch(
-    `${BASE}/reports/${reportId}/findings/${findingId}/ask/stream`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json", ...authHeaders() },
-      body: JSON.stringify({ question }),
-      signal: handlers.signal,
-    },
-  );
+  const res = await fetch(`${BASE}/reports/${reportId}/findings/${findingId}/ask/stream`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({ question }),
+    signal: handlers.signal,
+  });
   if (!res.ok || !res.body) {
-    const txt = await res.text().catch(() => "");
+    const txt = await res.text().catch(() => '');
     handlers.onError(`ask stream failed: ${res.status} ${txt}`);
     return;
   }
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
-  let buf = "";
-  let full = "";
+  let buf = '';
+  let full = '';
   let grounded = false;
   let done = false;
 
@@ -89,25 +78,25 @@ export async function askFindingStream(
     const { value, done: streamDone } = await reader.read();
     if (streamDone) break;
     buf += decoder.decode(value, { stream: true });
-    let nl = buf.indexOf("\n");
+    let nl = buf.indexOf('\n');
     while (nl !== -1) {
       const line = buf.slice(0, nl).trim();
       buf = buf.slice(nl + 1);
-      nl = buf.indexOf("\n");
+      nl = buf.indexOf('\n');
       if (!line) continue;
       try {
         const evt = JSON.parse(line) as
-          | { type: "token"; text: string }
-          | { type: "done"; grounded: boolean; answer: string }
-          | { type: "error"; message: string };
-        if (evt.type === "token") {
+          | { type: 'token'; text: string }
+          | { type: 'done'; grounded: boolean; answer: string }
+          | { type: 'error'; message: string };
+        if (evt.type === 'token') {
           full += evt.text;
           handlers.onToken(evt.text);
-        } else if (evt.type === "done") {
+        } else if (evt.type === 'done') {
           full = evt.answer || full;
           grounded = evt.grounded;
           done = true;
-        } else if (evt.type === "error") {
+        } else if (evt.type === 'error') {
           handlers.onError(evt.message);
           return;
         }
@@ -119,27 +108,24 @@ export async function askFindingStream(
   handlers.onDone(full, grounded);
 }
 
-export async function getReportSummary(
-  reportId: string,
-  locale?: string,
-): Promise<ReportSummary> {
-  const qs = locale ? `?locale=${encodeURIComponent(locale)}` : "";
+export async function getReportSummary(reportId: string, locale?: string): Promise<ReportSummary> {
+  const qs = locale ? `?locale=${encodeURIComponent(locale)}` : '';
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), 60_000);
   try {
     const res = await fetch(`${BASE}/reports/${reportId}/summary${qs}`, {
-      method: "POST",
+      method: 'POST',
       headers: { ...authHeaders() },
       signal: ctl.signal,
     });
     if (!res.ok) {
-      const txt = await res.text().catch(() => "");
+      const txt = await res.text().catch(() => '');
       throw new Error(`summary failed: ${res.status} ${txt}`);
     }
     return await res.json();
   } catch (err) {
-    if ((err as { name?: string })?.name === "AbortError") {
-      throw new Error("summary timeout (60s)");
+    if ((err as { name?: string })?.name === 'AbortError') {
+      throw new Error('summary timeout (60s)');
     }
     throw err;
   } finally {

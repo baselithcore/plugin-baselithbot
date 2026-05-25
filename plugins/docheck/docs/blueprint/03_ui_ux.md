@@ -44,9 +44,9 @@ Layout 60/40 split asimmetrico. Dark mode default `#09090B`. Componenti shadcn/u
 - Canvas PDF render via `pdf.js` con overlay SVG per highlight bbox
 - Sidebar collapsibile 200px structure tree (nested articoli/clausole)
 - Highlight overlay opacità 15%:
-  - FAIL: `rgba(239,68,68,0.15)` rosso
-  - WARN: `rgba(245,158,11,0.18)` ambra
-  - INFO: `rgba(59,130,246,0.15)` blu
+    - FAIL: `rgba(239,68,68,0.15)` rosso
+    - WARN: `rgba(245,158,11,0.18)` ambra
+    - INFO: `rgba(59,130,246,0.15)` blu
 
 ## 3.4 Findings Panel (40%)
 

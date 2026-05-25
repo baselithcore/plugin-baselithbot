@@ -29,6 +29,7 @@ Procedura rotation chiavi crittografiche doCheck.
 ### Procedura
 
 1. **Backup chiave corrente**:
+
    ```bash
    gpg --encrypt -r ops@example.invalid \
      -o /mnt/backup/audit_key_$(date +%Y%m%d_%H%M).gpg \
@@ -36,6 +37,7 @@ Procedura rotation chiavi crittografiche doCheck.
    ```
 
 2. **Genera nuova chiave**:
+
    ```bash
    docker exec docheck-engine python -c "
    from nacl.signing import SigningKey
@@ -48,15 +50,18 @@ Procedura rotation chiavi crittografiche doCheck.
    ```
 
 3. **Append rollover record** (audit append speciale, action `key_rollover`, payload contiene `old_pubkey_hex`, `new_pubkey_hex`, firmato con **vecchia** chiave):
+
    ```bash
    curl -X POST http://localhost:8765/api/v1/admin/audit/key-rollover \
      -H "Authorization: Bearer <admin-jwt>" \
      -H "Content-Type: application/json" \
      -d '{"new_pubkey_hex": "<hex-from-step-2>"}'
    ```
+
    *(Endpoint amministrativo, presente solo in build admin tools — TODO pre-GA. Per ora: helper script `scripts/rotate_audit_key.py`.)*
 
 4. **Swap file**:
+
    ```bash
    docker compose stop engine
    mv /opt/docheck/storage/audit_ed25519.key /opt/docheck/storage/audit_ed25519.key.old
@@ -65,6 +70,7 @@ Procedura rotation chiavi crittografiche doCheck.
    ```
 
 5. **Verifica chain**:
+
    ```bash
    curl http://localhost:8765/api/v1/audit/verify -H "Authorization: Bearer <admin-jwt>"
    # Atteso: {"ok": true, ...}
@@ -97,6 +103,7 @@ Rotation transparent: token vecchi continuano a verificare con kid pubblico nel 
 ### Procedura
 
 1. Genera nuovo keypair:
+
    ```bash
    docker exec docheck-engine python scripts/rotate_jwt_key.py --new-kid "$(date +%Y%m%d)"
    ```

@@ -51,16 +51,11 @@
   --shadow-panel:
     0 1px 0 rgb(15 23 42 / 0.04) inset, 0 1px 2px rgb(15 23 42 / 0.04),
     0 8px 24px -12px rgb(15 23 42 / 0.1);
-  --shadow-popover:
-    0 8px 24px -8px rgb(15 23 42 / 0.12), 0 2px 6px -2px rgb(15 23 42 / 0.08);
+  --shadow-popover: 0 8px 24px -8px rgb(15 23 42 / 0.12), 0 2px 6px -2px rgb(15 23 42 / 0.08);
   --shadow-inner-soft: inset 0 1px 0 rgb(255 255 255 / 0.6);
 
   /* Surface gradient overlay (for surface-elev) */
-  --elev-overlay: linear-gradient(
-    180deg,
-    rgb(15 23 42 / 0.02),
-    rgb(15 23 42 / 0) 40%
-  );
+  --elev-overlay: linear-gradient(180deg, rgb(15 23 42 / 0.02), rgb(15 23 42 / 0) 40%);
 }
 
 /* ============================================================
@@ -100,16 +95,11 @@
 
   --selection: 14 165 233 / 0.35;
 
-  --shadow-panel:
-    0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 28px -18px rgb(0 0 0 / 0.8);
+  --shadow-panel: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 12px 28px -18px rgb(0 0 0 / 0.8);
   --shadow-popover: 0 18px 40px -18px rgb(0 0 0 / 0.7);
   --shadow-inner-soft: inset 0 1px 0 rgb(255 255 255 / 0.04);
 
-  --elev-overlay: linear-gradient(
-    180deg,
-    rgb(255 255 255 / 0.04),
-    rgb(255 255 255 / 0) 40%
-  );
+  --elev-overlay: linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0) 40%);
 }
 
 html,
@@ -119,7 +109,7 @@ body {
   color: rgb(var(--text-primary));
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
-  font-feature-settings: "cv11", "ss01", "ss03";
+  font-feature-settings: 'cv11', 'ss01', 'ss03';
 }
 
 body {
@@ -169,26 +159,10 @@ body {
 
   .mesh-gradient-bg {
     background-image:
-      radial-gradient(
-        at 0% 0%,
-        rgb(var(--status-info) / 0.12) 0px,
-        transparent 50%
-      ),
-      radial-gradient(
-        at 100% 0%,
-        rgb(var(--accent-teal) / 0.12) 0px,
-        transparent 50%
-      ),
-      radial-gradient(
-        at 100% 100%,
-        rgb(var(--accent-violet) / 0.12) 0px,
-        transparent 50%
-      ),
-      radial-gradient(
-        at 0% 100%,
-        rgb(var(--status-info) / 0.08) 0px,
-        transparent 50%
-      );
+      radial-gradient(at 0% 0%, rgb(var(--status-info) / 0.12) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgb(var(--accent-teal) / 0.12) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgb(var(--accent-violet) / 0.12) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgb(var(--status-info) / 0.08) 0px, transparent 50%);
     position: absolute;
     inset: 0;
     pointer-events: none;
@@ -221,7 +195,7 @@ body {
     isolation: isolate;
   }
   .gradient-border::before {
-    content: "";
+    content: '';
     position: absolute;
     inset: 0;
     border-radius: inherit;
@@ -254,21 +228,9 @@ body {
 
   .hero-aura {
     background:
-      radial-gradient(
-        ellipse 80% 50% at 50% -10%,
-        rgb(var(--status-info) / 0.12),
-        transparent 60%
-      ),
-      radial-gradient(
-        ellipse 60% 40% at 80% 30%,
-        rgb(var(--accent-teal) / 0.08),
-        transparent 60%
-      ),
-      radial-gradient(
-        ellipse 50% 30% at 10% 80%,
-        rgb(var(--accent-violet) / 0.06),
-        transparent 60%
-      );
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgb(var(--status-info) / 0.12), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 30%, rgb(var(--accent-teal) / 0.08), transparent 60%),
+      radial-gradient(ellipse 50% 30% at 10% 80%, rgb(var(--accent-violet) / 0.06), transparent 60%);
   }
 
   .stripe-loading {

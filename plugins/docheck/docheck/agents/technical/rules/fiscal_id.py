@@ -148,7 +148,9 @@ class CodiceFiscaleRule:
             cf = m.group(0)
             if cf_checksum_valid(cf):
                 continue
-            sev: Severity = resolve_severity(self.spec.rule_id, self.spec.default_severity)
+            sev: Severity = resolve_severity(
+                self.spec.rule_id, self.spec.default_severity
+            )
             reasoning = [
                 step(
                     1,
@@ -202,7 +204,9 @@ class PartitaIvaRule:
             value = m.group(0)
             if piva_checksum_valid(value):
                 continue
-            sev: Severity = resolve_severity(self.spec.rule_id, self.spec.default_severity)
+            sev: Severity = resolve_severity(
+                self.spec.rule_id, self.spec.default_severity
+            )
             reasoning = [
                 step(
                     1,

@@ -1,4 +1,5 @@
 """Create or update initial admin user. Idempotent."""
+
 from __future__ import annotations
 import asyncio
 import getpass
@@ -42,11 +43,14 @@ async def main() -> None:
             action = "Updated"
         else:
             user_id = f"u-{uuid.uuid4().hex[:12]}"
-            db.add(User(
-                id=user_id, email=email,
-                display_name=email.split("@")[0],
-                pw_hash=hash_password(pw),
-            ))
+            db.add(
+                User(
+                    id=user_id,
+                    email=email,
+                    display_name=email.split("@")[0],
+                    pw_hash=hash_password(pw),
+                )
+            )
             action = "Created"
 
         # Ensure role binding

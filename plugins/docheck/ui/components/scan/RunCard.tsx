@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { AlertTriangle, Loader2, Play, RefreshCw, Zap } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { StepHeader } from "./StepHeader";
+import { AlertTriangle, Loader2, Play, RefreshCw, Zap } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { StepHeader } from './StepHeader';
 
 interface Props {
   canRun: boolean;
@@ -15,38 +15,26 @@ interface Props {
 }
 
 export function RunCard({ canRun, phase, error, onRun, onReset }: Props) {
-  const t = useTranslations("scan.run");
-  const busy = phase === "uploading" || phase === "analyzing";
+  const t = useTranslations('scan.run');
+  const busy = phase === 'uploading' || phase === 'analyzing';
   return (
     <Card>
       <CardContent className="pt-5">
-        <StepHeader idx={4} icon={Zap} title={t("title")} hint={t("hint")} />
+        <StepHeader idx={4} icon={Zap} title={t('title')} hint={t('hint')} />
         <div className="flex items-center gap-2">
-          <Button
-            variant="primary"
-            size="lg"
-            disabled={!canRun}
-            onClick={onRun}
-            className="flex-1"
-          >
+          <Button variant="primary" size="lg" disabled={!canRun} onClick={onRun} className="flex-1">
             {busy ? (
               <>
-                <Loader2 size={15} className="animate-spin" />{" "}
-                {phase === "uploading" ? t("uploading") : t("analyzing")}
+                <Loader2 size={15} className="animate-spin" />{' '}
+                {phase === 'uploading' ? t('uploading') : t('analyzing')}
               </>
             ) : (
               <>
-                <Play size={15} /> {t("runScan")}
+                <Play size={15} /> {t('runScan')}
               </>
             )}
           </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            onClick={onReset}
-            disabled={busy}
-            title={t("reset")}
-          >
+          <Button variant="outline" size="lg" onClick={onReset} disabled={busy} title={t('reset')}>
             <RefreshCw size={14} />
           </Button>
         </div>
@@ -56,10 +44,10 @@ export function RunCard({ canRun, phase, error, onRun, onReset }: Props) {
             <span>{error}</span>
           </div>
         )}
-        {phase === "analyzing" && (
+        {phase === 'analyzing' && (
           <div className="mt-3 text-[10px] uppercase tracking-wider text-text-muted flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-status-info animate-pulse" />
-            {t("agentsRunning")}
+            {t('agentsRunning')}
           </div>
         )}
       </CardContent>

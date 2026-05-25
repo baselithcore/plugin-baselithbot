@@ -170,7 +170,9 @@ def _gather_candidates(
         text = getattr(c, "text", "") or ""
         if not text.strip():
             continue
-        for r in retrieve_policy(text[:1500], selected_policies, top_k=TOP_K_PER_CHUNK, doc_type=doc_type):
+        for r in retrieve_policy(
+            text[:1500], selected_policies, top_k=TOP_K_PER_CHUNK, doc_type=doc_type
+        ):
             rid = r["rule_id"]
             prev = seen.get(rid)
             if prev is None or r["score"] < prev["score"]:
@@ -204,7 +206,11 @@ async def run(state: CheckState) -> CheckState:
     await emit_phase_progress(state, "legal")
     doc_type = state.get("doc_type") or "other"
     if not agent_applies("legal", doc_type):
-        log.info("legal_agent.skipped_by_doc_type", doc_id=state.get("doc_id"), doc_type=doc_type)
+        log.info(
+            "legal_agent.skipped_by_doc_type",
+            doc_id=state.get("doc_id"),
+            doc_type=doc_type,
+        )
         return {"findings": []}
     chunks = state.get("chunks", [])
     lang = state.get("lang", "it")
@@ -340,7 +346,10 @@ async def run(state: CheckState) -> CheckState:
                     "Verified the LLM-submitted policy_excerpt is a verbatim "
                     "substring of the retrieved rule (Glass Box invariant)."
                 ),
-                output={"grounded": True, "excerpt_chars": len(rule.get("excerpt") or "")},
+                output={
+                    "grounded": True,
+                    "excerpt_chars": len(rule.get("excerpt") or ""),
+                },
             ),
             ReasoningStep(
                 step=3,
@@ -399,7 +408,11 @@ async def run(state: CheckState) -> CheckState:
                         )
                     )
             except Exception as exc:
-                log.warning("legal_agent.reasoning_step_dropped", error=str(exc), raw=str(s)[:120])
+                log.warning(
+                    "legal_agent.reasoning_step_dropped",
+                    error=str(exc),
+                    raw=str(s)[:120],
+                )
 
         try:
             f = Finding(

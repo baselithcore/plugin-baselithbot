@@ -91,7 +91,9 @@ _DET_MSG: dict[str, dict[str, str]] = {
 }
 
 
-def _deterministic_summary(context: dict[str, Any], top: list[dict[str, Any]], locale: str = "it") -> dict[str, Any]:
+def _deterministic_summary(
+    context: dict[str, Any], top: list[dict[str, Any]], locale: str = "it"
+) -> dict[str, Any]:
     """Failover summary built from severity counts when LLM/JSON fails.
 
     Per CLAUDE.md §5: glass-box requires never showing 'verdict unavailable'
@@ -116,7 +118,9 @@ def _deterministic_summary(context: dict[str, Any], top: list[dict[str, Any]], l
 
     policies = context.get("policies_applied") or []
     chunks = context.get("chunks_evaluated") or 0
-    assessment = msg["assessment"].format(chunks=chunks, npol=len(policies), total=total, fail=fail, warn=warn)
+    assessment = msg["assessment"].format(
+        chunks=chunks, npol=len(policies), total=total, fail=fail, warn=warn
+    )
     top_risks = [
         msg["risk_fmt"].format(
             rule=f.get("rule_id"),
@@ -127,7 +131,9 @@ def _deterministic_summary(context: dict[str, Any], top: list[dict[str, Any]], l
         if f.get("severity") in {"FAIL", "WARN"}
     ][:5]
     next_steps = [
-        msg["step_fmt"].format(rule=f.get("rule_id"), page=f.get("page")) for f in top if f.get("severity") == "FAIL"
+        msg["step_fmt"].format(rule=f.get("rule_id"), page=f.get("page"))
+        for f in top
+        if f.get("severity") == "FAIL"
     ][:5] or [msg["step_default"]]
 
     return {
@@ -195,7 +201,10 @@ async def report_summary(
         sev = f.get("severity") or "INFO"
         slot[sev] = slot.get(sev, 0) + 1
         slot["rule_ids"].add(f.get("rule_id"))
-    by_policy_serialized = [{**v, "rule_ids": sorted(x for x in v["rule_ids"] if x)} for v in by_policy.values()]
+    by_policy_serialized = [
+        {**v, "rule_ids": sorted(x for x in v["rule_ids"] if x)}
+        for v in by_policy.values()
+    ]
 
     context = {
         "score": payload.get("score"),
@@ -218,7 +227,9 @@ async def report_summary(
             temperature=0.0,
         )
     except Exception as exc:
-        log.warning("report.summary.llm_failed", report_id=report_id, error=str(exc)[:300])
+        log.warning(
+            "report.summary.llm_failed", report_id=report_id, error=str(exc)[:300]
+        )
         result = _deterministic_summary(context, top, locale)
         fallback_used = True
 

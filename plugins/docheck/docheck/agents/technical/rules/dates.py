@@ -11,7 +11,8 @@ from ..patterns import ANY_DATE, PATTERNS
 from ..severity import is_enabled, resolve_severity
 
 DEADLINE_TRIGGERS = re.compile(
-    r"\b(scadenza|scadenze|scaden(?:e|te|ti)|entro\s+il|termine\s+ultimo|" r"deadline|expir(?:y|ation|es?))\b",
+    r"\b(scadenza|scadenze|scaden(?:e|te|ti)|entro\s+il|termine\s+ultimo|"
+    r"deadline|expir(?:y|ation|es?))\b",
     re.IGNORECASE,
 )
 STRICT_DEADLINE = re.compile(
@@ -49,7 +50,9 @@ class DateIsoRule:
             return []
 
         is_strict = bool(STRICT_DEADLINE.search(window))
-        sev: Severity = resolve_severity(self.spec.rule_id, "FAIL" if is_strict else "WARN")
+        sev: Severity = resolve_severity(
+            self.spec.rule_id, "FAIL" if is_strict else "WARN"
+        )
         confidence = 0.9 if is_strict else 0.75
 
         reasoning = [
@@ -73,7 +76,8 @@ class DateIsoRule:
                 3,
                 "TechnicalComplianceAgent",
                 "severity_assignment",
-                "Lemma stringente (termine ultimo / perentorio / pena esclusione) → FAIL; " "lemma generico → WARN.",
+                "Lemma stringente (termine ultimo / perentorio / pena esclusione) → FAIL; "
+                "lemma generico → WARN.",
                 out={"severity": sev, "is_strict_deadline": is_strict},
             ),
             step(
@@ -81,7 +85,9 @@ class DateIsoRule:
                 "TechnicalComplianceAgent",
                 "recommendation",
                 "Suggerire data ISO 8601 esplicita (YYYY-MM-DD) per parsing deterministico.",
-                out={"suggestion_template": "Specificare data esplicita formato YYYY-MM-DD."},
+                out={
+                    "suggestion_template": "Specificare data esplicita formato YYYY-MM-DD."
+                },
             ),
         ]
         return [
@@ -93,7 +99,11 @@ class DateIsoRule:
                 explanation=(
                     f"Riferimento a '{t_word}' senza data riconoscibile (ISO/EU/verbose) "
                     "nel contesto adiacente."
-                    + (" Termine perentorio: ambiguità = rischio compliance." if is_strict else "")
+                    + (
+                        " Termine perentorio: ambiguità = rischio compliance."
+                        if is_strict
+                        else ""
+                    )
                 ),
                 suggestion="Specificare data esplicita formato YYYY-MM-DD accanto al riferimento.",
                 reasoning=reasoning,

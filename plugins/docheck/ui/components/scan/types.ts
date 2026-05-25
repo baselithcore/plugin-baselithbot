@@ -1,6 +1,6 @@
-import type { Severity } from "@/lib/api";
+import type { Severity } from '@/lib/api';
 
-export type SevFloor = "INFO" | "WARN" | "FAIL";
+export type SevFloor = 'INFO' | 'WARN' | 'FAIL';
 
 export interface ScanProfile {
   lang: string;
@@ -18,18 +18,18 @@ export const FLOOR_RANK: Record<Severity, number> = {
 };
 
 export const DEFAULT_PROFILE: ScanProfile = {
-  lang: "",
-  severityFloor: "INFO",
+  lang: '',
+  severityFloor: 'INFO',
   confidenceMin: 0,
   includePass: false,
   groupByPolicy: false,
 };
 
 export const LANGS = [
-  { code: "", label: "Auto-detect" },
-  { code: "it", label: "Italian" },
-  { code: "en", label: "English" },
-  { code: "fr", label: "French" },
-  { code: "de", label: "German" },
-  { code: "es", label: "Spanish" },
+  { code: '', label: 'Auto-detect' },
+  { code: 'it', label: 'Italian' },
+  { code: 'en', label: 'English' },
+  { code: 'fr', label: 'French' },
+  { code: 'de', label: 'German' },
+  { code: 'es', label: 'Spanish' },
 ];

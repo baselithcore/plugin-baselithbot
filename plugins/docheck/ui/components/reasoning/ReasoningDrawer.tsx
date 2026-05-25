@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { Copy, Download, X } from "lucide-react";
-import { useEffect } from "react";
-import { useTranslations } from "next-intl";
-import { useAppStore } from "@/lib/store";
-import { SeverityBadge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ReasoningTimeline } from "./ReasoningTimeline";
+import { Copy, Download, X } from 'lucide-react';
+import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import { useAppStore } from '@/lib/store';
+import { SeverityBadge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ReasoningTimeline } from './ReasoningTimeline';
 
 export function ReasoningDrawer() {
-  const t = useTranslations("reasoning");
+  const t = useTranslations('reasoning');
   const finding = useAppStore((s) => s.selectedFinding);
   const open = useAppStore((s) => s.reasoningOpen);
   const setOpen = useAppStore((s) => s.setReasoningOpen);
@@ -17,10 +17,10 @@ export function ReasoningDrawer() {
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === 'Escape') setOpen(false);
     }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
   }, [open, setOpen]);
 
   if (!open || !finding) return null;
@@ -33,13 +33,13 @@ export function ReasoningDrawer() {
       />
       <aside
         role="dialog"
-        aria-label={t("title")}
+        aria-label={t('title')}
         className="fixed top-0 right-0 bottom-0 w-[min(520px,100vw)] surface-elev border-l border-border z-40 flex flex-col animate-slide-up shadow-popover"
       >
         <header className="px-5 py-4 flex items-start justify-between gap-3 border-b border-border">
           <div className="min-w-0">
             <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-muted">
-              {t("title")}
+              {t('title')}
             </div>
             <div className="mt-1 flex items-center gap-2">
               <SeverityBadge severity={finding.severity} />
@@ -47,14 +47,12 @@ export function ReasoningDrawer() {
                 {finding.rule_id}
               </span>
             </div>
-            <p className="mt-1.5 text-xs text-text-muted line-clamp-2">
-              {finding.explanation}
-            </p>
+            <p className="mt-1.5 text-xs text-text-muted line-clamp-2">{finding.explanation}</p>
           </div>
           <button
             type="button"
             onClick={() => setOpen(false)}
-            aria-label={t("close")}
+            aria-label={t('close')}
             className="p-1.5 rounded-md hover:bg-bg-panel-elev text-text-muted hover:text-text-primary transition-colors"
           >
             <X size={16} />
@@ -64,10 +62,10 @@ export function ReasoningDrawer() {
         <div className="flex-1 overflow-auto px-5 py-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-xs font-semibold text-text-secondary uppercase tracking-wide">
-              {t("agentTimeline")}
+              {t('agentTimeline')}
             </h2>
             <span className="text-[10px] font-mono text-text-muted">
-              {t("steps", { count: finding.reasoning.length })}
+              {t('steps', { count: finding.reasoning.length })}
             </span>
           </div>
           <ReasoningTimeline steps={finding.reasoning} />
@@ -79,12 +77,10 @@ export function ReasoningDrawer() {
             size="sm"
             className="flex-1"
             onClick={() =>
-              navigator.clipboard.writeText(
-                JSON.stringify(finding.reasoning, null, 2),
-              )
+              navigator.clipboard.writeText(JSON.stringify(finding.reasoning, null, 2))
             }
           >
-            <Copy size={13} /> {t("copyJson")}
+            <Copy size={13} /> {t('copyJson')}
           </Button>
           <Button
             variant="outline"
@@ -92,10 +88,10 @@ export function ReasoningDrawer() {
             className="flex-1"
             onClick={() => {
               const blob = new Blob([JSON.stringify(finding, null, 2)], {
-                type: "application/json",
+                type: 'application/json',
               });
               const url = URL.createObjectURL(blob);
-              const a = document.createElement("a");
+              const a = document.createElement('a');
               a.href = url;
               a.download = `${finding.rule_id}-trace.json`;
               document.body.appendChild(a);
@@ -104,7 +100,7 @@ export function ReasoningDrawer() {
               URL.revokeObjectURL(url);
             }}
           >
-            <Download size={13} /> {t("exportTrace")}
+            <Download size={13} /> {t('exportTrace')}
           </Button>
         </footer>
       </aside>

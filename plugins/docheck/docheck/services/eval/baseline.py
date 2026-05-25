@@ -21,7 +21,9 @@ def save_baseline(path: Path, baseline: Baseline) -> None:
     )
 
 
-def baseline_from_result(result: EvalResult, version: str, tolerance: float = 0.02) -> Baseline:
+def baseline_from_result(
+    result: EvalResult, version: str, tolerance: float = 0.02
+) -> Baseline:
     return Baseline(version=version, metrics=result.metric_dict(), tolerance=tolerance)
 
 

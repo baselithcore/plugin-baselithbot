@@ -81,7 +81,9 @@ def _is_grounded(excerpt: str, source_text: str) -> bool:
     return bool(a_loose) and len(a_loose) >= 12 and a_loose in src_loose
 
 
-def _detected_matches_extracted(detected_excerpt: str, extracted_excerpts: list[str]) -> bool:
+def _detected_matches_extracted(
+    detected_excerpt: str, extracted_excerpts: list[str]
+) -> bool:
     """Loose substring match in either direction across the extracted set."""
     d = _normalize_loose(detected_excerpt)
     if not d or len(d) < 8:
@@ -167,7 +169,9 @@ async def compute_coverage(
             )
 
     detected_unique = _dedupe_obligations(detected_raw)
-    detected_grounded = [d for d in detected_unique if _is_grounded(d.get("excerpt", ""), source_text)]
+    detected_grounded = [
+        d for d in detected_unique if _is_grounded(d.get("excerpt", ""), source_text)
+    ]
 
     extracted_count = len(extracted_excerpts)
     detected_count = len(detected_grounded)

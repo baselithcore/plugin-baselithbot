@@ -12,6 +12,7 @@ MVP target = workstation Electron + DGX Spark dedicato. Path roadmap richiede mu
 Pubblicare **Helm chart** [docker/helm/docheck/](../../docker/helm/docheck/) skeleton con feature flag `multiTenant.enabled` per attivazione differita.
 
 **Componenti chart:**
+
 - `engine` StatefulSet (persistent volume per DB + traces).
 - `vllm` Deployment (GPU node selector).
 - `ui` Deployment (statico Next.js export).
@@ -19,6 +20,7 @@ Pubblicare **Helm chart** [docker/helm/docheck/](../../docker/helm/docheck/) ske
 - `Secret` signing key esterno (mai in container image).
 
 **Multi-tenant gating:**
+
 - `multiTenant.postgres` → swap SQLite → Postgres con tenant id row-level.
 - `multiTenant.qdrant` → swap Chroma → Qdrant cluster con namespace per tenant.
 - `multiTenant.oidc` → attiva OIDC issuer (Keycloak), disabilita login locale.
@@ -26,11 +28,13 @@ Pubblicare **Helm chart** [docker/helm/docheck/](../../docker/helm/docheck/) ske
 ## Consequences
 
 **Positive**
+
 - Deploy enterprise customer-ready dal D1 (workstation Electron resta opzione primaria).
 - NetworkPolicy egress lockdown enforce by default → conformità "zero cloud leak".
 - Path multi-tenant è swap di config, non rewrite.
 
 **Negative**
+
 - Mantenere parity SQLite ↔ Postgres → migration script aggiuntivo.
 - ChromaDB ↔ Qdrant: API simili ma semantic differences (filter syntax) → wrapper layer richiesto.
 
