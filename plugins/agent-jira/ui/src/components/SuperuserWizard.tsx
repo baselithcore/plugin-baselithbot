@@ -33,11 +33,7 @@ import {
   User,
   type LucideIcon,
 } from 'lucide-react';
-import {
-  bootstrapSuperuser,
-  fetchBootstrapStatus,
-  setStoredToken,
-} from '../api/client';
+import { bootstrapSuperuser, fetchBootstrapStatus, setStoredToken } from '../api/client';
 
 const PASSWORD_MIN = 12;
 
@@ -185,7 +181,7 @@ const SuperuserWizard = ({ onComplete }: Props) => {
       // Normalise the FastAPI 403 loopback message for clarity.
       if (msg.toLowerCase().includes('loopback')) {
         setError(
-          'Il bootstrap è consentito solo da localhost. Apri la UI da http://127.0.0.1 sulla stessa macchina dell\'engine.'
+          "Il bootstrap è consentito solo da localhost. Apri la UI da http://127.0.0.1 sulla stessa macchina dell'engine."
         );
       } else {
         setError(msg);
@@ -230,22 +226,21 @@ const SuperuserWizard = ({ onComplete }: Props) => {
   if (!needs) return null;
 
   return (
-    <div className="auth-page" role="dialog" aria-modal="true" aria-label="setup superuser iniziale">
+    <div
+      className="auth-page"
+      role="dialog"
+      aria-modal="true"
+      aria-label="setup superuser iniziale"
+    >
       <div className="auth-glow auth-glow-1" />
       <div className="auth-glow auth-glow-2" />
 
-      <div
-        className="auth-card"
-        style={{ maxWidth: 720, padding: 0, overflow: 'hidden' }}
-      >
+      <div className="auth-card" style={{ maxWidth: 720, padding: 0, overflow: 'hidden' }}>
         <WizardHero progressPct={progressPct} />
 
         <Stepper step={step} />
 
-        <div
-          ref={stepBodyRef}
-          style={{ padding: '24px 28px', minHeight: 260 }}
-        >
+        <div ref={stepBodyRef} style={{ padding: '24px 28px', minHeight: 260 }}>
           {step === 'identity' && (
             <IdentityStep
               email={email}
@@ -326,8 +321,7 @@ const WizardHero = ({ progressPct }: { progressPct: number }) => (
     style={{
       padding: '24px 28px 18px',
       borderBottom: '1px solid var(--border)',
-      background:
-        'linear-gradient(180deg, rgba(126, 224, 255, 0.06), transparent 60%)',
+      background: 'linear-gradient(180deg, rgba(126, 224, 255, 0.06), transparent 60%)',
     }}
   >
     <div
@@ -361,8 +355,8 @@ const WizardHero = ({ progressPct }: { progressPct: number }) => (
       Crea il primo amministratore
     </h1>
     <p style={{ margin: 0, color: 'var(--muted)', fontSize: 13, lineHeight: 1.5 }}>
-      Nessun account esiste ancora. Questa schermata è raggiungibile solo dal browser locale e
-      crea l&apos;admin che gestirà ogni utente successivo.
+      Nessun account esiste ancora. Questa schermata è raggiungibile solo dal browser locale e crea
+      l&apos;admin che gestirà ogni utente successivo.
     </p>
     <div
       style={{
@@ -668,14 +662,21 @@ const ReviewStep = ({
 }) => {
   const strength =
     score >= 4 ? 'Forte' : score === 3 ? 'Buona' : score === 2 ? 'Sufficiente' : 'Debole';
-  const tenantPreview = organization.trim() || displayName.trim() || email.split('@')[0] || 'workspace';
+  const tenantPreview =
+    organization.trim() || displayName.trim() || email.split('@')[0] || 'workspace';
   return (
     <>
       <StepHeading
         title="Conferma e crea"
         body="Verifica i dati. Confermando verrai loggato automaticamente e l'endpoint di bootstrap sarà disabilitato. Gli admin successivi si gestiscono dalla pagina Utenti."
       />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+          gap: 10,
+        }}
+      >
         <ReviewRow label="Email" value={email.trim().toLowerCase()} />
         <ReviewRow
           label="Nome visualizzato"
@@ -697,8 +698,8 @@ const ReviewStep = ({
           color: '#ff9f0a',
         }}
       >
-        <strong>Promemoria.</strong> Conserva la password in un gestore sicuro: agent-jira non
-        può recuperarla. Per cambiarla in seguito usa la pagina Profilo.
+        <strong>Promemoria.</strong> Conserva la password in un gestore sicuro: agent-jira non può
+        recuperarla. Per cambiarla in seguito usa la pagina Profilo.
       </div>
     </>
   );
@@ -797,11 +798,7 @@ const FormField = ({
         </span>
       )}
       {error && (
-        <span
-          id={errorId}
-          role="alert"
-          style={{ fontSize: 11, color: '#ff453a', marginTop: 2 }}
-        >
+        <span id={errorId} role="alert" style={{ fontSize: 11, color: '#ff453a', marginTop: 2 }}>
           {error}
         </span>
       )}

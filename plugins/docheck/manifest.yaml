@@ -27,7 +27,7 @@ tags:
 - audit-chain
 - ed25519
 - electron
-integrity_sha256: a9fbe6532a979268557486956b12b606b81942a3e1fc66e876c4e1cf4dd1e82f
+integrity_sha256: 9121239e95d3a4e4b4c3c650e2fc895f6f8c00fdd3c6e03f69d53efc70435900
 plugin_dependencies: {}
 python_dependencies:
 - pydantic[email]>=2.9

@@ -51,12 +51,24 @@ class Settings(BaseSettings):
     # Retention
     retention_default_days: int = 365
 
-    # Multi-tenant (post-MVP — disabled by default)
+    # Multi-tenant (post-MVP — disabled by default).
+    #
+    # Single-tenant locale (default): SQLite + Chroma embedded → zero
+    # dipendenze esterne, ``./storage/*`` self-contained.
+    # Multi-tenant produzione: si appoggia allo stack root
+    # ``baselithcore-enterprise`` — Postgres condiviso (``postgres_db``)
+    # + Qdrant condiviso (``baselith-core-qdrant``). Il plugin riusa le
+    # istanze esistenti con suddivisione logica via DB/collection
+    # dedicata, nessun container nuovo. Override con:
+    #   DOCHECK_DB_BACKEND=postgres
+    #   DOCHECK_POSTGRES_DSN=postgresql+asyncpg://docheck:dev@localhost:5432/docheck
+    #   DOCHECK_VECTOR_BACKEND=qdrant
+    #   DOCHECK_QDRANT_URL=http://localhost:6333
     multitenant_enabled: bool = False
     db_backend: str = "sqlite"  # sqlite | postgres
-    postgres_dsn: str = ""  # postgresql+asyncpg://user:pw@host/db
+    postgres_dsn: str = ""  # postgresql+asyncpg://docheck:dev@localhost:5432/docheck
     vector_backend: str = "chroma"  # chroma | qdrant
-    qdrant_url: str = ""  # http://qdrant:6333
+    qdrant_url: str = ""  # http://localhost:6333 (root stack)
 
     # OIDC (activated when issuer set)
     oidc_issuer: str = ""

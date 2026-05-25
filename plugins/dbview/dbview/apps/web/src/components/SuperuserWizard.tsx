@@ -107,7 +107,7 @@ export function SuperuserWizard({ onComplete }: Props) {
     if (!needs) return;
     if (!stepBodyRef.current) return;
     const first = stepBodyRef.current.querySelector<HTMLElement>(
-      'input:not([type="hidden"]):not([disabled])',
+      'input:not([type="hidden"]):not([disabled])'
     );
     const id = window.setTimeout(() => first?.focus({ preventScroll: true }), 80);
     return () => window.clearTimeout(id);
@@ -127,7 +127,7 @@ export function SuperuserWizard({ onComplete }: Props) {
         /[0-9]/.test(password),
         /[^A-Za-zÀ-ÿ0-9]/.test(password),
       ].filter(Boolean).length,
-    [password],
+    [password]
   );
 
   const identityValid = emailValid;
@@ -152,7 +152,7 @@ export function SuperuserWizard({ onComplete }: Props) {
             ? passwordsMatch
               ? 'Password too weak. Add numbers or symbols.'
               : 'Passwords do not match.'
-            : `Password must be at least ${PASSWORD_MIN} characters.`,
+            : `Password must be at least ${PASSWORD_MIN} characters.`
         );
         return;
       }
@@ -188,8 +188,8 @@ export function SuperuserWizard({ onComplete }: Props) {
       if (status === 403) {
         setError(
           code === 'forbidden'
-            ? message ?? 'Bootstrap not allowed from this origin. Use a localhost browser.'
-            : 'Bootstrap not allowed: an admin already exists.',
+            ? (message ?? 'Bootstrap not allowed from this origin. Use a localhost browser.')
+            : 'Bootstrap not allowed: an admin already exists.'
         );
       } else if (status === 429) {
         setError('Too many attempts. Please wait a minute and retry.');
@@ -223,13 +223,7 @@ export function SuperuserWizard({ onComplete }: Props) {
   }, [needs, step, submit, goNext]);
 
   if (checking) {
-    return (
-      <div
-        className="h-screen w-screen bg-surface-0"
-        aria-hidden="true"
-        aria-busy="true"
-      />
-    );
+    return <div className="h-screen w-screen bg-surface-0" aria-hidden="true" aria-busy="true" />;
   }
   if (!needs) return null;
 
@@ -268,9 +262,7 @@ export function SuperuserWizard({ onComplete }: Props) {
             >
               <div className="inline-flex min-w-0 items-center gap-2">
                 <Sparkles className="h-3.5 w-3.5 shrink-0 text-accent" aria-hidden />
-                <span className="truncate text-[13px] font-semibold">
-                  Create the first admin
-                </span>
+                <span className="truncate text-[13px] font-semibold">Create the first admin</span>
                 <span className="hidden text-[11px] text-text-dim sm:inline">
                   one-time, loopback-only
                 </span>
@@ -314,11 +306,7 @@ export function SuperuserWizard({ onComplete }: Props) {
                     />
                   )}
                   {step === 'review' && (
-                    <ReviewStep
-                      email={email}
-                      displayName={displayName}
-                      score={passwordScore}
-                    />
+                    <ReviewStep email={email} displayName={displayName} score={passwordScore} />
                   )}
                 </motion.div>
               </AnimatePresence>
@@ -478,7 +466,7 @@ function SuperuserSidebar({
                     ? 'border-accent bg-accent text-accent-fg'
                     : passed
                       ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
-                      : 'border-border-subtle bg-surface-1 text-text-dim',
+                      : 'border-border-subtle bg-surface-1 text-text-dim'
                 )}
               >
                 {passed ? (
@@ -491,7 +479,7 @@ function SuperuserSidebar({
                 <div
                   className={cn(
                     'text-[12px]',
-                    current ? 'font-semibold text-text' : 'font-medium text-text-muted',
+                    current ? 'font-semibold text-text' : 'font-medium text-text-muted'
                   )}
                 >
                   {s.label}
@@ -568,7 +556,7 @@ function SuperuserStepper({ step }: { step: Step }) {
                   ? 'border-accent bg-accent/15 text-text shadow-sm'
                   : passed
                     ? 'border-emerald-500/25 bg-emerald-500/10 text-text-muted'
-                    : 'border-border-subtle bg-surface-1 text-text-dim',
+                    : 'border-border-subtle bg-surface-1 text-text-dim'
               )}
             >
               <span
@@ -578,7 +566,7 @@ function SuperuserStepper({ step }: { step: Step }) {
                     ? 'border-accent bg-accent text-accent-fg'
                     : passed
                       ? 'border-emerald-500/30 bg-emerald-500/15 text-emerald-300'
-                      : 'border-border-subtle bg-surface-2 text-text-dim',
+                      : 'border-border-subtle bg-surface-2 text-text-dim'
                 )}
               >
                 {passed ? (
@@ -591,7 +579,7 @@ function SuperuserStepper({ step }: { step: Step }) {
                 <span
                   className={cn(
                     'block truncate text-[11.5px]',
-                    current ? 'font-semibold' : 'font-medium',
+                    current ? 'font-semibold' : 'font-medium'
                   )}
                 >
                   {s.label}
@@ -819,10 +807,7 @@ function ReviewStep({
       />
       <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <ReviewRow label="Email" value={email.trim().toLowerCase()} />
-        <ReviewRow
-          label="Display name"
-          value={displayName.trim() || 'Admin'}
-        />
+        <ReviewRow label="Display name" value={displayName.trim() || 'Admin'} />
         <ReviewRow label="Role" value="admin (RBAC)" />
         <ReviewRow label="Password strength" value={strength} />
         <ReviewRow label="Source" value="web (loopback)" />
@@ -896,7 +881,10 @@ function FormField({
         {label}
       </label>
       <div className="relative">
-        <Icon className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-dim" aria-hidden />
+        <Icon
+          className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-dim"
+          aria-hidden
+        />
         <input
           id={id}
           type={type}
@@ -910,12 +898,10 @@ function FormField({
           className={cn(
             'input pl-9 pr-3',
             trailing && 'pr-10',
-            error && '!border-rose-500/60 focus:!border-rose-500/60',
+            error && '!border-rose-500/60 focus:!border-rose-500/60'
           )}
         />
-        {trailing && (
-          <div className="absolute right-2 top-1/2 -translate-y-1/2">{trailing}</div>
-        )}
+        {trailing && <div className="absolute right-2 top-1/2 -translate-y-1/2">{trailing}</div>}
       </div>
       {hint && !error && (
         <span id={hintId} className="mt-1 block text-[11px] text-text-muted">
@@ -1003,7 +989,7 @@ function StrengthMeter({ score, label }: { score: number; label: string }) {
                     : score === 2
                       ? 'bg-amber-400'
                       : 'bg-rose-400'
-                : 'bg-border',
+                : 'bg-border'
             )}
           />
         ))}

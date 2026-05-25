@@ -17,7 +17,7 @@ tags:
 - knowledge-graph
 - white-label
 - multi-tenant
-integrity_sha256: 92f42144d212da79e3a09dfcbb91cc8a5640bee8c9bf2d64b5b7e5b67696dce7
+integrity_sha256: b2d996819a6f9493ba8a6cc3f971b2030b6e7e01e4233de867d0eebcd0a13ac1
 plugin_dependencies: {}
 python_dependencies:
 - qdrant-client>=1.12.0

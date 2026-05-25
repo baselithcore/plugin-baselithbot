@@ -1,22 +1,26 @@
 """HTTP router memorie utente — RAG personale.
 
+Post-migration 019 lo storage vettoriale è demandato a Qdrant via
+:class:`llm_wiki.memories.store.MemoriesStore`. Postgres conserva solo
+metadata (id, tenant, user, kind, key, value, metadata, timestamps).
+
 Endpoints
 =========
 
 - ``GET    /api/memories``                 — lista (filtrabile per kind)
-- ``POST   /api/memories``                 — crea (embed sincrono on-write)
+- ``POST   /api/memories``                 — crea (embed + index Qdrant)
 - ``PUT    /api/memories/preferences``     — upsert preferenza key/value
 - ``GET    /api/memories/{id}``            — dettaglio
-- ``DELETE /api/memories/{id}``            — cancellazione
+- ``DELETE /api/memories/{id}``            — cancellazione (Qdrant + Postgres)
 - ``POST   /api/memories/search``          — top-K similarity (RAG-side)
 
-Embedding sincrono on-write: BGE-M3 ~10ms su GPU, ~80ms su CPU. Non
+Embedding sincrono on-write (BGE-M3 ~10ms su GPU, ~80ms su CPU): non
 giustifica una task queue separata. Se l'embedder non è disponibile
 (setup mode senza modello caricato) → 503.
 
-Per il RAG agent, usare :func:`llm_wiki.db.memories.search_similar`
-direttamente (no HTTP overhead). L'endpoint /search è esposto per
-debug + uso da frontend (panel "memorie pertinenti").
+Per il RAG agent: usare :class:`MemoriesStore` direttamente (no HTTP
+overhead) — l'endpoint /search è esposto per debug + frontend
+"memorie pertinenti".
 """
 
 from __future__ import annotations
@@ -31,13 +35,11 @@ from llm_wiki.auth.audit import write_event
 from llm_wiki.auth.dependencies import require_permission, require_user
 from llm_wiki.auth.permissions import Permission
 from llm_wiki.db.memories import (
-    create_memory,
-    delete_memory,
+    delete_memory_row,
     get_memory,
     list_memories,
-    search_similar,
-    upsert_preference,
 )
+from llm_wiki.memories.store import get_memories_store
 
 logger = logging.getLogger(__name__)
 
@@ -77,20 +79,17 @@ class MemorySearch(BaseModel):
 # --- helpers ---------------------------------------------------------------
 
 
-def _embed(text: str, *, is_query: bool = False) -> list[float]:
-    """Calcola dense embedding via embedder globale. 503 se non pronto."""
+def _require_embedder() -> Any:
+    """Recupera l'embedder globale, 503 se non pronto."""
     try:
         from llm_wiki.vectorstore.embedder import get_embedder
 
         emb = get_embedder()
         if emb is None:
             raise RuntimeError("embedder non inizializzato")
-        out = emb.encode([text], is_query=is_query)
-        if not out.dense or not out.dense[0]:
-            raise RuntimeError("embedder ha restituito vector vuoto")
-        return out.dense[0]
+        return emb
     except Exception as exc:
-        logger.error("[memories] embed failed: %s", exc)
+        logger.error("[memories] embedder unavailable: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"embedder non disponibile: {exc}",
@@ -120,35 +119,37 @@ def list_my_memories(
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-def create_my_memory(
+async def create_my_memory(
     body: MemoryCreate,
     user: dict[str, Any] = Depends(require_permission(Permission.MEMORY_WRITE)),
 ) -> dict[str, Any]:
     if body.kind == "preference" and not body.key:
         raise HTTPException(status_code=400, detail="kind='preference' richiede 'key'")
-    embedding = _embed(body.value)
-    return create_memory(
+    embedder = _require_embedder()
+    store = get_memories_store()
+    return await store.add(
         user_id=user["id"],
         value=body.value,
-        embedding=embedding,
         kind=body.kind,
         key=body.key,
         metadata=body.metadata,
+        embedder=embedder,
     )
 
 
 @router.put("/preferences")
-def upsert_my_preference(
+async def upsert_my_preference(
     body: PreferenceUpsert,
     user: dict[str, Any] = Depends(require_permission(Permission.MEMORY_WRITE)),
 ) -> dict[str, Any]:
-    embedding = _embed(body.value)
-    return upsert_preference(
+    embedder = _require_embedder()
+    store = get_memories_store()
+    return await store.upsert_preference(
         user_id=user["id"],
         key=body.key,
         value=body.value,
-        embedding=embedding,
         metadata=body.metadata,
+        embedder=embedder,
     )
 
 
@@ -165,12 +166,17 @@ def get_my_memory(
     status_code=status.HTTP_204_NO_CONTENT,
     response_model=None,
 )
-def delete_my_memory(
+async def delete_my_memory(
     memory_id: str,
     user: dict[str, Any] = Depends(require_permission(Permission.MEMORY_DELETE)),
 ) -> None:
     _ensure_owner(memory_id, user)
-    delete_memory(memory_id)
+    store = get_memories_store()
+    deleted = await store.delete(memory_id)
+    if not deleted:
+        # Riga Postgres mancante (race con altra delete) — Qdrant
+        # comunque pulito. Idempotent: nessun errore al chiamante.
+        logger.debug("[memories] delete %s no-op (row already gone)", memory_id)
     write_event(
         "memory.delete",
         tenant_id=user["tenant_id"],
@@ -180,19 +186,28 @@ def delete_my_memory(
 
 
 @router.post("/search")
-def search_my_memories(
+async def search_my_memories(
     body: MemorySearch,
     user: dict[str, Any] = Depends(require_user),
 ) -> dict:
     """Top-K similarity. ``only_mine=True`` (default) limita alle memorie
     dell'utente; ``False`` cerca su tutte le memorie del tenant — utile
     in workspace condivisi (oggi 1:1, ma future-proof)."""
-    embedding = _embed(body.query, is_query=True)
-    items = search_similar(
+    embedder = _require_embedder()
+    store = get_memories_store()
+    items = await store.search(
         user_id=user["id"] if body.only_mine else None,
-        query_embedding=embedding,
+        query=body.query,
         top_k=body.top_k,
         kind=body.kind,
         min_similarity=body.min_similarity,
+        embedder=embedder,
     )
     return {"count": len(items), "results": items}
+
+
+# Re-export per compatibilità back-compat con import esterni.
+__all__ = [
+    "router",
+    "delete_memory_row",
+]

@@ -1,29 +1,27 @@
-"""CRUD memorie utente — RAG personale via pgvector.
+"""CRUD metadata memorie utente.
 
-Memorie sono "fatti dichiarati dall'utente" che il RAG agent recupera
-PRIMA di rispondere. Tassonomia leggera:
+Post-migration 019 la tabella ``memories`` tiene **solo metadata**:
+id, tenant_id, user_id, kind, key, value, metadata, timestamps. Lo
+storage vettoriale è demandato a Qdrant via
+:mod:`llm_wiki.memories.store.MemoriesStore`, che riusa il
+``VectorStoreService`` di core.
+
+Le tre funzioni storiche ``create_memory`` / ``upsert_preference`` /
+``search_similar`` accettavano un ``embedding: Sequence[float]`` —
+quel parametro è scomparso. Le funzioni vettoriali vivono in
+``llm_wiki.memories.store``; questo modulo è puramente Postgres CRUD.
+
+Tassonomia ``kind`` invariata:
 
 - ``note``: testo libero ("Ricorda che preferisco risposte concise.")
 - ``fact``: affermazione dichiarativa ("Lavoro come ingegnere DevOps")
 - ``preference``: key/value normalizzato ("language=it", "tone=formal")
-
-Lookup ibrido a runtime:
-
-1. Wiki Qdrant (SHARED) → top-K wiki chunks.
-2. ``memories`` Postgres → top-K via pgvector cosine + filtro
-   ``tenant_id=current`` (RLS garantisce hard filter al DB).
-3. Merge + rerank → context al LLM.
-
-Embedding: BGE-M3 1024-dim. Generazione delegata al chiamante (router
-POST /api/memories chiama ``vectorstore.embedder.get_embedder()`` —
-qui questa modulo non importa l'embedder per evitare dep heavy).
 """
 
 from __future__ import annotations
 
 import json
 import uuid
-from collections.abc import Sequence
 from typing import Any
 
 from llm_wiki import config
@@ -33,9 +31,7 @@ from llm_wiki.db.connection import get_connection
 # --- helpers ---------------------------------------------------------------
 
 
-def _format_memory(
-    row: dict[str, Any], *, include_embedding: bool = False
-) -> dict[str, Any]:
+def _format_memory(row: dict[str, Any]) -> dict[str, Any]:
     result = dict(row)
     for key in ("id", "tenant_id", "user_id"):
         if key in result and result[key] is not None:
@@ -44,42 +40,24 @@ def _format_memory(
         val = result.get(key)
         if val is not None and hasattr(val, "isoformat"):
             result[key] = val.isoformat()
-    if not include_embedding:
-        result.pop("embedding", None)
-    if "similarity" in result and result["similarity"] is not None:
-        result["similarity"] = float(result["similarity"])
     return result
-
-
-def _vector_literal(embedding: Sequence[float]) -> str:
-    """Serialize a list[float] in formato pgvector text input.
-
-    pgvector accetta letterale ``'[1.0,2.0,...]'``. Bind diretto via
-    psycopg3 funziona se vector_register è chiamato — qui usiamo cast
-    esplicito ``::vector`` che evita la dipendenza extra ``pgvector``.
-    """
-    return "[" + ",".join(f"{float(x):.7f}" for x in embedding) + "]"
 
 
 # --- CRUD ------------------------------------------------------------------
 
 
-def create_memory(
+def create_memory_row(
     *,
+    memory_id: str | None = None,
     user_id: str,
     value: str,
-    embedding: Sequence[float],
     kind: str = "note",
     key: str | None = None,
     metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Crea memoria. Embedding obbligatorio: il chiamante è responsabile
-    di calcolarlo (sincrono — stessa request che crea la riga).
-
-    Per ``kind='preference'`` l'unique index su ``(tenant_id, key)``
-    impone una sola memoria per chiave per tenant. Usa
-    :func:`upsert_preference` se vuoi semantica "set or replace".
-    """
+    """Inserisce solo la riga Postgres. L'embedding viene indicizzato in
+    Qdrant separatamente da :class:`MemoriesStore`. La doppia scrittura
+    è coordinata lì (Postgres prima, Qdrant subito dopo)."""
     if kind not in ("note", "fact", "preference"):
         raise ValueError(f"kind non valido: {kind!r}")
     if kind == "preference" and not key:
@@ -90,18 +68,16 @@ def create_memory(
     from psycopg.rows import dict_row
 
     tenant_id = require_tenant_id()
-    mid = str(uuid.uuid4())
+    mid = memory_id or str(uuid.uuid4())
     metadata_json = json.dumps(metadata or {})
-    vec_lit = _vector_literal(embedding)
 
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
             cur.execute(
                 """
                 INSERT INTO memories
-                    (id, tenant_id, user_id, kind, key, value,
-                     embedding, metadata)
-                VALUES (%s, %s, %s, %s, %s, %s, %s::vector, %s::jsonb)
+                    (id, tenant_id, user_id, kind, key, value, metadata)
+                VALUES (%s, %s, %s, %s, %s, %s, %s::jsonb)
                 RETURNING id, tenant_id, user_id, kind, key, value,
                           metadata, created_at, updated_at
                 """,
@@ -112,7 +88,6 @@ def create_memory(
                     kind,
                     (key or "").strip() or None,
                     value.strip(),
-                    vec_lit,
                     metadata_json,
                 ),
             )
@@ -121,16 +96,19 @@ def create_memory(
     return _format_memory(row) if row else {}
 
 
-def upsert_preference(
+def upsert_preference_row(
     *,
     user_id: str,
     key: str,
     value: str,
-    embedding: Sequence[float],
     metadata: dict[str, Any] | None = None,
-) -> dict[str, Any]:
-    """Set-or-replace preferenza. Usa l'unique constraint
-    ``idx_memories_preference_unique`` per ON CONFLICT."""
+) -> tuple[dict[str, Any], bool]:
+    """Set-or-replace su unique ``idx_memories_preference_unique``.
+
+    Ritorna ``(record, replaced)`` — ``replaced=True`` se ha sovrascritto
+    una preferenza esistente (l'embedding precedente in Qdrant va
+    eliminato dal chiamante via ``MemoriesStore.delete`` sul vecchio id).
+    """
     if not config.POSTGRES_ENABLED:
         raise RuntimeError("Postgres disabilitato.")
     from psycopg.rows import dict_row
@@ -138,22 +116,32 @@ def upsert_preference(
     tenant_id = require_tenant_id()
     mid = str(uuid.uuid4())
     metadata_json = json.dumps(metadata or {})
-    vec_lit = _vector_literal(embedding)
 
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
+            # Cattura l'id pre-esistente se presente: serve al chiamante
+            # per ripulire il vecchio vettore Qdrant prima di reindicizzare
+            # il nuovo.
+            cur.execute(
+                """
+                SELECT id::text AS id FROM memories
+                WHERE tenant_id = %s
+                  AND kind = 'preference' AND key = %s
+                """,
+                (tenant_id, key.strip()),
+            )
+            prev = cur.fetchone()
+            prev_id = prev["id"] if prev else None
+
             cur.execute(
                 """
                 INSERT INTO memories
-                    (id, tenant_id, user_id, kind, key, value,
-                     embedding, metadata)
-                VALUES (%s, %s, %s, 'preference', %s, %s,
-                        %s::vector, %s::jsonb)
+                    (id, tenant_id, user_id, kind, key, value, metadata)
+                VALUES (%s, %s, %s, 'preference', %s, %s, %s::jsonb)
                 ON CONFLICT (tenant_id, key)
                     WHERE kind = 'preference' AND key IS NOT NULL
                 DO UPDATE SET
                     value = EXCLUDED.value,
-                    embedding = EXCLUDED.embedding,
                     metadata = EXCLUDED.metadata
                 RETURNING id, tenant_id, user_id, kind, key, value,
                           metadata, created_at, updated_at
@@ -164,13 +152,15 @@ def upsert_preference(
                     user_id,
                     key.strip(),
                     value.strip(),
-                    vec_lit,
                     metadata_json,
                 ),
             )
             row = cur.fetchone()
         conn.commit()
-    return _format_memory(row) if row else {}
+    record = _format_memory(row) if row else {}
+    # replaced=True se l'id finale coincide con quello pre-esistente.
+    replaced = bool(prev_id) and record.get("id") == prev_id
+    return record, replaced
 
 
 def list_memories(
@@ -193,7 +183,6 @@ def list_memories(
 
     with get_connection() as conn:
         with conn.cursor(row_factory=dict_row) as cur:
-            # `where` whitelist locale di clausole "col = %s"; valori bound via params.
             cur.execute(
                 f"""
                 SELECT id, tenant_id, user_id, kind, key, value,
@@ -231,7 +220,31 @@ def get_memory(memory_id: str) -> dict[str, Any] | None:
     return _format_memory(row) if row else None
 
 
-def delete_memory(memory_id: str) -> bool:
+def get_memories_by_ids(memory_ids: list[str]) -> list[dict[str, Any]]:
+    """Batch fetch usato dalla similarity search Qdrant per joinare i
+    top-K hit con il metadata Postgres. RLS continua a filtrare per
+    ``tenant_id`` lato DB anche su ``IN``."""
+    if not config.POSTGRES_ENABLED or not memory_ids:
+        return []
+    from psycopg.rows import dict_row
+
+    require_tenant_id()
+    with get_connection() as conn:
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(
+                """
+                SELECT id, tenant_id, user_id, kind, key, value,
+                       metadata, created_at, updated_at
+                FROM memories WHERE id = ANY(%s::uuid[])
+                """,
+                (memory_ids,),
+            )
+            rows = cur.fetchall()
+        conn.rollback()
+    return [_format_memory(r) for r in rows]
+
+
+def delete_memory_row(memory_id: str) -> bool:
     if not config.POSTGRES_ENABLED:
         return False
     require_tenant_id()
@@ -243,72 +256,11 @@ def delete_memory(memory_id: str) -> bool:
     return deleted
 
 
-def search_similar(
-    *,
-    user_id: str | None,
-    query_embedding: Sequence[float],
-    top_k: int = 5,
-    kind: str | None = None,
-    min_similarity: float = 0.0,
-) -> list[dict[str, Any]]:
-    """Top-K per similarità coseno. ``user_id=None`` = cerca su tutte
-    le memorie del tenant (raro: di solito si filtra per utente).
-
-    Restituisce dict con campo extra ``similarity`` (1 - cosine_distance,
-    range [-1, 1] ma con embedding normalizzati BGE-M3 effettivamente
-    [0, 1]). Filtro ``min_similarity`` lato Postgres prima del LIMIT
-    riduce noise nel context.
-    """
-    if not config.POSTGRES_ENABLED:
-        return []
-    from psycopg.rows import dict_row
-
-    require_tenant_id()
-    where = ["1 = 1"]
-    params: list[Any] = []
-    if user_id:
-        where.append("user_id = %s")
-        params.append(user_id)
-    if kind:
-        where.append("kind = %s")
-        params.append(kind)
-    vec_lit = _vector_literal(query_embedding)
-    # cosine distance (<=>) nativo pgvector. similarity = 1 - distance.
-    where.append("(1 - (embedding <=> %s::vector)) >= %s")
-    params.extend([vec_lit, float(min_similarity)])
-    # Order by distance asc = most similar first. Aggiungiamo il vector
-    # ANCHE qui per usare l'indice HNSW.
-    params.append(vec_lit)
-    params.append(max(1, min(top_k, 50)))
-
-    with get_connection() as conn:
-        with conn.cursor(row_factory=dict_row) as cur:
-            # `where` whitelist locale; valori bound via params.
-            cur.execute(
-                f"""
-                SELECT id, tenant_id, user_id, kind, key, value,
-                       metadata, created_at, updated_at,
-                       (1 - (embedding <=> %s::vector)) AS similarity
-                FROM memories
-                WHERE {" AND ".join(where)}
-                ORDER BY embedding <=> %s::vector
-                LIMIT %s
-                """,  # nosec B608 — `where` whitelist locale, valori in params
-                # Attenzione: il primo %s::vector nel SELECT serve per
-                # calcolare similarity; dobbiamo passarlo come PRIMO
-                # parametro, poi gli altri della WHERE/ORDER BY.
-                [vec_lit, *params],
-            )
-            rows = cur.fetchall()
-        conn.rollback()
-    return [_format_memory(r) for r in rows]
-
-
 __all__ = [
-    "create_memory",
-    "upsert_preference",
+    "create_memory_row",
+    "upsert_preference_row",
     "list_memories",
     "get_memory",
-    "delete_memory",
-    "search_similar",
+    "get_memories_by_ids",
+    "delete_memory_row",
 ]

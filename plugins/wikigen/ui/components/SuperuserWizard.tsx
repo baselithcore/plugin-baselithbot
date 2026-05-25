@@ -272,11 +272,7 @@ export function SuperuserWizard({ onComplete }: Props) {
           <section className="flex min-w-0 flex-1 flex-col">
             <header className="flex items-center justify-between border-b border-[var(--color-border)] px-4 py-3 sm:px-5">
               <div className="inline-flex min-w-0 items-center gap-2">
-                <Sparkles
-                  size={14}
-                  className="shrink-0 text-[var(--color-brand)]"
-                  aria-hidden
-                />
+                <Sparkles size={14} className="shrink-0 text-[var(--color-brand)]" aria-hidden />
                 <span className="truncate text-sm font-semibold text-ink">
                   Crea il primo superuser
                 </span>
@@ -492,8 +488,8 @@ function SuperuserSidebar({
       <div className="mt-auto rounded-lg border border-[var(--color-border)] bg-[var(--color-canvas-raised)] p-3 shadow-sm">
         <div className="text-[11px] font-semibold text-ink">Loopback obbligatorio</div>
         <p className="mt-1 text-[10.5px] leading-relaxed text-ink-muted">
-          Questa schermata accetta richieste solo da localhost. Per setup remoti usa la CLI
-          (<code className="font-mono">wiki-wl create-superuser</code>).
+          Questa schermata accetta richieste solo da localhost. Per setup remoti usa la CLI (
+          <code className="font-mono">wiki-wl create-superuser</code>).
         </p>
       </div>
     </aside>
@@ -905,9 +901,7 @@ function FormField({
             error ? 'border-[var(--color-danger)]/60' : 'border-[var(--color-border)]'
           )}
         />
-        {trailing && (
-          <div className="absolute right-2 top-1/2 -translate-y-1/2">{trailing}</div>
-        )}
+        {trailing && <div className="absolute right-2 top-1/2 -translate-y-1/2">{trailing}</div>}
       </div>
       {hint && !error && (
         <span id={hintId} className="mt-1 block text-[11px] text-ink-muted">

@@ -425,9 +425,7 @@ function WizardSidebar({
                 <div
                   className={cn(
                     'text-[12px]',
-                    current
-                      ? 'font-semibold text-text-primary'
-                      : 'font-medium text-text-secondary'
+                    current ? 'font-semibold text-text-primary' : 'font-medium text-text-secondary'
                   )}
                 >
                   {t(`steps.${s.id}.label`)}
@@ -472,7 +470,10 @@ function WizardStepper({ step, t }: { step: Step; t: T }) {
         aria-valuemin={0}
         aria-valuemax={100}
       >
-        <div className="h-full rounded-full bg-status-info transition-all" style={{ width: `${pct}%` }} />
+        <div
+          className="h-full rounded-full bg-status-info transition-all"
+          style={{ width: `${pct}%` }}
+        />
       </div>
       <div className="flex gap-2 overflow-x-auto pb-1">
         {STEPS.map((s, i) => {
@@ -552,12 +553,7 @@ function WizardFooter({
   return (
     <footer className="border-t border-border bg-bg-panel/50 px-4 py-3 sm:px-5">
       <div className="flex items-center justify-between gap-3">
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={step === 'identity' || busy}
-          onClick={onBack}
-        >
+        <Button variant="ghost" size="sm" disabled={step === 'identity' || busy} onClick={onBack}>
           <ArrowLeft size={13} /> {t('footer.back')}
         </Button>
         <div className="hidden min-w-0 flex-1 text-center sm:block">
@@ -669,10 +665,7 @@ function SecurityStep({
           : t('security.strength.weak');
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-4">
-      <StepHeading
-        title={t('security.title')}
-        body={t('security.body', { min: PASSWORD_MIN })}
-      />
+      <StepHeading title={t('security.title')} body={t('security.body', { min: PASSWORD_MIN })} />
       <PasswordField
         id={pwId}
         label={t('security.password', { min: PASSWORD_MIN })}
@@ -708,7 +701,11 @@ function ReviewStep({
   t: T;
 }) {
   const strength =
-    score >= 4 ? t('security.strength.strong') : score === 3 ? t('security.strength.good') : t('security.strength.fair');
+    score >= 4
+      ? t('security.strength.strong')
+      : score === 3
+        ? t('security.strength.good')
+        : t('security.strength.fair');
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-4">
       <StepHeading title={t('review.title')} body={t('review.body')} />
@@ -721,7 +718,10 @@ function ReviewStep({
         <ReviewRow label={t('review.rows.role')} value={t('review.rows.roleValue')} />
         <ReviewRow label={t('review.rows.passwordStrength')} value={strength} />
         <ReviewRow label={t('review.rows.source')} value={t('review.rows.sourceValue')} />
-        <ReviewRow label={t('review.rows.forcedChange')} value={t('review.rows.forcedChangeValue')} />
+        <ReviewRow
+          label={t('review.rows.forcedChange')}
+          value={t('review.rows.forcedChangeValue')}
+        />
       </dl>
       <div className="rounded-md border border-status-warning/30 bg-status-warning/10 px-3 py-2 text-[11.5px] text-status-warning">
         <strong className="font-semibold">{t('review.reminder.title')}</strong>{' '}
@@ -813,11 +813,7 @@ function FormField({
         </span>
       )}
       {error && (
-        <span
-          id={errorId}
-          role="alert"
-          className="mt-1 block text-[11px] text-status-danger"
-        >
+        <span id={errorId} role="alert" className="mt-1 block text-[11px] text-status-danger">
           {error}
         </span>
       )}
@@ -860,7 +856,11 @@ function PasswordField({
           onClick={onToggleShow}
           className="text-text-muted hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-status-info/40"
         >
-          {show ? <EyeOff className="h-3.5 w-3.5" aria-hidden /> : <Eye className="h-3.5 w-3.5" aria-hidden />}
+          {show ? (
+            <EyeOff className="h-3.5 w-3.5" aria-hidden />
+          ) : (
+            <Eye className="h-3.5 w-3.5" aria-hidden />
+          )}
         </button>
       }
     />
