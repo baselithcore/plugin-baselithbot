@@ -1,0 +1,44 @@
+---
+# Configurazione per markdownlint-cli2
+# Abilita tutte le regole di default
+default: true
+
+# Escludi file generati o specifici
+ignores:
+  - "CHANGELOG.md"
+  - "**/CHANGELOG.md"
+  - ".serena/**"
+  - "node_modules/**"
+
+# -----------------------------------------
+# Regole disattivate (miglior set per progetti tecnici)
+# -----------------------------------------
+
+# Consenti HTML inline
+MD033: false
+
+# Disattiva del tutto il controllo sulla lunghezza delle righe
+# I documenti tecnici hanno spesso righe molto lunghe,
+# e la regola NON è autocorreggibile.
+MD013: false
+
+# Ignora il requisito che la prima riga sia un H1
+MD041: false
+
+# Disattiva la regola che vieta l'enfasi come heading
+MD036: false
+
+# Disattiva la regola che controlla lo stile delle tabelle
+MD060: false
+
+# -----------------------------------------
+# Regole personalizzate
+# -----------------------------------------
+
+# MD024/no-duplicate-heading: Consenti intestazioni duplicate se non sono fratelli (necessario per i Changelog)
+MD024:
+  siblings_only: true
+
+# Indentazione delle liste
+MD007:
+  indent: 4

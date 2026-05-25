@@ -1,0 +1,209 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "baselith-core"
+dynamic = ["version"]
+description = "A Modular Framework for Baselith-Core Orchestration featuring World Models (MCTS), Swarm, and Native MCP."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+  { name = "Gippo", email = "baselith.ai@gmail.com" }
+]
+license = "AGPL-3.0-only"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+]
+keywords = ["ai", "agents", "framework"]
+
+dependencies = [
+  "aiohttp>=3.9.0",
+  "alembic>=1.13.0",
+  "anthropic>=0.18.0",
+  "argon2-cffi>=23.1.0",
+  "defusedxml==0.7.1",
+  "email-validator>=2.1.0",
+  "fastapi==0.115.0",
+  "fastapi-limiter<0.2.0,>=0.1.6",
+  "httpx==0.27.0",
+  "jsonschema>=4.23.0",
+  "langchain-text-splitters>=1.1.0",
+  "markdown-it-py==3.0.0",
+  "networkx>=3.0",
+  "numpy>=1.24.0",
+  "ollama==0.6.0",
+  "openai>=2.2.0",
+  "opentelemetry-api>=1.21.0",
+  "opentelemetry-exporter-otlp>=1.21.0",
+  "opentelemetry-instrumentation-fastapi>=0.42b0",
+  "opentelemetry-instrumentation-httpx>=0.42b0",
+  "opentelemetry-instrumentation-redis>=0.42b0",
+  "opentelemetry-sdk>=1.21.0",
+  "orjson==3.11.7",
+  "prometheus-client==0.20.0",
+  "psycopg[binary,pool]==3.2.1",
+  "pydantic-settings>=2.0.0",
+  "PyJWT>=2.10.1,<3.0",
+  "python-multipart",
+  "PyYAML>=6.0",
+  "qdrant-client==1.15.1",
+  "redis==5.0.7",
+  "rq>=1.15.0",
+  "sentry-sdk[fastapi]>=2.0.0",
+  "sse-starlette>=2.1.0",
+  "structlog>=24.1.0",
+  "uvicorn[standard]==0.30.0",
+  "rich>=13.7.0",
+  "rich-argparse>=1.4.0",
+  "argcomplete>=3.2.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/baselithcore/baselithcore"
+Repository = "https://github.com/baselithcore/baselithcore"
+Documentation = "https://baselithcore.github.io/baselithcore"
+
+[project.scripts]
+baselith = "core.cli.__main__:main"
+
+[project.optional-dependencies]
+browser = [
+  "playwright==1.45.0",
+]
+documents = [
+  "pypdf>=6.7.4",
+  "python-docx==1.1.0",
+  "python-pptx==0.6.23",
+  "openpyxl==3.1.5",
+  "xlrd==2.0.1",
+]
+ocr = [
+  "pdf2image==1.16.3",
+  "Pillow==12.1.1",
+  "pytesseract==0.3.10",
+]
+web = [
+  "beautifulsoup4>=4.14.2",
+  "playwright==1.45.0",
+]
+rag = [
+  "sentence-transformers==2.7.0",
+]
+nlp = [
+  "spacy==3.8.0",
+]
+huggingface = [
+  "huggingface-hub>=0.20.0",
+  "transformers>=4.36.0",
+  "accelerate>=0.25.0",
+]
+test = [
+  "beautifulsoup4>=4.14.2",
+  "pypdf>=6.7.4",
+  "pytest>=7.4.0",
+  "pytest-cov>=4.1.0",
+  "pytest-asyncio>=0.21.0",
+  # Required by `plugins/baselithbot/security/secret_store.py` (Fernet) —
+  # imported transitively when monorepo CI collects plugin test modules.
+  "cryptography>=42.0.0",
+]
+dev = [
+  "beautifulsoup4>=4.14.2",
+  "pypdf>=6.7.4",
+  "pytest>=7.4.0",
+  "pytest-cov>=4.1.0",
+  "pytest-asyncio>=0.21.0",
+  "ruff>=0.4.0",
+  "mypy>=1.10.0",
+  "ipython>=8.0.0",
+  "pre-commit>=3.5.0",
+  "types-PyYAML",
+]
+adapters = [
+  "langchain>=1.2.0",
+  "langchain-community>=0.4.0",
+  "langgraph>=1.0.0",
+  "langchain-ollama>=1.0.0",
+]
+memory = [
+  "supermemory>=0.1.0",
+]
+computer_use = [
+  "mss>=9.0.0",
+  "Pillow==12.1.1",
+  "pyautogui>=0.9.54",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["core*", "plugins*"]
+
+[tool.setuptools.dynamic]
+version = {attr = "core._version.__version__"}
+
+[tool.setuptools.package-data]
+"*" = [
+    "static/**/*",
+    "ui/dist/**/*",
+    "manifest.yaml",
+    "manifest.yml",
+    "manifest.json",
+    "README.md",
+    "py.typed",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", "node_modules", ".git", ".env", "examples"]
+
+[tool.ruff]
+target-version = "py312"
+exclude = [
+    "templates/",
+    "frontend/",
+    "examples/",
+]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = false
+warn_unused_configs = true
+disallow_untyped_defs = false
+check_untyped_defs = true
+disable_error_code = ["import-untyped", "import-not-found"]
+exclude = [
+    "templates/",
+    "examples/",
+    "frontend/",
+    "build/",
+    "dist/",
+    "plugins/",
+    "scripts/",
+]
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = [
+    "sentence_transformers",
+    "psutil",
+    "pytesseract",
+    "docker",
+    "docker.errors",
+    "docker.models.containers",
+    "docker.types",
+    "structlog",
+    "structlog.contextvars",
+    "opentelemetry",
+    "opentelemetry.instrumentation.fastapi",
+    "opentelemetry.instrumentation.redis",
+    "opentelemetry.instrumentation.httpx",
+    "supermemory",
+    "supermemory.*",
+]
+ignore_errors = true

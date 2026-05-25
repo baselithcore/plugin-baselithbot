@@ -1,0 +1,214 @@
+
+services:
+  # Main service: API Backend
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile-slim
+    container_name: baselith-core-api
+    env_file: configs/.env.production
+    environment:
+      - APP_ENV=production
+      - ENVIRONMENT=production
+      - CORE_LOG_FORMAT=json
+      - HOST=0.0.0.0
+      - PORT=8000
+      - DOCKER_HOST=tcp://${SANDBOX_DOCKER_HOST:?SANDBOX_DOCKER_HOST must be set}
+      - DOCKER_TLS_VERIFY=1
+      - DOCKER_CERT_PATH=/certs/client
+      - TELEMETRY_OTEL_ENDPOINT=http://jaeger:4317
+      - SENTRY_DSN=${SENTRY_DSN}
+    volumes:
+      - ${SANDBOX_CERTS_DIR:-./deploy/sandbox/client-certs}:/certs/client:ro
+      - ./data:/app/data
+    networks:
+      - app_net
+      - obs_net
+    depends_on:
+      - falkordb
+      - postgres
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Cache and Message Queue
+  # Graph Database and Cache (Redis compatible)
+  falkordb:
+    image: falkordb/falkordb:latest
+    container_name: baselith-falkordb
+    volumes:
+      - falkordb_data:/data
+    networks:
+      - app_net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 1G
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Relational Database
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_DB=${DB_NAME:-baselithcore}
+      - POSTGRES_USER=${DB_USER:-baselithcore}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -d ${DB_NAME:-baselithcore} -U ${DB_USER:-baselithcore}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Worker for Async Tasks
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile-slim
+    container_name: baselith-core-worker
+    env_file: configs/.env.production
+    command: python -m core.task_queue.worker
+    environment:
+      - APP_ENV=production
+      - ENVIRONMENT=production
+      - CORE_LOG_FORMAT=json
+      - DOCKER_HOST=tcp://${SANDBOX_DOCKER_HOST:?SANDBOX_DOCKER_HOST must be set}
+      - DOCKER_TLS_VERIFY=1
+      - DOCKER_CERT_PATH=/certs/client
+      - TELEMETRY_OTEL_ENDPOINT=http://jaeger:4317
+      - SENTRY_DSN=${SENTRY_DSN}
+    volumes:
+      - ${SANDBOX_CERTS_DIR:-./deploy/sandbox/client-certs}:/certs/client:ro
+      - ./data:/app/data
+    networks:
+      - app_net
+      - obs_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      falkordb:
+        condition: service_healthy
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    tmpfs:
+      - /tmp:size=64m,noexec,nosuid
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.8'
+          memory: 1G
+
+  # Reverse Proxy
+  gateway:
+    image: nginx:alpine
+    container_name: baselith-gateway
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - app_net
+    depends_on:
+      - api
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp:size=32m,noexec,nosuid
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # === Observability Stack ===
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    container_name: baselith-jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "127.0.0.1:16686:16686"
+    networks:
+      - obs_net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: baselith-prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./deploy/prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - app_net
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+
+volumes:
+  falkordb_data:
+  postgres_data:
+  prometheus_data:
+
+networks:
+  app_net:
+  obs_net:
