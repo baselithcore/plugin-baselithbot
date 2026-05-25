@@ -1,0 +1,33 @@
+Classificazione del documento:
+{{ classification }}
+
+Outline estratto (heading del PDF):
+---
+{{ outline[:5000] }}
+---
+
+{% if body_excerpt is defined and body_excerpt %}
+Inizio del corpo del documento (testo grezzo, non solo heading):
+---
+{{ body_excerpt[:5000] }}
+---
+{% endif %}
+
+{% if verbatim_atoms is defined and verbatim_atoms %}
+Atomi verbatim salienti estratti da tutto il documento (snippet di codice,
+tabelle, callout, fasi procedurali, liste numerate). Servono al planner
+per capire la struttura macro-operativa del contenuto, non solo i titoli:
+---
+{{ verbatim_atoms }}
+---
+{% endif %}
+
+Pagine wiki già esistenti nel vault (per riuso invece di duplicati):
+{{ existing_pages }}
+
+Produci il JSON del piano. **Una fonte tipica si decompone in 5-15
+pagine wiki**: oltre alla pagina `source` (riassunto/indice), produci
+sempre pagine derivate per ogni concetto, procedura, entità, fase o
+attore ricorrente nel documento — `derived_pages` non deve essere
+vuoto a meno che il documento sia genuinamente atomico (una sola
+nozione, una FAQ, un changelog di una riga).

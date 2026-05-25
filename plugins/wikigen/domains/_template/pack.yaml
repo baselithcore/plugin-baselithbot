@@ -1,0 +1,116 @@
+---
+# Domain Pack template — copied by `python -m llm_wiki init --domain <name>`.
+#
+# Replace placeholders, then drop Jinja2 templates under `prompts/` and
+# few-shot examples under `examples/`. Validate with:
+#   APP_DOMAIN=<name> python -c "from llm_wiki.domain import load_pack; print(load_pack().label)"
+
+schema_version: 1
+
+# Snake-case ASCII. Must match the directory name.
+name: _template
+label: "Template Wiki"
+description: "Replace with one-line domain description."
+language: it
+
+# Page taxonomy. Add/remove entries to fit the vertical. The `id` travels
+# through frontmatter, JSON-Schema enums fed to the LLM, and filesystem
+# paths — keep it stable.
+page_types:
+  - id: source
+    label: "Fonte"
+    plural: "fonti"
+    folder: sources
+    prompt_template: source_page.j2
+  - id: concept
+    label: "Concetto"
+    plural: "concetti"
+    folder: concepts
+    prompt_template: entity_page.j2
+  - id: entity
+    label: "Entità"
+    plural: "entità"
+    folder: entities
+    prompt_template: entity_page.j2
+  - id: topic
+    label: "Tema"
+    plural: "temi"
+    folder: topics
+    prompt_template: entity_page.j2
+
+# Optional sub-classification within a page type. Free-form keys, scoped
+# per-pack. Example for a legal pack:
+#   subtypes:
+#     concept: ["sentenza", "normativa", "principio"]
+subtypes: {}
+
+# Frontmatter rules live in a sibling JSON-Schema-flavoured YAML.
+frontmatter_schema: schema.yaml
+
+# Declarative groupings served by `GET /api/groups?rule=<key>`.
+# Replaces hardcoded endpoints. Empty list = no domain-specific groups.
+grouping: []
+
+# Branding strings. Frontend keeps its theme; only copy changes.
+ui:
+  app_name: "Template Wiki"
+  short_name: "Wiki"
+  vault_label: "Vault"
+  tagline: "chat sul vault"
+  empty_state: "Domande ancorate alle fonti caricate. Ogni risposta cita verbatim."
+  hero_question: "Cosa vuoi sapere"
+  hero_highlight: "dalla tua Wiki?"
+  hero_pill: "GraphRAG · retrieval su grafo · anchor-first"
+  hero_pill_icon: "Network"
+  disclaimer: "Le risposte si basano sui documenti caricati. Verifica sempre le fonti citate prima di decisioni operative."
+  suggested_questions:
+    - category: "panoramica"
+      label: "Riassumi il vault"
+      hint: "Tutte le fonti, una sintesi"
+      icon: "FileSearch"
+      prompt: "Dammi una panoramica strutturata di cosa c'è nel vault: argomenti, entità chiave e relazioni."
+    - category: "ricerca"
+      label: "Trova citazioni"
+      hint: "Cerca un termine specifico"
+      icon: "BookOpen"
+      prompt: "Cerca nelle fonti tutte le menzioni di [TERMINE] e mostrami le citazioni con riferimento al documento."
+  page_type_labels:
+    source: "Fonti"
+    concept: "Concetti"
+    entity: "Entità"
+    topic: "Temi"
+
+prompts_dir: prompts
+examples_dir: examples
+
+# Knowledge-graph ontology (graphify-inspired). OPZIONALE — se assente,
+# l'engine usa una vocabolario generico (concept/entity/source +
+# RELATES_TO/PART_OF/DERIVES_FROM/DEFINED_BY). Personalizza per estrazione
+# pi  precisa nel tuo verticale.
+#
+# Attivabile via env GRAPH_DB_ENABLED=true (+ docker compose profile graph)
+# e GRAPH_EXTRACT_ENABLED=true. Vedi docs/graph.md.
+graph:
+  entity_types:
+    - id: concept
+      label: "Concetto"
+      description: "Idea o nozione astratta del dominio."
+      examples: ["clausola", "principio", "regola"]
+    - id: entity
+      label: "Entità"
+      description: "Attore concreto (organizzazione, persona, sistema)."
+      examples: ["organizzazione", "ente regolatore"]
+    - id: source
+      label: "Fonte"
+      description: "Documento o riferimento citabile."
+      examples: ["documento", "norma", "articolo"]
+  relation_types:
+    - id: RELATES_TO
+      label: "è correlato a"
+    - id: PART_OF
+      label: "fa parte di"
+    - id: DERIVES_FROM
+      label: "deriva da"
+    - id: DEFINED_BY
+      label: "è definito da"
+  extraction_hints: ""

@@ -1,0 +1,79 @@
+---
+# Promtail: ship Docker JSON logs → Loki.
+# Estrae tenant_id, request_id, level da log strutturati JSON (LOG_FORMAT=json).
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: info
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    batchwait: 1s
+    batchsize: 1048576
+
+scrape_configs:
+  # === Docker containers via JSON log driver ===
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 15s
+        filters:
+          - name: label
+            values: ["observability.scrape=true"]
+
+    relabel_configs:
+      - source_labels: ["__meta_docker_container_name"]
+        regex: "/(.*)"
+        target_label: container
+
+      - source_labels: ["__meta_docker_container_label_com_docker_compose_service"]
+        target_label: service
+
+      - source_labels: ["__meta_docker_container_label_com_docker_compose_project"]
+        target_label: compose_project
+
+      - source_labels: ["__meta_docker_container_label_observability_component"]
+        target_label: component
+
+    pipeline_stages:
+      # 1. Docker JSON wrapper: {"log":"<stdout>", "stream":"stdout|stderr", "time":...}
+      - docker: {}
+
+      # 2. Parse app JSON payload se riconoscibile.
+      - match:
+          selector: '{service=~"app|agent-jira"}'
+          stages:
+            - json:
+                expressions:
+                  timestamp: timestamp
+                  level: level
+                  logger: logger
+                  message: message
+                  request_id: request_id
+                  tenant_id: tenant_id
+
+            - labels:
+                level:
+                tenant_id:
+                logger:
+
+            - timestamp:
+                source: timestamp
+                format: RFC3339Nano
+                fallback_formats:
+                  - RFC3339
+
+            - output:
+                source: message
+
+  # === System logs (opzionale) ===
+  - job_name: system
+    static_configs:
+      - targets: [localhost]
+        labels:
+          job: varlogs
+          __path__: /var/log/{syslog,auth.log,messages}

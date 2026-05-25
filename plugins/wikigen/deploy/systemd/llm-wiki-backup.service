@@ -1,0 +1,35 @@
+# systemd service — esegue tutti gli script di backup in sequenza.
+# Installazione:
+#   sudo cp deploy/systemd/llm-wiki-backup.{service,timer} /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now llm-wiki-backup.timer
+#   systemctl list-timers llm-wiki-backup.timer
+#   journalctl -u llm-wiki-backup.service -f
+#
+# Override env: crea /etc/systemd/system/llm-wiki-backup.service.d/override.conf
+# con [Service] Environment="POSTGRES_PASSWORD=..." ecc., oppure usa
+# EnvironmentFile=/srv/llm-wiki/.env (richiede formato KEY=VALUE plain).
+[Unit]
+Description=LLM Wiki — backup Postgres + Qdrant + vaults
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=wiki
+Group=wiki
+WorkingDirectory=/srv/llm-wiki/app
+EnvironmentFile=-/srv/llm-wiki/.env
+Environment=BACKUP_DIR=/srv/llm-wiki/backups
+ExecStart=/srv/llm-wiki/app/scripts/backup_postgres.sh
+ExecStart=/srv/llm-wiki/app/scripts/backup_qdrant.sh
+ExecStart=/srv/llm-wiki/app/scripts/backup_vaults.sh
+StandardOutput=journal
+StandardError=journal
+
+# Hardening
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/srv/llm-wiki/backups /srv/llm-wiki/app/backups

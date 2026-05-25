@@ -1,0 +1,165 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "wiki-white-label"
+version = "0.1.0"
+description = "White-label LLM Wiki engine. Single codebase, swap APP_DOMAIN to instantiate vertical wikis (legal, medical, technical, insurance, …) without touching the core."
+authors = [{ name = "Giovanni Ippolito", email = "g.ippolito@gdservices.tech" }]
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.5.2",
+    "qdrant-client>=1.12.0",
+    "sentence-transformers>=2.7.0,<4.0",
+    "openai>=1.40.0",
+    "ollama>=0.3.0",
+    "langchain-text-splitters>=0.2.0",
+    "pyyaml>=6.0.2",
+    "httpx>=0.27.0",
+    "jinja2>=3.1.0",
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+    "fastapi>=0.110.0",
+    "uvicorn>=0.29.0",
+    # Pin >=0.0.18 per CVE-2024-53981 (DoS via multipart malformati che
+    # forzava parsing O(n²) su body con molti boundary). 0.0.18 cap costo
+    # parsing a O(n).
+    "python-multipart>=0.0.18",
+    # Auth + multi-tenant (sessione utente). Postgres + pgvector per
+    # tenants/users/conversations/memories. JWT HS256 access + opaque
+    # refresh hashed in DB. Pattern allineato a agent-jira reference.
+    "psycopg[binary,pool]>=3.1.0",
+    "alembic>=1.13.0",
+    "pyjwt>=2.8.0",
+    # email-validator: richiesto da pydantic.EmailStr negli auth router
+    # (RegisterRequest/LoginRequest validano email a wire-time).
+    "email-validator>=2.0.0",
+    # Observability: Prometheus metrics in-process. OTel/Faro extras
+    # opzionali (vedi [obs] sotto) — senza endpoint OTLP la libreria
+    # è lazy-imported e l'app funziona invariata.
+    "prometheus-client>=0.20.0",
+]
+
+[project.optional-dependencies]
+hybrid = ["FlagEmbedding>=1.3.0"]
+graph = [
+    "falkordb>=1.0.0",
+    "redis>=5.0.0",
+    # NetworkX per in-memory graph algorithms (BFS, shortest path, PageRank,
+    # centrality). Snapshot from FalkorDB → networkx.DiGraph on demand.
+    "networkx>=3.2",
+    # Leiden community detection. python-igraph è binary wheel (~5MB) ma
+    # zero deps native su macOS/linux x86/arm64. Disponibile come optional
+    # extra: senza igraph, le community fanno fallback su connected
+    # components (più rumoroso ma sempre disponibile).
+    "python-igraph>=0.11",
+    "leidenalg>=0.10",
+]
+# Rate limiter sliding-window distribuito + audit/cache. Senza Redis
+# l'app fa fallback in-process (ok per single-instance dev).
+auth = ["redis>=5.0.0"]
+ingest = [
+    "docling>=2.0.0",
+    "pymupdf>=1.24.0",
+    "pdfplumber>=0.11.0",
+]
+dgx = [
+    "FlagEmbedding>=1.3.0",
+    "falkordb>=1.0.0",
+    "redis>=5.0.0",
+    "networkx>=3.2",
+    "python-igraph>=0.11",
+    "leidenalg>=0.10",
+    "docling>=2.0.0",
+    "pymupdf>=1.24.0",
+    "pdfplumber>=0.11.0",
+]
+all = [
+    "FlagEmbedding>=1.3.0",
+    "falkordb>=1.0.0",
+    "redis>=5.0.0",
+    "networkx>=3.2",
+    "python-igraph>=0.11",
+    "leidenalg>=0.10",
+    "docling>=2.0.0",
+    "pymupdf>=1.24.0",
+    "pdfplumber>=0.11.0",
+]
+# OpenTelemetry tracing (opt-in). Attiva con OTEL_EXPORTER_OTLP_ENDPOINT.
+# Carica instrumentations FastAPI / Httpx / Psycopg / Redis quando installate.
+obs = [
+    "opentelemetry-api>=1.27.0",
+    "opentelemetry-sdk>=1.27.0",
+    "opentelemetry-exporter-otlp-proto-http>=1.27.0",
+    "opentelemetry-instrumentation-fastapi>=0.48b0",
+    "opentelemetry-instrumentation-httpx>=0.48b0",
+    "opentelemetry-instrumentation-psycopg>=0.48b0",
+    "opentelemetry-instrumentation-redis>=0.48b0",
+]
+dev = [
+    "ruff>=0.5.0",
+    "mypy>=1.11.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "types-PyYAML>=6.0.0",
+    "types-requests>=2.31.0",
+]
+
+[project.scripts]
+wiki-wl = "llm_wiki.cli:main"
+
+[tool.setuptools]
+packages = [
+    "llm_wiki",
+    "llm_wiki.admin",
+    "llm_wiki.agents",
+    "llm_wiki.api",
+    "llm_wiki.api.routers",
+    "llm_wiki.auth",
+    "llm_wiki.cli",
+    "llm_wiki.db",
+    "llm_wiki.domain",
+    "llm_wiki.graphdb",
+    "llm_wiki.ingest_raw",
+    "llm_wiki.observability",
+    "llm_wiki.utils",
+    "llm_wiki.vectorstore",
+    "llm_wiki.wiki",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP"]
+ignore = ["E501", "B008"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["core"]
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+explicit_package_bases = true
+namespace_packages = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.bandit]
+# Static security analysis. Run: bandit -c pyproject.toml -r llm_wiki
+exclude_dirs = ["tests", "alembic", "scratch", "frontend", "docs", "deploy"]
+skips = [
+    # B101 assert_used: usato in test e in invariant guards interni
+    "B101",
+    # B404 import_subprocess: scaffold/admin lanciano sottoprocessi controllati
+    "B404",
+    # B603 subprocess_without_shell_equals_true: chiamate con args list = OK
+    "B603",
+]

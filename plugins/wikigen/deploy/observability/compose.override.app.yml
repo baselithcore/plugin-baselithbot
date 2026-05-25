@@ -1,0 +1,52 @@
+---
+# Override per docker-compose.yml dell'app llm-wiki:
+# - aggancia container alla rete `llm-wiki-obs-net`
+# - aggiunge label `observability.scrape=true` per autodiscovery Promtail
+# - abilita export OTLP verso otel-collector
+#
+# Uso (dalla root del repo):
+#   docker compose \
+#     -f docker-compose.yml \
+#     -f deploy/observability/compose.override.app.yml \
+#     up -d
+#
+# Pre-requisito: avvia prima lo stack obs:
+#   cd deploy/observability && docker compose up -d
+
+networks:
+  obs:
+    name: llm-wiki-obs-net
+    external: true
+
+services:
+  qdrant:
+    labels:
+      observability.scrape: "true"
+      observability.component: "qdrant"
+    networks:
+      - default
+      - obs
+
+  postgres:
+    labels:
+      observability.scrape: "true"
+      observability.component: "postgres"
+    networks:
+      - default
+      - obs
+
+  redis:
+    labels:
+      observability.scrape: "true"
+      observability.component: "redis"
+    networks:
+      - default
+      - obs
+
+  falkordb:
+    labels:
+      observability.scrape: "true"
+      observability.component: "falkordb"
+    networks:
+      - default
+      - obs

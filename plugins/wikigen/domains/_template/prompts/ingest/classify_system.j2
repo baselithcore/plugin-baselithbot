@@ -1,0 +1,19 @@
+{% include "ingest/_base.j2" %}
+
+Task: classifica il documento PDF fornito.
+
+Output JSON con campi:
+- `source_type`: una delle categorie ammesse dal dominio "{{ pack.label }}"
+{% set source_subtypes = pack.subtypes.get("source") if pack.subtypes else none %}
+{% if source_subtypes %}
+  Valori ammessi: {{ source_subtypes | join(", ") }}.
+{% endif %}
+- `title`: titolo editoriale pulito della fonte
+- `edizione`: stringa come appare sul documento o null
+- `edizione_iso`: data ISO YYYY-MM-DD o null
+- `modello`: identificativo modello/versione se presente, altrimenti null
+- `author`: editore/autore/autorità o null
+- `riservatezza`: "alta" se PII presente, "media" o "bassa" altrimenti
+- `rami_o_argomenti`: lista breve di tag kebab-case
+
+Se dati non rilevabili con certezza, usa null. Non inventare.

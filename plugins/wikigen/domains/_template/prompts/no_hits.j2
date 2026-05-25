@@ -1,0 +1,14 @@
+Il retrieval non ha trovato chunk rilevanti nel vault **{{ pack.label }}** per questa domanda.
+
+Possibili cause:
+- terminologia divulgativa non allineata al lessico delle fonti ingerite;
+- fonte non ancora ingerita nella cartella `raw/`;
+- query troppo ampia (richiederebbe stratificazione) o troppo specifica (cita un identificatore non nel vault);
+- domanda multi-hop che richiede più pagine complementari di quelle recuperate.
+
+Cosa puoi fare:
+- riformula con i termini esatti del dominio "{{ pack.description }}" — usa la nomenclatura tecnica delle fonti primarie invece di sinonimi colloquiali;
+- specifica gli slot rilevanti (versione/edizione, sotto-ambito, contesto di applicazione) per restringere la query;
+- verifica che le fonti attese siano state caricate nel vault: in caso contrario aggiungile a `raw/` e attendi il completamento dell'ingestion.
+
+Un retrieval vuoto è un segnale di gap di retrieval, **non** di copertura del dominio: non concludere che la materia non sia disciplinata.

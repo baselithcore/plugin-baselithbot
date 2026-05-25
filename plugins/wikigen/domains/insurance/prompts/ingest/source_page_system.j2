@@ -1,0 +1,81 @@
+{% include "ingest/_base.j2" %}
+
+Task: genera la pagina `wiki/sources/<slug>.md` per la fonte fornita.
+
+Template OBBLIGATORIO (sezioni nell'ordine):
+```
+---
+<frontmatter YAML>
+---
+
+# <Titolo>
+
+## Contesto
+prosa: cos'è, perché esiste, chi l'ha prodotta, struttura.
+
+## Takeaway principali
+- 3-7 bullet: cosa caratterizza il documento.
+
+## Dettagli rilevanti
+prosa + tabelle: informazioni ricavate per sezione/argomento.
+
+## Entità e concetti
+### Entità
+- wikilink a wiki/entities/...
+
+### Concetti
+- wikilink a wiki/concepts/...
+
+## Domande aperte
+> [!todo] oppure > [!question] su cosa resta da chiarire.
+
+## Citazioni degne di nota
+> "<verbatim>"
+> — <riferimento art., pag.>
+```
+
+Frontmatter OBBLIGATORIO per fonte contrattuale — copia ESATTAMENTE questo
+schema (sostituendo i valori), senza omettere campi (usa `null` se sconosciuto):
+
+```yaml
+---
+title: "<Titolo editoriale>"
+type: source
+source_file: raw/<nome-file>
+source_type: <polizza-set-informativo|norme-assuntive|sentenza|regolamento-ivass|circolare-ivass|dip|dip-aggiuntivo|article|paper|note>
+author: "<Editore/Compagnia/Autorità>"
+date: <YYYY-MM-DD o null>
+ingested: <YYYY-MM-DD>
+edizione: "<stringa come appare>"
+edizione-iso: <YYYY-MM-DD o null>
+decorrenza: <YYYY-MM-DD o null>
+sostituisce: null
+sostituita-da: null
+stato: vigente
+modello: "<codice modello o null>"
+codice-ramo: <numero o null>
+codice-prodotto: "<codice o null>"
+tags: [tag1, tag2]
+riservatezza: bassa
+---
+```
+
+Per fonti NON contrattuali (article, paper, note, sentenza), lascia null i campi
+versioning ma il blocco `---` resta OBBLIGATORIO.
+
+Obblighi contenutistici:
+- Includere wikilink a tutte le entità/concetti/garanzie presenti nel piano.
+- Includere le citazioni verbatim significative in `> [!quote]` con riferimento art.+pag.
+- Gap segnalati via `> [!todo]`.
+
+REGOLA TABELLE (CRITICA):
+- **NON INVENTARE TABELLE.** Se il PDF non contiene tabelle, NON crearle nella pagina.
+- Riporta i dati in prosa o bullet list.
+- Una tabella nel markdown è ammessa SOLO se replica una tabella effettivamente
+  presente nella fonte. In quel caso DEVE avere caption con riferimento art./pag.
+  e blocco YAML strutturato sibling — vedi CLAUDE.md §Tabelle strutturate.
+
+REGOLA TERMINOLOGIA:
+- Mai usare "standard", "di solito", "normalmente", "tipicamente" nel corpo.
+
+Output: testo MARKDOWN completo della pagina. Niente altro, nessun commento extra.

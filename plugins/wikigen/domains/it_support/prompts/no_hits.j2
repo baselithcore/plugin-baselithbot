@@ -1,0 +1,16 @@
+Il retrieval non ha trovato chunk rilevanti nel vault **{{ pack.label }}** per questa domanda.
+
+Possibili cause:
+- terminologia colloquiale al posto del nome esatto del componente, dell'errore o della procedura (es. "internet non funziona" invece del codice di errore restituito dal client VPN);
+- runbook helpdesk, KB del vendor o policy IT non ancora ingerito nel vault;
+- versione del software / OS / agent diversa da quella documentata (drift di release);
+- query priva degli slot del ticket (sistema target, versione, OS dell'asset, codice di errore verbatim, identità del richiedente, gruppo IdP, ruolo);
+- domanda multi-hop che richiede runbook + KB vendor + policy di sicurezza, ma solo un livello è in retrieval.
+
+Cosa puoi fare:
+- riformula con il **nome esatto** del software, del modulo, dell'errore (codice + messaggio verbatim), del comando, del gruppo IdP/AD, del profilo MDM, del ticket di riferimento;
+- specifica **OS e versione** dell'asset (Windows 11 23H2, macOS 14.x, Android, iOS), **versione del client** (Outlook, VPN, EDR, MDM agent), **canale di accesso** (LAN ufficio, VPN, Wi-Fi guest, cellular), **identità del richiedente** (dipendente, esterno, admin), **categoria del ticket** (incident / service request / change / security event);
+- se cerchi una procedura di troubleshooting: indica il punto di partenza (sintomo, alert, codice di errore) e il punto di arrivo (stato di "working" verificabile);
+- verifica che la documentazione attesa (runbook helpdesk, KB del vendor, policy di sicurezza, procedura di provisioning, post-mortem, manuale del fornitore) sia stata ingerita.
+
+Un retrieval vuoto è un segnale di gap di retrieval, **non** indica assenza della procedura. Non eseguire reset, revoche o modifiche di configurazione inferiti dal solo "buon senso": verifica con il runbook autoritativo, conferma l'identità del richiedente sui canali ammessi dalla policy e ottieni l'autorizzazione formale prima di operare su account, asset o servizi condivisi.

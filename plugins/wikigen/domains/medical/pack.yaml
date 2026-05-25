@@ -1,0 +1,70 @@
+---
+# Domain Pack template — copied by `python -m llm_wiki init --domain <name>`.
+#
+# Replace placeholders, then drop Jinja2 templates under `prompts/` and
+# few-shot examples under `examples/`. Validate with:
+#   APP_DOMAIN=<name> python -c "from llm_wiki.domain import load_pack; print(load_pack().label)"
+
+schema_version: 1
+
+# Snake-case ASCII. Must match the directory name.
+name: medical
+label: "Wiki Medica"
+description: "Linee guida e referti"
+language: it
+seed: true
+
+# Page taxonomy. Add/remove entries to fit the vertical. The `id` travels
+# through frontmatter, JSON-Schema enums fed to the LLM, and filesystem
+# paths — keep it stable.
+page_types:
+  - id: source
+    label: "Fonte"
+    plural: "fonti"
+    folder: sources
+    prompt_template: source_page.j2
+  - id: concept
+    label: "Concetto"
+    plural: "concetti"
+    folder: concepts
+    prompt_template: entity_page.j2
+  - id: entity
+    label: "Entità"
+    plural: "entità"
+    folder: entities
+    prompt_template: entity_page.j2
+  - id: topic
+    label: "Tema"
+    plural: "temi"
+    folder: topics
+    prompt_template: entity_page.j2
+
+# Optional sub-classification within a page type. Free-form keys, scoped
+# per-pack. Example for a legal pack:
+#   subtypes:
+#     concept: ["sentenza", "normativa", "principio"]
+subtypes: {}
+
+# Frontmatter rules live in a sibling JSON-Schema-flavoured YAML.
+frontmatter_schema: schema.yaml
+
+# Declarative groupings served by `GET /api/groups?rule=<key>`.
+# Replaces hardcoded endpoints. Empty list = no domain-specific groups.
+grouping: []
+
+# Branding strings. Frontend keeps its theme; only copy changes.
+ui:
+  app_name: "Wiki Medica"
+  short_name: "Medica"
+  vault_label: "Vault"
+  tagline: "Drop sources, query a living wiki."
+  empty_state: "Carica la prima fonte per iniziare."
+  disclaimer: "Sintesi grounded sulle fonti del vault. Non costituiscono consulto medico, diagnosi né prescrizione: le raccomandazioni si riferiscono a popolazioni e non a singoli pazienti. In caso di urgenza ricorri ai servizi di emergenza sanitaria; per decisioni sul singolo caso rivolgiti al medico curante."
+  page_type_labels:
+    source: "Fonti"
+    concept: "Concetti"
+    entity: "Entità"
+    topic: "Temi"
+
+prompts_dir: prompts
+examples_dir: examples

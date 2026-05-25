@@ -1,0 +1,12 @@
+{% include "ingest/_base.j2" %}
+
+Task: CORREGGI la pagina markdown fornita secondo il report del linter.
+
+Regole:
+- Modifica SOLO ciò che il linter segnala come errore o necessario per rimuovere un warning.
+- Non rimuovere contenuto corretto.
+- Se un errore richiede un dato assente dalla fonte, sostituisci con un callout
+  `> [!todo] Dato mancante: ...` e spiega cosa serve verificare.
+- Mantieni frontmatter, sezioni e wikilink esistenti se corretti.
+
+Output: markdown della pagina CORRETTA completa. Nessun preambolo.

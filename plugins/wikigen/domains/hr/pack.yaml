@@ -1,0 +1,136 @@
+---
+# HR / People Management vertical pack — seed example.
+# Validates against `llm_wiki.domain.pack.DomainPack`.
+
+schema_version: 1
+
+name: hr
+label: "Wiki HR & People"
+description: "Knowledge base HR e people management: policy aziendali, CCNL, regolamenti, procedure people ops, onboarding, performance, payroll, benefit."
+language: it
+seed: true
+
+page_types:
+  - id: source
+    label: "Fonte"
+    plural: "fonti"
+    folder: sources
+    prompt_template: source_page.j2
+  - id: concept
+    label: "Concetto / Policy"
+    plural: "concetti"
+    folder: concepts
+    prompt_template: entity_page.j2
+  - id: entity
+    label: "Entità"
+    plural: "entità"
+    folder: entities
+    prompt_template: entity_page.j2
+  - id: topic
+    label: "Tema"
+    plural: "temi"
+    folder: topics
+    prompt_template: entity_page.j2
+
+# Sub-classifications HR-specifiche. Alimentano gli enum del planner di
+# ingest e validano `subtype` in frontmatter.
+subtypes:
+  source:
+    - ccnl
+    - contratto-integrativo
+    - policy-aziendale
+    - regolamento-interno
+    - procedura-people-ops
+    - circolare-inps
+    - circolare-inail
+    - normativa-lavoro
+    - sentenza
+    - manuale-onboarding
+    - job-description
+    - article
+    - paper
+    - note
+  concept:
+    - policy
+    - benefit
+    - istituto-contrattuale
+    - inquadramento
+    - retribuzione
+    - permesso-congedo
+    - performance-review
+    - principio
+  entity:
+    - reparto
+    - ruolo
+    - ente-pubblico
+    - sindacato
+    - fondo-previdenza
+    - fondo-sanitario
+    - provider-payroll
+
+frontmatter_schema: schema.yaml
+
+grouping: []
+
+ui:
+  app_name: "Wiki HR & People"
+  short_name: "HR"
+  vault_label: "Vault HR"
+  tagline: "Policy, CCNL e procedure people, grounded sui documenti aziendali."
+  empty_state: "Carica policy, CCNL, regolamenti o manuali people ops per iniziare."
+  hero_question: "Cosa vuoi sapere"
+  hero_highlight: "su HR e people?"
+  hero_pill: "Assistente HR · grounded su policy e CCNL"
+  hero_pill_icon: "Users"
+  disclaimer: "Le risposte ricostruiscono policy e norme contrattuali presenti nel vault e non sostituiscono il parere di HR Business Partner, payroll specialist o consulente del lavoro. Verifica sempre la versione vigente del CCNL applicato, le specificità del contratto individuale e le prassi aziendali correnti prima di applicare istituti retributivi, sanzioni disciplinari o decisioni che impattano lo stato del lavoratore."
+  suggested_questions:
+    - category: "permessi"
+      label: "Congedo parentale"
+      hint: "Durata + retribuzione + procedura"
+      icon: "Baby"
+      prompt: "Come funziona il congedo parentale per un dipendente con figlio sotto i 12 anni: durata massima, percentuale retributiva a carico INPS, modalità di richiesta in azienda e termini di preavviso?"
+    - category: "ccnl"
+      label: "Inquadramento e livelli"
+      hint: "Mappa ruolo → livello CCNL"
+      icon: "Layers"
+      prompt: "Quali sono i criteri di inquadramento previsti dal CCNL applicato per un ruolo di sviluppatore senior? Cita articolo CCNL e tabella retributiva di riferimento."
+    - category: "onboarding"
+      label: "Checklist nuovo assunto"
+      hint: "Passi day-1 e first-week"
+      icon: "ClipboardList"
+      prompt: "Qual è la checklist completa di onboarding di un nuovo assunto: documenti da consegnare, accessi IT, formazione obbligatoria, tutor/buddy, milestone a 30/60/90 giorni?"
+    - category: "performance"
+      label: "Performance review"
+      hint: "Ciclo + criteri + calibrazione"
+      icon: "TrendingUp"
+      prompt: "Descrivi il ciclo di performance review aziendale: cadenza, criteri di valutazione, processo di calibrazione, gestione dei low performer e collegamento a bonus / promozioni."
+    - category: "policy"
+      label: "Smart working e remote"
+      hint: "Giorni, eleggibilità, accordo individuale"
+      icon: "Home"
+      prompt: "Quali sono le regole aziendali sullo smart working: numero massimo di giorni a settimana, ruoli eleggibili, contenuto obbligatorio dell'accordo individuale e impatti su buoni pasto e indennità?"
+    - category: "disciplinare"
+      label: "Procedura disciplinare"
+      hint: "Contestazione + difesa + sanzione"
+      icon: "Gavel"
+      prompt: "Qual è la procedura disciplinare prevista dall'art. 7 St. Lav. e dal CCNL applicato: termini per la contestazione scritta, diritto di difesa del lavoratore, gradualità delle sanzioni e notifica?"
+  page_type_labels:
+    source: "Fonti"
+    concept: "Concetti / Policy"
+    entity: "Entità"
+    topic: "Temi"
+  extra:
+    badges:
+      stato: ["vigente", "superata", "in-revisione", "abrogata"]
+      ambito:
+        - normativa-nazionale
+        - ccnl
+        - contratto-integrativo
+        - policy-aziendale
+        - procedura-operativa
+        - linea-guida
+        - giurisprudenza
+        - circolare-istituzionale
+
+prompts_dir: prompts
+examples_dir: examples

@@ -181,6 +181,18 @@ def create_app() -> FastAPI:
     # === Tenant Middleware (Post-CORS, Pre-Route) ===
     app.add_middleware(TenantMiddleware)
 
+    # === Plugin-contributed app-level middleware ===
+    # Runs synchronously here so the Starlette stack is finalised before
+    # lifespan starts. Plugins opt in by overriding
+    # ``Plugin.setup_app_middleware``; the default is a no-op.
+    from core.plugins.app_setup import apply_plugin_app_middleware
+    from core.observability.logging import get_logger as _get_logger
+
+    try:
+        apply_plugin_app_middleware(app)
+    except Exception as exc:  # pragma: no cover — defensive
+        _get_logger(__name__).warning("Plugin app-middleware discovery failed: %s", exc)
+
     # === Serve static files (dashboard admin, css, js) ===
     app.mount("/static", StaticFiles(directory="core/static"), name="static")
 

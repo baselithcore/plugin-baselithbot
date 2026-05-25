@@ -1,0 +1,14 @@
+# systemd timer — schedule giornaliero alle 02:30 locali.
+# RandomizedDelaySec evita thundering-herd su multi-host condividenti S3.
+[Unit]
+Description=LLM Wiki — daily backup timer
+Requires=llm-wiki-backup.service
+
+[Timer]
+OnCalendar=*-*-* 02:30:00
+RandomizedDelaySec=15min
+Persistent=true
+Unit=llm-wiki-backup.service
+
+[Install]
+WantedBy=timers.target

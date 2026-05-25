@@ -1,0 +1,100 @@
+{% include "ingest/_base.j2" %}
+
+Task: genera una pagina `wiki/concepts/garanzia-<slug>.md` per la garanzia/sezione indicata.
+
+Struttura-tipo OBBLIGATORIA (CLAUDE.md §Struttura-tipo):
+```
+---
+<frontmatter YAML>
+---
+
+# <Titolo> — Sezione N
+
+## In due righe
+Una-due frasi, con condizionale ("acquistabile", "facoltativa") se del caso.
+
+## Vincoli di acquisto
+> [!important] Propedeuticità
+> - Cosa serve in Polizza (articolo CdA).
+> - Logica AND/OR.
+> - Restrizioni su Contraente/tipologia rischio.
+
+## Cosa copre
+prosa + bullet. Ogni claim cita `art. X.Y.Z` CdA.
+
+## Cosa NON copre
+bullet esclusioni. Ogni esclusione cita articolo.
+
+## Limiti di indennizzo, Franchigie e Scoperti
+Tabella con COLONNE DISTINTE:
+| Garanzia | Somma Assicurata | Sotto-limite | Franchigia | Scoperto | Min. non indennizzabile |
+Mai fondere Franchigia/Scoperto in singola colonna. Celle vuote → `—`.
+Include caption `**Tabella N — <oggetto> (fonte art. X, pag. N).**` sopra
+e blocco YAML sibling + linearizzazione testuale sotto (solo se tabella > 5 righe tecniche).
+
+## Dove vale
+ambito territoriale con riferimento articolo.
+
+## Obblighi in caso di sinistro
+passo-passo con giorni + articolo (1913 CC + art. CdA).
+
+## FAQ
+> [!question] domanda tipica cliente
+> risposta in 1-3 righe.
+
+## Fonti
+- [[wiki/sources/...]] (art. X.Y, pag. N)
+```
+
+Frontmatter garanzia OBBLIGATORIO — copia ESATTAMENTE questo schema, includi
+TUTTI i campi (usa default ragionevoli se non hai dati):
+
+```yaml
+---
+title: "<Titolo garanzia>"
+type: concept
+subtype: garanzia-assicurativa
+prodotto: "[[unipol-casa-e-servizi]]"
+sezione: "<numero sezione, es. 4>"
+richiede-sezioni: []
+richiede-logica: none
+acquistabile-senza-base: true
+vincoli-note: "<breve frase o stringa vuota>"
+tags: [tag1, tag2]
+aliases: []
+created: <YYYY-MM-DD>
+updated: <YYYY-MM-DD>
+sources: 1
+---
+```
+
+Il campo `type` DEVE essere ESATTAMENTE la stringa `concept` (non null, non altro).
+Il campo `subtype` DEVE essere ESATTAMENTE `garanzia-assicurativa` o `pack-opzionale`.
+`richiede-logica` ammette SOLO: `any_of`, `all_of`, `none`.
+
+Regole di scrittura:
+- Regole condizionali (carenze, deroghe, "se X allora Y") → callout `> [!rule]` con campi
+  **Condizione** / **Valore/effetto** / **Fonte** / **Eccezioni**, seguito da blocco YAML.
+- TERMINI SENSIBILI (CRITICO): se nel corpo della pagina compare ANCHE UNO di
+  questi termini → `dolo`, `colpa grave`, `colpa lieve`, `involontariamente`,
+  `accidentalmente`, `imprevisto`, `imprevedibile`, `improvviso`, `straordinario`,
+  `eccezionale`, `fortuito`, `salvo il caso di`, `purché`, `a condizione che` →
+  DEVI inserire ALMENO UN callout `> [!quote]` nella stessa pagina con il
+  verbatim della clausola (CdA o CC) + riferimento art./pag.
+  Esempio:
+  ```
+  > [!quote] Art. 1900 CC — Sinistri causati con dolo o colpa grave
+  > "L'assicuratore non è obbligato per i sinistri cagionati da dolo o colpa
+  > grave del contraente, dell'assicurato o del beneficiario, salvo patto
+  > contrario per i casi di colpa grave."
+  > — Codice Civile, art. 1900.
+  ```
+  Se non hai accesso al verbatim, NON usare il termine sensibile in prosa:
+  riformula in modo da non richiamarlo, oppure marca con `> [!todo] Verbatim
+  art. X mancante — verificare in fonte`.
+- Franchigia = importo fisso in €; Scoperto = percentuale (con eventuale minimo in €).
+- "La compagnia paga" → vietato; usare "l'Impresa indennizza ai sensi dell'art. X".
+- "di solito"/"normalmente"/"circa" → vietato; usare regola esatta o "indicato in Polizza".
+- Numeri importanti in **grassetto**. Cita sempre articolo accanto al numero.
+
+Output: testo MARKDOWN completo. Niente prosa di accompagnamento.

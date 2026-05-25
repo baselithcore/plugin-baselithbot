@@ -1,0 +1,884 @@
+/* Tailwind v4 — CSS-first config via @theme. */
+@import 'tailwindcss';
+@import 'highlight.js/styles/github.css';
+
+/* ======================================================================
+ * Design tokens
+ * Palette in OKLCH
+ * Paradigma: un solo layer "canvas" + superfici pulite
+ * ====================================================================== */
+@theme {
+  /* Typography — Grafiphy house trio (self-hosted variable fonts).
+   * display: Bricolage Grotesque — characterful editorial grotesque,
+   *          heavy weight range for dramatic headline contrast.
+   * sans:    Hanken Grotesk — warm, highly legible body/UI face.
+   * mono:    JetBrains Mono — code + tabular accents. */
+  --font-display:
+    'Bricolage Grotesque Variable', 'Hanken Grotesk Variable', ui-sans-serif, system-ui,
+    sans-serif;
+  --font-sans:
+    'Hanken Grotesk Variable', 'SF Pro Text', -apple-system, BlinkMacSystemFont,
+    'Helvetica Neue', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Core surfaces — cool paper white with a faint cobalt tint so the
+   * brand colour reads as the room's light, not a sticker on neutral gray. */
+  --color-canvas: hsl(225, 36%, 98.5%);
+  --color-canvas-raised: hsl(0, 0%, 100%);
+  --color-surface: hsl(224, 30%, 95.5%);
+  --color-surface-hover: hsl(224, 28%, 92%);
+
+  --color-border: hsl(224, 22%, 90%);
+  --color-border-strong: hsl(224, 20%, 80%);
+
+  --color-ink: hsl(228, 40%, 11%);
+  --color-ink-muted: hsl(228, 16%, 38%);
+  --color-ink-subtle: hsl(228, 12%, 54%);
+
+  /* Brand — electric cobalt. The dominant colour (≈60% of the design).
+   * Saturated and confident, not the timid steel blue it replaces. */
+  --color-brand: hsl(231, 84%, 58%);
+  --color-brand-strong: hsl(231, 80%, 49%);
+  --color-brand-soft: hsla(231, 84%, 58%, 0.1);
+  --color-brand-ring: hsla(231, 84%, 58%, 0.32);
+  --color-brand-contrast: hsl(231, 76%, 47%);
+  /* Accent — hot coral. The sharp 10% that pops against cobalt
+   * (complementary energy, editorial not neon). Distinct from rose danger. */
+  --color-accent: hsl(13, 90%, 60%);
+  --color-accent-strong: hsl(13, 84%, 52%);
+  --color-accent-soft: hsla(13, 90%, 60%, 0.12);
+  --color-accent-ring: hsla(13, 90%, 60%, 0.34);
+
+  /* Default house sidebar — deep cobalt-ink (overridden per tenant at
+   * runtime by BrandingContext). Drives the dramatic dark rail. */
+  --color-sidebar-bg: hsl(230, 44%, 12%);
+  --color-sidebar-text: hsl(225, 30%, 96%);
+
+  /* Semantic */
+  --color-success: hsl(152, 60%, 40%);
+  --color-warning: hsl(32, 94%, 48%);
+  --color-danger: hsl(352, 76%, 54%);
+
+  /* Shadows — elevation scale + branded glow for hero/focus moments */
+  --shadow-xs: 0 1px 0 hsla(228, 40%, 11%, 0.04);
+  --shadow-sm: 0 1px 2px hsla(228, 40%, 11%, 0.05), 0 1px 3px -1px hsla(228, 40%, 11%, 0.05);
+  --shadow-md: 0 2px 4px -2px hsla(228, 40%, 11%, 0.06), 0 4px 12px -2px hsla(228, 40%, 11%, 0.09);
+  --shadow-lg:
+    0 8px 16px -4px hsla(228, 40%, 11%, 0.08), 0 20px 40px -12px hsla(228, 40%, 11%, 0.16);
+  --shadow-glow: 0 0 0 1px hsla(231, 84%, 58%, 0.16), 0 12px 36px -8px hsla(231, 84%, 58%, 0.26);
+  --shadow-brand:
+    0 6px 16px -6px hsla(231, 84%, 58%, 0.5), 0 2px 6px -2px hsla(231, 84%, 58%, 0.4);
+  --shadow-accent:
+    0 6px 16px -6px hsla(13, 90%, 60%, 0.5), 0 2px 6px -2px hsla(13, 90%, 60%, 0.4);
+
+  /* Radii */
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+
+  /* Motion — easing + duration tokens.
+   * Power-user / calm-technical tone: short durations, decisive easing.
+   * Never bounce/elastic. Exit ~75% of enter. */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 260ms;
+}
+
+/* Dark theme vars — applicati se (A) `html` ha class `.dark` oppure
+ * (B) utente ha preferenza di sistema dark E `html` NON ha class `.light`.
+ * Così il toggle manuale di tema sovrascrive sempre il prefers-color-scheme. */
+:where(html.dark),
+:where(html:not(.light)) {
+  @media (prefers-color-scheme: dark) {
+    --color-canvas: hsl(230, 32%, 7%);
+    --color-canvas-raised: hsl(230, 26%, 10.5%);
+    --color-surface: hsl(230, 22%, 15%);
+    --color-surface-hover: hsl(230, 20%, 19%);
+
+    --color-border: hsl(230, 16%, 23%);
+    --color-border-strong: hsl(230, 16%, 34%);
+
+    --color-ink: hsl(225, 30%, 97%);
+    --color-ink-muted: hsl(228, 16%, 80%);
+    --color-ink-subtle: hsl(228, 12%, 62%);
+
+    --color-brand: hsl(228, 92%, 70%);
+    --color-brand-strong: hsl(228, 94%, 78%);
+    --color-brand-soft: hsla(228, 92%, 70%, 0.18);
+    --color-brand-ring: hsla(228, 92%, 70%, 0.4);
+    --color-brand-contrast: hsl(228, 94%, 80%);
+    --color-accent: hsl(13, 92%, 66%);
+    --color-accent-strong: hsl(13, 92%, 72%);
+    --color-accent-soft: hsla(13, 92%, 66%, 0.18);
+    --color-accent-ring: hsla(13, 92%, 66%, 0.4);
+
+    --color-sidebar-bg: hsl(230, 38%, 8.5%);
+    --color-sidebar-text: hsl(225, 28%, 95%);
+  }
+}
+
+html.dark {
+  --color-canvas: hsl(230, 32%, 7%);
+  --color-canvas-raised: hsl(230, 26%, 10.5%);
+  --color-surface: hsl(230, 22%, 15%);
+  --color-surface-hover: hsl(230, 20%, 19%);
+
+  --color-border: hsl(230, 16%, 23%);
+  --color-border-strong: hsl(230, 16%, 34%);
+
+  --color-ink: hsl(225, 30%, 97%);
+  --color-ink-muted: hsl(228, 16%, 80%);
+  --color-ink-subtle: hsl(228, 12%, 62%);
+
+  --color-brand: hsl(228, 92%, 70%);
+  --color-brand-strong: hsl(228, 94%, 78%);
+  --color-brand-soft: hsla(228, 92%, 70%, 0.18);
+  --color-brand-ring: hsla(228, 92%, 70%, 0.4);
+  --color-brand-contrast: hsl(228, 94%, 80%);
+  --color-accent: hsl(13, 92%, 66%);
+  --color-accent-strong: hsl(13, 92%, 72%);
+  --color-accent-soft: hsla(13, 92%, 66%, 0.18);
+  --color-accent-ring: hsla(13, 92%, 66%, 0.4);
+
+  --color-sidebar-bg: hsl(230, 38%, 8.5%);
+  --color-sidebar-text: hsl(225, 28%, 95%);
+}
+
+/* Reduced motion — disabilita animazioni CSS per utenti sensibili. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Skip-to-content link — visibile solo da tastiera (focus). */
+.skip-link {
+  position: fixed;
+  top: -40px;
+  left: 12px;
+  z-index: 100;
+  padding: 8px 12px;
+  background: var(--color-brand);
+  color: white;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.15s;
+}
+.skip-link:focus-visible {
+  top: 12px;
+  outline: 2px solid var(--color-brand-ring);
+  outline-offset: 2px;
+}
+
+/* ======================================================================
+ * Base
+ * ====================================================================== */
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior-y: none;
+  }
+
+  ::selection {
+    background: var(--color-brand-soft);
+    color: var(--color-ink);
+  }
+
+  /* Scrollbar sottile, coerente con il tema */
+  *::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: var(--color-border-strong);
+    background-clip: padding-box;
+  }
+}
+
+/* ======================================================================
+ * Componenti riutilizzabili
+ * ====================================================================== */
+@layer components {
+  /* Card vetrosa sottile, senza effetto "windows vista" */
+  .surface {
+    @apply rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] shadow-sm;
+  }
+
+  /* Pill chip */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs
+      font-medium bg-[var(--color-surface)] border border-[var(--color-border)] text-ink-muted;
+  }
+
+  /* Focus ring coerente */
+  .focus-ring {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-ring)]
+      focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-canvas)];
+  }
+
+  .btn-primary {
+    @apply inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg
+      bg-[var(--color-brand)] px-3.5 text-xs font-semibold text-white
+      outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-ring)]
+      focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-canvas)]
+      transition-colors hover:bg-[var(--color-brand-strong)]
+      disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-accent {
+    @apply inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg
+      bg-[var(--color-accent)] px-3.5 text-xs font-semibold text-white
+      outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-ring)]
+      focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-canvas)]
+      transition-colors hover:bg-[var(--color-accent-strong)]
+      disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-secondary {
+    @apply inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg
+      border border-[var(--color-border)] bg-[var(--color-canvas-raised)] px-3
+      text-xs font-semibold text-ink-muted shadow-xs transition-colors
+      outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-ring)]
+      focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-canvas)]
+      hover:border-[var(--color-border-strong)] hover:bg-[var(--color-surface)] hover:text-ink
+      disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-ghost {
+    @apply inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-3
+      text-xs font-semibold text-ink-muted transition-colors
+      outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-ring)]
+      focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-canvas)]
+      hover:bg-[var(--color-surface)] hover:text-ink
+      disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-icon {
+    @apply inline-flex size-9 items-center justify-center rounded-lg
+      border border-transparent text-ink-subtle transition-colors
+      outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-brand-ring)]
+      focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--color-canvas)]
+      hover:border-[var(--color-border)] hover:bg-[var(--color-surface)] hover:text-ink
+      disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/40 p-3
+      backdrop-blur-sm sm:p-4;
+  }
+
+  .modal-panel {
+    @apply max-h-[calc(100vh-1.5rem)] w-full overflow-hidden rounded-lg border border-[var(--color-border)]
+      bg-[var(--color-canvas-raised)] shadow-2xl;
+  }
+
+  .modal-header {
+    @apply flex items-center justify-between gap-3 border-b border-[var(--color-border)] px-5 py-3;
+  }
+
+  .section-label {
+    @apply text-[10px] font-semibold uppercase text-ink-subtle;
+  }
+
+  .callout {
+    @apply rounded-lg border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-2.5;
+  }
+
+  /* Form control enterprise: leggibile, stabile, adatto a wizard e modali. */
+  .input {
+    @apply min-h-9 w-full rounded-lg border border-[var(--color-border)]
+      bg-[var(--color-canvas-raised)] px-3 py-2 text-[12.5px] text-ink shadow-xs
+      outline-none transition-colors placeholder:text-ink-subtle
+      hover:border-[var(--color-border-strong)]
+      focus:border-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand-ring)]
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Variante compatta — usata in form auth/bootstrap dove la densità verticale conta.
+     Stessa accessibilità di .input (focus ring brand visibile, ≥44px touch target via min-h-9). */
+  .input-sm {
+    @apply min-h-8 w-full rounded-md border border-[var(--color-border)]
+      bg-[var(--color-canvas-raised)] px-2.5 py-1.5 text-[12px] text-ink shadow-xs
+      outline-none transition-colors placeholder:text-ink-subtle
+      hover:border-[var(--color-border-strong)]
+      focus:border-[var(--color-brand)] focus:ring-2 focus:ring-[var(--color-brand-ring)]
+      disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Animated gradient border (used by composer when streaming) */
+  .gradient-border {
+    position: relative;
+    isolation: isolate;
+  }
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from var(--g-angle, 0deg),
+      transparent 0deg,
+      var(--color-brand) 80deg,
+      var(--color-accent) 170deg,
+      transparent 260deg
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    animation: rotate-border 4s linear infinite;
+  }
+
+  @property --g-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+  }
+
+  @keyframes rotate-border {
+    to {
+      --g-angle: 360deg;
+    }
+  }
+
+  /* Typing cursor — modern brand-tinted pulse dot
+     (replaces the legacy `▍` step-blink). Tracks current line height so
+     it sits inline with text without shifting baselines. */
+  .cursor-blink::after {
+    content: '';
+    display: inline-block;
+    width: 0.55em;
+    height: 0.55em;
+    margin-left: 0.28em;
+    vertical-align: -0.04em;
+    border-radius: 9999px;
+    background-color: var(--color-brand);
+    box-shadow: 0 0 0 0 var(--color-brand-ring, var(--color-brand));
+    animation: cursor-pulse 1.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @keyframes cursor-pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
+    50% {
+      opacity: 0.45;
+      transform: scale(0.7);
+      box-shadow: 0 0 0 4px rgba(0, 0, 0, 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cursor-blink::after {
+      animation: none;
+      opacity: 0.7;
+    }
+  }
+
+  /* Prose — markdown reset pulito e typographic */
+  .md {
+    @apply text-[15px] leading-[1.7] text-[var(--color-ink)];
+  }
+  .md > :first-child {
+    margin-top: 0;
+  }
+  .md > :last-child {
+    margin-bottom: 0;
+  }
+  .md p {
+    margin-block: 0.75em;
+  }
+  .md h1,
+  .md h2,
+  .md h3,
+  .md h4 {
+    @apply font-semibold;
+    margin-block: 1.4em 0.5em;
+  }
+  .md h1 {
+    @apply text-xl;
+  }
+  .md h2 {
+    @apply text-lg;
+  }
+  .md h3 {
+    @apply text-base;
+  }
+  .md strong {
+    @apply font-semibold text-[var(--color-ink)];
+  }
+  .md em {
+    @apply italic;
+  }
+  .md ul,
+  .md ol {
+    padding-inline-start: 1.4em;
+    margin-block: 0.75em;
+  }
+  .md ul {
+    list-style: disc;
+  }
+  .md ol {
+    list-style: decimal;
+  }
+  .md li {
+    margin-block: 0.25em;
+  }
+  .md li::marker {
+    color: var(--color-ink-subtle);
+  }
+  .md blockquote {
+    @apply border-l-2 border-[var(--color-brand)] pl-4 text-[var(--color-ink-muted)];
+    margin-block: 0.9em;
+  }
+  .md code {
+    font-family: var(--font-mono);
+    @apply text-[0.9em] px-1.5 py-0.5 rounded-md
+      bg-[var(--color-surface)] border border-[var(--color-border)];
+  }
+  .md pre {
+    @apply my-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-canvas-raised)]
+      p-4 overflow-x-auto text-[0.85em];
+  }
+  .md pre code {
+    @apply p-0 border-0 bg-transparent;
+  }
+  .md a {
+    @apply text-[var(--color-brand)] underline underline-offset-4 decoration-dotted;
+    transition: color 0.15s;
+  }
+  .md a:hover {
+    filter: brightness(1.2);
+  }
+  .md hr {
+    @apply my-6 border-[var(--color-border)];
+  }
+  .md table {
+    @apply my-3 w-full text-sm border-collapse;
+  }
+  .md th,
+  .md td {
+    @apply border border-[var(--color-border)] px-3 py-2 text-left;
+  }
+  .md th {
+    @apply bg-[var(--color-surface)] font-semibold;
+  }
+
+  /* Wikilink pill (sostituisce [[target]] nel rendering custom) */
+  .wikilink {
+    @apply inline-flex items-center gap-1 rounded-md px-1.5 py-0.5
+      text-[0.9em] font-medium
+      text-[var(--color-brand)] bg-[var(--color-brand-soft)]
+      border border-[var(--color-brand-ring)]
+      hover:bg-[var(--color-brand)] hover:text-white transition-colors;
+  }
+
+  /* Citazione inline numerata — superscript "[n]" stile academic */
+  .citation-ref {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.1em;
+    height: 1.1em;
+    padding: 0 0.28em;
+    margin-left: 0.18em;
+    font-size: 0.72em;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    vertical-align: super;
+    color: var(--color-brand);
+    background: var(--color-brand-soft);
+    border: 1px solid var(--color-brand-ring);
+    border-radius: 0.35em;
+    cursor: pointer;
+    transition:
+      background 0.12s,
+      color 0.12s,
+      transform 0.12s;
+  }
+  .citation-ref:hover {
+    background: var(--color-brand);
+    color: white;
+    transform: translateY(-1px);
+  }
+  .citation-ref--active {
+    background: var(--color-brand);
+    color: white;
+    box-shadow: 0 0 0 2px var(--color-brand-ring);
+  }
+  .citation-ref--orphan {
+    color: var(--color-ink-subtle);
+    background: var(--color-surface);
+    border-color: var(--color-border);
+    cursor: not-allowed;
+  }
+  .citation-ref--orphan:hover {
+    background: var(--color-surface);
+    color: var(--color-ink-subtle);
+    transform: none;
+  }
+
+  /* Verbatim card — quota testuale sorgente (sidecar) */
+  .verbatim-card {
+    @apply rounded-lg border-l-2 bg-[var(--color-surface)] px-3 py-2;
+    border-left-color: var(--color-brand);
+  }
+  .verbatim-card[data-kind='rule'] {
+    border-left-color: var(--color-accent);
+  }
+  .verbatim-card[data-kind='warning'] {
+    border-left-color: var(--color-warning);
+  }
+  .verbatim-card[data-kind='important'] {
+    border-left-color: var(--color-success);
+  }
+  .verbatim-card .verbatim-header {
+    @apply text-[10px] font-semibold uppercase text-ink-subtle mb-1;
+  }
+  .verbatim-card .verbatim-body {
+    @apply text-[12.5px] leading-[1.55] text-ink whitespace-pre-wrap;
+    font-family: var(--font-sans);
+    font-style: italic;
+  }
+
+  /* Badge rango normativo — colore riflette gerarchia fonti */
+  .rango-badge {
+    @apply inline-flex items-center rounded-md px-1.5 py-0.5 text-[9px] font-semibold
+      uppercase border;
+  }
+  .rango-badge[data-rango='cc-inderogabile'],
+  .rango-badge[data-rango='regolamento-ue'] {
+    @apply bg-[var(--color-danger)]/10 text-[var(--color-danger)] border-transparent;
+  }
+  .rango-badge[data-rango='cc-derogabile'],
+  .rango-badge[data-rango='cap'] {
+    @apply bg-[var(--color-warning)]/12 text-[var(--color-warning)] border-transparent;
+  }
+  .rango-badge[data-rango='regolamento-ivass'],
+  .rango-badge[data-rango='circolare-ivass'] {
+    @apply bg-[var(--color-accent-soft)] text-[var(--color-accent)] border-transparent;
+  }
+  .rango-badge[data-rango='condizioni-contrattuali'] {
+    @apply bg-[var(--color-brand-soft)] text-[var(--color-brand)] border-transparent;
+  }
+  .rango-badge[data-rango='nta'] {
+    @apply bg-[var(--color-surface)] text-ink-muted border-[var(--color-border)];
+  }
+  .rango-badge[data-rango='giurisprudenza'] {
+    @apply bg-[var(--color-success)]/12 text-[var(--color-success)] border-transparent;
+  }
+
+  /* Highlight match per search nella preview fonte.
+     ``!important`` su tutte le proprietà visive perché la cascade
+     della preview applica regole tipografiche generiche (.md--preview *
+     overrides) che possono saturare background/color tramite reset
+     layer o syntax-highlight rehype. Inline-style del plugin già usa
+     !important ma manteniamo qui come fallback per tema scuro/chiaro. */
+  mark.search-hit,
+  span.search-hit {
+    background: hsl(45, 95%, 75%) !important;
+    color: hsl(28, 80%, 18%) !important;
+    border-radius: 3px !important;
+    padding: 0 2px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 0 0 1px hsl(45, 90%, 55%) !important;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+  /* Active match (current navigated hit) — warning brand color + ring. */
+  mark.search-hit.search-hit--active,
+  span.search-hit.search-hit--active {
+    background: var(--color-warning) !important;
+    color: hsl(0, 0%, 100%) !important;
+    box-shadow: 0 0 0 2px var(--color-warning), 0 0 0 4px hsl(45, 90%, 90%) !important;
+    scroll-margin-top: 5rem;
+    scroll-margin-bottom: 4rem;
+  }
+  /* Forza il contrasto anche dentro heading / blockquote / strong dove
+     la cascade della preview imposta colori specifici. */
+  .md--preview mark.search-hit,
+  .md--preview span.search-hit {
+    color: hsl(28, 80%, 18%) !important;
+  }
+  .md--preview mark.search-hit.search-hit--active,
+  .md--preview span.search-hit.search-hit--active {
+    color: hsl(0, 0%, 100%) !important;
+  }
+
+  /* Wikilink Obsidian dentro la preview fonte: chip non cliccabile.
+     L'apertura full avviene dal drawer; qui resta solo riconoscibile. */
+  .md--preview .wikilink-inline {
+    display: inline;
+    padding: 0 0.25em;
+    color: var(--color-brand);
+    background: var(--color-brand-soft);
+    border-radius: 0.25em;
+    font-size: 0.92em;
+  }
+
+  /* Tighter spacing nella preview rispetto alla chat */
+  .md--preview p {
+    margin: 0.4em 0;
+  }
+  .md--preview ul,
+  .md--preview ol {
+    margin: 0.4em 0;
+    padding-left: 1.2em;
+  }
+  .md--preview blockquote {
+    border-left: 2px solid var(--color-border);
+    padding-left: 0.6em;
+    margin: 0.5em 0;
+    color: var(--color-ink-muted);
+  }
+  .md--preview pre {
+    font-size: 11px;
+    padding: 0.5em 0.7em;
+  }
+  .md--preview table {
+    font-size: 11px;
+  }
+}
+
+/* Utility one-offs */
+@layer utilities {
+  .text-ink {
+    color: var(--color-ink);
+  }
+  .text-ink-muted {
+    color: var(--color-ink-muted);
+  }
+  .text-ink-subtle {
+    color: var(--color-ink-subtle);
+  }
+  .bg-canvas {
+    background-color: var(--color-canvas);
+  }
+  .bg-surface {
+    background-color: var(--color-surface);
+  }
+  .bg-raised {
+    background-color: var(--color-canvas-raised);
+  }
+
+  .backdrop-blur-glass {
+    backdrop-filter: saturate(160%) blur(18px);
+    -webkit-backdrop-filter: saturate(160%) blur(18px);
+  }
+
+  /* Display face — Bricolage Grotesque. Tight tracking + optical weight for
+   * headlines and the wordmark. The memorable, characterful element. */
+  .font-display {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    letter-spacing: -0.02em;
+  }
+
+  /* Grain — faint film over hero/atmospheric surfaces, adds depth so big
+   * colour fields never read as flat. SVG fractal noise, no asset request. */
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.035;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* Screen setup background: subtle enterprise grid, no decorative blobs. */
+  .wizard-screen-bg {
+    position: relative;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 42%, transparent), transparent 38%),
+      var(--color-canvas);
+  }
+  .wizard-screen-bg::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(to right, color-mix(in srgb, var(--color-border) 58%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in srgb, var(--color-border) 58%, transparent) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: linear-gradient(180deg, #000 0%, transparent 78%);
+    opacity: 0.34;
+  }
+
+  /* Hero background — Grafiphy signature: a knowledge-graph "constellation".
+   * Twin cobalt + coral glows light the room; a node-dot field reads as
+   * graph vertices. Bold and atmospheric, the opposite of the old flat grid. */
+  .mesh-hero {
+    position: relative;
+    --hero-edge-opacity: 0.2;
+    --hero-edge-width: 0.12;
+    --hero-node-opacity: 0.5;
+    --hero-node-peak-opacity: 0.82;
+    --hero-packet-opacity: 0.9;
+    background-color: var(--color-canvas);
+    overflow: hidden;
+  }
+  .mesh-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(
+        ellipse 52% 46% at 28% 8%,
+        color-mix(in oklch, var(--color-brand) 30%, transparent) 0%,
+        transparent 60%
+      ),
+      radial-gradient(
+        ellipse 44% 40% at 82% 18%,
+        color-mix(in oklch, var(--color-accent) 22%, transparent) 0%,
+        transparent 58%
+      );
+    opacity: 0.9;
+    pointer-events: none;
+    filter: saturate(120%);
+  }
+  .mesh-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      color-mix(in oklch, var(--color-brand) 26%, transparent) 1.4px,
+      transparent 0
+    );
+    background-size: 30px 30px;
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 38%, #000, transparent 78%);
+    pointer-events: none;
+  }
+
+  html.dark .mesh-hero,
+  html:not(.light) .mesh-hero {
+    @media (prefers-color-scheme: dark) {
+      --hero-edge-opacity: 0.34;
+      --hero-edge-width: 0.16;
+      --hero-node-opacity: 0.72;
+      --hero-node-peak-opacity: 1;
+      --hero-packet-opacity: 1;
+    }
+  }
+
+  html.dark .mesh-hero {
+    --hero-edge-opacity: 0.34;
+    --hero-edge-width: 0.16;
+    --hero-node-opacity: 0.72;
+    --hero-node-peak-opacity: 1;
+    --hero-packet-opacity: 1;
+  }
+
+  .graph-constellation {
+    opacity: 0.68;
+    filter: saturate(115%);
+  }
+
+  html.dark .graph-constellation,
+  html:not(.light) .graph-constellation {
+    @media (prefers-color-scheme: dark) {
+      opacity: 0.92;
+      filter: saturate(140%) drop-shadow(0 0 10px color-mix(in srgb, var(--color-brand) 26%, transparent));
+    }
+  }
+
+  html.dark .graph-constellation {
+    opacity: 0.92;
+    filter: saturate(140%) drop-shadow(0 0 10px color-mix(in srgb, var(--color-brand) 26%, transparent));
+  }
+
+  /* Animated graph node — a single pulsing vertex drawn over the hero.
+   * Used a handful of times with random offsets for the constellation. */
+  @keyframes node-drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+      opacity: 0.5;
+    }
+    50% {
+      transform: translate3d(0, -10px, 0) scale(1.18);
+      opacity: 0.95;
+    }
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-surface) 0%,
+      var(--color-surface-hover) 50%,
+      var(--color-surface) 100%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s infinite;
+  }
+  @keyframes skeleton-shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* Status dot */
+  .status-dot {
+    position: relative;
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+  }
+  .status-dot::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.25;
+    animation: status-ping 2s ease-out infinite;
+  }
+  @keyframes status-ping {
+    0% {
+      transform: scale(0.6);
+      opacity: 0.35;
+    }
+    80%,
+    100% {
+      transform: scale(1.8);
+      opacity: 0;
+    }
+  }
+}

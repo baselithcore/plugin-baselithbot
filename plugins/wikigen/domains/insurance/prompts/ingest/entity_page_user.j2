@@ -1,0 +1,20 @@
+Piano entità:
+{{ plan_entry }}
+
+Fonte primaria: [[{{ source_slug }}]]
+`created`: {{ today_iso }}
+
+Contesto dalla fonte:
+---
+{{ context_snippet[:3000] }}
+---
+
+{% if verbatim_atoms is defined and verbatim_atoms %}
+Atomi verbatim estratti dalla fonte (tabelle, callout, esempi numerici, clausole).
+**Riportali letteralmente** dove pertinenti all'entità:
+---
+{{ verbatim_atoms }}
+---
+{% endif %}
+
+Produci il file MARKDOWN completo.

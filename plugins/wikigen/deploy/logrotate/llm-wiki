@@ -1,0 +1,44 @@
+# /etc/logrotate.d/llm-wiki
+# Ruota log applicativi LLM Wiki + Caddy access log.
+#
+# Install:
+#   sudo cp deploy/logrotate/llm-wiki /etc/logrotate.d/llm-wiki
+#   sudo logrotate -d /etc/logrotate.d/llm-wiki    # dry-run
+#   sudo logrotate -f /etc/logrotate.d/llm-wiki    # force run
+
+/srv/llm-wiki/logs/*.log {
+    daily
+    rotate 30
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+    create 0640 wiki wiki
+    dateext
+    dateformat -%Y%m%d
+    sharedscripts
+    postrotate
+        # uvicorn riapre automaticamente file handle solo via SIGHUP custom.
+        # copytruncate evita di doverlo segnalare; resta come fallback.
+        if systemctl is-active --quiet llm-wiki; then
+            systemctl kill -s SIGHUP llm-wiki || true
+        fi
+    endscript
+}
+
+# Caddy: la sua config interna fa già roll_size+roll_keep, ma teniamo
+# logrotate come safety-net per /var/log/caddy/error.log che non è
+# sotto il directive `log` del Caddyfile.
+/var/log/caddy/error.log {
+    weekly
+    rotate 8
+    compress
+    missingok
+    notifempty
+    create 0640 caddy caddy
+    sharedscripts
+    postrotate
+        systemctl reload caddy || true
+    endscript
+}

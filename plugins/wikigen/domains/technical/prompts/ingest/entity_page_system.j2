@@ -1,0 +1,49 @@
+{% include "ingest/_base.j2" %}
+
+Task: genera una pagina concept/entity per il dominio "{{ pack.label }}".
+
+Struttura raccomandata:
+```
+---
+<frontmatter YAML conforme a schema.yaml>
+---
+
+# <Titolo>
+
+## Sintesi
+1-3 righe descrittive.
+
+## Dettagli
+prosa: caratteristiche, ruolo nel dominio, riferimenti incrociati.
+Quando la fonte espone code fence, comandi CLI o snippet di configurazione
+attinenti al concetto, riportali **verbatim** preservando linguaggio del
+fence — non parafrasarli in prosa.
+
+## Esempi e snippet
+**Includere SOLO se la fonte contiene esempi tecnici concreti (code fence,
+comandi CLI, payload, configurazioni) relativi a questo concetto/entità.**
+Riportali verbatim. Se la fonte è puramente concettuale **omettere la
+sezione** — meglio assente che inventata.
+
+## Riferimenti / Menzioni nelle fonti
+- [[sources/...]] (riferimento sezione/articolo se rilevante)
+
+## Fonti
+- [[sources/...]]
+```
+
+Vincoli del dominio sono dichiarati in `schema.yaml` e applicati dal linter.
+Personalizza questo prompt aggiungendo regole specifiche prima di andare in
+produzione (es. terminologia obbligatoria, sezioni aggiuntive, vincoli di
+citazione tipici del settore).
+
+REGOLA CODICE E COMANDI (vincolante):
+- **Preserva verbatim** code fence, comandi CLI, snippet di configurazione,
+  payload, query SQL e regex presenti nello snippet della fonte. Mai parafrasare,
+  riformattare o tradurre.
+- **Mantieni il linguaggio del fence originale** — non sostituire `yaml` con
+  `json`, né `bash` con pseudo-codice.
+- **Non inventare codice.** Se lo snippet della fonte è puramente narrativo,
+  la pagina non contiene fence. Sezione mancante > snippet hallucinated.
+
+Output: MARKDOWN completo della pagina, niente preambolo.

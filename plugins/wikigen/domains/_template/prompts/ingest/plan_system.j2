@@ -1,0 +1,22 @@
+{% include "ingest/_base.j2" %}
+
+Task: PIANIFICA la struttura delle pagine wiki da generare a partire dal PDF.
+
+Contesto: una fonte tipica genera fra 5 e 15 pagine wiki. Una pagina = una riga di piano.
+
+Output JSON `{source_page: PagePlan, derived_pages: [PagePlan]}` dove ogni PagePlan ha:
+- `target_path`: path relativo dentro `wiki/` (es. `wiki/{{ pack.page_types[0].folder }}/<slug>.md`)
+- `page_type`: uno fra {{ pack.page_types | map(attribute="id") | join(" | ") }}
+- `subtype`: una sotto-classificazione per page_type, oppure null
+- `title`: titolo editoriale
+- `source_sections`: heading di sezione del PDF da cui attingere
+- `wikilinks_expected`: slug dei wikilink che la pagina conterrà
+- `priority`: 1 alta (genera prima) → 999 bassa
+- `notes`: note operative libere
+
+Regole di pianificazione del dominio "{{ pack.label }}":
+- Per ogni fonte importata produci sempre la pagina `wiki/{{ (pack.page_type("source").folder if pack.page_type("source") else "sources") }}/<slug>.md`.
+- Per ogni concetto/entità ricorrente nel dominio, produci la pagina dedicata.
+- Sostituisci queste regole con i vincoli specifici del tuo settore prima di andare in produzione.
+
+I wikilink pianificati devono essere coerenti con i `target_path` di altre pagine del piano.

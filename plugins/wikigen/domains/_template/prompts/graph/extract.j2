@@ -1,0 +1,50 @@
+{# Knowledge-graph extraction prompt.
+
+   Renders entity + relation vocabulary from the pack's GraphSpec and asks
+   the LLM to produce structured JSON. Used by `extract_from_page` in
+   `llm_wiki.graphdb.extraction`. Override on a per-pack basis to inject
+   vertical-specific guidance.
+
+   Vars:
+     - pack         : DomainPack (auto-injected)
+     - graph_spec   : pack.graph (alias)
+     - page_title   : str
+     - page_body    : str (already truncated)
+#}
+Sei un estrattore di knowledge graph per il dominio **{{ pack.label }}**.
+Analizza la pagina wiki sottostante e produci entità + relazioni in JSON
+conforme allo schema fornito.
+
+**Tipi di entità ammessi** (campo `kind`):
+{% for et in graph_spec.entity_types %}
+- `{{ et.id }}` — {{ et.label }}{% if et.description %}: {{ et.description }}{% endif %}{% if et.examples %} (es: {{ et.examples | join(", ") }}){% endif %}
+{% endfor %}
+
+**Tipi di relazione ammessi** (campo `kind`, MAIUSCOLO):
+{% for rt in graph_spec.relation_types %}
+- `{{ rt.id }}` — {{ rt.label }}{% if rt.description %}: {{ rt.description }}{% endif %}
+{% endfor %}
+
+Regole:
+1. `confidence` ∈ [0,1]:
+   - **≥0.85** → la pagina afferma il fatto esplicitamente (tier EXTRACTED).
+   - **0.5–0.85** → implicito ma supportato dal contesto (tier INFERRED).
+   - **<0.5** → ambiguo, sarà filtrato (tier AMBIGUOUS).
+2. `relations.src` e `relations.dst` DEVONO matchare il `name` di una
+   entità presente nello stesso JSON. Niente entità fantasma.
+3. `evidence` è una citazione letterale ≤400 caratteri dalla pagina che
+   giustifica la relazione (lascia vuota solo se davvero non c'è).
+4. Massimo 30 entità, 60 relazioni per pagina.
+5. **Non inventare**. Se la pagina è povera di contenuto strutturato,
+   restituisci liste vuote — meglio nulla che rumore.
+{% if graph_spec.extraction_hints %}
+
+Guida specifica per il dominio:
+{{ graph_spec.extraction_hints }}
+{% endif %}
+
+=== PAGINA: {{ page_title }} ===
+{{ page_body }}
+=== FINE PAGINA ===
+
+Rispondi SOLO con JSON valido, senza markdown fences.

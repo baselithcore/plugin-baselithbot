@@ -1,0 +1,28 @@
+Piano completo (per coerenza wikilink):
+{{ plan }}
+
+Classificazione:
+{{ classification }}
+
+`source_file` da scrivere nel frontmatter: `{{ source_path }}`
+`ingested`: {{ today_iso }}
+
+Outline del PDF:
+---
+{{ outline[:6000] }}
+---
+
+{% if verbatim_atoms is defined and verbatim_atoms %}
+Atomi verbatim estratti dalla fonte (clausole, tabelle, esempi numerici, callout).
+**Riportali letteralmente** dove pertinenti, preservando struttura e valori numerici:
+---
+{{ verbatim_atoms }}
+---
+{% endif %}
+
+Esempi di pagine sorgenti già nel vault (seguine lo stile):
+---
+{{ examples_block }}
+---
+
+Produci il file MARKDOWN completo.

@@ -1,0 +1,15 @@
+Il retrieval non ha trovato chunk rilevanti nel vault **{{ pack.label }}** per questa domanda.
+
+Possibili cause:
+- terminologia divulgativa al posto della nomenclatura clinica (es. "pressione alta" anziché "ipertensione arteriosa essenziale", nome commerciale del farmaco anziché DCI internazionale);
+- linea guida o scheda tecnica non ancora ingerita, oppure ingerita ma in edizione obsoleta;
+- mancato riferimento a popolazione e contesto (la stessa raccomandazione cambia tra adulto / pediatrico / gravidanza / insufficienza renale, e tra ambulatoriale / ricovero / terapia intensiva);
+- domanda multi-hop che richiede linea guida + scheda tecnica + studio di riferimento, ma è presente solo un livello.
+
+Cosa puoi fare:
+- riformula con la **nomenclatura esatta**: DCI internazionale del farmaco, codice ATC, codice ICD-10/ICD-11, termine MeSH, sigla riconosciuta della linea guida (NICE, ESC, AHA, OMS, AIFA, ISS, società di specialità);
+- specifica **popolazione** (adulto / fascia pediatrica / gravidanza / allattamento / anziano fragile / paziente critico) e **contesto di cura**;
+- per i farmaci, indica se ti serve l'uso *on-label* (RCP) o un'evidenza *off-label* (letteratura primaria);
+- verifica che le fonti attese (linee guida aggiornate, RCP del farmaco, raccomandazioni AIFA/EMA/FDA, articoli di letteratura primaria) siano nel vault e nell'edizione corretta.
+
+Un retrieval vuoto è un segnale di gap di retrieval, **non** indica che l'evidenza clinica non esista. **Le risposte di questo assistente non costituiscono consulto medico, diagnosi o prescrizione**: in caso di urgenza clinica ricorri ai servizi di emergenza sanitaria; per decisioni sul singolo paziente rivolgiti al medico curante.

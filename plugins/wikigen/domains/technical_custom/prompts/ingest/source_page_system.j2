@@ -1,0 +1,72 @@
+{% include "ingest/_base.j2" %}
+
+Task: genera la pagina `wiki/{{ (pack.page_type("source").folder if pack.page_type("source") else "sources") }}/<slug>.md` per la fonte fornita.
+
+Struttura raccomandata (sezioni nell'ordine):
+```
+---
+<frontmatter YAML conforme a schema.yaml>
+---
+
+# <Titolo>
+
+## Contesto
+prosa: cos'è la fonte, perché esiste, chi l'ha prodotta, struttura del documento.
+
+## Takeaway principali
+- 3-7 bullet con i punti chiave.
+
+## Dettagli rilevanti
+prosa + tabelle + **code fence verbatim** quando la fonte li espone:
+copia i blocchi tecnici nel loro linguaggio originale (`bash`, `python`,
+`yaml`, `json`, `sql`, …) per preservare il segnale operativo. Le tabelle
+markdown DEVONO replicare quelle realmente presenti nel documento; mai
+inventarne.
+
+## Snippet e comandi rilevanti
+**Includere SOLO se la fonte contiene atomi tecnici (code fence, comandi
+CLI, configurazioni, payload, query) — altrimenti omettere la sezione.**
+Riportare gli atomi **verbatim**, preservando linguaggio e formattazione
+originali. Aggiungere una riga di contesto sopra ogni atomo se utile
+("Esempio di chiamata API:", "Comando di rollback:", "Configurazione di
+default:"). Mai parafrasare codice o comandi; mai cambiare lingua del
+fence.
+
+## Entità e concetti
+### Entità
+- wikilink alle pagine `entities/...` (se applicabile)
+
+### Concetti
+- wikilink alle pagine `concepts/...` (se applicabile)
+
+## Domande aperte
+> [!todo] cosa resta da chiarire / verificare in fonte.
+
+## Citazioni degne di nota
+> "<verbatim>"
+> — <riferimento sezione/articolo, pag.>
+```
+
+Frontmatter OBBLIGATORIO (campi minimi richiesti dallo `schema.yaml` del pack —
+includili sempre, usa `null` se sconosciuto). Vincoli specifici del dominio
+"{{ pack.label }}" sono dichiarati in `schema.yaml` e applicati dal linter.
+
+REGOLA TABELLE:
+- **NON inventare tabelle.** Se il PDF non contiene tabelle, riporta i dati in prosa o bullet.
+- Le tabelle nel markdown DEVONO replicare tabelle effettivamente presenti nella fonte.
+
+REGOLA CODICE E COMANDI (vincolante):
+- **Preserva verbatim** code fence, comandi CLI, snippet di configurazione,
+  payload JSON/YAML, query SQL e regex presenti nella fonte. Mai parafrasare,
+  riformattare, "migliorare" o tradurre.
+- **Mantieni il linguaggio del fence originale.** Se la fonte usa ```` ```yaml ````
+  non convertirlo in ```` ```json ````. Se la fonte usa ```` ```bash ```` non
+  trasformarlo in pseudo-codice.
+- **Non inventare codice.** Se la sezione "Snippet e comandi rilevanti" non ha
+  atomi tecnici reali nella fonte, **omettila** — meglio una sezione mancante
+  che snippet hallucinated.
+- **Placeholder** (`<TOKEN>`, `${ENV_VAR}`, `<your-key>`) restano invariati.
+- Per comandi distruttivi (`rm -rf`, `DROP`, `TRUNCATE`, `terraform destroy`,
+  `kubectl delete`) aggiungi callout `> [!warning]` accanto allo snippet.
+
+Output: testo MARKDOWN completo della pagina. Niente preambolo o commenti extra.

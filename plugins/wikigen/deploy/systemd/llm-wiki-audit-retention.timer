@@ -1,0 +1,12 @@
+[Unit]
+Description=LLM Wiki — weekly audit retention timer
+Requires=llm-wiki-audit-retention.service
+
+[Timer]
+OnCalendar=Sun *-*-* 03:30:00
+RandomizedDelaySec=30min
+Persistent=true
+Unit=llm-wiki-audit-retention.service
+
+[Install]
+WantedBy=timers.target

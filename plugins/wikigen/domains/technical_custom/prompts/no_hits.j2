@@ -1,0 +1,16 @@
+Il retrieval non ha trovato chunk rilevanti nel vault **{{ pack.label }}** per questa domanda.
+
+Possibili cause:
+- terminologia divulgativa al posto del nome esatto di componente, comando, endpoint o flag (es. "la cosa che gestisce le code" invece del nome del servizio reale);
+- runbook, ADR o spec API non ancora ingerito;
+- versione del componente target diversa da quella documentata nei chunk presenti (drift di versione);
+- query priva di slot tecnici (piattaforma, ambiente, ruolo) che restringono il contesto operativo;
+- domanda multi-hop che richiede runbook + spec API + dashboard, ma solo un livello è in retrieval.
+
+Cosa puoi fare:
+- riformula con il **nome esatto** del componente, del comando, dell'endpoint, della variabile d'ambiente, del flag CLI, dell'ID dell'ADR o del repository;
+- specifica **piattaforma** (Linux distro + versione, Kubernetes, cloud provider, ecc.), **versione** del componente, **ambiente** (dev / staging / prod / DR), **ruolo** dell'utente (developer / on-call / admin);
+- se cerchi una procedura: indica il punto di partenza (sintomo, log, alert, output di errore) e il punto di arrivo (stato target del sistema);
+- verifica che la documentazione attesa (runbook, README, ADR, spec OpenAPI/AsyncAPI, post-mortem, dashboard) sia stata ingerita.
+
+Un retrieval vuoto è un segnale di gap di retrieval, **non** indica assenza della procedura. Non eseguire comandi inferiti dal solo "buon senso": verifica nella documentazione di sistema reale o consulta l'owner del componente prima di operare in ambienti condivisi o in produzione.

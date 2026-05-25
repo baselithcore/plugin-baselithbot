@@ -1,0 +1,23 @@
+Piano della pagina:
+{{ plan_entry }}
+
+Piano globale (per coerenza wikilink incrociati):
+{{ plan_context }}
+
+Fonte wikilink: [[{{ source_slug }}]]
+`created`: {{ today_iso }}
+
+Contenuto della Sezione estratto dal PDF (testo + tabelle):
+---
+{{ section_markdown[:8000] }}
+---
+
+Tabelle strutturate già estratte (usale per YAML sibling e valori esatti):
+{{ tables_json }}
+
+Esempi di pagine garanzia esistenti nel vault (stile di riferimento):
+---
+{{ examples_block }}
+---
+
+Produci il file MARKDOWN completo.

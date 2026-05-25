@@ -1,0 +1,33 @@
+# Runtime data
+vaults/
+qdrant_data/
+logs/
+*.log
+.feedback.jsonl
+.graphify/
+
+# Python caches
+__pycache__/
+*.py[cod]
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Frontend
+ui/node_modules/
+ui/dist/
+ui/.next/
+ui/*.tsbuildinfo
+ui/playwright-report/
+ui/test-results/
+
+# Local secrets / env
+.env
+.env.lock
+
+# Legacy artifacts kept for archaeology
+# (do not remove from repo — referenced by docs)
+# main.legacy.py
+# pyproject.legacy.toml
+# README.legacy.md
