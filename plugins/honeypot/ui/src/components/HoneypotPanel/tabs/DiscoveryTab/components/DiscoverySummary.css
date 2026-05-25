@@ -1,0 +1,154 @@
+/* ============================================
+   SUMMARY STATS - REDESIGNED
+   ============================================ */
+.discovery-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.discovery-stat {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  background: rgba(13, 17, 23, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+}
+
+.discovery-stat:hover {
+  transform: translateY(-2px);
+  background: rgba(13, 17, 23, 0.6);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Icon Container - Circular & Glowy */
+.discovery-stat-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(0, 255, 255, 0.1);
+  color: #00ffff;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.15);
+}
+
+.discovery-stat:hover .discovery-stat-icon-wrapper {
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.discovery-stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.discovery-stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.discovery-stat-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Specific Stat Themes */
+
+/* Botnets - Cyan */
+.stat-botnets .discovery-stat-icon-wrapper {
+  background: rgba(0, 212, 255, 0.1);
+  color: #00d4ff;
+  border-color: rgba(0, 212, 255, 0.2);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.1);
+}
+
+/* C&C Servers - Cyan (Original) */
+.stat-hubs .discovery-stat-icon-wrapper {
+  background: rgba(0, 212, 255, 0.1);
+  color: #00d4ff;
+  border-color: rgba(0, 212, 255, 0.2);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.1);
+}
+
+/* Zero-Days - Pink */
+.stat-zerodays .discovery-stat-icon-wrapper {
+  background: rgba(255, 107, 157, 0.1);
+  color: #ff6b9d;
+  border-color: rgba(255, 107, 157, 0.2);
+  box-shadow: 0 0 15px rgba(255, 107, 157, 0.1);
+}
+
+/* Exploits - Orange */
+.stat-exploits .discovery-stat-icon-wrapper {
+  background: rgba(255, 157, 0, 0.1);
+  color: #ff9d00;
+  border-color: rgba(255, 157, 0, 0.2);
+  box-shadow: 0 0 15px rgba(255, 157, 0, 0.1);
+}
+
+/* Anomalies - Cyan (Original) */
+.stat-anomalies .discovery-stat-icon-wrapper {
+  background: rgba(0, 212, 255, 0.1);
+  color: #00d4ff;
+  border-color: rgba(0, 212, 255, 0.2);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.1);
+}
+
+/* Glow Background Effects */
+.discovery-stat::after {
+  content: '';
+  position: absolute;
+  top: -20%;
+  right: -20%;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(
+    circle,
+    var(--glow-color, rgba(0, 212, 255, 0.05)) 0%,
+    transparent 70%
+  );
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+}
+
+.discovery-stat:hover::after {
+  opacity: 0.8;
+}
+
+.stat-botnets {
+  --glow-color: rgba(0, 212, 255, 0.08);
+}
+.stat-hubs {
+  --glow-color: rgba(0, 212, 255, 0.08);
+}
+.stat-zerodays {
+  --glow-color: rgba(255, 107, 157, 0.08);
+}
+.stat-exploits {
+  --glow-color: rgba(255, 157, 0, 0.08);
+}
+.stat-anomalies {
+  --glow-color: rgba(0, 212, 255, 0.08);
+}

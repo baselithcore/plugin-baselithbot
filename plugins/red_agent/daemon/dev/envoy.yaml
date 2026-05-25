@@ -1,0 +1,82 @@
+# Envoy front-door for the Red Agent dev stack.
+#
+# Terminates mTLS for inbound agent connections, validates the client
+# cert chains to the pinned CA, and forwards plaintext HTTP/2 to the
+# backend's gRPC service on port 50443. The backend interceptor still
+# requires a SPIFFE peer identity, so even an Envoy bug does not let
+# unauthenticated traffic reach the servicer body.
+
+static_resources:
+  listeners:
+    - name: agent_channel
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 443
+      filter_chains:
+        - transport_socket:
+            name: envoy.transport_sockets.tls
+            typed_config:
+              "@type": type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.DownstreamTlsContext
+              require_client_certificate: true
+              common_tls_context:
+                tls_params:
+                  tls_minimum_protocol_version: TLSv1_3
+                  tls_maximum_protocol_version: TLSv1_3
+                alpn_protocols: ["h2"]
+                tls_certificates:
+                  - certificate_chain:
+                      filename: /etc/envoy/pki/backend.crt
+                    private_key:
+                      filename: /etc/envoy/pki/backend.key
+                validation_context:
+                  trusted_ca:
+                    filename: /etc/envoy/pki/agent-ca.crt
+          filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: agent_channel
+                codec_type: HTTP2
+                http2_protocol_options:
+                  max_concurrent_streams: 100
+                route_config:
+                  name: agent_channel_route
+                  virtual_hosts:
+                    - name: agent_channel
+                      domains: ["*"]
+                      routes:
+                        - match:
+                            prefix: /
+                          route:
+                            cluster: agent_backend
+                            timeout: 0s
+                http_filters:
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+    - name: agent_backend
+      type: STRICT_DNS
+      connect_timeout: 5s
+      typed_extension_protocol_options:
+        envoy.extensions.upstreams.http.v3.HttpProtocolOptions:
+          "@type": type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions
+          explicit_http_config:
+            http2_protocol_options: {}
+      load_assignment:
+        cluster_name: agent_backend
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: backend
+                      port_value: 50443
+
+admin:
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 9901

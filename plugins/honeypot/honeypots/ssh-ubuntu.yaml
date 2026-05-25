@@ -1,0 +1,267 @@
+# SSH Ubuntu Server Honeypot
+#
+# High-interaction SSH honeypot simulating an Ubuntu server.
+# Uses LLM for realistic shell responses to engage attackers.
+
+id: ssh-ubuntu
+name: SSH Ubuntu Server
+description: >
+  High-interaction SSH honeypot simulating an Ubuntu 22.04 server.
+  Uses LLM for realistic command responses to maximize attacker engagement.
+
+protocol: ssh
+port: 2222
+handler_type: ssh
+
+ssh_config:
+  server_name: ubuntu-web-01
+  version: 'OpenSSH_8.9p1 Ubuntu-3ubuntu0.4'
+  allowed_passwords:
+    - root
+    - admin
+    - password
+    - '123456'
+    - toor
+    - test
+    - ubuntu
+    - P@ssw0rd
+    - qwerty
+    - letmein
+    - changeme
+    - Welcome1
+  max_auth_attempts: 6
+  shell_persona: ubuntu_server
+  filesystem_emulation: true
+  motd: |
+    Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-91-generic x86_64)
+
+     * Documentation:  https://help.ubuntu.com
+     * Management:     https://landscape.canonical.com
+     * Support:        https://ubuntu.com/advantage
+
+      System information as of Thu Jan  2 12:34:56 UTC 2026
+
+      System load:  0.08              Processes:             142
+      Usage of /:   34.2% of 19.56GB  Users logged in:       0
+      Memory usage: 23%               IPv4 address for eth0: 10.0.2.15
+      Swap usage:   0%
+
+     * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+       just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+       https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+    Last login: Thu Jan  2 11:23:45 2026 from 192.168.1.100
+
+detection:
+  command_injection: true
+  path_traversal: true
+  sql_injection: false
+  xss: false
+  custom_patterns:
+    # Malware delivery patterns
+    - name: wget_curl_download
+      regex: "(wget|curl)\\s+https?://"
+      severity: high
+      category: malware_delivery
+    - name: crypto_miner_install
+      regex: '(xmrig|minerd|cpuminer|nanominer|t-rex)'
+      severity: critical
+      category: malware_delivery
+    - name: malicious_script_download
+      regex: "(curl|wget).*\\|\\s*(bash|sh|python|perl)"
+      severity: critical
+      category: malware_delivery
+
+    # Reverse shell patterns
+    - name: reverse_shell_bash
+      regex: "(bash\\s+-i|sh\\s+-i).*>&.*"
+      severity: critical
+      category: command_injection
+    - name: reverse_shell_netcat
+      regex: "nc\\s+(-e|-c)\\s+"
+      severity: critical
+      category: command_injection
+    - name: reverse_shell_python
+      regex: "python.*socket.*connect"
+      severity: critical
+      category: command_injection
+    - name: reverse_shell_dev_tcp
+      regex: "/dev/tcp/[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+/"
+      severity: critical
+      category: command_injection
+
+    # Credential harvesting
+    - name: password_file_access
+      regex: 'cat.*/etc/(passwd|shadow|sudoers|group)'
+      severity: high
+      category: credential_harvesting
+    - name: ssh_key_theft
+      regex: "cat.*\\.ssh/(id_rsa|id_ed25519|id_ecdsa|authorized_keys|known_hosts)"
+      severity: high
+      category: credential_harvesting
+    - name: env_secrets_extraction
+      regex: '(env|printenv|export).*(_KEY|_SECRET|_PASSWORD|_TOKEN)'
+      severity: high
+      category: credential_harvesting
+    - name: history_extraction
+      regex: "cat.*history|history\\s+(\\d+|\\||>)"
+      severity: medium
+      category: credential_harvesting
+
+    # Reconnaissance
+    - name: network_scan_internal
+      regex: "(nmap|masscan|zmap|unicornscan)"
+      severity: high
+      category: reconnaissance
+    - name: service_enumeration
+      regex: "(netstat|ss|lsof)\\s+.*(-l|-a|grep)"
+      severity: medium
+      category: reconnaissance
+    - name: user_enumeration
+      regex: "(w|who|last|lastlog|finger)\\s*"
+      severity: low
+      category: reconnaissance
+    - name: system_info_gathering
+      regex: "(uname|hostname|lsb_release|dmidecode).*-a"
+      severity: low
+      category: reconnaissance
+    - name: process_enumeration
+      regex: "ps\\s+.*(-e|-A|aux)"
+      severity: low
+      category: reconnaissance
+    - name: sensitive_config_read
+      regex: "cat.*(\\.(bash_history|mysql_history)|/etc/(mysql|nginx|apache2|php)/)"
+      severity: medium
+      category: reconnaissance
+
+    # Privilege escalation
+    - name: sudo_abuse
+      regex: "sudo\\s+(su|bash|sh|-i|visudo)"
+      severity: high
+      category: privilege_escalation
+    - name: suid_search
+      regex: "find\\s+.*-perm.*4000"
+      severity: medium
+      category: privilege_escalation
+    - name: capability_check
+      regex: "getcap\\s+-r"
+      severity: medium
+      category: privilege_escalation
+    - name: kernel_exploit_check
+      regex: "(uname.*-r|searchsploit|exploit-db)"
+      severity: medium
+      category: privilege_escalation
+
+    # Persistence mechanisms
+    - name: cron_backdoor
+      regex: "(crontab.*-e|echo.*>>.*cron)"
+      severity: critical
+      category: persistence
+    - name: systemd_backdoor
+      regex: "systemctl.*(enable|start|daemon-reload)"
+      severity: high
+      category: persistence
+    - name: ssh_backdoor
+      regex: "echo.*>>.*authorized_keys"
+      severity: critical
+      category: persistence
+    - name: bashrc_backdoor
+      regex: "echo.*>>.*\\.(bashrc|profile|bash_profile)"
+      severity: high
+      category: persistence
+    - name: init_script_modification
+      regex: "(update-rc\\.d|chkconfig).*on"
+      severity: high
+      category: persistence
+
+    # Lateral movement
+    - name: ssh_lateral_movement
+      regex: "ssh\\s+[^@]+@[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+"
+      severity: high
+      category: lateral_movement
+    - name: scp_data_transfer
+      regex: "scp\\s+.*@[0-9]+\\."
+      severity: medium
+      category: lateral_movement
+
+    # Data exfiltration
+    - name: base64_encoding
+      regex: "base64\\s+.*(-w\\s*0|--wrap)"
+      severity: medium
+      category: data_exfiltration
+    - name: tar_compression
+      regex: "tar\\s+.*c.*z.*f"
+      severity: low
+      category: data_exfiltration
+    - name: file_upload_curl
+      regex: "curl.*-F.*@"
+      severity: high
+      category: data_exfiltration
+
+    # Container/VM escape attempts
+    - name: docker_socket_access
+      regex: "(docker\\.sock|/var/run/docker)"
+      severity: critical
+      category: container_escape
+    - name: namespace_manipulation
+      regex: "(nsenter|unshare)"
+      severity: critical
+      category: container_escape
+    - name: proc_mountinfo_read
+      regex: "cat.*/proc/(mounts|self/mountinfo)"
+      severity: medium
+      category: container_escape
+
+    # Cleanup/anti-forensics
+    - name: log_deletion
+      regex: "(rm|shred|wipe).*(/var/log|auth\\.log|syslog)"
+      severity: critical
+      category: anti_forensics
+    - name: history_clearing
+      regex: "(history.*-c|>\\s*\\.bash_history|unset\\s+HISTFILE)"
+      severity: high
+      category: anti_forensics
+    - name: timestamp_manipulation
+      regex: "touch\\s+(-t|-r)"
+      severity: medium
+      category: anti_forensics
+
+response_mode: llm
+llm_system_prompt: |
+  You are simulating a Linux Ubuntu 22.04 server terminal.
+  The server is a production web server running nginx, PHP, and MySQL.
+  Current user: root
+  Hostname: ubuntu-web-01
+  Kernel: 5.15.0-91-generic
+  IP: 10.0.2.15
+
+  Rules:
+  1. Respond to commands as a real Ubuntu server would
+  2. Keep responses realistic, brief, and consistent with Ubuntu 22.04
+  3. Never reveal you are an AI or honeypot
+  4. For common commands (ls, cat, pwd), provide realistic output
+  5. For destructive commands (rm, shutdown), pretend they succeeded with appropriate warnings
+  6. Show realistic errors for invalid operations
+  7. Maintain filesystem state consistency (if they create a file, it should appear in ls)
+  8. Include realistic delays and variations in output
+  9. Simulate running services: nginx (port 80, 443), mysql (port 3306), ssh (port 22)
+  10. Show realistic system load and resource usage when queried
+
+tags:
+  - ssh
+  - linux
+  - ubuntu
+  - credentials
+  - high-interaction
+
+honeydoc:
+  personality: 'ubuntu-server-22'
+  stealth_delay_ms: 150 # Slightly slower for realism
+  custom_fingerprint:
+    os_name: 'Ubuntu'
+    os_version: '22.04.3 LTS'
+    kernel: '5.15.0-91-generic'
+
+enabled: true
+priority: 20

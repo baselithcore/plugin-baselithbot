@@ -1,0 +1,34 @@
+[package]
+name = "baselith-redagent-collector"
+description = "Telemetry collectors: process / package / file / net inventories, eBPF / ESF tracers"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+baselith-redagent-proto.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+sysinfo.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+prost-types.workspace = true
+uuid.workspace = true
+sha2.workspace = true
+hex.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+aya.workspace = true
+
+[target.'cfg(any(target_os = "linux", target_os = "macos"))'.dependencies]
+nix.workspace = true
+
+[target.'cfg(target_os = "macos")'.dependencies]
+# objc2 + objc2-endpoint-security crates land in Phase 2 once the
+# bindings stabilize. Intentionally omitted here so the workspace
+# builds on every host.

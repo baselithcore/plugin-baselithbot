@@ -1,0 +1,90 @@
+# FortiGate SSL VPN Honeypot - CVE-2024-21762
+# Emulates vulnerable FortiOS 7.4.2 to detect out-of-bounds write exploitation
+#
+# CVE-2024-21762 (CVSS 9.6): Unauthenticated RCE via HTTP chunked encoding
+# Attack chain: Heap spray → Chunked encoding overflow → Stack corruption → RCE
+#
+# References:
+# - https://github.com/h4x0r-dz/CVE-2024-21762
+# - Fortinet PSIRT Advisory FG-IR-24-015
+# - FortiOS 7.4.3+ patched
+
+id: fortigate-sslvpn
+name: 'FortiGate SSL VPN (CVE-2024-21762)'
+description: 'Honeypot emulating vulnerable FortiOS 7.4.2 SSL VPN to detect CVE-2024-21762 exploitation attempts'
+protocol: http
+port: 10443
+bind_address: '0.0.0.0'
+handler_type: custom
+custom_handler_class: plugins.honeypot.custom_handlers.fortigate_handler.FortiGateHandler
+enabled: false
+priority: 9
+
+tags:
+  - cve-2024-21762
+  - fortigate
+  - fortios
+  - sslvpn
+  - rce
+  - out-of-bounds
+  - exploit
+  - critical
+
+detection:
+  log_all_requests: true
+  sql_injection: false
+  command_injection: true
+  path_traversal: true
+  xss: false
+  custom_patterns:
+    - name: chunked_encoding_overflow
+      regex: 'Transfer-Encoding:\s*chunked'
+      severity: high
+      category: exploit_attempt
+    - name: excessive_chunk_size_field
+      regex: '^0{4000,}'
+      severity: critical
+      category: exploit_attempt
+    - name: hostcheck_heap_spray
+      regex: '/remote/hostcheck_validate'
+      severity: high
+      category: exploit_attempt
+    - name: fortigate_heap_spray_pattern
+      regex: 'sslvpn_websession|sslvpn_auth_id'
+      severity: critical
+      category: exploit_attempt
+    - name: structure_corruption_marker
+      regex: '\x0d\x0a[A-Za-z0-9+/=]{100,}'
+      severity: critical
+      category: exploit_attempt
+    - name: rop_chain_pattern
+      regex: '(SSL_do_handshake|SSL_CTX|GOT|PLT)'
+      severity: critical
+      category: exploit_attempt
+    - name: nodejs_reverse_shell
+      regex: '/bin/node\s+-e|require\(.*child_process.*\)'
+      severity: critical
+      category: exploit_attempt
+  alert_paths:
+    - '/remote/hostcheck_validate'
+    - '/remote/login'
+    - '/remote/logincheck'
+    - '/'
+    - '//'
+  severity_boost:
+    - pattern: 'Transfer-Encoding'
+      boost: 'critical'
+    - pattern: 'hostcheck_validate'
+      boost: 'high'
+    - pattern: '0{4000,}'
+      boost: 'critical'
+
+honeydoc:
+  personality: 'fortigate-vm'
+  stealth_delay_ms: 200
+  custom_fingerprint:
+    http_server: 'xxxxxxxx-xxxxx'
+    version: '7.4.2'
+    build: '2571'
+
+response_mode: 'static'

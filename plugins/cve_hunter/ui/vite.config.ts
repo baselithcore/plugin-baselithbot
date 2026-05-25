@@ -1,0 +1,36 @@
+/// <reference types="vite/client" />
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig({
+  base: '/cve_hunter/',
+  plugins: [react()],
+  resolve: {
+    alias: [
+      { find: '@', replacement: resolve(__dirname, '../../src') },
+      // Map auth/src relative imports to the correct auth UI source directory
+      { find: '@auth', replacement: resolve(__dirname, '../../auth/ui/src/index.ts') },
+    ],
+  },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
+  server: {
+    port: 5174,
+    host: true,
+    fs: {
+      allow: ['..', '../../auth/ui/src'],
+    },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+    },
+  },
+});

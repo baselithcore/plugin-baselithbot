@@ -1,0 +1,29 @@
+id: web-active
+name: Web App — active surface fuzzing
+description: >-
+  Active fuzzing pass for an authenticated or otherwise authorized web
+  target. Combines Nuclei active templates and ZAP for endpoint
+  discovery + injection-class probes. Always requires HITL because of
+  potential side effects on production data.
+version: 0.1.0
+target_kinds:
+  - web
+intensity: active
+scanners:
+  - nuclei
+  - zap
+  - secure_headers
+owasp_refs:
+  - WSTG-INPV-01
+  - WSTG-INPV-05
+  - WSTG-AUTH-04
+mitre_refs:
+  - T1190
+  - T1059
+tags:
+  - web
+  - active
+requires_autonomy_at_least: execute_active
+notes: >-
+  Run only inside an engagement that explicitly permits active intensity.
+  Schedule out of business hours when targeting production.

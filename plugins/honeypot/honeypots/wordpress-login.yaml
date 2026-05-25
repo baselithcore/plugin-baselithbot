@@ -1,0 +1,87 @@
+# WordPress Login Honeypot
+#
+# Simulates a WordPress login page to capture credential harvesting
+# and common WordPress-targeted attacks like brute force and exploitation.
+
+id: wordpress-login
+name: WordPress Login Honeypot
+description: >
+  Simulates a WordPress login page to capture credential harvesting attempts.
+  Emulates common WordPress paths and admin panels.
+
+protocol: http
+port: 8082
+handler_type: http
+
+http_config:
+  emulated_app: wordpress
+  server_header: 'Apache/2.4.53 (Debian)'
+  powered_by: 'PHP/7.4.29'
+  default_response: index
+  capture_credentials: true
+  routes:
+    - path: /wp-login.php
+      method: [GET, POST]
+      response_template: wordpress_login
+      status_code: 200
+    - path: /wp-admin/*
+      method: [GET, POST]
+      response_template: unauthorized
+      status_code: 401
+    - path: /xmlrpc.php
+      method: [POST]
+      response_template: xmlrpc_disabled
+      status_code: 403
+    - path: /wp-config.php
+      method: [GET]
+      response_template: forbidden
+      status_code: 403
+
+detection:
+  sql_injection: true
+  command_injection: true
+  path_traversal: true
+  xss: true
+  custom_patterns:
+    - name: wp_admin_probe
+      regex: '(wp-admin|wp-includes|wp-content)'
+      severity: low
+      category: reconnaissance
+    - name: wp_config_access
+      regex: "wp-config(\\.php|\\.bak|\\.old)"
+      severity: high
+      category: path_traversal
+    - name: xmlrpc_bruteforce
+      regex: "<methodName>wp\\.getUsersBlogs</methodName>"
+      severity: medium
+      category: brute_force
+    - name: plugin_exploit
+      regex: '/wp-content/plugins/.*(eval|base64_decode|shell)'
+      severity: critical
+      category: command_injection
+
+response_mode: static
+payload_templates:
+  wordpress_login: |
+    <!DOCTYPE html>
+    <html>
+    <head><title>Log In - WordPress</title></head>
+    <body>WordPress Login Form</body>
+    </html>
+
+tags:
+  - web
+  - credentials
+  - wordpress
+  - cms
+
+  - cms
+
+honeydoc:
+  personality: 'wordpress-generic'
+  stealth_delay_ms: 50
+  custom_fingerprint:
+    http_server: 'Apache/2.4.53 (Debian)'
+
+enabled: false
+priority: 10

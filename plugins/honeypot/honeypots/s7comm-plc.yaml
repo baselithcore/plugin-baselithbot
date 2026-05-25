@@ -1,0 +1,76 @@
+# S7comm Siemens PLC Honeypot
+# Emulates a Siemens S7-300 PLC over ISO-on-TCP (COTP/S7comm)
+# Default port: 102
+
+id: s7comm-plc
+name: 'Siemens S7-300 PLC'
+description: 'Siemens S7-300 PLC simulator for detecting Stuxnet-style reconnaissance, memory reads, and CPU manipulation attempts'
+protocol: s7comm
+port: 102
+handler_type: s7comm
+enabled: true
+
+tags:
+  - ics
+  - scada
+  - plc
+  - siemens
+  - s7comm
+  - stuxnet
+
+s7comm_config:
+  rack: 0
+  slot: 2
+  cpu_type: 'CPU 315-2 PN/DP'
+  order_code: '6ES7 315-2EH14-0AB0'
+  serial_number: 'S C-HONYPOT0001'
+  module_info: 'S7-300'
+
+  # Simulated data blocks
+  db_blocks:
+    1:
+      size: 256 # DB1: Process data (256 bytes)
+      fill: 0
+    2:
+      size: 128 # DB2: Setpoints (128 bytes)
+      fill: 0
+    10:
+      size: 512 # DB10: Recipe data (512 bytes)
+      fill: 0
+    100:
+      size: 64 # DB100: Diagnostics (64 bytes)
+      fill: 255
+
+# Detection rules for S7-specific attacks
+detection:
+  patterns:
+    - name: 'szl_query'
+      pattern: 'SZL_READ'
+      severity: 'high'
+      description: 'SZL query — PLC fingerprinting (PLCScan, Metasploit)'
+
+    - name: 'db_read'
+      pattern: 'READ.*area=0x84'
+      severity: 'medium'
+      description: 'S7 data block read — process data reconnaissance'
+
+    - name: 'db_write'
+      pattern: 'WRITE'
+      severity: 'critical'
+      description: 'S7 data block write — potential PLC manipulation (Stuxnet-class)'
+
+    - name: 'cpu_stop'
+      pattern: 'CPU_STOP'
+      severity: 'critical'
+      description: 'CPU stop command — sabotage attempt'
+
+    - name: 'multi_db_scan'
+      pattern: 'READ.*items>5'
+      severity: 'high'
+      description: 'Multi-block read — systematic memory extraction'
+
+# Stealth configuration
+stealth:
+  enabled: true
+  response_delay_ms: 35 # Realistic PLC response
+  jitter_ms: 15

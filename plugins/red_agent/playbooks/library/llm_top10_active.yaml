@@ -1,0 +1,39 @@
+id: llm-top10-active
+name: LLM App — OWASP LLM Top 10 active probes
+description: >-
+  Active probe pass for an AI/LLM-backed application. Walks the four
+  active probe corpora (prompt injection, tool abuse, data leakage,
+  insecure output handling) against the chat endpoint configured in
+  Target.metadata. Sandboxed curl per request; rate-limited; halts on
+  consecutive 5xx or hardened-target refusals. Requires the engagement
+  to grant execute_active autonomy and HITL approval.
+version: 0.1.0
+target_kinds:
+  - web
+intensity: active
+scanners:
+  - llm_recon
+  - llm_prompt_injection
+  - llm_tool_abuse
+  - llm_data_leakage
+  - llm_output_handling
+owasp_refs:
+  - LLM01
+  - LLM02
+  - LLM06
+  - LLM07
+  - LLM08
+mitre_refs:
+  - T1190
+  - T1059
+tags:
+  - llm
+  - ai
+  - active
+  - top10
+requires_autonomy_at_least: execute_active
+notes: >-
+  Target.metadata must declare chat_endpoint, request_template,
+  response_path, and (recommended) system_prompt_sentinel. See
+  docs/llm_probes.md for the full schema. Findings carry CWE-1426 by
+  default, with per-payload overrides for SSRF / SQLi / XSS / shell.

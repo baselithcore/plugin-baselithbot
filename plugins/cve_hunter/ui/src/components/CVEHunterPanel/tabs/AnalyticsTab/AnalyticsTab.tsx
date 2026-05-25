@@ -1,0 +1,373 @@
+/**
+ * AnalyticsTab - Analytics and Correlation Panel (Refactored)
+ *
+ * Orchestrates card components for the Analytics view.
+ */
+
+import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { Shield } from 'lucide-react';
+
+import type { SwarmStatus, CVEStats, CVERecord } from '../../../types';
+import type {
+  AttackChain,
+  CVECorrelation,
+  UnifiedFinding,
+  DastFinding,
+  FindingCorrelationResponse,
+  FeedbackAuditItem,
+} from '../../../api';
+import { fetchAIAnalysis } from '../../../api';
+import type { DiscoveryLog, Finding } from '../../types';
+
+import {
+  AttackChainsCard,
+  CorrelationsCard,
+  UnifiedFindingsCard,
+  DastFindingsCard,
+  FindingCorrelationsCard,
+  FeedbackAuditCard,
+} from './cards';
+import FindingDetailModal from '../../modals/FindingDetailModal';
+
+interface AnalyticsTabProps {
+  // Data
+  swarmStatus: SwarmStatus | null;
+  stats: CVEStats | null;
+  cves: CVERecord[];
+  findings: Finding[];
+  attackChains: AttackChain[];
+  correlations: CVECorrelation[];
+  unifiedFindings: UnifiedFinding[];
+  dastFindings: DastFinding[];
+  findingCorrelations: FindingCorrelationResponse | null;
+  feedbackAudit: FeedbackAuditItem[];
+  discoveryLogs: DiscoveryLog[];
+
+  // Computed data
+  topUnifiedFindings: UnifiedFinding[];
+  topDastFindings: DastFinding[];
+  filteredFeedback: FeedbackAuditItem[];
+  recentFeedback: FeedbackAuditItem[];
+
+  // Feedback filter state
+  feedbackFilter: 'all' | 'confirmed' | 'false_positive';
+  setFeedbackFilter: (value: 'all' | 'confirmed' | 'false_positive') => void;
+  feedbackQuery: string;
+  setFeedbackQuery: (value: string) => void;
+
+  // State
+  isScanning: boolean;
+
+  // Handlers
+  onChainClick: (chain: AttackChain) => void;
+  onCVEClickById: (cveId: string) => void;
+  handleUnifiedFeedback: (findingId: string, outcome: 'confirmed' | 'false_positive') => void;
+  handleDastFeedback: (findingId: string, outcome: 'confirmed' | 'false_positive') => void;
+  handleCorrelationFeedback: (
+    kind: 'cve' | 'chain',
+    id: string,
+    outcome: 'confirmed' | 'false_positive'
+  ) => void;
+  handleClassicCorrelationFeedback: (
+    correlationId: string,
+    outcome: 'confirmed' | 'false_positive'
+  ) => void;
+  setDiscoveryLogs: React.Dispatch<React.SetStateAction<DiscoveryLog[]>>;
+  setError: (error: string | null) => void;
+}
+
+export const AnalyticsTab = ({
+  swarmStatus,
+  stats,
+  cves,
+  findings,
+  attackChains,
+  correlations,
+  unifiedFindings,
+  dastFindings,
+  findingCorrelations,
+  feedbackAudit,
+  discoveryLogs,
+  topUnifiedFindings,
+  topDastFindings,
+  filteredFeedback,
+  recentFeedback,
+  feedbackFilter,
+  setFeedbackFilter,
+  feedbackQuery,
+  setFeedbackQuery,
+  isScanning,
+  onChainClick,
+  onCVEClickById,
+  handleUnifiedFeedback,
+  handleDastFeedback,
+  handleCorrelationFeedback,
+  handleClassicCorrelationFeedback,
+  setDiscoveryLogs,
+  setError,
+}: AnalyticsTabProps) => {
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportSuccess, setReportSuccess] = useState<string | null>(null);
+  const [aiReport, setAiReport] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedFinding, setSelectedFinding] = useState<UnifiedFinding | DastFinding | null>(null);
+
+  const handleGenerateReport = async () => {
+    setIsGeneratingReport(true);
+    setReportSuccess(null);
+
+    const timestamp = new Date().toISOString();
+    setDiscoveryLogs((prev: DiscoveryLog[]) => [
+      ...prev,
+      {
+        timestamp,
+        message: 'REPORTER: Initiating security report generation...',
+        is_alert: false,
+        is_error: false,
+      },
+    ]);
+
+    const dateStr = timestamp.split('T')[0];
+
+    const content = `# CVE Hunter Security Report
+Generated: ${timestamp}
+Region: EU-WEST-1 (Simulated)
+Status: ${isScanning ? 'Scanning Active' : 'Monitoring'}
+
+## 1. Executive Summary
+Current swarm status indicates ${swarmStatus?.active_agents || 0} active agents with ${stats?.active_alerts || 0} active alerts.
+Total CVEs analyzed: ${stats?.total_cves || 0}.
+
+## 2. Statistics
+- Critical: ${stats?.critical_count || 0}
+- High: ${stats?.high_count || 0}
+- Medium: ${stats?.medium_count || 0}
+- Low: ${stats?.low_count || 0}
+- Exploits Available: ${stats?.with_exploit || 0}
+- Patches Available: ${stats?.with_patch || 0}
+
+## 3. Attack Chains Detected
+${
+  attackChains.length > 0
+    ? attackChains.map((chain) => `- ${chain.name} (Severity: ${chain.total_severity})`).join('\n')
+    : 'No active attack chains detected.'
+}
+
+## 4. Top Critical CVEs
+${
+  cves
+    .filter((c) => c.severity.toLowerCase() === 'critical')
+    .slice(0, 5)
+    .map((c) => `- [${c.cve_id}] Score: ${c.cvss?.base_score || 'N/A'} - ${c.description}`)
+    .join('\n') || 'No critical CVEs in current view.'
+}
+
+## 5. Recent Discovery Logs
+${discoveryLogs
+  .slice(0, 10)
+  .map((l) => `- [${new Date(l.timestamp).toLocaleTimeString()}] ${l.message}`)
+  .join('\n')}
+
+---
+Generated by CVE Hunter Swarm Intelligence
+`;
+
+    try {
+      const blob = new Blob([content], { type: 'text/markdown' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Security_Report_${dateStr}.md`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      setReportSuccess(`Security_Report_${dateStr}.md`);
+    } catch (err) {
+      console.error('Report generation failed', err);
+      setError('Failed to generate report file.');
+    } finally {
+      setIsGeneratingReport(false);
+      setTimeout(() => setReportSuccess(null), 5000);
+    }
+  };
+
+  const handleAnalyze = async () => {
+    setIsAnalyzing(true);
+    setAiReport(null);
+
+    setDiscoveryLogs((prev: DiscoveryLog[]) => [
+      ...prev,
+      {
+        timestamp: new Date().toISOString(),
+        message: 'ANALYZER: Initiating tactical security assessment...',
+        is_alert: false,
+        is_error: false,
+      },
+    ]);
+
+    try {
+      const { report } = await fetchAIAnalysis();
+      setAiReport(report);
+    } catch (err) {
+      console.error('Analysis failed', err);
+      setError('Failed to generate strategic analysis.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  return (
+    <main className="cve-content" style={{ maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+      {/* Agent Metrics Row */}
+      <div className="metrics-row">
+        <div className="metric-card scanner">
+          <div className="metric-value">{swarmStatus?.completed_tasks ?? 0}</div>
+          <div className="metric-label">Scans</div>
+          <div className="metric-delta positive">+12 today</div>
+        </div>
+        <div className="metric-card analyzer">
+          <div className="metric-value">{stats?.total_cves ?? 0}</div>
+          <div className="metric-label">Analyzed</div>
+          <div className="metric-delta positive">+5 new</div>
+        </div>
+        <div className="metric-card discovery">
+          <div className="metric-value">{findings.length}</div>
+          <div className="metric-label">Discoveries</div>
+        </div>
+        <div className="metric-card correlator">
+          <div className="metric-value">{correlations.length}</div>
+          <div className="metric-label">Correlations</div>
+        </div>
+        <div className="metric-card reporter">
+          <div className="metric-value">{Math.floor((stats?.total_cves ?? 0) * 0.15)}</div>
+          <div className="metric-label">Reports</div>
+        </div>
+      </div>
+
+      {/* Two Column Layout with Cards */}
+      <div className="analytics-tab-content">
+        <AttackChainsCard
+          attackChains={attackChains}
+          onChainClick={onChainClick}
+          onCVEClickById={onCVEClickById}
+        />
+
+        <CorrelationsCard
+          correlations={correlations}
+          handleClassicCorrelationFeedback={handleClassicCorrelationFeedback}
+        />
+
+        <UnifiedFindingsCard
+          unifiedFindings={unifiedFindings}
+          topUnifiedFindings={topUnifiedFindings}
+          handleUnifiedFeedback={handleUnifiedFeedback}
+          onFindingClick={setSelectedFinding}
+        />
+
+        <DastFindingsCard
+          dastFindings={dastFindings}
+          topDastFindings={topDastFindings}
+          handleDastFeedback={handleDastFeedback}
+          onFindingClick={setSelectedFinding}
+        />
+
+        <FindingCorrelationsCard
+          findingCorrelations={findingCorrelations}
+          handleCorrelationFeedback={handleCorrelationFeedback}
+        />
+
+        <FeedbackAuditCard
+          feedbackAudit={feedbackAudit}
+          filteredFeedback={filteredFeedback}
+          recentFeedback={recentFeedback}
+          feedbackFilter={feedbackFilter}
+          setFeedbackFilter={setFeedbackFilter}
+          feedbackQuery={feedbackQuery}
+          setFeedbackQuery={setFeedbackQuery}
+        />
+      </div>
+
+      {/* Report Generation */}
+      <div className="glass-card" style={{ marginTop: '24px' }}>
+        <div className="glass-card-header">
+          <span className="glass-card-title">
+            <Shield size={16} color="var(--cyber-neon-purple)" />
+            Report Generation
+          </span>
+        </div>
+        <button
+          className={`generate-report-btn ${isAnalyzing ? 'loading' : ''}`}
+          onClick={handleAnalyze}
+          disabled={isAnalyzing}
+          style={{
+            marginBottom: '10px',
+            background: 'var(--cyber-neon-pink)',
+            border: '1px solid var(--cyber-neon-pink)',
+          }}
+        >
+          {isAnalyzing ? (
+            <div className="loader-container">
+              <div className="loader-spin" />
+              ANALYZING_TACTICAL_DATA...
+            </div>
+          ) : (
+            <>
+              <span style={{ marginRight: '8px' }}>🧠</span>
+              Tactical AI Analysis
+            </>
+          )}
+        </button>
+        <button
+          className={`generate-report-btn ${isGeneratingReport ? 'loading' : ''}`}
+          onClick={handleGenerateReport}
+          disabled={isGeneratingReport}
+        >
+          {isGeneratingReport ? (
+            <div className="loader-container">
+              <div className="loader-spin" />
+              GENEREATING_PDF_STREAM...
+            </div>
+          ) : (
+            <>
+              <Shield size={18} />
+              Generate Security Report
+            </>
+          )}
+        </button>
+        {reportSuccess && (
+          <div className="report-success-toast">
+            <Shield size={14} />
+            <span>REPORT_GENERATED: {reportSuccess}</span>
+          </div>
+        )}
+      </div>
+
+      {/* AI Analysis Modal/Overlay */}
+      {aiReport && (
+        <div className="cve-modal-overlay" onClick={() => setAiReport(null)}>
+          <div className="cve-modal-content premium-glass" onClick={(e) => e.stopPropagation()}>
+            <header className="cve-modal-header">
+              <h2>
+                <span className="agent-icon">🧠</span> TACTICAL AI INSIGHT
+              </h2>
+              <button className="close-button" onClick={() => setAiReport(null)}>
+                ×
+              </button>
+            </header>
+            <div className="cve-modal-body markdown-body">
+              <ReactMarkdown>{aiReport}</ReactMarkdown>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Finding Detail Modal */}
+      {selectedFinding && (
+        <FindingDetailModal finding={selectedFinding} onClose={() => setSelectedFinding(null)} />
+      )}
+    </main>
+  );
+};

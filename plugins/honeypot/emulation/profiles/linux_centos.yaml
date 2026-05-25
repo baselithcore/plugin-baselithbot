@@ -1,0 +1,87 @@
+# CentOS Stream 9 Fingerprint Profile
+# Accurately emulates CentOS Stream 9 server
+# Use for RHEL-like enterprise Linux honeypots
+
+profile_id: 'linux_centos_stream9'
+
+# OS Identification
+os_type: 'linux_centos'
+os_version: 'Stream 9'
+kernel_version: '5.14.0-391.el9.x86_64'
+architecture: 'x86_64'
+
+# TCP/IP Stack Fingerprint (p0f compatible)
+# RHEL/CentOS kernel defaults (slightly different from Ubuntu)
+tcp_ttl: 64
+tcp_window_size: 32120
+tcp_options:
+  - 'mss'
+  - 'sackOK'
+  - 'timestamp'
+  - 'nop'
+  - 'wscale'
+tcp_df_flag: true
+tcp_window_scale: 7
+
+# SSH Fingerprint
+# OpenSSH 8.7p1 as shipped with CentOS Stream 9
+ssh_banner: 'OpenSSH_8.7 CentOS'
+ssh_kex_algorithms:
+  - 'curve25519-sha256'
+  - 'curve25519-sha256@libssh.org'
+  - 'ecdh-sha2-nistp256'
+  - 'ecdh-sha2-nistp384'
+  - 'ecdh-sha2-nistp521'
+  - 'diffie-hellman-group-exchange-sha256'
+  - 'diffie-hellman-group14-sha256'
+  - 'diffie-hellman-group16-sha512'
+  - 'diffie-hellman-group18-sha512'
+ssh_ciphers:
+  - 'aes256-gcm@openssh.com'
+  - 'aes128-gcm@openssh.com'
+  - 'aes256-ctr'
+  - 'aes192-ctr'
+  - 'aes128-ctr'
+  - 'chacha20-poly1305@openssh.com'
+
+# HTTP Fingerprint
+# Apache 2.4 or nginx as commonly deployed on CentOS
+http_server_header: 'Apache/2.4.57 (CentOS Stream)'
+http_header_order:
+  - 'Date'
+  - 'Server'
+  - 'X-Powered-By'
+  - 'Content-Type'
+  - 'Content-Length'
+  - 'Connection'
+http_header_casing: 'title'
+
+# Response Content Templates
+uname_output: 'Linux centos-server 5.14.0-391.el9.x86_64 #1 SMP PREEMPT_DYNAMIC Fri Dec 15 10:20:29 UTC 2023 x86_64 x86_64 x86_64 GNU/Linux'
+motd_banner: |
+  CentOS Stream 9
+  Kernel 5.14.0-391.el9.x86_64 on an x86_64
+
+  Web console: https://centos-server:9090/
+
+  Last login: Wed Jan 22 07:30:00 2026 from 192.168.1.1
+
+# Latency Model (Gaussian distribution, milliseconds)
+# CentOS/RHEL tends to be slightly faster on enterprise hardware
+latency_mean_ms: 40.0
+latency_std_ms: 10.0
+latency_min_ms: 4.0
+latency_max_ms: 350.0
+
+# Per-operation latency multipliers
+latency_multipliers:
+  filesystem_read: 0.12
+  filesystem_write: 0.35
+  filesystem_list: 0.22
+  network_lookup: 1.6
+  process_spawn: 2.0
+  process_list: 0.30
+  crypto_op: 2.5
+  system_info: 0.20
+  auth_check: 0.40
+  generic: 1.0

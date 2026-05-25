@@ -1,0 +1,49 @@
+# MySQL/MariaDB Honeypot
+# Inspired by Beelzebub's tcp-3306.yaml
+# Simulates a MySQL server on standard port
+
+id: 'mysql-server'
+name: 'MySQL Database Server'
+description: 'TCP honeypot simulating MySQL 8.0 server to capture database attack attempts'
+protocol: 'tcp'
+port: 3306
+bind_address: '0.0.0.0'
+handler_type: 'tcp'
+
+tcp_config:
+  banner: |
+    5.7.42-log
+    ÿÿÿÿmysql_native_password
+  service_name: 'mysql'
+  timeout_seconds: 30
+
+  # MySQL protocol responses
+  responses:
+    - pattern: '.*SELECT.*'
+      response: 'ERROR 1045 (28000): Access denied for user'
+    - pattern: '.*SHOW.*'
+      response: 'ERROR 1045 (28000): Access denied'
+    - pattern: '.*'
+      response: "ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)"
+
+detection:
+  log_all_data: true
+  alert_keywords:
+    - 'UNION SELECT'
+    - 'information_schema'
+    - 'LOAD_FILE'
+    - 'INTO OUTFILE'
+    - 'DROP TABLE'
+    - 'DELETE FROM'
+    - 'INSERT INTO'
+    - 'sys.user'
+  severity_boost:
+    - pattern: 'UNION.*SELECT'
+      boost: 'high'
+    - pattern: 'LOAD_FILE'
+      boost: 'critical'
+
+response_mode: 'static'
+tags: ['tcp', 'database', 'mysql', 'sql']
+enabled: false
+priority: 5

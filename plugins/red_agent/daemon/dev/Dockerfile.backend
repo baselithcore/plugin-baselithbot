@@ -1,0 +1,32 @@
+# Dev image for the BaselithCore backend with the Red Agent plugin.
+#
+# Builds the plugin host so the gRPC service + REST enrollment routes
+# are reachable inside the dev compose stack. Production deployments
+# build their own image; this Dockerfile is for local iteration only.
+
+FROM python:3.12-slim-bookworm
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        libpq-dev \
+        ca-certificates \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# pyproject.toml's `dynamic` config imports the `core` package to read
+# its version, so we must drop the full source tree before pip install
+# resolves the project metadata. Layer caching is sacrificed here in
+# favor of a build that actually completes; CI builds are infrequent
+# enough that this is acceptable for the dev image.
+COPY pyproject.toml README.md backend.py alembic.ini ./
+COPY core ./core
+COPY plugins ./plugins
+COPY scripts ./scripts
+COPY migrations ./migrations
+
+RUN pip install --no-cache-dir .
+
+EXPOSE 8000 50443
+CMD ["python", "backend.py"]

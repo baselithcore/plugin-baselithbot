@@ -1,0 +1,30 @@
+name: honeypot
+version: 1.0.0
+description: AI-powered honeypot for attack detection and CVE correlation
+author: White-Label Team
+category: Security
+readiness: stable
+license: Proprietary
+homepage: https://github.com/baselith/baselith-sec
+icon: honeypot_icon.png
+dependencies: []
+required_resources:
+- postgres
+- memory
+optional_resources:
+- llm
+- graph
+tags:
+- security
+- honeypot
+- threat-intelligence
+- ai
+- agent
+- router
+environment_variables:
+- HONEYPOT_SSH_PORT
+- HONEYPOT_HTTP_PORT
+- HONEYPOT_DEFAULT_TENANT_ID
+- HONEYPOT_ENABLE_DYNAMIC_CVE_LOOKUP
+- HONEYPOT_ENABLE_MEMORY
+integrity_sha256: 8bfdf37021e0ba81cae1e8ece9f5dc5fe3cfc95a2a6f6d036757f1f246a5fe22

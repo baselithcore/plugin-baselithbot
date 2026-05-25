@@ -1,0 +1,94 @@
+# phpMyAdmin Honeypot
+#
+# Simulates a phpMyAdmin database administration interface
+# to capture SQL injection and database attack attempts.
+
+id: phpmyadmin
+name: phpMyAdmin Honeypot
+description: >
+  Simulates a phpMyAdmin database management interface.
+  Targets attackers attempting SQL injection and database exploitation.
+
+protocol: http
+port: 8081
+handler_type: http
+
+http_config:
+  emulated_app: phpmyadmin
+  server_header: 'Apache/2.4.53 (Debian)'
+  powered_by: 'PHP/8.1.2'
+  capture_credentials: true
+  routes:
+    - path: /phpmyadmin
+      method: [GET]
+      response_template: phpmyadmin_login
+      status_code: 200
+    - path: /phpmyadmin/*
+      method: [GET, POST]
+      response_template: phpmyadmin_login
+      status_code: 200
+    - path: /pma
+      method: [GET]
+      response_template: phpmyadmin_login
+      status_code: 200
+    - path: /mysql
+      method: [GET]
+      response_template: phpmyadmin_login
+      status_code: 200
+    - path: /db
+      method: [GET]
+      response_template: phpmyadmin_login
+      status_code: 200
+
+detection:
+  sql_injection: true
+  command_injection: true
+  path_traversal: true
+  xss: true
+  custom_patterns:
+    - name: union_select
+      regex: "(UNION\\s+(ALL\\s+)?SELECT|SELECT.*FROM.*information_schema)"
+      severity: high
+      category: sql_injection
+    - name: mysql_file_read
+      regex: "(LOAD_FILE|INTO\\s+OUTFILE|INTO\\s+DUMPFILE)"
+      severity: critical
+      category: sql_injection
+    - name: mysql_sleep_blind
+      regex: "(SLEEP\\(|BENCHMARK\\(|WAITFOR\\s+DELAY)"
+      severity: medium
+      category: sql_injection
+    - name: shell_via_sql
+      regex: "(INTO\\s+OUTFILE.*\\.php|<\\?php)"
+      severity: critical
+      category: command_injection
+    - name: admin_probe
+      regex: '(pma|phpmyadmin|mysql|adminer|dbadmin)'
+      severity: low
+      category: reconnaissance
+
+response_mode: static
+payload_templates:
+  phpmyadmin_login: |
+    <!DOCTYPE html>
+    <html>
+    <head><title>phpMyAdmin</title></head>
+    <body>
+    <h1>Welcome to phpMyAdmin</h1>
+    <form method="post" action="index.php">
+      <label>Username:</label><input type="text" name="pma_username">
+      <label>Password:</label><input type="password" name="pma_password">
+      <button type="submit">Go</button>
+    </form>
+    </body>
+    </html>
+
+tags:
+  - web
+  - database
+  - sql
+  - phpmyadmin
+  - mysql
+
+enabled: false
+priority: 15

@@ -1,0 +1,63 @@
+# Apache HTTP 401 Honeypot
+# Inspired by Beelzebub's http-8080.yaml
+# Simulates protected Apache server requiring authentication
+
+id: 'apache-auth'
+name: 'Apache Protected Server'
+description: 'HTTP honeypot simulating an Apache server with Basic Auth protection'
+protocol: 'http'
+port: 8083
+bind_address: '0.0.0.0'
+handler_type: 'http'
+
+http_config:
+  site_type: 'custom'
+  custom_headers:
+    Server: 'Apache/2.4.57 (Debian)'
+    WWW-Authenticate: 'Basic realm="Restricted Area"'
+    X-Powered-By: 'PHP/8.1.0'
+  default_status_code: 401
+  default_response: |
+    <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+    <html><head>
+    <title>401 Unauthorized</title>
+    </head><body>
+    <h1>Unauthorized</h1>
+    <p>This server could not verify that you are authorized to access the document requested.</p>
+    <hr>
+    <address>Apache/2.4.57 (Debian) Server at localhost Port 8083</address>
+    </body></html>
+
+  # Routes that attract attackers
+  routes:
+    - path: '/admin'
+      status_code: 401
+    - path: '/manager'
+      status_code: 401
+    - path: '/console'
+      status_code: 401
+    - path: '/.htpasswd'
+      status_code: 403
+      response_content: 'Forbidden'
+    - path: '/.htaccess'
+      status_code: 403
+      response_content: 'Forbidden'
+
+detection:
+  log_all_requests: true
+  alert_paths:
+    - '/admin'
+    - '/manager'
+    - '/console'
+    - '/.env'
+    - '/.git'
+    - '/wp-admin'
+  alert_headers:
+    - 'Authorization'
+    - 'X-Forwarded-For'
+  capture_credentials: true
+
+response_mode: 'static'
+tags: ['http', 'apache', 'auth', 'web']
+enabled: false
+priority: 4

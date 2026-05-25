@@ -1,0 +1,86 @@
+# Windows Server 2022 Fingerprint Profile
+# Accurately emulates Windows Server 2022 Datacenter
+# Use for Windows-based honeypots
+
+profile_id: 'windows_server_2022'
+
+# OS Identification
+os_type: 'windows_server'
+os_version: 'Windows Server 2022 Datacenter'
+kernel_version: '10.0.20348'
+architecture: 'amd64'
+
+# TCP/IP Stack Fingerprint (p0f compatible)
+# Windows Server 2022 defaults - notably different from Linux
+tcp_ttl: 128 # Windows uses 128, Linux uses 64
+tcp_window_size: 65535
+tcp_options:
+  - 'mss'
+  - 'nop'
+  - 'wscale'
+  - 'nop'
+  - 'nop'
+  - 'sackOK'
+tcp_df_flag: true
+tcp_window_scale: 8
+
+# SSH Fingerprint
+# OpenSSH for Windows as optionally installed
+ssh_banner: 'OpenSSH_for_Windows_8.9'
+ssh_kex_algorithms:
+  - 'curve25519-sha256'
+  - 'curve25519-sha256@libssh.org'
+  - 'ecdh-sha2-nistp256'
+  - 'ecdh-sha2-nistp384'
+  - 'ecdh-sha2-nistp521'
+  - 'diffie-hellman-group-exchange-sha256'
+  - 'diffie-hellman-group14-sha256'
+ssh_ciphers:
+  - 'aes256-gcm@openssh.com'
+  - 'aes128-gcm@openssh.com'
+  - 'aes256-ctr'
+  - 'aes192-ctr'
+  - 'aes128-ctr'
+  - 'aes256-cbc'
+  - 'aes128-cbc'
+
+# HTTP Fingerprint
+# IIS 10.0 as shipped with Windows Server 2022
+http_server_header: 'Microsoft-IIS/10.0'
+http_header_order:
+  - 'Content-Type'
+  - 'Server'
+  - 'X-Powered-By'
+  - 'Date'
+  - 'Content-Length'
+http_header_casing: 'title'
+
+# Response Content Templates
+# Windows doesn't have uname, but we provide systeminfo-like output
+uname_output: 'Microsoft Windows [Version 10.0.20348.2322]'
+motd_banner: |
+  Microsoft Windows [Version 10.0.20348.2322]
+  (c) Microsoft Corporation. All rights reserved.
+
+  C:\Users\Administrator>
+
+# Latency Model (Gaussian distribution, milliseconds)
+# Windows tends to have slightly higher latency than Linux
+latency_mean_ms: 65.0
+latency_std_ms: 20.0
+latency_min_ms: 10.0
+latency_max_ms: 600.0
+
+# Per-operation latency multipliers
+# Windows I/O patterns differ from Linux
+latency_multipliers:
+  filesystem_read: 0.25
+  filesystem_write: 0.55
+  filesystem_list: 0.40
+  network_lookup: 2.0
+  process_spawn: 2.8
+  process_list: 0.50
+  crypto_op: 3.2
+  system_info: 0.35
+  auth_check: 0.60
+  generic: 1.0

@@ -1,0 +1,28 @@
+name: cve_hunter
+version: 1.0.0
+description: Autonomous AI agent swarm for CVE scanning and discovery
+author: White-Label Team
+category: Security
+readiness: stable
+license: Proprietary
+homepage: https://github.com/baselith/baselith-sec
+icon: cve_hunter_icon.png
+dependencies: []
+required_resources:
+- postgres
+optional_resources:
+- llm
+- graph
+- memory
+tags:
+- security
+- cve
+- vulnerability
+- scanner
+- swarm
+environment_variables:
+- CVE_HUNTER_NVD_API_KEY
+- CVE_HUNTER_TENANT_ID
+- CVE_HUNTER_ISOLATION_MODE
+- CVE_HUNTER_NAMESPACE
+integrity_sha256: fcb563f8f2d43c72285b6490cf12883e28ca6f5fc1ace66f5a19d701ba7245be

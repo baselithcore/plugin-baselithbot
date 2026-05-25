@@ -1,0 +1,342 @@
+/**
+ * RDNSPanel Styles
+ * Styling for RDNS Intelligence panel with table and filtering
+ */
+
+.rdns-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--card-bg, #1a1a2e);
+  border-radius: 8px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+/* Header */
+.rdns-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.rdns-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary, #fff);
+}
+
+.rdns-title h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.rdns-stats {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #888);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.rdns-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-secondary, #888);
+}
+
+.filter-select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 4px;
+  color: var(--text-primary, #fff);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: var(--accent-color, #4ecdc4);
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+  border-radius: 4px;
+  color: var(--text-secondary, #888);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary, #fff);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Stats Bar */
+.rdns-stats-bar {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+  font-size: 0.7rem;
+  color: var(--text-secondary, #888);
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Error State */
+.rdns-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 4px;
+  color: #ef4444;
+  font-size: 0.85rem;
+}
+
+/* Loading State */
+.rdns-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--text-secondary, #888);
+  gap: 1rem;
+}
+
+/* Empty State */
+.rdns-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--text-secondary, #888);
+  gap: 0.5rem;
+}
+
+.rdns-empty button {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--accent-color, #4ecdc4);
+  border: none;
+  border-radius: 4px;
+  color: #000;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Table */
+.rdns-table-container {
+  overflow-x: auto;
+}
+
+.rdns-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.rdns-table th {
+  text-align: left;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary, #888);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.rdns-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-color, rgba(255, 255, 255, 0.05));
+  color: var(--text-primary, #fff);
+}
+
+.rdns-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Row importance colors */
+.rdns-table .row-high {
+  border-left: 3px solid #ef4444;
+}
+
+.rdns-table .row-medium {
+  border-left: 3px solid #f59e0b;
+}
+
+.rdns-table .row-low {
+  border-left: 3px solid #6b7280;
+}
+
+.rdns-table .row-none {
+  border-left: 3px solid transparent;
+}
+
+/* IP Cell */
+.ip-cell {
+  font-family: monospace;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ip-cell code {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.125rem 0.375rem;
+  border-radius: 3px;
+}
+
+.cached-badge {
+  font-size: 0.6rem;
+  background: rgba(78, 205, 196, 0.2);
+  color: #4ecdc4;
+  padding: 0.125rem 0.25rem;
+  border-radius: 2px;
+}
+
+/* Hostname Cell */
+.hostname-cell .hostname {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.hostname-cell .whois-link {
+  color: var(--text-secondary, #888);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.rdns-table tr:hover .whois-link {
+  opacity: 1;
+}
+
+.hostname-cell .whois-link:hover {
+  color: var(--accent-color, #4ecdc4);
+}
+
+.hostname-cell .no-hostname {
+  color: var(--text-secondary, #666);
+  font-style: italic;
+}
+
+/* Importance Badges */
+.importance-badge {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.importance-badge.high {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.importance-badge.medium {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+.importance-badge.low {
+  background: rgba(107, 114, 128, 0.2);
+  color: #9ca3af;
+}
+
+.importance-badge.none {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+}
+
+/* Category Display */
+.category-display {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.category-icon {
+  opacity: 0.8;
+}
+
+.category-icon.crawler {
+  color: #3b82f6;
+}
+.category-icon.vpn {
+  color: #8b5cf6;
+}
+.category-icon.hosting {
+  color: #10b981;
+}
+.category-icon.isp {
+  color: #6b7280;
+}
+.category-icon.malicious {
+  color: #ef4444;
+}
+.category-icon.unknown {
+  color: #6b7280;
+}
+
+.category-label {
+  font-size: 0.75rem;
+}
+
+/* Org Cell */
+.org-cell {
+  color: var(--text-secondary, #888);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,63 @@
+# FTP Server Honeypot
+# Simulates an FTP server for capturing file transfer attack attempts
+
+id: 'ftp-server'
+name: 'FTP Server'
+description: 'TCP honeypot simulating a vsftpd FTP server with anonymous access'
+protocol: 'tcp'
+port: 21
+bind_address: '0.0.0.0'
+handler_type: 'tcp'
+
+tcp_config:
+  banner: "220 (vsFTPd 3.0.5)\r\n"
+  service_name: 'ftp'
+  timeout_seconds: 60
+
+  # FTP protocol responses
+  responses:
+    - pattern: '^USER anonymous$'
+      response: "331 Please specify the password.\r\n"
+    - pattern: '^USER.*$'
+      response: "331 Please specify the password.\r\n"
+    - pattern: '^PASS.*$'
+      response: "230 Login successful.\r\n"
+    - pattern: '^SYST$'
+      response: "215 UNIX Type: L8\r\n"
+    - pattern: '^PWD$'
+      response: "257 \"/\" is the current directory\r\n"
+    - pattern: '^LIST$'
+      response: |
+        150 Here comes the directory listing.
+        drwxr-xr-x    2 0        0            4096 Dec 15 10:30 pub
+        -rw-r--r--    1 0        0             156 Dec 15 10:30 welcome.txt
+        226 Directory send OK.
+    - pattern: '^CWD.*$'
+      response: "250 Directory successfully changed.\r\n"
+    - pattern: '^RETR.*$'
+      response: "550 Failed to open file.\r\n"
+    - pattern: '^STOR.*$'
+      response: "553 Could not create file.\r\n"
+    - pattern: '^QUIT$'
+      response: "221 Goodbye.\r\n"
+    - pattern: '.*'
+      response: "500 Unknown command.\r\n"
+
+detection:
+  log_all_data: true
+  alert_keywords:
+    - 'STOR'
+    - 'RETR'
+    - 'MKD'
+    - 'RMD'
+    - 'DELETE'
+    - '../'
+    - '..'
+    - 'passwd'
+    - 'shadow'
+  capture_credentials: true
+
+response_mode: 'static'
+tags: ['tcp', 'ftp', 'file-transfer']
+enabled: false
+priority: 3

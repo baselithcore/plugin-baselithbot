@@ -1,0 +1,33 @@
+id: llm-top10-surface
+name: LLM App — OWASP LLM Top 10 surface scan
+description: >-
+  Surface-level audit of an AI/LLM-backed application. Today this maps
+  to the generic web baseline (recon, headers, TLS, Nuclei templates)
+  while the dedicated LLM-attack scanners (prompt injection, tool
+  abuse, data leakage probes) are wired in. The playbook stays in the
+  library so engagements can already opt into it via id.
+version: 0.1.0
+target_kinds:
+  - web
+intensity: passive
+scanners:
+  - nmap
+  - nuclei
+  - secure_headers
+  - llm_recon
+owasp_refs:
+  - LLM01
+  - LLM02
+  - LLM06
+  - LLM07
+mitre_refs:
+  - T1592
+tags:
+  - llm
+  - ai
+  - top10
+requires_autonomy_at_least: execute_passive
+notes: >-
+  Placeholder pending the LLM-attack scanner suite (prompt-injection,
+  tool-abuse, RAG-poisoning probes). Treat as a starting point, not
+  full LLM Top 10 coverage.

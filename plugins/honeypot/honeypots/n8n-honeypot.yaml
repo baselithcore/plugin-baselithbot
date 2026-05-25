@@ -1,0 +1,79 @@
+# n8n Ni8mare Honeypot - CVE-2026-21858
+# Emulates vulnerable n8n 1.120.0 to detect Ni8mare exploitation attempts
+#
+# CVE-2026-21858 (CVSS 10.0): Unauthenticated RCE via Content-Type confusion
+# Attack chain: File Read → DB/Config theft → JWT forgery → RCE
+#
+# References:
+# - https://beelzebub.ai/blog/catching-ni8mare-in-the-wild-cve-2026-21858/
+# - Cyera Research Labs disclosure (Jan 7, 2026)
+
+id: n8n-ni8mare
+name: 'n8n Ni8mare (CVE-2026-21858)'
+description: 'Honeypot emulating vulnerable n8n 1.120.0 to detect CVE-2026-21858 (Ni8mare) exploitation attempts'
+protocol: http
+port: 5678
+bind_address: '0.0.0.0'
+handler_type: custom
+custom_handler_class: plugins.honeypot.custom_handlers.n8n_handler.N8nHandler
+enabled: false
+priority: 9
+
+tags:
+  - cve-2026-21858
+  - ni8mare
+  - n8n
+  - rce
+  - file-read
+  - exploit
+  - critical
+
+detection:
+  log_all_requests: true
+  sql_injection: true
+  command_injection: true
+  path_traversal: true
+  xss: false
+  custom_patterns:
+    - name: n8n_filepath_injection
+      regex: '"filepath"\s*:\s*"/(etc|home|var|tmp|root|proc)/'
+      severity: critical
+      category: exploit_attempt
+    - name: n8n_files_manipulation
+      regex: '"files"\s*:\s*\{[^}]*"filepath"'
+      severity: critical
+      category: exploit_attempt
+    - name: n8n_passwd_read
+      regex: '"filepath"\s*:\s*"/etc/passwd"'
+      severity: critical
+      category: exploit_attempt
+    - name: n8n_database_read
+      regex: '"filepath"\s*:\s*".*\.(sqlite|db|sqlite3)"'
+      severity: critical
+      category: exploit_attempt
+    - name: n8n_config_read
+      regex: '"filepath"\s*:\s*".*/\.n8n/(config|database)"'
+      severity: critical
+      category: exploit_attempt
+  alert_paths:
+    - '/form/'
+    - '/webhook/'
+    - '/webhook-test/'
+    - '/rest/settings'
+    - '/api/v1/workflows'
+  severity_boost:
+    - pattern: 'filepath'
+      boost: 'critical'
+    - pattern: '/etc/passwd'
+      boost: 'critical'
+    - pattern: 'sqlite'
+      boost: 'critical'
+
+honeydoc:
+  personality: 'debian-docker'
+  stealth_delay_ms: 150
+  custom_fingerprint:
+    http_server: 'n8n'
+    version: '1.120.0'
+
+response_mode: 'static'

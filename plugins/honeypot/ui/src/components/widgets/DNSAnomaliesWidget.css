@@ -1,0 +1,146 @@
+.dns-widget-container {
+  background: rgba(30, 30, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 300px;
+}
+
+.dns-header {
+  margin-bottom: 12px;
+}
+
+.dns-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e0e0e0;
+}
+
+.dns-icon {
+  color: #ff9f43;
+}
+
+.dns-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.dns-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 4px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.dns-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dns-tab.active {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dns-tab-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 2px;
+}
+
+.dns-tab-count {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e0e0e0;
+}
+
+.dns-tab.active .dns-tab-label {
+  color: #aaa;
+}
+
+.dns-tab.active .dns-tab-count {
+  color: #ff9f43;
+}
+
+.dns-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dns-empty {
+  text-align: center;
+  color: #666;
+  padding: 40px;
+  font-size: 14px;
+}
+
+.dns-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.dns-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.dns-item-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: #ddd;
+}
+
+.dns-severity {
+  font-size: 9px;
+  text-transform: uppercase;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.dns-severity.high,
+.dns-severity.critical {
+  background: rgba(255, 71, 87, 0.2);
+  color: #ff4757;
+}
+
+.dns-severity.medium {
+  background: rgba(255, 165, 2, 0.2);
+  color: #ffa502;
+}
+
+.dns-item-desc {
+  font-size: 11px;
+  color: #aaa;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.dns-item-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #666;
+}

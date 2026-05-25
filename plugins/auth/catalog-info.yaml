@@ -1,0 +1,40 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: auth
+  title: Auth
+  description: Professional authentication plugin with MFA, RBAC, and session management.
+  labels:
+    baselith.ai/readiness: stable
+    baselith.ai/category: security
+    app.kubernetes.io/version: 1.0.0
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    baselith.ai/health-url: http://localhost:8000/health
+    baselith.ai/plugin-api-url: http://localhost:8000/api/plugins/auth
+    baselith.ai/manifest-url: url:https://github.com/baselith/core/blob/main/plugins/auth/manifest.yaml
+    backstage.io/source-location: url:https://github.com/baselith/baselith-sec
+    baselith.ai/license: Proprietary
+  tags:
+    - auth
+    - mfa
+    - rbac
+    - security
+  links:
+    - url: http://localhost:8000/api/plugins/auth
+      title: Plugin API
+      icon: dashboard
+    - url: https://docs.baselith.internal/plugins/auth
+      title: Documentation
+      icon: docs
+    - url: https://github.com/baselith/baselith-sec
+      title: Homepage
+      icon: web
+spec:
+  type: baselith-plugin
+  lifecycle: production
+  owner: baselith-core-team
+  system: baselith-core
+  providesApis:
+    - auth-api
+  dependsOn: []

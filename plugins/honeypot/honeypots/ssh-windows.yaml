@@ -1,0 +1,80 @@
+# SSH Windows Server Honeypot
+#
+# High-interaction SSH honeypot simulating a Windows Server 2022.
+# Uses LLM for realistic command responses (PowerShell/CMD).
+
+id: ssh-windows
+name: SSH Windows Server
+description: >
+  High-interaction SSH honeypot simulating a Windows Server 2022.
+  Uses LLM for realistic command responses to maximize attacker engagement.
+
+protocol: ssh
+port: 2224
+handler_type: ssh
+
+ssh_config:
+  server_name: win-server-2022
+  version: 'OpenSSH_for_Windows_8.9'
+  allowed_passwords:
+    - Administrator
+    - admin
+    - password
+    - '123456'
+    - Windows2022
+  max_auth_attempts: 6
+  shell_persona: windows_server
+  filesystem_emulation: true
+  motd: |
+    Microsoft Windows [Version 10.0.20348.2322]
+    (c) Microsoft Corporation. All rights reserved.
+
+detection:
+  command_injection: true
+  path_traversal: true
+  sql_injection: false
+  xss: false
+  custom_patterns:
+    - name: powershell_download
+      regex: "(Invoke-WebRequest|iwr|wget|curl)\\s+https?://"
+      severity: high
+      category: malware_delivery
+    - name: reverse_shell
+      regex: '(New-Object System.Net.Sockets.TCPClient|nc.exe)'
+      severity: critical
+      category: command_injection
+    - name: password_file_access
+      regex: 'type.*(SAM|SYSTEM)'
+      severity: medium
+      category: reconnaissance
+    - name: user_enumeration
+      regex: 'net user'
+      severity: medium
+      category: reconnaissance
+
+response_mode: llm
+llm_system_prompt: |
+  You are simulating a Windows Server 2022 terminal (CMD/PowerShell) as user 'Administrator'.
+  Respond to commands as if you were a real Windows server.
+  Keep responses realistic and brief. Never reveal you are an AI or a honeypot.
+  Use Windows-style paths (backslashes) and output formats.
+  For common commands like 'dir', 'type', 'cd', provide realistic output.
+  For potentially destructive commands, pretend they succeeded.
+  If asked about system info, report Windows Server 2022.
+
+tags:
+  - ssh
+  - windows
+  - server
+  - high-interaction
+
+honeydoc:
+  personality: 'windows-server-2022'
+  stealth_delay_ms: 200 # Windows is slightly slower
+  custom_fingerprint:
+    os_name: 'Windows Server'
+    os_version: '2022 Datacenter'
+    kernel: '10.0.20348'
+
+enabled: false
+priority: 20

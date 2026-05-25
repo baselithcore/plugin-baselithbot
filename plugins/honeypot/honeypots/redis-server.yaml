@@ -1,0 +1,67 @@
+# Redis Server Honeypot
+# Simulates a Redis server for capturing NoSQL attack attempts
+
+id: 'redis-server'
+name: 'Redis Server'
+description: 'TCP honeypot simulating an unprotected Redis 7.x server'
+protocol: 'tcp'
+port: 6379
+bind_address: '0.0.0.0'
+handler_type: 'tcp'
+
+tcp_config:
+  banner: ''
+  service_name: 'redis'
+  timeout_seconds: 30
+
+  # Redis protocol responses
+  responses:
+    - pattern: '^PING$'
+      response: "+PONG\r\n"
+    - pattern: '^INFO$'
+      response: |
+        # Server
+        redis_version:7.2.3
+        redis_mode:standalone
+        os:Linux 5.15.0 x86_64
+        arch_bits:64
+        tcp_port:6379
+        uptime_in_seconds:86400
+        uptime_in_days:1
+    - pattern: '^CONFIG GET.*$'
+      response: "-ERR unknown command 'CONFIG'\r\n"
+    - pattern: '^SLAVEOF.*$'
+      response: "-ERR SLAVEOF not allowed in this configuration\r\n"
+    - pattern: '^MODULE LOAD.*$'
+      response: "-ERR MODULE not allowed\r\n"
+    - pattern: '^DEBUG.*$'
+      response: "-ERR DEBUG not allowed\r\n"
+    - pattern: '^EVAL.*$'
+      response: "-ERR EVAL blocked for security\r\n"
+    - pattern: '.*'
+      response: "-ERR unknown command\r\n"
+
+detection:
+  log_all_data: true
+  alert_keywords:
+    - 'SLAVEOF'
+    - 'CONFIG SET'
+    - 'MODULE LOAD'
+    - 'DEBUG'
+    - 'EVAL'
+    - 'SCRIPT'
+    - 'FLUSHALL'
+    - 'FLUSHDB'
+    - 'KEYS *'
+  severity_boost:
+    - pattern: 'MODULE LOAD'
+      boost: 'critical'
+    - pattern: 'SLAVEOF'
+      boost: 'high'
+    - pattern: 'EVAL'
+      boost: 'high'
+
+response_mode: 'static'
+tags: ['tcp', 'database', 'redis', 'nosql']
+enabled: false
+priority: 5

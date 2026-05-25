@@ -1,0 +1,148 @@
+# Local development stack for the Red Agent endpoint daemon.
+#
+# Brings up the full chain end-to-end so a developer can iterate on
+# the daemon ↔ backend handshake without touching production:
+#
+#   ┌──────────┐
+#   │ pki-init │ (one-shot openssl bootstrap)
+#   └────┬─────┘
+#        ▼
+#   ┌─────────┐   ┌────────┐   ┌──────────┐   ┌──────────┐
+#   │ daemon  │──▶│ envoy  │──▶│ backend  │──▶│ postgres │
+#   └─────────┘   │ (mTLS) │   │ (gRPC +  │   └──────────┘
+#                 └────────┘   │  REST)   │
+#                              └──────────┘
+#
+# Ports exposed on the host (non-privileged):
+#   * 8000  — backend FastAPI (REST enrollment)
+#
+# Bring up:  docker compose -f plugins/red_agent/daemon/dev/docker-compose.yml up -d --build
+# Smoke:     docker compose ... logs -f daemon
+# Tear down: docker compose ... down -v
+
+# `version` is intentionally absent — current Docker Compose versions
+# (>= 2.x) treat the field as informational only.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: baselith
+      POSTGRES_PASSWORD: baselith-dev
+      POSTGRES_DB: baselith
+    ports:
+      - "55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U baselith"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  pki-init:
+    # One-shot bootstrap: generates the dev agent CA + backend service
+    # cert via openssl, populates the dev_pki volume, then exits.
+    # Backend and envoy gate on this completing successfully so they
+    # never start before their cert material is in place.
+    image: alpine:3.20
+    volumes:
+      - dev_pki:/pki
+      - ./scripts/init-pki.sh:/init-pki.sh:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        apk add --no-cache openssl >/dev/null
+        sh /init-pki.sh
+    restart: "no"
+
+  backend:
+    # The BaselithCore plugin host running the red_agent surface.
+    # Image build is triggered from the monorepo root so the plugin
+    # source tree is included.
+    build:
+      context: ../../../..
+      dockerfile: plugins/red_agent/daemon/dev/Dockerfile.backend
+    environment:
+      # core.config.storage.StorageConfig consumes DB_* env vars (not
+      # BASELITH_DSN). DATABASE_URL would override; we go granular so
+      # the DSN is constructed by code with the right driver scheme.
+      DB_HOST: "postgres"
+      DB_PORT: "5432"
+      DB_USER: "baselith"
+      DB_PASSWORD: "baselith-dev"
+      DB_NAME: "baselith"
+      POSTGRES_ENABLED: "true"
+      RED_AGENT_GRPC_ENABLED: "true"
+      RED_AGENT_GRPC_BIND_HOST: "0.0.0.0"
+      RED_AGENT_GRPC_BIND_PORT: "50443"
+      RED_AGENT_CA_CERT_PATH: "/etc/baselith/ca/agent-ca.crt"
+      RED_AGENT_CA_KEY_PATH: "/etc/baselith/ca/agent-ca.key"
+      RED_AGENT_SPIFFE_TRUST_DOMAIN: "baselith.local"
+      RED_AGENT_BACKEND_GRPC_ENDPOINT: "https://envoy:443"
+      RED_AGENT_ALLOW_ANONYMOUS: "true"  # dev only
+      # Required by core SecurityConfig — committed to dev compose
+      # only because this stack never accepts external traffic.
+      SECRET_KEY: "dev-secret-key-do-not-use-in-prod-bd2c52f9c91b1faa"
+      AUTH_REQUIRED: "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      pki-init:
+        condition: service_completed_successfully
+    ports:
+      - "8000:8000"
+    volumes:
+      - dev_pki:/etc/baselith/ca:ro
+    command: ["python", "backend.py"]
+
+  envoy:
+    # Front-door proxy that terminates mTLS for the AgentChannel and
+    # forwards plaintext HTTP/2 to the backend. The listener pinned
+    # to TLS 1.3 with the dev CA's chain.
+    image: envoyproxy/envoy:v1.34-latest
+    depends_on:
+      pki-init:
+        condition: service_completed_successfully
+      backend:
+        condition: service_started
+    ports:
+      - "443:443"
+    volumes:
+      - ./envoy.yaml:/etc/envoy/envoy.yaml:ro
+      - dev_pki:/etc/envoy/pki:ro
+    command:
+      - /usr/local/bin/envoy
+      - --config-path
+      - /etc/envoy/envoy.yaml
+      - --service-cluster
+      - baselith-dev
+      - --service-node
+      - envoy-front
+      - --log-level
+      - info
+
+  daemon:
+    # Endpoint daemon image. Uses the dev/Dockerfile.daemon multistage
+    # build so cargo-built binaries land in a thin runtime layer.
+    build:
+      context: ../..
+      dockerfile: daemon/dev/Dockerfile.daemon
+    depends_on:
+      pki-init:
+        condition: service_completed_successfully
+      envoy:
+        condition: service_started
+    environment:
+      BASELITH_REDAGENT_CONFIG: /etc/baselith/redagent.toml
+      RUST_LOG: info,baselith_redagent=debug
+    volumes:
+      - ./redagent.toml:/etc/baselith/redagent.toml:ro
+      - dev_pki:/etc/baselith/pki:ro
+      - daemon_state:/var/lib/baselith
+    # Daemon never opens listening sockets; no `ports:` block.
+
+volumes:
+  pg_data: {}
+  dev_pki: {}
+  daemon_state: {}

@@ -1,0 +1,399 @@
+/**
+ * BotnetsCCTab Styles
+ * Unified Botnets & C&C Analysis Module
+ * 
+ * Combines BotnetSection and SinkholeMonitor styling into a cohesive design.
+ * Built on top of existing CSS from both modules.
+ */
+
+/* Main Container */
+.botnets-cc-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: botnetsTabFadeIn 0.3s ease;
+}
+
+@keyframes botnetsTabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hero Stats Section */
+.botnets-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .botnets-hero-stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Main Grid (2 columns) */
+.botnets-main-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .botnets-main-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Intel Grid (2 columns) */
+.botnets-intel-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .botnets-intel-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Panel Component */
+.botnets-panel {
+  display: flex;
+  flex-direction: column;
+  background: rgba(13, 17, 23, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.botnets-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.botnets-panel-header h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.botnets-panel-header svg {
+  color: #00ffff;
+  width: 18px;
+  height: 18px;
+}
+
+.botnets-panel-badge {
+  margin-left: auto;
+  padding: 0.2rem 0.5rem;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.2);
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #00ffff;
+}
+
+.botnets-panel-content {
+  padding: 1.25rem;
+  flex: 1;
+  overflow: auto;
+  max-height: 600px;
+}
+
+/* Empty State */
+.botnets-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: rgba(255, 255, 255, 0.4);
+  gap: 0.75rem;
+}
+
+.botnets-empty svg {
+  width: 32px;
+  height: 32px;
+  opacity: 0.5;
+}
+
+.botnets-empty span {
+  font-size: 0.85rem;
+}
+
+/* ============================================
+   BOTNET CLUSTER CARDS
+   ============================================ */
+
+.botnets-cluster-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.botnets-cluster-card:last-child {
+  margin-bottom: 0;
+}
+
+.botnets-cluster-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.botnets-cluster-card.severity-critical {
+  border-left: 3px solid #ff4757;
+}
+
+.botnets-cluster-card.severity-high {
+  border-left: 3px solid #ffa502;
+}
+
+.botnets-cluster-card.severity-medium {
+  border-left: 3px solid #ffe600;
+}
+
+.botnets-cluster-card.severity-low {
+  border-left: 3px solid #00ff9d;
+}
+
+.botnets-cluster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+}
+
+.botnets-cluster-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.botnets-cluster-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.botnets-cluster-stats {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.botnets-cluster-size {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.botnets-cluster-details {
+  padding: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Severity Badges */
+.botnets-severity-badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.botnets-severity-badge.severity-critical {
+  background: rgba(255, 71, 87, 0.2);
+  color: #ff4757;
+}
+
+.botnets-severity-badge.severity-high {
+  background: rgba(255, 165, 2, 0.2);
+  color: #ffa502;
+}
+
+.botnets-severity-badge.severity-medium {
+  background: rgba(255, 230, 0, 0.2);
+  color: #ffe600;
+}
+
+.botnets-severity-badge.severity-low {
+  background: rgba(0, 255, 157, 0.2);
+  color: #00ff9d;
+}
+
+/* IP List */
+.botnets-ip-list.enhanced {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.botnets-ip-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.botnets-ip-item.is-hub {
+  border-color: rgba(255, 71, 87, 0.3);
+  background: rgba(255, 71, 87, 0.08);
+}
+
+.botnets-ip-item code {
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.8rem;
+}
+
+.botnets-more-ips {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 0.35rem 0.5rem;
+  font-style: italic;
+}
+
+/* View Details Button */
+.botnets-view-details-btn {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.botnets-view-details-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   HUB TABLE (C&C Servers)
+   ============================================ */
+
+.botnets-hub-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.9rem;
+}
+
+.botnets-hub-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.botnets-hub-table td {
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  color: #e2e8f0;
+  transition: background 0.2s;
+}
+
+.botnets-hub-table tbody tr {
+  cursor: pointer;
+}
+
+.botnets-hub-table tr:hover td {
+  background: rgba(0, 255, 255, 0.03);
+}
+
+.botnets-hub-table tr:last-child td {
+  border-bottom: none;
+}
+
+.botnets-hub-table tr.hub-confirmed td {
+  background: rgba(255, 71, 87, 0.03);
+}
+
+.botnets-hub-table tr.hub-confirmed:hover td {
+  background: rgba(255, 71, 87, 0.06);
+}
+
+/* Scrollbar */
+.botnets-panel-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.botnets-panel-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.botnets-panel-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.botnets-panel-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .botnets-cluster-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .botnets-cluster-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .botnets-hub-table {
+    font-size: 0.8rem;
+  }
+
+  .botnets-hub-table th,
+  .botnets-hub-table td {
+    padding: 0.5rem;
+  }
+
+  .ioc-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}

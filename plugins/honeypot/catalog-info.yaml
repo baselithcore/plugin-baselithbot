@@ -1,0 +1,44 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: honeypot
+  title: Honeypot
+  description: AI-powered honeypot for attack detection, session recording, and CVE correlation.
+  labels:
+    baselith.ai/readiness: stable
+    baselith.ai/category: security
+    baselith.ai/pattern-reasoning: "true"
+    baselith.ai/pattern-memory-tiering: "true"
+    app.kubernetes.io/version: 1.0.0
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+    baselith.ai/health-url: http://localhost:8000/health
+    baselith.ai/plugin-api-url: http://localhost:8000/api/plugins/honeypot
+    baselith.ai/manifest-url: url:https://github.com/baselith/core/blob/main/plugins/honeypot/manifest.yaml
+    backstage.io/source-location: url:https://github.com/baselith/baselith-sec
+    baselith.ai/license: Proprietary
+  tags:
+    - security
+    - honeypot
+    - threat-intelligence
+    - ai
+    - agent
+    - router
+  links:
+    - url: http://localhost:8000/api/plugins/honeypot
+      title: Plugin API
+      icon: dashboard
+    - url: https://docs.baselith.internal/plugins/honeypot
+      title: Documentation
+      icon: docs
+    - url: https://github.com/baselith/baselith-sec
+      title: Homepage
+      icon: web
+spec:
+  type: baselith-plugin
+  lifecycle: production
+  owner: baselith-core-team
+  system: baselith-core
+  providesApis:
+    - honeypot-api
+  dependsOn: []

@@ -1,0 +1,477 @@
+/* ============================================
+   BOTNET CLUSTERS
+   ============================================ */
+
+/* Cluster Cards */
+.discovery-cluster-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  transition: all 0.2s ease;
+}
+
+.discovery-cluster-card:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.discovery-cluster-card.severity-critical {
+  border-left: 3px solid #ff4757;
+}
+.discovery-cluster-card.severity-high {
+  border-left: 3px solid #ffa502;
+}
+.discovery-cluster-card.severity-medium {
+  border-left: 3px solid #ffe600;
+}
+
+.discovery-cluster-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+}
+
+.discovery-cluster-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.discovery-cluster-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.discovery-cluster-stats {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.discovery-cluster-details {
+  padding: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Metrics Grid in Cluster */
+.cluster-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.cluster-metric {
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.metric-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.metric-label {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+}
+
+/* C&C Section within Cluster */
+.cluster-cc-section {
+  background: rgba(255, 71, 87, 0.08);
+  border: 1px solid rgba(255, 71, 87, 0.15);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.cc-header {
+  color: #ff6b9d;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cc-ip {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  color: #ff6b9d;
+  font-size: 0.9rem;
+}
+
+/* Hub Tables (C&C Servers) */
+.discovery-hub-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.9rem;
+}
+
+.discovery-hub-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.discovery-hub-table td {
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+  color: #e2e8f0;
+  transition: background 0.2s;
+}
+
+.discovery-hub-table tr:hover td {
+  background: rgba(0, 255, 255, 0.03);
+}
+
+.discovery-hub-table tr:last-child td {
+  border-bottom: none;
+}
+
+.hub-confirmed td {
+  background: rgba(255, 71, 87, 0.03);
+}
+
+.hub-confirmed:hover td {
+  background: rgba(255, 71, 87, 0.06);
+}
+
+/* Severity Badges for Hubs/Clusters */
+.discovery-severity-badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.discovery-severity-badge.severity-critical {
+  background: rgba(255, 71, 87, 0.2);
+  color: #ff4757;
+}
+.discovery-severity-badge.severity-high {
+  background: rgba(255, 165, 2, 0.2);
+  color: #ffa502;
+}
+.discovery-severity-badge.severity-medium {
+  background: rgba(255, 230, 0, 0.2);
+  color: #ffe600;
+}
+.discovery-severity-badge.severity-low {
+  background: rgba(0, 255, 157, 0.2);
+  color: #00ff9d;
+}
+
+/* IP Item Enhanced (within Cluster) */
+.discovery-ip-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.discovery-ip-item.is-hub {
+  border-color: rgba(255, 71, 87, 0.3);
+  background: rgba(255, 71, 87, 0.08);
+}
+
+.ip-hub-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.1rem 0.3rem;
+  background: rgba(255, 71, 87, 0.2);
+  color: #ff4757;
+  border-radius: 4px;
+}
+
+.ip-country {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-weight: 600;
+}
+
+.discovery-ip-list.enhanced {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* Threat Score Bar Styling */
+.hub-threat-score {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 140px;
+}
+
+.hub-threat-bar-container {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.hub-threat-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hub-threat-bar.low {
+  background: #00ff88;
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.hub-threat-bar.medium {
+  background: #ffde00;
+  box-shadow: 0 0 10px rgba(255, 222, 0, 0.3);
+}
+
+.hub-threat-bar.high {
+  background: #ff4757;
+  box-shadow: 0 0 10px rgba(255, 71, 87, 0.3);
+}
+
+.hub-threat-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+  width: 24px;
+  text-align: right;
+}
+
+/* ============================================
+   MISSING STYLES (GEO, TIME, ETC)
+   ============================================ */
+
+/* Infrastructure Details */
+.cc-ip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cc-ip-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.cc-ip-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cc-country {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+}
+
+.cc-hub-badge {
+  font-size: 0.65rem;
+  background: rgba(255, 71, 87, 0.2);
+  color: #ff4757;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-weight: bold;
+}
+
+.cc-ip-meta {
+  padding-left: 0.5rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  margin-top: 0.25rem;
+}
+
+.cc-connection-strength {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Geographic Distribution */
+.cluster-geo-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.geo-header {
+  color: #55efc4;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.geo-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.geo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.geo-country {
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.geo-count {
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.1rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+}
+
+/* Time Section */
+.cluster-time-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+}
+
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.time-label {
+  color: rgba(255, 255, 255, 0.5);
+  width: 100px;
+}
+
+.time-value {
+  color: #e2e8f0;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* IPs Section */
+.cluster-ips-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.ips-header {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.discovery-more-ips {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 0.35rem 0.5rem;
+  font-style: italic;
+}
+
+/* View Details Button */
+.discovery-view-details-btn {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.discovery-view-details-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Hub Table Extras */
+.hub-ip-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hub-cc-icon {
+  color: #ff4757;
+}
+
+.hub-country {
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 600;
+}

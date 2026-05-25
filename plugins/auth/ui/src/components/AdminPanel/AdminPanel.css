@@ -1,0 +1,203 @@
+/**
+ * Admin Panel Layout Styles
+ */
+
+/* ============================================
+   Layout
+   ============================================ */
+
+.admin-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.admin-bg-glow {
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(0, 217, 255, 0.06) 0%,
+    rgba(0, 217, 255, 0.03) 25%,
+    transparent 50%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================
+   Header
+   ============================================ */
+
+.admin-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  background: hsla(220, 20%, 12%, 0.9);
+  border-bottom: 1px solid var(--admin-card-border);
+  backdrop-filter: blur(12px);
+}
+
+.admin-header-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.admin-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--admin-accent);
+}
+
+.admin-logo-text {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--admin-text);
+}
+
+/* ============================================
+   Tabs
+   ============================================ */
+
+.admin-tabs {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.admin-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--admin-text-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--admin-radius);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-tab:hover {
+  color: var(--admin-text);
+  background: hsla(220, 25%, 20%, 0.5);
+}
+
+.admin-tab.active {
+  color: var(--admin-accent);
+  background: hsla(200, 80%, 50%, 0.1);
+}
+
+.admin-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2rem;
+  height: 2px;
+  background: var(--admin-accent);
+  border-radius: 1px;
+}
+
+/* ============================================
+   Header Right
+   ============================================ */
+
+.admin-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.admin-user-email {
+  font-size: 0.875rem;
+  color: var(--admin-text-muted);
+}
+
+/* ============================================
+   Main Content
+   ============================================ */
+
+.admin-main {
+  flex: 1;
+  padding: 1.5rem;
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ============================================
+   Footer
+   ============================================ */
+
+.admin-footer {
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--admin-text-subtle);
+  border-top: 1px solid var(--admin-table-border);
+  background: hsla(220, 20%, 12%, 0.5);
+  backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 1;
+}
+
+.admin-footer h1 {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--admin-text-subtle);
+  letter-spacing: 0.01em;
+}
+
+.admin-footer .baselith-brand-dot {
+  color: var(--admin-accent);
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 768px) {
+  .admin-header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .admin-header-left {
+    width: 100%;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .admin-tabs {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .admin-tab span {
+    display: none;
+  }
+
+  .admin-main {
+    padding: 1rem;
+  }
+}

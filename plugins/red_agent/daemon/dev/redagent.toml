@@ -1,0 +1,10 @@
+# Daemon dev config consumed by `docker-compose.yml`.
+#
+# Replace `pinned_root_ca_fingerprint` after the dev CA is provisioned
+# (see `dev/scripts/wait-for-pki.sh`).
+
+backend_endpoint = "https://envoy:443"
+protocol_version = 1
+root_ca_fingerprint_path = "/etc/baselith/pki/agent-ca.fingerprint"
+keystore_id = "baselith-redagent-default"
+telemetry_buffer_path = "/var/lib/baselith/telemetry.sqlite"

@@ -1,0 +1,142 @@
+/* HoneypotSwarmGraph - Animated Swarm Network Styles */
+
+.swarm-graph-container {
+  position: relative;
+  height: 320px;
+  background: linear-gradient(135deg, #0a0a12 0%, #050508 100%);
+  border: 1px solid rgba(255, 7, 58, 0.2);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+/* Header */
+.swarm-graph-header {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #fff;
+  z-index: 20;
+}
+
+.swarm-header-icon {
+  color: #ff073a;
+}
+
+.swarm-live-badge {
+  background: rgba(255, 7, 58, 0.15);
+  border: 1px solid rgba(255, 7, 58, 0.3);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 9px;
+  color: #ff073a;
+}
+
+/* Canvas */
+.swarm-canvas {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Node Component */
+.swarm-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.swarm-node-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(10, 10, 20, 0.9);
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  backdrop-filter: blur(10px);
+  position: relative;
+}
+
+.swarm-node.active .swarm-node-icon {
+  transform: scale(1.15);
+  border-color: #fff !important;
+}
+
+.swarm-node[style*='CORE'] .swarm-node-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+}
+
+.swarm-node-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  color: #000;
+  font-size: 9px;
+  font-weight: bold;
+  padding: 2px 5px;
+  border-radius: 8px;
+  min-width: 16px;
+  text-align: center;
+}
+
+.swarm-node-label {
+  margin-top: 6px;
+  font-size: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+/* CRT Effect Overlay */
+.swarm-graph-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  z-index: 15;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .swarm-graph-container {
+    height: 280px;
+  }
+
+  .swarm-node-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .swarm-node-label {
+    font-size: 8px;
+  }
+}
