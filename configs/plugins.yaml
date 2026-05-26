@@ -2,6 +2,14 @@ reasoning_agent:
   enabled: false
   max_steps: 5
   branching_factor: 3
+# agent-jira: disabilitato in dev locale perché monta i propri router
+# auth (``/auth/login``, ``/auth/register``, ``/auth/bootstrap``) allo
+# stesso prefix di wikigen → collision quando entrambi attivi nello
+# stesso processo ``baselith run``. Per usarlo standalone, avviare il
+# suo backend in un processo dedicato (porta diversa) anziché caricarlo
+# nell'orchestrator.
+agent-jira:
+  enabled: false
 wikigen:
   enabled: true
 docheck:

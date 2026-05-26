@@ -45,7 +45,20 @@ from llm_wiki.config._coerce import (
 if "pytest" not in sys.modules and "_pytest" not in sys.modules:
     _drop_stale_empty_inheritance("APP_DOMAIN", "WIKI_ROOT", "DOMAIN_PACK_DIR")
 
-load_dotenv()
+# Carica PRIMA il ``.env`` del plugin (path assoluto rispetto al
+# modulo) — necessario quando il backend è lanciato da una cwd diversa
+# dal dir del plugin (es. ``baselith run`` dalla repo root). Falla
+# silenziosamente se il file manca: l'env del processo resta autoritativo.
+# ``override=False`` rispetta variabili già settate (Docker, CI, prod).
+from pathlib import Path as _Path
+
+_PLUGIN_ENV = _Path(__file__).resolve().parents[2] / ".env"
+if _PLUGIN_ENV.is_file():
+    load_dotenv(_PLUGIN_ENV, override=False)
+
+# Fallback: prova anche un ``.env`` in cwd (back-compat con il flusso
+# di sviluppo che lancia il backend da ``plugins/wikigen``).
+load_dotenv(override=False)
 
 
 # --- white-label selector --------------------------------------------------
