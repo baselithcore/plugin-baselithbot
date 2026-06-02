@@ -435,15 +435,15 @@ class Plugin(ABC):
         """
         Hook invoked at app construction time to register Starlette middleware.
 
-        Starlette finalises the middleware stack before lifespan starts, so
-        any plugin that needs app-level middleware (CORS overrides, telemetry,
+        Starlette finalises the middleware stack before lifespan starts, so any
+        plugin that needs app-level middleware (CORS overrides, telemetry,
         per-path gates, …) must hook in here — the standard async ``initialize``
-        runs too late.
+        runs too late (inside the lifespan, after the stack is frozen).
 
         The default implementation is a no-op. Override on a per-plugin basis
-        and use ``app.add_middleware(...)`` from inside the override. The
-        method is a ``classmethod`` so it can run without instantiating the
-        plugin or paying its (potentially heavy) ``__init__`` cost.
+        and call ``app.add_middleware(...)`` from inside the override. The method
+        is a ``classmethod`` so it can run without instantiating the plugin or
+        paying its (potentially heavy) ``__init__`` cost.
 
         Args:
             app: The FastAPI/Starlette application under construction.

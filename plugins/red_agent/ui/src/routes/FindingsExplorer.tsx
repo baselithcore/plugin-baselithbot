@@ -1,17 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
-import { api, type Finding, type Severity } from '../lib/api';
-import {
-  Button,
-  Card,
-  Chip,
-  EmptyState,
-  FindingDetailModal,
-  Icon,
-  PageHeader,
-  SeverityBadge,
-} from '../components/ui';
+import { api, type Severity } from '../lib/api';
+import { Button, Card, EmptyState, Icon, PageHeader } from '../components/ui';
+import { FilterPill } from './findings_explorer/FilterPill';
+import { FindingsTable } from './findings_explorer/FindingsTable';
 
 const SEVERITIES: Severity[] = ['critical', 'high', 'medium', 'low', 'info'];
 const SEV_LABEL: Record<Severity, string> = {
@@ -355,149 +348,6 @@ export function FindingsExplorer() {
           <FindingsTable items={data ?? []} />
         )}
       </Card>
-    </div>
-  );
-}
-
-function FilterPill({
-  label,
-  value,
-  onClear,
-  renderInput,
-}: {
-  label: string;
-  value: string;
-  onClear: () => void;
-  renderInput: () => React.ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className={`inline-flex h-7 items-center gap-1.5 rounded border px-2 text-xs transition-colors ${
-          value
-            ? 'border-brand/50 bg-brand/10 text-brand'
-            : 'border-bg-line bg-bg-elevated text-text-secondary hover:border-bg-line-strong'
-        }`}
-      >
-        <Icon.Filter2 size={11} />
-        <span>
-          {label}
-          {value && <span className="ml-1 font-mono text-2xs">: {value}</span>}
-        </span>
-        {value ? (
-          <span
-            role="button"
-            tabIndex={0}
-            onClick={(e) => {
-              e.stopPropagation();
-              onClear();
-            }}
-            className="ml-0.5 grid h-3.5 w-3.5 place-items-center rounded-full hover:bg-brand/20"
-          >
-            <Icon.X size={9} />
-          </span>
-        ) : (
-          <Icon.ChevronDown size={11} className="text-text-muted" />
-        )}
-      </button>
-      {open && (
-        <div className="absolute left-0 top-9 z-30 min-w-[200px] rounded-md border border-bg-line bg-bg-elevated p-2 shadow-elevated">
-          {renderInput()}
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="mt-2 w-full rounded bg-brand/10 py-1 text-xs font-medium text-brand hover:bg-brand/20"
-          >
-            Apply
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function FindingsTable({ items }: { items: Finding[] }) {
-  const [selected, setSelected] = useState<Finding | null>(null);
-  return (
-    <div className="overflow-x-auto">
-      <table className="ra-table">
-        <thead>
-          <tr>
-            <th className="w-24">Severity</th>
-            <th>Issue</th>
-            <th className="w-28">Scanner</th>
-            <th className="w-28">CVE</th>
-            <th className="w-20 text-right">CVSS</th>
-            <th className="w-20 text-right">Risk</th>
-            <th className="w-44">Target</th>
-            <th className="w-32">Discovered</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((x) => (
-            <tr
-              key={x.id}
-              onClick={() => setSelected(x)}
-              className="cursor-pointer transition-colors hover:bg-bg-hover/50"
-            >
-              <td>
-                <SeverityBadge severity={x.severity} full />
-              </td>
-              <td>
-                <div className="min-w-0">
-                  <div className="truncate font-medium text-text-primary">{x.title}</div>
-                  {x.description && (
-                    <div className="mt-0.5 truncate text-xs text-text-muted">{x.description}</div>
-                  )}
-                  {(x.controls ?? []).length > 0 && (
-                    <div className="mt-1 flex flex-wrap gap-1">
-                      {x.controls.slice(0, 3).map((c) => (
-                        <span
-                          key={c}
-                          className="rounded border border-status-success/30 bg-status-success/10 px-1.5 py-0.5 text-2xs font-mono text-status-success"
-                        >
-                          {c}
-                        </span>
-                      ))}
-                      {x.controls.length > 3 && (
-                        <span className="text-2xs font-mono text-text-muted">
-                          +{x.controls.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </td>
-              <td>
-                <Chip>{x.scanner}</Chip>
-              </td>
-              <td className="font-mono text-xs text-text-secondary">{x.cve ?? '—'}</td>
-              <td className="text-right font-mono tabular-nums text-text-secondary">
-                {x.cvss_score ?? '—'}
-              </td>
-              <td className="text-right font-mono tabular-nums text-text-secondary">
-                {x.risk_score != null && Number.isFinite(x.risk_score)
-                  ? x.risk_score.toFixed(1)
-                  : '—'}
-              </td>
-              <td className="truncate font-mono text-xs text-text-secondary">
-                {x.endpoint ?? x.target}
-              </td>
-              <td className="font-mono text-xs text-text-muted">
-                {new Date(x.discovered_at).toLocaleDateString()}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <FindingDetailModal
-        finding={selected}
-        open={selected !== null}
-        onClose={() => setSelected(null)}
-      />
     </div>
   );
 }

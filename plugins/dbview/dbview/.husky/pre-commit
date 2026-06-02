@@ -1,5 +1,0 @@
-#!/usr/bin/env sh
-# Format + lint staged files; rejects when:
-# - eslint reports any error or warning (max-warnings=0)
-# - prettier formatting was needed but write failed
-pnpm exec lint-staged

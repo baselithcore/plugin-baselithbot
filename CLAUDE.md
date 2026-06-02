@@ -1,0 +1,101 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project
+
+BaselithCore — a modular orchestration engine for production-grade agentic AI. Python 3.12+ (no upper cap; forward-compatible with newer CPython releases as upstream deps catch up), packaged as `baselith-core` (PyPI). FastAPI-based backend with an optional plugin ecosystem.
+
+## Sacred Core rule (architectural invariant)
+
+> The `core/` directory contains **only** domain-agnostic logic (orchestration, infrastructure, utilities). Domain-specific logic, external integrations, and business features **must** live under `plugins/`.
+
+This is enforced by [scripts/check_architecture_boundaries.py](scripts/check_architecture_boundaries.py):
+
+- It freezes the current set of legacy domain modules under `core/agents/`, `core/doc_sources/`, `core/goals/`, `core/routers/`, `core/scraper/` via a `LEGACY_CORE_FILE_ALLOWLIST`. Do not add new files to these frozen prefixes — create a plugin instead.
+- Any new `core -> plugins` imports are blocked (only existing compatibility shims are grandfathered).
+
+When making changes, prefer extending via a plugin under `plugins/<name>/` rather than touching `core/`.
+
+## Common commands
+
+```bash
+# Install dev environment
+pip install -e ".[dev]"
+pre-commit install
+
+# Run backend (FastAPI via uvicorn)
+python backend.py                 # or: baselith ... (CLI entrypoint: core.cli.__main__:main)
+baselith doctor                   # environment/config diagnostics
+
+# Tests (config: pytest.ini, coverage gate 54%, asyncio_mode=auto)
+python -m pytest
+python -m pytest tests/unit/core/reasoning/ -v
+python -m pytest -m "not slow"              # skip slow tests
+python -m pytest tests/path/to/test_x.py::TestClass::test_name
+python -m pytest --cov=core --cov-report=html
+
+# Lint / typing
+ruff check .
+mypy core/
+pre-commit run --all-files
+
+# Focused strict-typing gates (must pass for PRs)
+python scripts/check_official_plugin_typing.py
+python scripts/check_core_resilience_typing.py
+python scripts/check_architecture_boundaries.py
+
+# Local infra (Redis, Qdrant, PostgreSQL, etc.)
+docker compose up -d
+```
+
+Test markers defined in [pytest.ini](pytest.ini): `slow`, `integration`, `unit`, `contract`.
+
+## Architecture big picture
+
+Entry point [backend.py](backend.py) calls `core.api.factory.create_app()` to build the FastAPI app. App and core settings come from Pydantic-settings via `core.config.get_app_config()` / `get_core_config()`.
+
+### Core layers (all under [core/](core/))
+
+- **[orchestration/](core/orchestration/)** — top-level orchestrator, intent classifier, router, adaptive/parallel execution, flow handlers. The orchestrator is the heart of the agentic loop. Runtime primitives: `LoopBudget` ([limits.py](core/orchestration/limits.py)), `AgentContract` ([contract.py](core/orchestration/contract.py)), `AutonomyPolicy` ([autonomy.py](core/orchestration/autonomy.py)), `TaskClassifier` ([task_classifier.py](core/orchestration/task_classifier.py)).
+- **[memory/](core/memory/)** — multilayer memory hierarchy STM → MTM → LTM with consolidation; plus `Scratchpad` ([scratchpad.py](core/memory/scratchpad.py)) for agent-written section memory and `BM25Index` + `HybridSearcher` ([hybrid_search.py](core/memory/hybrid_search.py)) for keyword/dense RRF fusion.
+- **[storage/](core/storage/)** & **[db/](core/db/)** — relational (Postgres via `psycopg`/Alembic migrations in [migrations/](migrations/)) and vector (Qdrant) backends; also [cache/](core/cache/) (Redis).
+- **[reasoning/](core/reasoning/)**, **[world_model/](core/world_model/)**, **[swarm/](core/swarm/)**, **[planning/](core/planning/)**, **[meta/](core/meta/)** — cognitive subsystems (MCTS, Tree-of-Thoughts, auction protocols, multi-persona internal debate). Generator-vs-Challenger adversarial protocol lives in [meta/generator_challenger.py](core/meta/generator_challenger.py).
+- **[plugins/](core/plugins/)** — the plugin registry/loader/hotreload framework (`agent_plugin.py`, `router_plugin.py`, `graph_plugin.py`, `loader.py`, `registry.py`). This is the *machinery* that loads external plugins. Shared envelopes for tools/skills: `SkillResult` + `ok`/`fail`/`partial` ([result.py](core/plugins/result.py)). Declarative `SKILL.md` catalog with progressive disclosure: `DeclarativeSkillLoader` ([declarative.py](core/plugins/declarative.py)).
+- **[api/](core/api/)**, **[routers/](core/routers/)**, **[middleware/](core/middleware/)**, **[auth/](core/auth/)** — FastAPI surface.
+- **[mcp/](core/mcp/)** — native Model Context Protocol support. Companion: A2A peer-discovery ([a2a/](core/a2a/)) plus an A2UI blueprint schema ([a2a/a2ui.py](core/a2a/a2ui.py)) that restricts agent-emitted UI to a whitelisted component tree.
+- **[llm layer]** spans `core/models/`, `core/chat/` — multi-provider (Anthropic, OpenAI, Ollama, HuggingFace). Portability primitives: pricing table ([models/pricing.py](core/models/pricing.py)), `ModelRouter` ([models/routing.py](core/models/routing.py)), `FallbackChain` ([models/fallback.py](core/models/fallback.py)). `AgentState` ([chat/agent_state.py](core/chat/agent_state.py)) carries `iteration_count`, `retry_count`, `cost_usd`, `scratchpad_ref`, `trajectory`.
+- **[evaluation/](core/evaluation/)** — trajectory-aware case evaluation ([trajectory.py](core/evaluation/trajectory.py)) and CI replay runner ([regression_runner.py](core/evaluation/regression_runner.py)).
+- **[personas/](core/personas/)** — persona registry plus a task-indexed few-shot example library ([few_shot.py](core/personas/few_shot.py)).
+- **[world_model/](core/world_model/)** — risk/rollback/simulation; signed-mandate chain for agent-initiated commerce in [mandates.py](core/world_model/mandates.py) (Ed25519, intent → cart verification).
+- **[resilience/](core/resilience/)** — circuit breakers, retries, etc. Subject to a **strict mypy gate** via `scripts/check_core_resilience_typing.py`.
+- **[observability/](core/observability/)** — structlog + OpenTelemetry + Prometheus + Sentry.
+
+A module-by-module status and integration map for the agentic runtime is maintained in [docs/architecture/agentic_modules.md](docs/architecture/agentic_modules.md) — read it before wiring a new handler into the loop.
+
+### Plugins ([plugins/](plugins/))
+
+Each plugin is a self-contained directory (see `plugins/example-plugin/` for the reference structure) with its own `manifest.yaml|yml|json` (declared in `pyproject.toml` package-data). The registry injects handlers into the orchestrator and routers into the API gateway at load time.
+
+Official plugins listed under [plugins/](plugins/) (e.g. `api_routers`, `baselithbot`, `browser_agent`, `coding_agent`, `document_sources`, `goals`, `reasoning_agent`, `web_scraper`) are covered by `scripts/check_official_plugin_typing.py` — a focused strict-typing gate that runs in CI.
+
+`baselithbot` is the flagship autonomous multi-channel agent plugin (OpenClaw-style skills, stealth browsing, desktop/computer-use, canvas A2UI, voice, cron, MCP). It bundles a 20-tab React dashboard under `plugins/baselithbot/ui/` — `npm run build` must produce `ui/dist/` before wheel packaging (only `ui/dist/**` ships; `ui/src/` and `ui/node_modules/` are excluded via `[tool.setuptools.exclude-package-data]`).
+
+**Repository model — dual-hosted, single-sourced.** `plugins/baselithbot/` in this monorepo is the source of truth. The standalone marketplace repo [`plugin-baselithbot`](https://github.com/baselithcore/plugin-baselithbot) is **output-only**: populated on each release via `git subtree split -P plugins/baselithbot` and force-pushed. All edits (including hotfixes) land here first, then the subtree is split and pushed. Never commit directly to the standalone repo — any non-subtree commit there will be overwritten. See [plugins/baselithbot/docs/publishing.md](plugins/baselithbot/docs/publishing.md) §8 for the full release flow.
+
+### Optional capability groups
+
+Optional extras in [pyproject.toml](pyproject.toml) (install only what you need): `rag`, `browser`, `web`, `documents`, `ocr`, `nlp`, `huggingface`, `adapters` (langchain/langgraph), `memory` (supermemory), `test`, `dev`. Mypy is globally configured to ignore `plugins/`, `scripts/`, `templates/`, `examples/`.
+
+## Conventions
+
+- **Python 3.12+** with rigorous type hints; Pydantic for configs/models; async/await for all I/O. Use modern syntax: PEP 604 unions (`X | Y`), PEP 695 generics where applicable, `tomllib` (stdlib).
+- **File size cap: 500 LOC — HARD LIMIT, NON-NEGOTIABLE.** Applies to every source file — `.py` under `core/`, `plugins/`, `tests/`, `scripts/`, **and** frontend source (`.ts`, `.tsx`, `.js`, `.jsx`, `.vue`) under any plugin `ui/src/` (excluding generated/build output and `node_modules/`). No exceptions, no "just this once", no waivers. Counts physical lines including blanks and comments. **This applies from the very first commit of any new implementation — design modular from day one, never write a monolith planning to "split later".** Any file approaching the cap must be split *before* the PR, not after. Refactor strategies (in order of preference): (1) extract cohesive submodules into a package (`foo.py` → `foo/{__init__.py, _core.py, _helpers.py, _types.py}`; for frontend, split a fat component into `Component/{index.tsx, hooks.ts, parts/*.tsx, types.ts}`), (2) move pure helpers to a sibling `utils.py` / `types.py` (or `utils.ts` / `types.ts`), (3) split agents/routers/handlers/components along responsibility seams (parsing vs. orchestration vs. I/O vs. persistence; for UI: presentation vs. state vs. data-fetching). New features land as multiple small modules from day one — never as a single monolithic file with a "TODO: split later". CI/pre-commit MUST reject any file over 500 LOC; if the check is missing locally, run `find core plugins -name '*.py' -exec wc -l {} + | awk '$1 > 500'` (and the equivalent over `ui/src` for frontend) before pushing.
+- Every module has an `__init__.py` with explicit exports.
+- Google-style docstrings for public APIs.
+- Mock LLMs and DBs in unit tests.
+- **Secrets**: wrap every credential in `pydantic.SecretStr` (or `Set[SecretStr]` for collections). Direct `str` storage of API keys, tokens, or passwords leaks via `repr()`/Sentry frames and is rejected at review.
+- **Middleware**: write new HTTP middleware as **pure ASGI** (`async def __call__(scope, receive, send)`), never `BaseHTTPMiddleware` — the latter wraps every request in an extra anyio task and breaks streaming/cancellation.
+- **Plugin integrity**: a manifest may declare `integrity_sha256`. The loader verifies it via `core.plugins.integrity.verify_plugin_integrity` before `exec_module`. Set `BASELITH_REQUIRE_SIGNED_PLUGINS=true` to reject unsigned plugins.
+- **Browser SSRF**: `BrowserAgent` blocks loopback/private/link-local/multicast hosts and non-`http(s)` schemes. Override only via `BASELITH_BROWSER_ALLOW_INTERNAL=true` for trusted local development.
+- **Frontend stack**: a plugin UI may be built **either** with **React + Vite** (`npm`, as `baselithbot/ui/` does) **or** with **Next.js** (`pnpm`) following modern best practices (App Router, Server Components, etc.). Pick per plugin; both are first-class. Whichever you choose, the build must emit static/packageable output (Vite → `ui/dist/`; Next.js → its build/export dir) so only built artifacts ship in the wheel — `ui/src/` and `ui/node_modules/` stay excluded via `[tool.setuptools.exclude-package-data]`. The 500 LOC cap applies to frontend source regardless of framework.

@@ -1,0 +1,118 @@
+import type { Css, StylesheetStyle } from 'cytoscape';
+
+export const TYPE_HINT: Record<string, string> = {
+  Target: 'Target',
+  Endpoint: 'Endpoint',
+  Service: 'Service',
+  Vulnerability: 'Finding',
+  CVE: 'CVE',
+  CWE: 'CWE',
+  Scan: 'Scan',
+  Scanner: 'Scanner',
+  Identity: 'Identity',
+  CloudResource: 'Cloud Resource',
+  DataStore: 'Data Store',
+};
+
+export const STYLE: StylesheetStyle[] = [
+  {
+    selector: 'node',
+    style: {
+      shape: 'data(shape)' as never,
+      'background-color': 'data(fill)',
+      'background-opacity': 0.92,
+      'border-color': 'data(ring)',
+      'border-width': 2.5,
+      'border-opacity': 0.96,
+      width: 56,
+      height: 56,
+      label: 'data(display)',
+      color: '#e7ecf7',
+      'font-family': '"JetBrains Mono Variable", ui-monospace, monospace',
+      'font-size': 11,
+      'font-weight': 500,
+      'text-valign': 'bottom',
+      'text-halign': 'center',
+      'text-margin-y': 8,
+      'text-wrap': 'wrap',
+      'text-max-width': '200',
+      'line-height': 1.3,
+      'text-outline-color': '#0a0e14',
+      'text-outline-width': 2.5,
+      'text-outline-opacity': 1,
+      'overlay-padding': 4,
+    } as Css.Node,
+  },
+  {
+    selector: 'node[label = "Target"]',
+    style: { width: 70, height: 70, 'font-weight': 700 } as Css.Node,
+  },
+  {
+    selector: 'node[label = "Vulnerability"]',
+    style: { width: 64, height: 64, 'border-width': 3.5 } as Css.Node,
+  },
+  {
+    selector: 'node[isCluster = "1"]',
+    style: {
+      'background-color': '#1a2233',
+      'border-style': 'dashed',
+      'border-width': 2,
+      width: 60,
+      height: 60,
+    } as Css.Node,
+  },
+  {
+    selector: 'node[severity = "critical"]',
+    style: {
+      'border-color': '#ff3860',
+      'overlay-color': '#ff3860',
+      'overlay-opacity': 0.14,
+    } as Css.Node,
+  },
+  {
+    selector: 'node[severity = "high"]',
+    style: {
+      'border-color': '#ff7a18',
+      'overlay-color': '#ff7a18',
+      'overlay-opacity': 0.1,
+    } as Css.Node,
+  },
+  {
+    selector: '.focus',
+    style: {
+      'border-width': 4.5,
+      'border-color': '#33dcff',
+      'overlay-color': '#33dcff',
+      'overlay-opacity': 0.18,
+      width: 80,
+      height: 80,
+      'z-index': 999,
+    } as Css.Node,
+  },
+  {
+    selector: 'edge',
+    style: {
+      'curve-style': 'bezier',
+      'control-point-step-size': 60,
+      'line-color': 'data(color)',
+      'target-arrow-color': 'data(color)',
+      'target-arrow-shape': 'triangle',
+      'arrow-scale': 1,
+      width: 2,
+      opacity: 0.75,
+      'line-cap': 'round',
+      label: 'data(type)',
+      color: '#8b98b6',
+      'font-family': '"JetBrains Mono Variable", ui-monospace, monospace',
+      'font-size': 8,
+      'text-rotation': 'autorotate',
+      'text-background-color': '#0a0e14',
+      'text-background-opacity': 0.7,
+      'text-background-padding': '2',
+    } as Css.Edge,
+  },
+  {
+    selector: 'edge.focus',
+    style: { width: 3.4, opacity: 1 } as Css.Edge,
+  },
+];

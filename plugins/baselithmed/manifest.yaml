@@ -1,0 +1,33 @@
+name: baselithmed
+version: 0.1.0
+description: Empathic clinical interview, differential diagnosis and standardized
+  triage report for clinician validation.
+author: BaselithCore Medical Team
+license: Apache-2.0
+category: medical
+readiness: alpha
+tags:
+- medical
+- triage
+- anamnesis
+- medgemma
+- clinical-decision-support
+min_core_version: 1.0.0
+required_resources:
+- llm
+- postgres
+- graph
+optional_resources:
+- redis
+- qdrant
+python_dependencies:
+- ollama>=0.4.0
+- pydantic>=2.7
+- rapidfuzz>=3.6
+plugin_dependencies: {}
+environment_variables:
+- BASELITHMED_OLLAMA_HOST
+- BASELITHMED_MODEL_ID
+- BASELITHMED_RETENTION_DAYS
+homepage: https://baselithcore.xyz/plugins/baselithmed
+integrity_sha256: 93b0893e591450828d6e53847b41e0fda538331ff3c504ba83ba523920d03e23

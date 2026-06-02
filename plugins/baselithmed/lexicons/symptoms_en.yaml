@@ -1,0 +1,123 @@
+- trigger: sudden headache
+  canonical: cefalea improvvisa
+  icd10: R51
+- trigger: thunderclap headache
+  canonical: cefalea improvvisa
+  icd10: R51
+- trigger: headache
+  canonical: cefalea
+  icd10: R51
+- trigger: chest pain
+  canonical: dolore toracico
+  icd10: R07.4
+- trigger: pain in the chest
+  canonical: dolore toracico
+  icd10: R07.4
+- trigger: neck pain
+  canonical: cervicalgia
+  icd10: M54.2
+- trigger: stiff neck
+  canonical: rigidità nucale
+  icd10: R29.1
+- trigger: neck stiffness
+  canonical: rigidità nucale
+  icd10: R29.1
+- trigger: abdominal pain
+  canonical: dolore addominale
+  icd10: R10
+- trigger: stomach pain
+  canonical: dolore addominale
+  icd10: R10
+- trigger: belly pain
+  canonical: dolore addominale
+  icd10: R10
+- trigger: cramps in stomach
+  canonical: dolore addominale
+  icd10: R10
+- trigger: stomach
+  canonical: dolore addominale
+  icd10: R10
+- trigger: lower back pain
+  canonical: lombalgia
+  icd10: M54.5
+- trigger: back pain
+  canonical: lombalgia
+  icd10: M54.5
+- trigger: shortness of breath
+  canonical: dispnea
+  icd10: R06.0
+- trigger: dyspnea
+  canonical: dispnea
+  icd10: R06.0
+- trigger: breathlessness
+  canonical: dispnea
+  icd10: R06.0
+- trigger: nausea
+  canonical: nausea
+  icd10: R11
+- trigger: vomiting
+  canonical: vomito
+  icd10: R11
+- trigger: fever
+  canonical: febbre
+  icd10: R50.9
+- trigger: high temperature
+  canonical: febbre
+  icd10: R50.9
+- trigger: dizziness
+  canonical: vertigini
+  icd10: R42
+- trigger: lightheadedness
+  canonical: vertigini
+  icd10: R42
+- trigger: palpitations
+  canonical: palpitazioni
+  icd10: R00.2
+- trigger: tachycardia
+  canonical: tachicardia
+  icd10: R00.0
+- trigger: loss of consciousness
+  canonical: sincope
+  icd10: R55
+- trigger: fainting
+  canonical: sincope
+  icd10: R55
+- trigger: weakness
+  canonical: astenia
+  icd10: R53
+- trigger: fatigue
+  canonical: astenia
+  icd10: R53
+- trigger: cough
+  canonical: tosse
+  icd10: R05
+- trigger: diarrhea
+  canonical: diarrea
+  icd10: R19.7
+- trigger: bleeding
+  canonical: emorragia
+  icd10: R58
+- trigger: eye pain
+  canonical: dolore oculare
+  icd10: H57.1
+- trigger: blurred vision
+  canonical: visione offuscata
+  icd10: H53.8
+- trigger: neck
+  canonical: cervicalgia
+  icd10: M54.2
+- trigger: head
+  canonical: cefalea
+  icd10: R51
+- trigger: chest
+  canonical: dolore toracico
+  icd10: R07.4
+- trigger: back
+  canonical: lombalgia
+  icd10: M54.5
+- trigger: belly
+  canonical: dolore addominale
+  icd10: R10
+- trigger: abdomen
+  canonical: dolore addominale
+  icd10: R10

@@ -2,22 +2,16 @@ reasoning_agent:
   enabled: false
   max_steps: 5
   branching_factor: 3
-# agent-jira: disabilitato in dev locale perché monta i propri router
-# auth (``/auth/login``, ``/auth/register``, ``/auth/bootstrap``) allo
-# stesso prefix di wikigen → collision quando entrambi attivi nello
-# stesso processo ``baselith run``. Per usarlo standalone, avviare il
-# suo backend in un processo dedicato (porta diversa) anziché caricarlo
-# nell'orchestrator.
-agent-jira:
-  enabled: false
-wikigen:
+baselithwiki:
+  # White-label LLM wiki engine + SPA mounted at /baselithwiki.
+  # Boots in self-contained setup mode (no Postgres/auth). To activate a
+  # vertical or external services, export scoped env overrides before boot:
+  #   BASELITHWIKI_APP_DOMAIN=insurance
+  #   BASELITHWIKI_POSTGRES_ENABLED=true
+  #   BASELITHWIKI_AUTH_REQUIRED=true
+  #   BASELITHWIKI_OLLAMA_URL=http://localhost:11434
+  # (any BASELITHWIKI_<KEY> is promoted to the bare <KEY> the engine reads).
   enabled: true
-docheck:
-  enabled: true
-dbview:
-  enabled: true
-  # Override DBVIEW_PLUGIN_MODE. Valid: prod | dev.
-  mode: prod
 browser_agent:
   enabled: true
 goals:
@@ -62,3 +56,57 @@ baselithbot:
     filesystem_root: /tmp/baselithbot-sandbox
     filesystem_max_bytes: 10000000
     audit_log_path: /tmp/baselithbot-sandbox/audit.jsonl
+baselithmed:
+  enabled: true
+  provider:
+    host: http://192.168.4.21:11434
+    # Quality-sensitive finalize DDx ranking model.
+    model_id: medgemma:27b
+    # Latency-sensitive per-turn model (extraction + anamnesis questions).
+    # qwen2.5:7b-instruct: warm structured-JSON gen ~1-2s, clean Italian.
+    # Omit to run single-model (everything on model_id).
+    fast_model_id: qwen2.5:7b-instruct
+    temperature: 0.2
+    context_window: 8192
+    # Per-turn budget. Fast model answers in 1-2s warm; 12s gives ample
+    # headroom incl. a cold reload. Finalize ranking uses its own 90s budget.
+    turn_timeout_seconds: 12
+    # Keep models resident between turns (avoids cold-reload penalty).
+    keep_alive: 30m
+    # Cap generated tokens to bound latency.
+    num_predict: 768
+  triage:
+    scale: IT_4_COLOR
+    human_gate: HARD
+  # Hypothesis-driven clinical reasoner. When enabled, the LLM maintains a
+  # live differential across all of medicine and picks the next question that
+  # discriminates it best, instead of walking a fixed OPQRST slot list. Any
+  # LLM failure falls back to the deterministic slot/heuristic path.
+  reasoning:
+    enabled: true
+    # Which provider drives the live loop: "fast" (per-turn model, snappy) or
+    # "main" (the larger finalize model, slower but stronger reasoning).
+    model: fast
+  privacy:
+    pseudonymize_pii: true
+    retention_days: 90
+confessgpt:
+  enabled: true
+  voice:
+    enabled: true
+    provider: openai
+    voice_name: nova
+    speed: 0.92
+honeypot:
+  # AI-powered honeypot: attack capture + CVE correlation, API at /honeypot.
+  # Plugin loads (router, dashboard, swarm coordinator, persistence) but the
+  # network listeners stay OFF by default to avoid binding ports unexpectedly.
+  # Flip the toggles below (or HONEYPOT_ENABLE_* env vars) to start capturing.
+  enabled: true
+  enable_ssh_honeypot: false   # binds ssh_port (default 2222) when true
+  enable_http_honeypot: false  # binds http_port (default 8082) when true
+  enable_tcp_honeypot: false   # binds tcp_ports (default 2121/2323/6380)
+  enable_mcp_honeypot: false
+  default_tenant_id: default
+  # CVE correlation via live NVD API. Disable for fully offline boot.
+  enable_dynamic_cve_lookup: false
