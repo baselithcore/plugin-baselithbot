@@ -95,7 +95,7 @@ honeypot:
 baselithoptimizeprocess:
   enabled: true
 baselithtwin:
-  enabled: true
+  enabled: false
   owner_name: Owner
   autonomy: whitelist
 baselithcontrol:

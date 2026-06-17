@@ -58,6 +58,10 @@ COPY plugins/ plugins/
 COPY configs/ configs/
 COPY scripts/ scripts/
 COPY templates/ templates/
+# Alembic config + migration scripts — ensure_schema() runs `alembic upgrade head`
+# from /app at boot, so both must ship in the image (script_location = migrations).
+COPY alembic.ini .
+COPY migrations/ migrations/
 
 # Install the package itself in non-editable mode
 RUN pip install .
