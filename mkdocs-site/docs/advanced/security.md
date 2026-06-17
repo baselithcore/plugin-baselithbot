@@ -327,11 +327,22 @@ default to a non-breaking posture; enable the stricter ones in production.
 | `BASELITH_FAIL_ON_UNSIGNED_IN_PROD` | off | Turn the production "plugins unsigned" warning into a hard startup error (fail closed). |
 | `BASELITH_SKIP_INTEGRITY_CHECK` | off | Dev-only escape hatch; skips hash verification (ignored when strict mode is on). |
 | `BASELITH_BROWSER_ALLOW_INTERNAL` | off | Allow the browser agent to reach loopback/private hosts (trusted local dev only). |
+| `BASELITH_A2A_SHARED_SECRET` | unset | Enable HMAC-SHA256 signing of A2A traffic: the client signs every request and the A2A router rejects unsigned/invalid requests with 401. Set the same value on all peers. Unset = unauthenticated (a CRITICAL log fires in production). |
+| `MCP_ALLOWED_COMMANDS` | `python,python3,node,npx,uvx,uv,deno,bun,bunx` | Allowlist of executable basenames `MCPClient` may spawn for stdio servers; custom commands outside the list are rejected. |
+| `BASELITH_MARKETPLACE_ALLOW_HTTP` | off | Permit a plaintext `http://` marketplace registry on non-loopback hosts (MITM risk — trusted networks only). HTTPS and `file://` are always allowed. |
 
 !!! note "JWT algorithm safety"
     `JWTHandler` rejects the `none` algorithm at construction (disabled
-    signature verification — the JWT downgrade attack) and accepts the signing
-    key as `SecretStr` so the plaintext is not unwrapped until the last moment.
+    signature verification — the JWT downgrade attack), requires the `exp`
+    claim on every verified token (a token without expiry could never be
+    blacklisted), and accepts the signing key as `SecretStr` so the plaintext
+    is not unwrapped until the last moment. Successful verifications are cached
+    in-process for a short window (≤5s, never past the token's own `exp`) to
+    skip the signature check and Redis blacklist round-trip on repeated
+    requests. The cache is a bounded LRU (8192 entries) so a burst of distinct
+    valid tokens — rotation or token spray — cannot grow it without limit.
+    Revoking a token evicts its entry immediately in-process; the short TTL
+    bounds staleness across other workers.
 
 ## Container Hardening
 
@@ -344,6 +355,36 @@ In production, the compose stack applies extra runtime restrictions to reduce po
 - TLS termination is expected to happen upstream, so certificate lifecycle is managed outside this application stack.
 
 The main residual risk is intentionally pushed out of this compose stack: the sandbox daemon should run on a dedicated external host or node, not inside the main production application deployment.
+
+## Supply-Chain Security
+
+Dependencies and source are continuously scanned in CI; findings surface under
+the repository's **Security → Code scanning** tab.
+
+| Layer | Tool | What it covers |
+| ----- | ---- | -------------- |
+| SAST | **CodeQL** (`.github/workflows/codeql.yml`) | Python + JavaScript/TypeScript, `security-extended` queries, on push/PR and weekly |
+| SAST | **Semgrep** (`.github/workflows/semgrep.yml`) | OSS rulesets `p/python`, `p/security-audit`, `p/secrets` (no token), report-mode |
+| Dependency CVEs / SBOM | **Trivy** + **CycloneDX** (in `ci.yml`) | Vulnerability scan and a generated software bill of materials |
+| Image provenance | **cosign** + SLSA (`release-image.yml`) | Keyless-signed images with provenance and SBOM attestations |
+
+CodeQL and Trivy run in **report mode** — they publish findings without failing
+the build, so security signal is visible without blocking delivery. Tighten to
+blocking once the baseline is clean.
+
+!!! note "Scan scope: the Backstage portal is excluded from the Trivy dependency scan"
+    `backstage-portal/yarn.lock` is skipped by the Trivy filesystem scan
+    (`--skip-files` in `ci.yml`). The developer portal is a **vendored, dev-only
+    tool** — it is not part of the published `baselith-core` wheel or the release
+    container image — and its transitive npm tree is authored upstream by
+    Backstage. That tree carries advisories we cannot resolve without a Backstage
+    release, most notably the abandoned **`vm2`** package (no patched version
+    exists; it is a build-time transitive of
+    `@backstage/config-loader → typescript-json-schema`). Scanning it produced
+    ~70 unactionable Code-scanning alerts that drowned out real signal for the
+    shipped product, so its lockfile is an accepted exclusion. Secret and
+    misconfig scanning of the portal source is unaffected — only its lockfile is
+    skipped.
 
 ## Secrets Management
 
@@ -376,18 +417,64 @@ JWT_SECRET = "my-super-secret-key"  # Hardcoded!
 logger.info(f"Using API key: {api_key}")  # NO!
 ```
 
-### Secret Rotation
+!!! note "LLM provider credentials stay wrapped"
+    The OpenAI, Anthropic, and HuggingFace providers store their API key as a
+    `SecretStr` internally and unwrap it only at the SDK client boundary
+    (`AsyncOpenAI(api_key=...)`, etc.). The plaintext never lives as a bare
+    instance attribute, so a provider object captured in a traceback or Sentry
+    frame does not leak the credential.
 
-Implement periodic rotation:
+### Pluggable Secrets Backend
+
+By default secrets resolve from environment variables (unchanged behaviour). For
+production you can switch to mounted Docker/Kubernetes secrets — keeping
+plaintext out of the environment and image layers — without code changes:
+
+```bash
+SECRETS_BACKEND=file
+SECRETS_DIR=/run/secrets        # reads /run/secrets/DB_PASSWORD, honours DB_PASSWORD_FILE
+```
 
 ```python
-from core.security import rotate_secret
+from core.security import get_secret
 
-async def scheduled_rotation():
-    """Run weekly."""
-    await rotate_secret("jwt_secret", generate_new_secret())
-    await invalidate_old_tokens()
+db_password = get_secret("DB_PASSWORD")   # SecretStr | None
 ```
+
+External managers (HashiCorp Vault, cloud KMS) are registered at startup via
+`register_secrets_provider("vault", factory)` and selected with
+`SECRETS_BACKEND=vault`. See
+[Security & Encryption](../core-modules/security.md#secret-resolution).
+
+### Encryption at Rest
+
+Protect PII columns and other sensitive values with authenticated AES-256-GCM
+field encryption. Opt-in via `DATA_ENCRYPTION_KEYS`:
+
+```python
+from core.security import get_field_encryptor
+
+enc = get_field_encryptor()               # None if not configured
+if enc:
+    token = enc.encrypt("user@example.com")
+    plain = enc.decrypt(token)
+```
+
+### Secret / Key Rotation
+
+Encryption keys are **versioned**; a token embeds the id of the key that
+produced it, so rotation is lossless:
+
+1. Add the new key and make it active:
+   `DATA_ENCRYPTION_KEYS=v1:<old>,v2:<new>`, `DATA_ENCRYPTION_ACTIVE_KEY_ID=v2`.
+2. Old ciphertext keeps decrypting (the `v1` key stays loaded).
+3. Re-encrypt lazily — `encryptor.needs_rotation(token)` flags ciphertext made
+   by a non-active key; decrypt then re-encrypt to migrate.
+4. Drop the old key once nothing reports `needs_rotation`.
+
+For `SECRET_KEY` / JWT signing rotation, roll the env value and force re-login
+(short token TTLs minimise the window). Full details:
+[Security & Encryption](../core-modules/security.md).
 
 ---
 
@@ -585,7 +672,9 @@ Before go-live, verify every point:
 
 - [x] No hardcoded secrets in code
 - [x] `.env` in `.gitignore`
-- [x] Secrets manager in production (Vault, AWS SM)
+- [x] Secrets manager in production (Vault, AWS SM) — `SECRETS_BACKEND=file` or a registered backend
+- [x] Encryption at rest for PII/sensitive fields (`DATA_ENCRYPTION_KEYS`)
+- [x] Documented key-rotation procedure
 
 ---
 

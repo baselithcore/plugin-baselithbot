@@ -1,6 +1,6 @@
 name: auth
-version: 1.0.0
-description: Professional authentication with MFA
+version: 2.0.0
+description: Enterprise authentication — MFA, passkeys (WebAuthn), SSO (OIDC/SAML), API keys, self-service, and RBAC
 author: White-Label Team
 category: Security
 readiness: stable
@@ -15,10 +15,31 @@ tags:
 - auth
 - mfa
 - rbac
+- passkeys
+- webauthn
+- sso
+- oidc
+- saml
+- api-keys
 environment_variables:
 - AUTH_SECRET_KEY
 - AUTH_DATABASE_URL
 - AUTH_SESSION_LIFETIME
 - AUTH_MFA_ISSUER
 - AUTH_BCRYPT_ROUNDS
-integrity_sha256: e6c5b1bc9f0d5c871b2bc94393da49c6fd1b9e0e37a24dd396a8de49c2e95aa4
+- AUTH_APP_BASE_URL
+- AUTH_SMTP_HOST
+- AUTH_SMTP_PORT
+- AUTH_SMTP_USERNAME
+- AUTH_SMTP_PASSWORD
+- AUTH_SMTP_FROM
+- AUTH_ACCOUNT_RECOVERY_ENABLED
+- AUTH_WEBAUTHN_ENABLED
+- AUTH_WEBAUTHN_RP_ID
+- AUTH_WEBAUTHN_ORIGIN
+- AUTH_API_KEYS_ENABLED
+- AUTH_SSO_ENABLED
+- AUTH_SSO_ALLOW_SIGNUP
+- AUTH_EMAIL_VERIFICATION_REQUIRED
+- AUTH_TRUSTED_PROXIES
+integrity_sha256: f5ed6d75ffcac8c07ccb3a166f22d5a5e970fb9178970ef861513ea081a84ad7

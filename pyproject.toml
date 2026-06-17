@@ -140,6 +140,16 @@ computer_use = [
 auth = [
   # TOTP/MFA for the auth plugin (plugins/auth/mfa.py).
   "pyotp>=2.9.0",
+  # WebAuthn / passkeys (plugins/auth/webauthn.py). Degrades gracefully if absent.
+  "webauthn>=2.0.0",
+  # SAML 2.0 SSO (plugins/auth/sso/saml.py). Degrades gracefully if absent.
+  "python3-saml>=1.16.0",
+]
+pitwall = [
+  # Live websocket telemetry adapter (plugins/baselith_pitwall/ingestion/
+  # _websocket.py). The file/UDP/simulated sources need no extra deps; the
+  # adapter degrades to a no-op when this is absent.
+  "websockets>=12.0",
 ]
 honeypot = [
   # SSH honeypot listener + HTTP callbacks.
@@ -186,6 +196,8 @@ version = {attr = "core._version.__version__"}
     "lexicons/*.yaml",
     "lexicons/*.yml",
     "prompts/*.md",
+    # Backend i18n message catalogs (e.g. baselithtwin/locales/{en,it}.json).
+    "locales/*.json",
     # BaselithWiki: compiled SPA + vendored engine data (domain packs and
     # Alembic migrations are loaded from disk, not import, so they ship as
     # package-data). ``llm_wiki`` itself is pure-Python and ships as code.
@@ -238,12 +250,73 @@ confessgpt = [
     "ui/tailwind.config.ts",
     "tests/**",
 ]
+# BaselithBrain: only the compiled SPA (``ui/dist/**``) ships. TypeScript
+# source + node_modules are excluded; the runtime Markdown vault never ships.
+baselithbrain = [
+    "ui/src/**",
+    "ui/node_modules/**",
+    "ui/*.config.ts",
+    "ui/tsconfig*.json",
+    "ui/package.json",
+    "ui/package-lock.json",
+    "ui/index.html",
+    "vault/**",
+    "tests/**",
+]
+# BaselithOptimizeProcess: only the compiled SPA (``ui/dist/**``) ships. The
+# React/Vite source + node_modules are excluded; operators rebuild via
+# ``npm run build`` only when they fork the plugin.
+baselithoptimizeprocess = [
+    "ui/src/**",
+    "ui/node_modules/**",
+    "ui/*.config.ts",
+    "ui/*.config.js",
+    "ui/tsconfig*.json",
+    "ui/tsconfig.tsbuildinfo",
+    "ui/package.json",
+    "ui/package-lock.json",
+    "ui/index.html",
+    "tests/**",
+]
+# BaselithTwin: only the compiled SPA (``ui/dist/**``) ships. The React/Vite
+# source + node_modules are excluded; operators rebuild via ``npm run build``
+# only when they fork the plugin. The backend ``locales/*.json`` catalogs DO
+# ship (matched by the global package-data ``locales/*.json`` rule).
+baselithtwin = [
+    "ui/src/**",
+    "ui/node_modules/**",
+    "ui/*.config.ts",
+    "ui/*.config.js",
+    "ui/tsconfig*.json",
+    "ui/tsconfig.tsbuildinfo",
+    "ui/package.json",
+    "ui/package-lock.json",
+    "ui/index.html",
+    "tests/**",
+]
+# BaselithControl: only the compiled SPA (``ui/dist/**``) ships. The React/Vite
+# source + node_modules are excluded; operators rebuild via ``npm run build``
+# only when they fork the plugin. Backend ``locales/*.json`` catalogs DO ship
+# (matched by the global package-data ``locales/*.json`` rule).
+baselithcontrol = [
+    "ui/src/**",
+    "ui/node_modules/**",
+    "ui/*.config.ts",
+    "ui/*.config.js",
+    "ui/tsconfig*.json",
+    "ui/tsconfig.tsbuildinfo",
+    "ui/package.json",
+    "ui/package-lock.json",
+    "ui/index.html",
+    "tests/**",
+]
 
 [tool.bandit]
 exclude_dirs = ["tests", "venv", "node_modules", ".git", ".env", "examples"]
 
 [tool.ruff]
 target-version = "py312"
+force-exclude = true
 exclude = [
     "templates/",
     "frontend/",

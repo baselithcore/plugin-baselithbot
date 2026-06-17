@@ -14,13 +14,14 @@ except ImportError:
 
 from typing import Any, AsyncIterator, TYPE_CHECKING, cast
 
+from pydantic import SecretStr
+
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
 
 from core.services.llm.cost_control import estimate_tokens
 from core.services.llm.exceptions import LLMProviderError
 from core.resilience.circuit_breaker import get_circuit_breaker
-from core.resilience.retry import retry
 
 logger = get_logger(__name__)
 
@@ -33,12 +34,12 @@ class OpenAIProvider:
     to OpenAI-specific API calls.
     """
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str | SecretStr):
         """
         Initialize the OpenAI provider.
 
         Args:
-            api_key: Secret API key for OpenAI authentication.
+            api_key: Secret API key (raw ``str`` or wrapped ``SecretStr``).
         """
         if not api_key:
             raise LLMProviderError("OpenAI API key is required")
@@ -48,7 +49,11 @@ class OpenAIProvider:
                 "OpenAI library is not installed. Run 'pip install openai'"
             )
 
-        self.api_key = api_key
+        # Keep the credential wrapped so it never appears in repr()/tracebacks/
+        # Sentry frames; unwrap only at the SDK boundary in _ensure_client.
+        self._api_key: SecretStr = (
+            api_key if isinstance(api_key, SecretStr) else SecretStr(api_key)
+        )
         self.client: Any = None
 
     def _ensure_client(self) -> Any:
@@ -62,7 +67,10 @@ class OpenAIProvider:
             if openai is None:
                 raise LLMProviderError("OpenAI library not installed")
             # We use an explicit cast to satisfy static analysis
-            self.client = cast("AsyncOpenAI", openai.AsyncOpenAI(api_key=self.api_key))
+            self.client = cast(
+                "AsyncOpenAI",
+                openai.AsyncOpenAI(api_key=self._api_key.get_secret_value()),
+            )
             logger.info("Initialized OpenAI provider (Async)")
         return self.client
 
@@ -78,8 +86,12 @@ class OpenAIProvider:
             except Exception as e:
                 logger.warning(f"Error closing OpenAI client: {e}")
 
+    # Single retry owner is LLMService._generate_with_retry (rate-limit
+    # aware). A provider-level blanket retry on Exception would multiply
+    # attempts (3x3 upstream calls per request) and pointlessly retry
+    # non-transient failures (bad key, invalid request). The circuit
+    # breaker stays: failure isolation, not retry.
     @get_circuit_breaker("openai_provider")
-    @retry(max_attempts=3, exponential_base=2.0)
     async def generate(
         self, prompt: str, model: str, json_mode: bool = False, **kwargs
     ) -> tuple[str, int]:
@@ -137,8 +149,11 @@ class OpenAIProvider:
             logger.error(f"OpenAI generation error: {e}")
             raise LLMProviderError(f"OpenAI error: {e}") from e
 
+    # No @retry here either: decorating an async generator never retried
+    # anything (errors surface during iteration, outside the wrapper) —
+    # the decorator was dead code. Retrying a partially consumed stream
+    # would also duplicate already-yielded chunks.
     @get_circuit_breaker("openai_provider")
-    @retry(max_attempts=3, exponential_base=2.0)
     async def generate_stream(
         self, prompt: str, model: str, **kwargs
     ) -> AsyncIterator[tuple[str, int]]:
@@ -170,15 +185,14 @@ class OpenAIProvider:
                 **request_kwargs,
             )
 
-            accumulated_content: str = ""
+            # During streaming we estimate tokens as metadata is often
+            # unavailable per-chunk. Estimate the prompt once and accumulate
+            # per-delta instead of re-tokenizing the full text every chunk.
+            tokens = estimate_tokens(prompt)
             async for chunk in stream:
                 content = str(chunk.choices[0].delta.content or "")
                 if content:
-                    accumulated_content = "".join([accumulated_content, str(content)])
-                    # During streaming, we estimate tokens as metadata is often unavailable per-chunk.
-                    tokens = estimate_tokens(prompt) + estimate_tokens(
-                        accumulated_content
-                    )
+                    tokens += estimate_tokens(content)
                     yield content, tokens
 
         except Exception as e:

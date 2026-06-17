@@ -87,7 +87,7 @@ export interface MessageResponse {
   message: string;
 }
 
-export type TabType = 'users' | 'sessions' | 'audit';
+export type TabType = 'users' | 'sessions' | 'audit' | 'roles' | 'groups' | 'access' | 'sso';
 
 export const ROLES = ['admin', 'user', 'guest'] as const;
 export type Role = (typeof ROLES)[number];
@@ -96,4 +96,71 @@ export interface PluginTab {
   id: string;
   label: string;
   plugin: string;
+}
+
+// ---------------------------------------------------------------------------
+// RBAC
+// ---------------------------------------------------------------------------
+
+export interface RbacPermission {
+  slug: string;
+  description: string;
+  category: string;
+}
+
+export interface RbacRole {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  is_system: boolean;
+  permissions: string[];
+}
+
+export interface RoleCreateRequest {
+  slug: string;
+  name: string;
+  description?: string;
+}
+
+export interface RoleUpdateRequest {
+  name: string;
+  description?: string;
+}
+
+export interface TabPolicy {
+  plugin: string;
+  tab_id: string;
+  label: string;
+  restricted: boolean;
+}
+
+export interface AccessibleTab extends TabPolicy {
+  allowed: boolean;
+}
+
+export interface MePermissions {
+  permissions: string[];
+}
+
+export interface RbacGroup {
+  id: string;
+  slug: string;
+  name: string;
+  description: string;
+  is_system: boolean;
+  member_count: number;
+  roles: string[];
+}
+
+export interface GroupMember {
+  id: string;
+  email: string;
+  username: string | null;
+}
+
+export interface GroupCreateRequest {
+  slug: string;
+  name: string;
+  description?: string;
 }

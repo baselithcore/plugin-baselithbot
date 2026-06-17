@@ -1,0 +1,135 @@
+/**
+ * Self-service MFA (TOTP) security flow — Linear/Vercel-minimal surfaces over
+ * the shared --admin-* token layer.
+ */
+
+.mfa-modal {
+  width: 100%;
+  max-width: 480px;
+}
+
+.mfa-status {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  background: var(--admin-input-bg);
+}
+
+.mfa-status-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.mfa-status-icon.on {
+  background: rgba(63, 185, 80, 0.14);
+  color: var(--admin-success);
+}
+
+.mfa-status-icon.off {
+  background: var(--admin-surface-2);
+  color: var(--admin-text-muted);
+}
+
+.mfa-status-text {
+  flex: 1;
+}
+
+.mfa-status-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.mfa-status-sub {
+  margin-top: 0.125rem;
+  font-size: 0.8125rem;
+  color: var(--admin-text-muted);
+}
+
+/* ---- QR / secret ------------------------------------------------------ */
+.mfa-qr-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 1rem 0;
+}
+
+.mfa-qr {
+  width: 180px;
+  height: 180px;
+  padding: 0.625rem;
+  background: #fff;
+  border-radius: var(--admin-radius);
+}
+
+.mfa-secret {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  color: var(--admin-text);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius-sm);
+  background: var(--admin-input-bg);
+  word-break: break-all;
+}
+
+/* ---- OTP input -------------------------------------------------------- */
+.mfa-code-input {
+  width: 100%;
+  text-align: center;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 1.5rem;
+  letter-spacing: 0.5rem;
+  padding: 0.75rem;
+}
+
+/* ---- Backup codes ----------------------------------------------------- */
+.mfa-backup-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.875rem;
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  background: var(--admin-input-bg);
+}
+
+.mfa-backup-code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  color: var(--admin-text);
+  text-align: center;
+}
+
+.mfa-backup-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.mfa-warn {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--admin-warning);
+  background: rgba(210, 153, 34, 0.1);
+  border: 1px solid rgba(210, 153, 34, 0.28);
+  border-radius: var(--admin-radius-sm);
+}

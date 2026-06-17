@@ -2,10 +2,16 @@
 
 CVE-specific memory management using core/memory/AgentMemory.
 Provides semantic storage and recall for vulnerability knowledge.
+
+Implementation is split across private sub-modules:
+  _cve.py      — CVE knowledge (remember_cve, recall_related_cves, has_seen_cve,
+                  remember_analysis)
+  _patterns.py — Discovery patterns (remember_discovery_pattern,
+                  get_successful_patterns, get_false_positive_patterns)
+  _feedback.py — Correlation/attack-chain feedback
 """
 
 from core.observability.logging import get_logger
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 try:
@@ -13,7 +19,7 @@ try:
 except (ImportError, ValueError):
     from config import CVEHunterConfig, get_cve_hunter_config  # type: ignore[no-redef]
 
-from .types import CVEMemoryTypes
+from . import _cve, _patterns, _feedback
 
 logger = get_logger(__name__)
 
@@ -64,8 +70,6 @@ class CVEHunterMemory:
                 from core.memory import AgentMemory
                 from core.memory.providers import InMemoryProvider
 
-                # Create memory with in-memory provider
-                # In production, could use Redis or vector store provider
                 provider = InMemoryProvider()
                 self._memory = AgentMemory(
                     provider=provider,
@@ -91,120 +95,43 @@ class CVEHunterMemory:
         source: str,
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Optional[str]:
-        """Store a CVE record in memory.
-
-        Args:
-            cve_id: CVE identifier (e.g., CVE-2024-1234)
-            description: CVE description
-            severity: Severity level (critical, high, medium, low)
-            cvss_score: CVSS score
-            source: Source of the CVE data
-            metadata: Additional metadata
-
-        Returns:
-            Memory item ID if stored, None otherwise
-        """
-        if not self._memory:
-            return None
-
-        content = f"CVE {cve_id}: {description}"
-        meta = {
-            "type": CVEMemoryTypes.CVE_RECORD,
-            "cve_id": cve_id,
-            "severity": severity,
-            "cvss_score": cvss_score,
-            "source": source,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            **(metadata or {}),
-        }
-
-        try:
-            from core.memory.types import MemoryType
-
-            item = await self._memory.remember(
-                content=content,
-                memory_type=MemoryType.LONG_TERM,
-                importance=self._severity_to_importance(severity),
-                metadata=meta,
-            )
-            return str(item.id)
-        except Exception as e:
-            logger.warning(f"Failed to store CVE memory: {e}")
-            return None
+        """Store a CVE record in memory."""
+        return await _cve.remember_cve(
+            self._memory,
+            cve_id=cve_id,
+            description=description,
+            severity=severity,
+            cvss_score=cvss_score,
+            source=source,
+            metadata=metadata,
+            severity_to_importance_fn=self._severity_to_importance,
+        )
 
     async def recall_related_cves(
-        self,
-        query: str,
-        limit: int = 10,
+        self, query: str, limit: int = 10
     ) -> List[Dict[str, Any]]:
-        """Recall CVEs related to a query.
-
-        Uses semantic search if embeddings are available,
-        falls back to keyword matching otherwise.
-
-        Args:
-            query: Search query (e.g., "buffer overflow", "remote code execution")
-            limit: Maximum results to return
-
-        Returns:
-            List of related CVE memories with metadata
-        """
-        if not self._memory:
-            return []
-
-        try:
-            results = await self._memory.recall(
-                query=query,
-                limit=limit,
-            )
-
-            cve_memories = []
-            for item in results:
-                meta = getattr(item, "metadata", {}) or {}
-                if meta.get("type") != CVEMemoryTypes.CVE_RECORD:
-                    continue
-                cve_memories.append(
-                    {
-                        "memory_id": str(item.id),
-                        "cve_id": meta.get("cve_id"),
-                        "content": item.content,
-                        "severity": meta.get("severity"),
-                        "cvss_score": meta.get("cvss_score"),
-                        "relevance_score": getattr(item, "score", 0.0),
-                    }
-                )
-
-            return cve_memories
-        except Exception as e:
-            logger.warning(f"Failed to recall CVE memories: {e}")
-            return []
+        """Recall CVEs related to a query."""
+        return await _cve.recall_related_cves(self._memory, query=query, limit=limit)
 
     async def has_seen_cve(self, cve_id: str) -> bool:
-        """Check if a CVE has been seen before.
+        """Check if a CVE has been seen before."""
+        return await _cve.has_seen_cve(self._memory, cve_id=cve_id)
 
-        Args:
-            cve_id: CVE identifier
-
-        Returns:
-            True if CVE is in memory
-        """
-        if not self._memory:
-            return False
-
-        try:
-            results = await self._memory.recall(query=cve_id, limit=5)
-        except Exception as e:
-            logger.warning(
-                "has_seen_cve recall failed", extra={"cve_id": cve_id, "error": str(e)}
-            )
-            return False
-
-        for entry in results:
-            item = entry[0] if isinstance(entry, tuple) else entry
-            meta = getattr(item, "metadata", {}) or {}
-            if meta.get("cve_id") == cve_id:
-                return True
-        return False
+    async def remember_analysis(
+        self,
+        cve_id: str,
+        analysis_summary: str,
+        exploitability_score: Optional[float] = None,
+        recommendations: Optional[List[str]] = None,
+    ) -> Optional[str]:
+        """Store CVE analysis results."""
+        return await _cve.remember_analysis(
+            self._memory,
+            cve_id=cve_id,
+            analysis_summary=analysis_summary,
+            exploitability_score=exploitability_score,
+            recommendations=recommendations,
+        )
 
     # =========================================================================
     # Discovery Pattern Knowledge
@@ -218,174 +145,25 @@ class CVEHunterMemory:
         was_successful: bool,
         context: Optional[str] = None,
     ) -> Optional[str]:
-        """Store a discovery pattern.
-
-        Args:
-            pattern: The vulnerability pattern (e.g., "buffer overflow")
-            confidence: Confidence score (0.0-1.0)
-            source: Where the pattern was found
-            was_successful: Whether this led to a valid discovery
-            context: Additional context
-
-        Returns:
-            Memory item ID if stored
-        """
-        if not self._memory:
-            return None
-
-        memory_type = (
-            CVEMemoryTypes.DISCOVERY_SUCCESS
-            if was_successful
-            else CVEMemoryTypes.DISCOVERY_FALSE_POSITIVE
+        """Store a discovery pattern."""
+        return await _patterns.remember_discovery_pattern(
+            self._memory,
+            pattern=pattern,
+            confidence=confidence,
+            source=source,
+            was_successful=was_successful,
+            context=context,
         )
 
-        content = f"Discovery pattern: {pattern} from {source}"
-        if context:
-            content += f" - Context: {context[:200]}"
-
-        meta = {
-            "type": memory_type,
-            "pattern": pattern,
-            "confidence": confidence,
-            "source": source,
-            "was_successful": was_successful,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        }
-
-        try:
-            from core.memory.types import MemoryType
-
-            # Successful discoveries are more important
-            importance = 0.8 if was_successful else 0.3
-
-            item = await self._memory.remember(
-                content=content,
-                memory_type=MemoryType.LONG_TERM,
-                importance=importance,
-                metadata=meta,
-            )
-            return str(item.id)
-        except Exception as e:
-            logger.warning(f"Failed to store discovery pattern: {e}")
-            return None
-
     async def get_successful_patterns(self, limit: int = 20) -> List[Dict[str, Any]]:
-        """Get successful discovery patterns for learning.
-
-        Returns:
-            List of successful pattern memories
-        """
-        if not self._memory:
-            return []
-
-        try:
-            results = await self._memory.recall(
-                query="discovery pattern successful",
-                limit=limit * 2,
-            )
-
-            patterns = []
-            for item in results:
-                meta = getattr(item, "metadata", {}) or {}
-                if not meta.get("was_successful"):
-                    continue
-                patterns.append(
-                    {
-                        "pattern": meta.get("pattern"),
-                        "confidence": meta.get("confidence"),
-                        "source": meta.get("source"),
-                    }
-                )
-                if len(patterns) >= limit:
-                    break
-
-            return patterns
-        except Exception:
-            return []
+        """Get successful discovery patterns for learning."""
+        return await _patterns.get_successful_patterns(self._memory, limit=limit)
 
     async def get_false_positive_patterns(
         self, limit: int = 20
     ) -> List[Dict[str, Any]]:
-        """Get false positive patterns to avoid.
-
-        Returns:
-            List of false positive pattern memories
-        """
-        if not self._memory:
-            return []
-
-        try:
-            results = await self._memory.recall(
-                query="discovery pattern false positive",
-                limit=limit * 2,
-            )
-
-            patterns = []
-            for item in results:
-                meta = getattr(item, "metadata", {}) or {}
-                if meta.get("was_successful"):
-                    continue
-                patterns.append(
-                    {
-                        "pattern": meta.get("pattern"),
-                        "source": meta.get("source"),
-                    }
-                )
-                if len(patterns) >= limit:
-                    break
-
-            return patterns
-        except Exception:
-            return []
-
-    # =========================================================================
-    # Analysis Knowledge
-    # =========================================================================
-
-    async def remember_analysis(
-        self,
-        cve_id: str,
-        analysis_summary: str,
-        exploitability_score: Optional[float] = None,
-        recommendations: Optional[List[str]] = None,
-    ) -> Optional[str]:
-        """Store CVE analysis results.
-
-        Args:
-            cve_id: CVE identifier
-            analysis_summary: AI-generated analysis summary
-            exploitability_score: Optional exploitability score
-            recommendations: Optional list of recommendations
-
-        Returns:
-            Memory item ID if stored
-        """
-        if not self._memory:
-            return None
-
-        content = f"Analysis of {cve_id}: {analysis_summary}"
-
-        meta = {
-            "type": CVEMemoryTypes.CVE_ANALYSIS,
-            "cve_id": cve_id,
-            "exploitability_score": exploitability_score,
-            "recommendations": recommendations or [],
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-        }
-
-        try:
-            from core.memory.types import MemoryType
-
-            item = await self._memory.remember(
-                content=content,
-                memory_type=MemoryType.LONG_TERM,
-                importance=0.7,
-                metadata=meta,
-            )
-            return str(item.id)
-        except Exception as e:
-            logger.warning(f"Failed to store analysis memory: {e}")
-            return None
+        """Get false positive patterns to avoid."""
+        return await _patterns.get_false_positive_patterns(self._memory, limit=limit)
 
     # =========================================================================
     # Correlation Feedback
@@ -399,32 +177,13 @@ class CVEHunterMemory:
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Optional[str]:
         """Store feedback for a finding-to-CVE correlation."""
-        if not self._memory:
-            return None
-
-        content = f"Correlation feedback {correlation_id}: {outcome}"
-        meta = {
-            "type": CVEMemoryTypes.CORRELATION_FEEDBACK,
-            "correlation_id": correlation_id,
-            "outcome": outcome,
-            "correlation_type": correlation_type,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            **(metadata or {}),
-        }
-
-        try:
-            from core.memory.types import MemoryType
-
-            item = await self._memory.remember(
-                content=content,
-                memory_type=MemoryType.LONG_TERM,
-                importance=0.6,
-                metadata=meta,
-            )
-            return str(item.id)
-        except Exception as e:
-            logger.warning(f"Failed to store correlation feedback: {e}")
-            return None
+        return await _feedback.remember_correlation_feedback(
+            self._memory,
+            correlation_id=correlation_id,
+            outcome=outcome,
+            correlation_type=correlation_type,
+            metadata=metadata,
+        )
 
     async def remember_attack_chain_feedback(
         self,
@@ -433,96 +192,22 @@ class CVEHunterMemory:
         metadata: Optional[Dict[str, Any]] = None,
     ) -> Optional[str]:
         """Store feedback for an attack-chain candidate."""
-        if not self._memory:
-            return None
-
-        content = f"Attack chain feedback {chain_id}: {outcome}"
-        meta = {
-            "type": CVEMemoryTypes.ATTACK_CHAIN_FEEDBACK,
-            "chain_id": chain_id,
-            "outcome": outcome,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            **(metadata or {}),
-        }
-
-        try:
-            from core.memory.types import MemoryType
-
-            item = await self._memory.remember(
-                content=content,
-                memory_type=MemoryType.LONG_TERM,
-                importance=0.6,
-                metadata=meta,
-            )
-            return str(item.id)
-        except Exception as e:
-            logger.warning(f"Failed to store attack chain feedback: {e}")
-            return None
+        return await _feedback.remember_attack_chain_feedback(
+            self._memory,
+            chain_id=chain_id,
+            outcome=outcome,
+            metadata=metadata,
+        )
 
     async def get_correlation_feedbacks(self, limit: int = 100) -> List[Dict[str, Any]]:
         """Get recent correlation feedback entries."""
-        if not self._memory:
-            return []
-
-        try:
-            results = await self._memory.recall(
-                query="correlation feedback",
-                limit=limit * 2,
-            )
-        except Exception:
-            return []
-
-        feedbacks: List[Dict[str, Any]] = []
-        for entry in results:
-            item = entry[0] if isinstance(entry, tuple) else entry
-            meta = getattr(item, "metadata", {})
-            if meta.get("type") != CVEMemoryTypes.CORRELATION_FEEDBACK:
-                continue
-            feedbacks.append(
-                {
-                    "correlation_id": meta.get("correlation_id"),
-                    "outcome": meta.get("outcome"),
-                    "correlation_type": meta.get("correlation_type"),
-                    "timestamp": meta.get("timestamp"),
-                }
-            )
-            if len(feedbacks) >= limit:
-                break
-
-        return feedbacks
+        return await _feedback.get_correlation_feedbacks(self._memory, limit=limit)
 
     async def get_attack_chain_feedbacks(
         self, limit: int = 100
     ) -> List[Dict[str, Any]]:
         """Get recent attack-chain feedback entries."""
-        if not self._memory:
-            return []
-
-        try:
-            results = await self._memory.recall(
-                query="attack chain feedback",
-                limit=limit * 2,
-            )
-        except Exception:
-            return []
-
-        feedbacks: List[Dict[str, Any]] = []
-        for entry in results:
-            item = entry[0] if isinstance(entry, tuple) else entry
-            meta = getattr(item, "metadata", {})
-            if meta.get("type") != CVEMemoryTypes.ATTACK_CHAIN_FEEDBACK:
-                continue
-            feedbacks.append(
-                {
-                    "chain_id": meta.get("chain_id"),
-                    "outcome": meta.get("outcome"),
-                    "timestamp": meta.get("timestamp"),
-                }
-            )
-            if len(feedbacks) >= limit:
-                break
-
-        return feedbacks
+        return await _feedback.get_attack_chain_feedbacks(self._memory, limit=limit)
 
     # =========================================================================
     # Memory Management
@@ -544,18 +229,14 @@ class CVEHunterMemory:
             )
             return {
                 "status": "completed",
-                "compressed": getattr(result, "compressed_count", 0) if result else 0,
+                "compressed": (getattr(result, "compressed_count", 0) if result else 0),
             }
         except Exception as e:
             logger.warning(f"Memory compression failed: {e}")
             return {"status": "failed", "error": str(e)}
 
     def get_stats(self) -> Dict[str, Any]:
-        """Get memory statistics.
-
-        Returns:
-            Memory stats dict
-        """
+        """Get memory statistics."""
         if not self._memory:
             return {"status": "disabled"}
 
@@ -586,14 +267,7 @@ class CVEHunterMemory:
     # =========================================================================
 
     def _severity_to_importance(self, severity: str) -> float:
-        """Convert severity to importance score.
-
-        Args:
-            severity: Severity string
-
-        Returns:
-            Importance score (0.0-1.0)
-        """
+        """Convert severity to importance score (0.0-1.0)."""
         mapping = {
             "critical": 1.0,
             "high": 0.8,
@@ -612,11 +286,7 @@ _memory_instance: Optional[CVEHunterMemory] = None
 
 
 def get_cve_hunter_memory() -> CVEHunterMemory:
-    """Get CVE Hunter memory singleton.
-
-    Returns:
-        CVEHunterMemory instance
-    """
+    """Get CVE Hunter memory singleton."""
     global _memory_instance
     if _memory_instance is None:
         _memory_instance = CVEHunterMemory()
@@ -624,11 +294,7 @@ def get_cve_hunter_memory() -> CVEHunterMemory:
 
 
 async def initialize_memory() -> CVEHunterMemory:
-    """Initialize and return CVE Hunter memory.
-
-    Returns:
-        Initialized CVEHunterMemory instance
-    """
+    """Initialize and return CVE Hunter memory."""
     memory = get_cve_hunter_memory()
     await memory.initialize()
     return memory

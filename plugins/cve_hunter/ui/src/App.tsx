@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import CVEHunterPanel from './components/CVEHunterPanel';
-import { AuthProvider, ProtectedRoute, LoginPage } from '@auth';
+import { AuthProvider } from '@auth';
+import { ProtectedRoute, LoginPage } from '@auth/login';
 
 // Wrapper to handle login success redirect logic
 const LoginWrapper = () => {

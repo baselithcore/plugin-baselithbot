@@ -7,9 +7,11 @@ Standardized for Baselith Marketplace coherence.
 """
 
 import logging
+import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional
+from urllib.parse import urlparse
 
 import httpx
 
@@ -34,6 +36,15 @@ class PluginRegistry:
         self.config = config or PluginConfig()
         self.cache_path = Path("cache/marketplace_registry.json")
         self._data: Optional[RegistryData] = None
+        # ID -> plugin index, rebuilt whenever registry data is (re)loaded so
+        # get_plugin is O(1) instead of an O(n) scan over data.plugins.
+        self._by_id: dict[str, MarketplacePlugin] = {}
+
+    def _set_data(self, data: RegistryData) -> RegistryData:
+        """Store registry data and rebuild the id->plugin lookup index."""
+        self._data = data
+        self._by_id = {p.id: p for p in data.plugins}
+        return data
 
     async def fetch(self, force: bool = False) -> RegistryData:
         """
@@ -53,8 +64,9 @@ class PluginRegistry:
                 ):
                     with open(self.cache_path, "r") as f:
                         data_json = f.read()
-                        self._data = RegistryData.model_validate_json(data_json)
-                        return self._data
+                        return self._set_data(
+                            RegistryData.model_validate_json(data_json)
+                        )
             except Exception as e:
                 logger.warning(f"Error reading marketplace cache: {e}")
 
@@ -67,12 +79,14 @@ class PluginRegistry:
                 file_path = Path(self.config.registry_url.replace("file://", ""))
                 with open(file_path, "r") as f:
                     data_json = f.read()
-                    self._data = RegistryData.model_validate_json(data_json)
+                    data = self._set_data(RegistryData.model_validate_json(data_json))
                     self._save_to_cache(data_json)
-                    return self._data
+                    return data
             except Exception as e:
                 logger.error(f"Failed to read local marketplace registry: {e}")
                 raise
+
+        self._validate_registry_url(self.config.registry_url)
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             try:
@@ -80,11 +94,11 @@ class PluginRegistry:
                 response.raise_for_status()
 
                 data_json = response.text
-                self._data = RegistryData.model_validate_json(data_json)
+                data = self._set_data(RegistryData.model_validate_json(data_json))
 
                 # Update cache
                 self._save_to_cache(data_json)
-                return self._data
+                return data
             except Exception as e:
                 logger.error(f"Failed to fetch marketplace registry: {e}")
 
@@ -93,9 +107,48 @@ class PluginRegistry:
                     logger.info("Falling back to existing cache after fetch failure.")
                     with open(self.cache_path, "r") as f:
                         data_json = f.read()
-                        self._data = RegistryData.model_validate_json(data_json)
-                        return self._data
+                        return self._set_data(
+                            RegistryData.model_validate_json(data_json)
+                        )
                 raise RuntimeError(f"Could not retrieve marketplace registry: {e}")
+
+    @staticmethod
+    def _validate_registry_url(url: str) -> None:
+        """Reject plaintext-HTTP registry URLs.
+
+        The registry feeds the plugin installer, so a MITM on an http://
+        registry can redirect installs to attacker-controlled packages.
+        Plain HTTP is allowed only toward loopback hosts (local testing) or
+        when explicitly opted in via BASELITH_MARKETPLACE_ALLOW_HTTP=true.
+        """
+        parsed = urlparse(url)
+        scheme = parsed.scheme.lower()
+        if scheme == "https":
+            return
+        if scheme != "http":
+            raise ValueError(
+                f"Unsupported marketplace registry scheme '{scheme}' in {url!r}; "
+                "use https:// (or file:// for air-gapped registries)."
+            )
+        host = (parsed.hostname or "").lower()
+        if host in ("localhost", "127.0.0.1", "::1"):
+            return
+        allow_http = os.environ.get(
+            "BASELITH_MARKETPLACE_ALLOW_HTTP", ""
+        ).strip().lower() in ("1", "true", "yes", "on")
+        if not allow_http:
+            raise ValueError(
+                f"Refusing plaintext HTTP marketplace registry {url!r}: plugin "
+                "metadata would be exposed to MITM tampering. Use https://, or "
+                "set BASELITH_MARKETPLACE_ALLOW_HTTP=true only on a trusted "
+                "network."
+            )
+        logger.warning(
+            "Marketplace registry %s uses plaintext HTTP "
+            "(BASELITH_MARKETPLACE_ALLOW_HTTP=true). Registry responses are "
+            "not protected against tampering.",
+            url,
+        )
 
     def _save_to_cache(self, content: str):
         """Persist registry data to disk."""
@@ -119,11 +172,8 @@ class PluginRegistry:
 
     async def get_plugin(self, plugin_id: str) -> Optional[MarketplacePlugin]:
         """Retrieve metadata for a specific plugin by ID."""
-        data = await self.fetch()
-        for p in data.plugins:
-            if p.id == plugin_id:
-                return p
-        return None
+        await self.fetch()
+        return self._by_id.get(plugin_id)
 
     async def search(
         self,

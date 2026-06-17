@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HoneypotPanel from './components/HoneypotPanel';
-import { AuthProvider, LoginPage, ProtectedRoute } from '@auth';
+import { AuthProvider } from '@auth';
+import { LoginPage, ProtectedRoute } from '@auth/login';
 
 // Wrapper for the shared LoginPage to handle successful login redirect
 function LoginWrapper() {

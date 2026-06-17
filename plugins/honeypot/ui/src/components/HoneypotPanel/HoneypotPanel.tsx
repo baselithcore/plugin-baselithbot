@@ -60,21 +60,21 @@ const HoneypotPanel = () => {
   // Auth hook
   const { logout, user, canAccessTab } = useAuth();
 
-  // Filter visible tabs based on permissions
+  // Filter visible tabs based on the central RBAC policy (scoped to honeypot).
   const visibleTabs = useMemo(() => {
-    return ALL_TABS.filter((tab) => canAccessTab(tab.id));
+    return ALL_TABS.filter((tab) => canAccessTab(tab.id, 'honeypot'));
   }, [canAccessTab]);
 
   // Ensure active tab is always valid
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     // Initial state: use first visible tab or fallback to 'monitor'
-    const firstVisible = ALL_TABS.find((t) => canAccessTab(t.id));
+    const firstVisible = ALL_TABS.find((t) => canAccessTab(t.id, 'honeypot'));
     return firstVisible ? firstVisible.id : 'monitor';
   });
 
   // Redirect if current tab becomes inaccessible
   useEffect(() => {
-    if (!canAccessTab(activeTab) && visibleTabs.length > 0) {
+    if (!canAccessTab(activeTab, 'honeypot') && visibleTabs.length > 0) {
       setActiveTab(visibleTabs[0].id);
     }
   }, [activeTab, canAccessTab, visibleTabs]);

@@ -1,0 +1,344 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------ *
+ * BaselithControl — Linear/Vercel-minimal control plane.
+ * Near-monochrome neutrals, a single confident violet accent, hairline
+ * borders doing the elevation work (shadows almost absent), tight Inter
+ * typography, crisp fast motion. Semantic tokens so components never
+ * hardcode hex.
+ * ------------------------------------------------------------------ */
+@theme {
+  --color-accent: #5e6ad2;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --radius-panel: 0.625rem;
+}
+
+/* ---- Light (default): Vercel-clean daylight ------------------------ */
+:root {
+  --bg: #fbfbfc;
+  --bg-soft: #ffffff;
+
+  --text: #0b0c0e;
+  --text-dim: #62666d;
+  --text-faint: #9095a0;
+
+  --surface-1: #ffffff;
+  --surface-2: #f4f5f7;
+  --surface-3: #ebedf0;
+  --surface-inset: rgba(11, 12, 14, 0.028);
+
+  --border: rgba(11, 12, 14, 0.09);
+  --border-strong: rgba(11, 12, 14, 0.16);
+
+  --accent: #5e6ad2;
+  --accent-hover: #4f5bc4;
+  --accent-fg: #ffffff;
+  --accent-soft: rgba(94, 106, 210, 0.1);
+  --accent-border: rgba(94, 106, 210, 0.32);
+  --accent-muted: rgba(94, 106, 210, 0.06);
+
+  --shadow-panel: 0 1px 2px rgba(11, 12, 14, 0.04);
+  --shadow-pop: 0 12px 32px -12px rgba(11, 12, 14, 0.16), 0 0 0 1px var(--border);
+
+  --topbar-bg: rgba(255, 255, 255, 0.78);
+}
+
+/* ---- Dark: Linear near-black --------------------------------------- */
+:root[data-theme='dark'] {
+  --bg: #08090a;
+  --bg-soft: #0e0f11;
+
+  --text: #f7f8f8;
+  --text-dim: #8a8f98;
+  --text-faint: #62666d;
+
+  --surface-1: #0e0f11;
+  --surface-2: #18191c;
+  --surface-3: #232427;
+  --surface-inset: rgba(255, 255, 255, 0.04);
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+
+  --accent: #828dff;
+  --accent-hover: #9aa3ff;
+  --accent-fg: #0b0c0e;
+  --accent-soft: rgba(130, 141, 255, 0.14);
+  --accent-border: rgba(130, 141, 255, 0.4);
+  --accent-muted: rgba(130, 141, 255, 0.08);
+
+  --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-pop: 0 16px 40px -14px rgba(0, 0, 0, 0.7), 0 0 0 1px var(--border);
+
+  --topbar-bg: rgba(8, 9, 10, 0.72);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-feature-settings: 'cv11', 'ss01';
+  letter-spacing: -0.006em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+  overflow: hidden;
+}
+
+/* ---- Display helper: tight tracking is the "display" treatment ------ */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.022em;
+}
+
+/* Status pulse — gentle breathe for live indicators. */
+@keyframes status-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+.status-pulse {
+  animation: status-breathe 2.4s ease-in-out infinite;
+}
+
+/* ---- Ambient backdrop: ultra-faint static grid, no motion ----------- *
+ * Linear/Vercel keep the canvas flat and quiet. A single hairline grid,
+ * masked to fade at the top, adds the barest sense of surface without
+ * competing with content. Decorative (aria-hidden, pinned behind all). */
+.aurora-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 56px 56px;
+  opacity: 0.35;
+  -webkit-mask-image: radial-gradient(ellipse 90% 55% at 50% -8%, #000 4%, transparent 70%);
+  mask-image: radial-gradient(ellipse 90% 55% at 50% -8%, #000 4%, transparent 70%);
+}
+
+/* Shimmer — elegant left-to-right light sweep for loading skeletons. */
+@keyframes shimmer-sweep {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--text) 7%, transparent),
+    transparent
+  );
+  animation: shimmer-sweep 1.6s ease-in-out infinite;
+}
+
+/* LED — small status dot. Color set by `color` on the element. */
+.led {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: currentColor;
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 16%, transparent);
+}
+
+/* ---- Surfaces: flat panels, hairline borders, near-zero shadow ------ */
+.glass {
+  position: relative;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+  transition:
+    border-color 0.16s ease,
+    background-color 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease;
+}
+.glass-interactive:hover {
+  border-color: var(--border-strong);
+  background: var(--bg-soft);
+}
+
+.topbar {
+  background: var(--topbar-bg);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+}
+
+/* ---- Text + border helpers ------------------------------------------ */
+.t-primary {
+  color: var(--text);
+}
+.t-dim {
+  color: var(--text-dim);
+}
+.t-faint {
+  color: var(--text-faint);
+}
+.t-accent {
+  color: var(--accent);
+}
+.brd {
+  border-color: var(--border);
+}
+
+.surf {
+  background: var(--surface-inset);
+  transition: background-color 0.14s ease;
+}
+.surf-hover:hover {
+  background: var(--surface-2);
+}
+
+.control-field {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+}
+.control-field:hover {
+  border-color: var(--border-strong);
+}
+
+.control-icon-button {
+  display: inline-flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  transition:
+    background-color 0.14s ease,
+    border-color 0.14s ease,
+    color 0.14s ease;
+}
+.control-icon-button:hover {
+  background: var(--surface-2);
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.ph-faint::placeholder {
+  color: var(--text-faint);
+  opacity: 1;
+}
+
+/* ---- Accent primitives ---------------------------------------------- */
+.accent-soft {
+  background: var(--accent-soft);
+}
+.accent-ring {
+  box-shadow: inset 0 0 0 1px var(--accent-border);
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-fg);
+  transition:
+    background-color 0.14s ease,
+    transform 0.1s ease;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+.btn-primary:active {
+  transform: translateY(0.5px);
+}
+
+/* Nav: horizontal header tabs — soft accent pill when active. */
+.nav-item {
+  color: var(--text-dim);
+  transition:
+    background-color 0.14s ease,
+    color 0.14s ease;
+}
+.nav-item:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.nav-item-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.density-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16.5rem), 1fr));
+}
+
+/* ---- Affordance: clickable controls show the pointer cursor ---------- */
+:where(button, [role='button'], [role='switch'], [role='tab'], summary):not(
+  :disabled,
+  [aria-disabled='true']
+) {
+  cursor: pointer;
+}
+:where(button, [role='button'], [role='switch'], [role='tab']):disabled,
+:where(button, [role='button'], [role='switch'], [role='tab'])[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
+/* ---- Focus ring (keyboard accessibility) ---------------------------- */
+:where(button, a, input, select, [role='switch']):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- Scrollbar ------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  scrollbar-width: none;
+}
+
+/* ---- Reduced motion: silence ambient CSS animation (accessibility) ---- */
+/* Component transitions handled by motion's MotionConfig reducedMotion="user". */
+@media (prefers-reduced-motion: reduce) {
+  .status-pulse,
+  .shimmer::after {
+    animation: none;
+  }
+}

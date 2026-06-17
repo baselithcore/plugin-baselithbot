@@ -19,6 +19,8 @@ from plugins.auth.audit import AuditLogger, get_audit_logger
 from plugins.auth.config import AuthConfig, get_auth_config
 from plugins.auth.middleware import AuthMiddleware
 from plugins.auth.persistence import AuthPersistence, get_auth_persistence
+from plugins.auth.rbac import RBACService, get_rbac_service
+from plugins.auth.rbac_router import rbac_admin_router, rbac_me_router
 from plugins.auth.router import router as auth_router
 
 logger = get_logger(__name__)
@@ -62,6 +64,10 @@ class AuthPlugin(RouterPlugin):
             persistence.create_tables()
             ServiceRegistry.register(AuthPersistence, persistence)
             logger.info("Auth database persistence registered in DI")
+            # Seed the initial admin (idempotent; no-op unless configured).
+            from plugins.auth.bootstrap_admin import bootstrap_admin
+
+            bootstrap_admin(self._config, persistence)
         except Exception as e:
             logger.error(f"Failed to initialize auth database: {e}")
 
@@ -97,6 +103,17 @@ class AuthPlugin(RouterPlugin):
         csrf = get_csrf_protection()
         ServiceRegistry.register(CSRFProtection, csrf)
 
+        # Register RBAC service and seed built-in permissions/roles. Tab
+        # discovery happens lazily on first use (all plugins may not be loaded
+        # yet) and via the /admin/rbac/tabs/refresh endpoint.
+        try:
+            rbac = get_rbac_service()
+            rbac.bootstrap()
+            ServiceRegistry.register(RBACService, rbac)
+            logger.info("Auth RBAC service registered and seeded")
+        except Exception as e:
+            logger.error(f"Failed to initialize RBAC service: {e}")
+
         logger.info("Auth plugin core and internal services registered in DI")
 
     async def shutdown(self) -> None:
@@ -115,6 +132,8 @@ class AuthPlugin(RouterPlugin):
         combined_router = APIRouter()
         combined_router.include_router(auth_router)
         combined_router.include_router(admin_router)
+        combined_router.include_router(rbac_admin_router)
+        combined_router.include_router(rbac_me_router)
         return combined_router
 
     def get_router_prefix(self) -> str:
@@ -132,6 +151,17 @@ class AuthPlugin(RouterPlugin):
     def get_middleware(self) -> Optional[type]:
         """Return the auth middleware class."""
         return AuthMiddleware
+
+    @classmethod
+    def setup_app_middleware(cls, app: Any) -> None:
+        """Register the central plugin-access enforcement middleware.
+
+        Hooked at app-construction time (the middleware stack freezes before
+        lifespan), so the gateway gate is in place for every plugin route.
+        """
+        from plugins.auth.access_middleware import PluginAccessMiddleware
+
+        app.add_middleware(PluginAccessMiddleware)
 
     # =========================================================================
     # Static Assets

@@ -37,8 +37,11 @@ graph TB
 core/middleware/
 ├── __init__.py        # Public exports
 ├── observability.py   # RequestIdMiddleware
-├── security.py        # RequestSizeLimitMiddleware, SecurityHeadersMiddleware,
-│                      #   RateLimiter, SecurityManager, auth dependencies
+├── security.py            # SecurityManager, auth dependencies
+│                          #   (re-exports RateLimiter + the two ASGI middlewares)
+├── rate_limiter.py         # RateLimiter (Redis Lua fixed-window + fallback)
+├── security_headers.py    # RequestSizeLimitMiddleware, SecurityHeadersMiddleware
+├── _security_metrics.py   # SECURITY_EVENTS Prometheus counter (shared)
 ├── cost_control.py    # CostControlMiddleware, CostController, cost_controller
 ├── optimization.py    # StaticCacheMiddleware, SmartGzipMiddleware
 └── tenant.py          # TenantMiddleware
@@ -79,11 +82,11 @@ execution. The factory adds, in order:
 | Added in factory | Class | Purpose |
 | ---------------- | ----- | ------- |
 | `RequestIdMiddleware` | `observability.py` | Propagate / generate `X-Request-ID`, bind to logging context |
-| `RequestSizeLimitMiddleware` | `security.py` | Reject oversized bodies (DoS protection) |
+| `RequestSizeLimitMiddleware` | `security_headers.py` | Reject oversized bodies (DoS protection) |
 | `CostControlMiddleware` | `cost_control.py` | Per-request token/query budget tracking |
 | `StaticCacheMiddleware` | `optimization.py` | `Cache-Control` for `/static` and `/console` |
 | `SmartGzipMiddleware` | `optimization.py` | Gzip compression, skipping `/chat/stream` |
-| `SecurityHeadersMiddleware` | `security.py` | Inject baseline security headers / CSP |
+| `SecurityHeadersMiddleware` | `security_headers.py` | Inject baseline security headers / CSP |
 | `TrustedHostMiddleware` | Starlette | Host header validation (when `TRUSTED_HOSTS` set) |
 | CSRF origin check | factory closure | Validate `Origin` on state-changing requests |
 | Plugin activation | factory closure | Lazily activate plugins on first matching request |
@@ -102,7 +105,8 @@ logging context, and echoes it back on the response.
 
 ## RequestSizeLimitMiddleware
 
-`core/middleware/security.py`. Enforces a maximum request body size in two
+`core/middleware/security_headers.py` (re-exported from `core.middleware.security`).
+Enforces a maximum request body size in two
 stages: a cheap `Content-Length` reject, then a streaming byte counter on the
 receive channel (defends against chunked-encoding bypass and missing
 `Content-Length`). Oversized requests get `413 Request Entity Too Large`.
@@ -115,12 +119,22 @@ receive channel (defends against chunked-encoding bypass and missing
 
 ## SecurityHeadersMiddleware
 
-`core/middleware/security.py`. Injects baseline headers in the `send` wrapper so
+`core/middleware/security_headers.py` (re-exported from `core.middleware.security`).
+Injects baseline headers in the `send` wrapper so
 streaming responses are unaffected. Always sets `X-Content-Type-Options`,
 `X-Frame-Options`, `Referrer-Policy`, and `X-XSS-Protection`. When
 `security_headers_enabled` is on it adds a strict default Content-Security-Policy
 (overridable via config), an optional `Permissions-Policy`, and HSTS when
 `enable_hsts` is set. The header list is pre-encoded once per process.
+
+The strict default CSP is `script-src 'self'`, which blocks the FastAPI
+interactive docs (Swagger UI / ReDoc) — they load their bundles from the
+jsDelivr CDN and bootstrap with an inline `<script>`. The middleware therefore
+emits a **path-scoped relaxed CSP** for the `/docs` and `/redoc` routes only
+(whitelisting `https://cdn.jsdelivr.net` and `'unsafe-inline'`); every other
+route keeps the strict policy. An explicit operator `content_security_policy`
+always wins and is applied verbatim to all routes, docs included. Both the
+strict and docs header lists are cached independently after first use.
 
 ---
 
@@ -199,10 +213,13 @@ context is set to the user's tenant.
 ### RateLimiter
 
 A distributed fixed-window limiter keyed by `role:credential`/IP, backed by
-Redis with an in-memory fallback when Redis is unavailable. It uses an atomic
-`SET NX EX` + `INCR` to avoid a TTL race, emits the `security_events_total`
-Prometheus counter, and raises `429` over the limit. The module exposes a lazy
-`rate_limiter` proxy that resolves the shared instance on access.
+Redis with an in-memory fallback when Redis is unavailable. It lives in
+`core/middleware/rate_limiter.py` (re-exported from `security` for backward
+compatibility) and runs a single atomic Lua script per check (`INCR` +
+first-hit `EXPIRE` — one round trip, no TTL race), emits the
+`security_events_total` Prometheus counter, and raises `429` over the limit.
+The module exposes a lazy `rate_limiter` proxy that resolves the shared
+instance on access.
 
 ### Admin Basic-Auth helpers & lockout
 

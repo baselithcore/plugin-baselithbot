@@ -1,0 +1,603 @@
+{
+  "common": {
+    "appName": "BaselithAuth",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "create": "Crea",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "close": "Chiudi",
+    "confirm": "Conferma",
+    "search": "Cerca",
+    "loading": "Caricamento…",
+    "actions": "Azioni",
+    "yes": "Sì",
+    "no": "No",
+    "refresh": "Aggiorna",
+    "back": "Indietro",
+    "none": "Nessuno",
+    "all": "Tutti",
+    "active": "Attivo",
+    "inactive": "Inattivo",
+    "copy": "Copia",
+    "copied": "Copiato",
+    "saving": "Salvataggio…",
+    "retry": "Riprova",
+    "previous": "Precedente",
+    "next": "Successivo",
+    "prev": "Prec.",
+    "dismiss": "Ignora",
+    "errorLabel": "Errore: {{message}}",
+    "enabled": "Attivo",
+    "disabled": "Disattivato",
+    "true": "Vero",
+    "false": "Falso",
+    "nullValue": "null",
+    "unknown": "Sconosciuto",
+    "never": "Mai"
+  },
+  "login": {
+    "title": "Accedi",
+    "subtitle": "Accedi alla console di amministrazione",
+    "identifier": "Email o nome utente",
+    "identifierPlaceholder": "tu@esempio.com",
+    "password": "Password",
+    "passwordPlaceholder": "La tua password",
+    "submit": "Accedi",
+    "signingIn": "Accesso in corso…",
+    "registerTitle": "Crea account",
+    "registerSubtitle": "Registra un nuovo account",
+    "email": "Email",
+    "username": "Nome utente",
+    "usernameOptional": "Nome utente (facoltativo)",
+    "register": "Registrati",
+    "registering": "Creazione account…",
+    "mfaTitle": "Verifica a due fattori",
+    "mfaSubtitle": "Inserisci il codice a 6 cifre dalla tua app di autenticazione",
+    "mfaCode": "Codice di verifica",
+    "verify": "Verifica",
+    "verifying": "Verifica in corso…",
+    "needAccount": "Non hai un account?",
+    "haveAccount": "Hai già un account?",
+    "switchToRegister": "Registrati",
+    "switchToLogin": "Accedi",
+    "brandSubtitle": "Accedi per utilizzare il sistema",
+    "identifierPlaceholderCombined": "tu@esempio.com o nome utente",
+    "passwordDots": "••••••••",
+    "mfaHeader": "Autenticazione a due fattori",
+    "mfaHeaderSubtitle": "Inserisci il codice dalla tua app di autenticazione",
+    "mfaCodeLabel": "Codice di verifica",
+    "mfaCodePlaceholder": "000000",
+    "mfaCodeHint": "Inserisci il codice a 6 cifre o un codice di backup",
+    "backToLogin": "Torna all'accesso",
+    "footer": "© 2026 Gippo. Tutti i diritti riservati.",
+    "errors": {
+      "invalidCredentials": "Credenziali non valide",
+      "mfaInvalid": "Codice di verifica non valido",
+      "generic": "Accesso non riuscito. Riprova.",
+      "loginFailed": "Accesso non riuscito",
+      "missingMfaToken": "Token MFA mancante",
+      "mfaVerificationFailed": "Verifica MFA non riuscita"
+    }
+  },
+  "protected": {
+    "loading": "Caricamento...",
+    "accessDenied": "Accesso negato",
+    "noPagePermission": "Non hai il permesso di accedere a questa pagina.",
+    "noSectionAccess": "Non hai accesso a questa sezione.",
+    "requiredRole": "Ruolo richiesto:",
+    "limitedTo": "Il tuo accesso è limitato a: {{tabs}}"
+  },
+  "nav": {
+    "adminPanel": "Pannello Admin",
+    "users": "Utenti",
+    "sessions": "Sessioni",
+    "audit": "Registro Audit",
+    "roles": "Ruoli",
+    "groups": "Gruppi",
+    "access": "Controllo Accessi",
+    "logout": "Esci",
+    "version": "Pannello Admin v1.0",
+    "myAccount": "Il mio account",
+    "sso": "SSO"
+  },
+  "groups": {
+    "title": "Gruppi",
+    "addGroup": "Nuovo Gruppo",
+    "description": "Raggruppa utenti e assegna ruoli in blocco. I membri ereditano tutti i ruoli concessi al gruppo.",
+    "slug": "Slug",
+    "name": "Nome",
+    "descriptionField": "Descrizione",
+    "empty": "Nessun gruppo definito",
+    "deleteConfirm": "Eliminare il gruppo \"{{name}}\"? L'operazione è irreversibile.",
+    "memberCount": "{{count}} membri",
+    "roleCount": "{{count}} ruoli",
+    "roles": "Ruoli concessi",
+    "members": "Membri",
+    "noMembers": "Nessun membro",
+    "addMember": "Aggiungi un membro…",
+    "removeMember": "Rimuovi dal gruppo"
+  },
+  "users": {
+    "title": "Gestione Utenti",
+    "searchPlaceholder": "Cerca per email o nome utente…",
+    "searchByEmail": "Cerca per email...",
+    "addUser": "Aggiungi Utente",
+    "createUser": "Crea Utente",
+    "showInactive": "Mostra inattivi",
+    "empty": "Nessun utente trovato",
+    "emptyHint": "Prova a modificare la ricerca o i filtri.",
+    "loading": "Caricamento utenti...",
+    "columns": {
+      "user": "Utente",
+      "email": "Email",
+      "username": "Nome utente",
+      "roles": "Ruoli",
+      "status": "Stato",
+      "mfa": "MFA",
+      "lastLogin": "Ultimo accesso",
+      "actions": "Azioni"
+    },
+    "status": {
+      "active": "Attivo",
+      "inactive": "Inattivo",
+      "locked": "Bloccato"
+    },
+    "actions": {
+      "view": "Vedi dettagli",
+      "edit": "Modifica",
+      "resetPassword": "Reimposta password",
+      "unlock": "Sblocca account",
+      "revokeSessions": "Revoca sessioni",
+      "disableMfa": "Disattiva MFA",
+      "delete": "Elimina",
+      "deactivate": "Disattiva"
+    },
+    "pagination": {
+      "showing": "Visualizzati {{from}}-{{to}} di {{total}} utenti",
+      "pageOf": "Pagina {{page}} di {{total}}"
+    },
+    "confirm": {
+      "deactivateTitle": "Disattiva Utente",
+      "unlockTitle": "Sblocca Account",
+      "revokeTitle": "Revoca Sessioni",
+      "disableMfaTitle": "Disattiva MFA",
+      "deactivateMessage": "Vuoi davvero disattivare {{email}}? Non potrà più accedere.",
+      "unlockMessage": "Sbloccare l'account di {{email}}? Verranno azzerati i tentativi di accesso falliti.",
+      "revokeMessage": "Revocare tutte le sessioni attive di {{email}}? Verrà disconnesso ovunque.",
+      "disableMfaMessage": "Disattivare l'MFA per {{email}}? Dovrà riconfigurarlo."
+    },
+    "errors": {
+      "createFailed": "Creazione utente non riuscita",
+      "updateFailed": "Aggiornamento utente non riuscito",
+      "resetFailed": "Reimpostazione password non riuscita",
+      "actionFailed": "Operazione non riuscita"
+    },
+    "createdSuccessfully": "Utente {{email}} creato con successo",
+    "never": "Mai",
+    "invite": {
+      "button": "Invita",
+      "title": "Invita un utente",
+      "desc": "Invia un invito via email. Il destinatario imposta la propria password per attivare l'account.",
+      "email": "Indirizzo email",
+      "roles": "Ruoli",
+      "send": "Invia invito",
+      "sending": "Invio…",
+      "error": "Impossibile inviare l'invito.",
+      "pending": "Inviti in sospeso ({{count}})",
+      "expires": "scade {{date}}",
+      "statusPending": "In sospeso",
+      "revoke": "Revoca invito",
+      "confirmRevoke": "Revocare questo invito?"
+    }
+  },
+  "sessions": {
+    "title": "Sessioni Attive",
+    "empty": "Nessuna sessione attiva",
+    "emptyHint": "Al momento non ci sono sessioni utente attive.",
+    "loading": "Caricamento sessioni...",
+    "countActive": "{{count}} attive",
+    "detailTitle": "Dettagli Sessione",
+    "expired": "Scaduta",
+    "columns": {
+      "user": "Utente",
+      "sessionId": "ID Sessione",
+      "created": "Creata",
+      "expires": "Scade",
+      "timeRemaining": "Tempo rimanente",
+      "actions": "Azioni"
+    },
+    "viewDetails": "Vedi dettagli",
+    "revoke": "Revoca"
+  },
+  "audit": {
+    "title": "Registro Audit",
+    "empty": "Nessuna voce di audit",
+    "emptyFiltered": "Nessuna voce corrisponde al filtro selezionato.",
+    "emptyHint": "Nessuna voce di audit ancora registrata.",
+    "loading": "Caricamento registro audit...",
+    "countEntries": "{{count}} voci",
+    "detailTitle": "Dettagli Registro Audit",
+    "viewDetails": "Vedi dettagli",
+    "moreCount": "+{{count}} altri",
+    "empties": "(vuoto)",
+    "filterAction": "Filtra per azione",
+    "actionsFilter": {
+      "all": "Tutte le azioni",
+      "userCreated": "Utente creato",
+      "userUpdated": "Utente aggiornato",
+      "userDeleted": "Utente eliminato",
+      "passwordReset": "Password reimpostata",
+      "userUnlocked": "Utente sbloccato",
+      "sessionsRevoked": "Sessioni revocate",
+      "mfaDisabled": "MFA disattivato",
+      "loginSuccess": "Accesso riuscito",
+      "loginFailure": "Accesso fallito",
+      "logout": "Disconnessione"
+    },
+    "columns": {
+      "timestamp": "Data e ora",
+      "action": "Azione",
+      "actor": "Autore",
+      "target": "Oggetto",
+      "content": "Contenuto",
+      "ip": "Indirizzo IP",
+      "time": "Ora",
+      "actions": "Azioni"
+    }
+  },
+  "roles": {
+    "title": "Ruoli e Permessi",
+    "addRole": "Nuovo Ruolo",
+    "system": "Sistema",
+    "custom": "Personalizzato",
+    "slug": "Slug",
+    "name": "Nome",
+    "description": "Descrizione",
+    "permissions": "Permessi",
+    "permissionsCount": "{{count}} permessi",
+    "editPermissions": "Modifica permessi",
+    "wildcardNote": "Accesso completo (jolly)",
+    "empty": "Nessun ruolo definito",
+    "deleteConfirm": "Eliminare il ruolo \"{{name}}\"? L'operazione è irreversibile.",
+    "systemProtected": "I ruoli di sistema non possono essere eliminati",
+    "create": {
+      "title": "Crea ruolo",
+      "slugHint": "Solo lettere minuscole, numeri, trattino e trattino basso"
+    },
+    "permissionCategories": {
+      "system": "Sistema",
+      "users": "Utenti",
+      "rbac": "Controllo accessi",
+      "audit": "Audit",
+      "sessions": "Sessioni",
+      "tab": "Tab dei plugin",
+      "general": "Generale"
+    }
+  },
+  "access": {
+    "title": "Controllo Accessi",
+    "description": "Decidi quali ruoli possono accedere a ciascun tab dei plugin. I tab sono aperti a tutti finché non li limiti.",
+    "refreshTabs": "Ri-scansiona plugin",
+    "empty": "Nessun tab di plugin ancora rilevato",
+    "columns": {
+      "tab": "Tab",
+      "plugin": "Plugin",
+      "policy": "Politica",
+      "roles": "Ruoli con accesso"
+    },
+    "open": "Aperto a tutti",
+    "restricted": "Limitato",
+    "openHint": "Tutti gli utenti autenticati possono accedere a questo tab",
+    "restrictedHint": "Solo i ruoli che autorizzi sotto possono accedere a questo tab",
+    "grantedTo": "Concesso a",
+    "adminAlways": "Gli admin hanno sempre accesso"
+  },
+  "modals": {
+    "tempPassword": "Password temporanea",
+    "tempPasswordHint": "Condividila con l'utente in modo sicuro. Viene mostrata una sola volta.",
+    "fields": {
+      "emailAddress": "Indirizzo email",
+      "usernameOptional": "Nome utente (facoltativo)",
+      "username": "Nome utente",
+      "password": "Password",
+      "roles": "Ruoli",
+      "allowedTabs": "Tab consentiti (permessi guest)",
+      "accountActive": "Account attivo",
+      "userInfo": "Informazioni utente"
+    },
+    "placeholders": {
+      "email": "utente@esempio.com",
+      "username": "mrossi",
+      "enterPassword": "Inserisci la password"
+    },
+    "autoGeneratePassword": "Genera automaticamente una password sicura",
+    "allowedTabsHint": "Seleziona quali tab può vedere l'utente guest. Se non ne selezioni nessuno, tutti i tab sono accessibili (sola lettura).",
+    "noPluginTabs": "Nessun tab di plugin disponibile",
+    "deactivateWarning": "La disattivazione revocherà tutte le sessioni attive.",
+    "info": {
+      "id": "ID: {{id}}",
+      "mfa": "MFA: {{status}}",
+      "created": "Creato: {{date}}",
+      "lastLogin": "Ultimo accesso: {{date}}"
+    },
+    "errors": {
+      "emailRequired": "L'email è obbligatoria",
+      "passwordRequired": "La password è obbligatoria",
+      "roleRequired": "È richiesto almeno un ruolo",
+      "createFailed": "Creazione utente non riuscita",
+      "updateFailed": "Aggiornamento utente non riuscito"
+    },
+    "createUser": {
+      "title": "Crea Nuovo Utente",
+      "submit": "Crea Utente"
+    },
+    "editUser": {
+      "title": "Modifica Utente",
+      "submit": "Salva Modifiche",
+      "assignRoles": "Ruoli personalizzati",
+      "assignRolesHint": "Assegna ulteriori ruoli personalizzati a questo utente"
+    },
+    "resetPassword": {
+      "title": "Reimposta Password",
+      "submit": "Reimposta Password",
+      "auto": "Genera una password temporanea",
+      "tempPasswordLabel": "Password temporanea",
+      "onceWarning": "Questa password verrà mostrata una sola volta. Copiala ora e condividila con l'utente in modo sicuro."
+    },
+    "detail": {
+      "title": "Dettagli Utente",
+      "copyJson": "Copia JSON"
+    },
+    "confirm": {
+      "title": "Sei sicuro?",
+      "defaultConfirm": "Conferma"
+    }
+  },
+  "errors": {
+    "required": "Questo campo è obbligatorio",
+    "generic": "Qualcosa è andato storto",
+    "loadFailed": "Caricamento dei dati non riuscito",
+    "saveFailed": "Salvataggio delle modifiche non riuscito"
+  },
+  "language": {
+    "label": "Lingua",
+    "en": "English",
+    "it": "Italiano"
+  },
+  "wizard": {
+    "title": "Crea utente",
+    "submit": "Crea utente",
+    "errors": {
+      "fixStep": "Completa questo passaggio prima di continuare."
+    },
+    "identity": {
+      "step": "Identità",
+      "title": "Identità utente",
+      "hint": "Per chi è questo account? L'email è obbligatoria; lo username è facoltativo."
+    },
+    "credentials": {
+      "step": "Credenziali",
+      "title": "Password",
+      "hint": "Genera automaticamente una password temporanea robusta, oppure impostala manualmente.",
+      "autoGenerate": "Genera automaticamente una password sicura",
+      "passwordPlaceholder": "Inserisci una password",
+      "reveal": "Mostra password",
+      "hide": "Nascondi password",
+      "copy": "Copia",
+      "generate": "Genera",
+      "strength": {
+        "weak": "Debole",
+        "fair": "Discreta",
+        "good": "Buona",
+        "strong": "Forte"
+      }
+    },
+    "access": {
+      "step": "Accessi",
+      "title": "Ruoli e accessi",
+      "hint": "Scegli i ruoli dell'utente. Gli ospiti possono essere limitati a specifiche schede."
+    },
+    "review": {
+      "step": "Riepilogo",
+      "title": "Verifica e conferma",
+      "hint": "Controlla i dettagli prima di creare l'account.",
+      "password": "Password",
+      "autoGenerated": "Generata automaticamente",
+      "manual": "Impostata manualmente"
+    },
+    "roles": {
+      "admin": {
+        "name": "Admin",
+        "desc": "Accesso completo all'amministrazione e a ogni sezione."
+      },
+      "user": {
+        "name": "Utente",
+        "desc": "Accesso standard alle schede dei plugin consentite."
+      },
+      "guest": {
+        "name": "Ospite",
+        "desc": "Accesso limitato; restringi alle schede qui sotto."
+      }
+    }
+  },
+  "security": {
+    "mfa": {
+      "title": "Autenticazione a due fattori",
+      "enabledTitle": "Due fattori attivo",
+      "enabledSub": "Il tuo account è protetto con un'app di autenticazione.",
+      "disabledTitle": "Due fattori non attivo",
+      "disabledSub": "Aggiungi un'app di autenticazione per un livello di sicurezza extra.",
+      "enable": "Attiva due fattori",
+      "disable": "Disattiva due fattori",
+      "scanHint": "Scansiona questo codice QR con la tua app di autenticazione, oppure inserisci la chiave manualmente.",
+      "qrAlt": "Codice QR per la configurazione MFA",
+      "verifyHint": "Inserisci il codice a 6 cifre dalla tua app di autenticazione.",
+      "verifyEnable": "Verifica e attiva",
+      "backupHint": "Salva questi codici di backup in un luogo sicuro. Ognuno è usabile una volta se perdi il dispositivo.",
+      "copyCodes": "Copia",
+      "downloadCodes": "Scarica",
+      "backupWarn": "Questi codici vengono mostrati una sola volta. Salvali ora.",
+      "done": "Fatto",
+      "errors": {
+        "generic": "Qualcosa è andato storto. Riprova."
+      }
+    }
+  },
+  "recovery": {
+    "forgotTitle": "Reimposta la password",
+    "forgotSubtitle": "Inserisci email o nome utente e ti invieremo un link di reimpostazione.",
+    "identifier": "Email o nome utente",
+    "identifierPlaceholder": "tu@esempio.com o nome utente",
+    "sendLink": "Invia link di reimpostazione",
+    "checkInbox": "Se esiste un account corrispondente, riceverai a breve un'email con le istruzioni.",
+    "backToLogin": "Torna all'accesso",
+    "genericError": "Qualcosa è andato storto. Riprova.",
+    "resetTitle": "Scegli una nuova password",
+    "resetSubtitle": "La nuova password deve rispettare i criteri di sicurezza.",
+    "newPassword": "Nuova password",
+    "confirmPassword": "Conferma password",
+    "resetSubmit": "Aggiorna password",
+    "resetDone": "La password è stata aggiornata. Ora puoi accedere.",
+    "passwordsMismatch": "Le password non coincidono.",
+    "invalidLink": "Questo link non è valido o è scaduto.",
+    "requestNew": "Richiedi un nuovo link",
+    "verifyTitle": "Verifica dell'email in corso",
+    "inviteTitle": "Accetta l'invito",
+    "inviteSubtitle": "Crea il tuo account per {{email}}.",
+    "inviteDone": "Account creato. Ora puoi accedere.",
+    "fullName": "Nome completo",
+    "usernameOptional": "Nome utente (facoltativo)",
+    "createAccount": "Crea account"
+  },
+  "account": {
+    "title": "Il mio account",
+    "toAdmin": "Admin",
+    "saving": "Salvataggio…",
+    "loading": "Caricamento…",
+    "error": "Qualcosa è andato storto.",
+    "tabs": {
+      "profile": "Profilo",
+      "security": "Sicurezza",
+      "sessions": "Sessioni e dispositivi",
+      "activity": "Attività di sicurezza",
+      "apikeys": "Chiavi API"
+    },
+    "profile": {
+      "saved": "Profilo aggiornato.",
+      "email": "Email",
+      "verified": "Verificata",
+      "unverified": "Non verificata",
+      "roles": "Ruoli",
+      "status": "Stato",
+      "fullName": "Nome completo",
+      "username": "Nome utente",
+      "save": "Salva modifiche"
+    },
+    "security": {
+      "mismatch": "Le password non coincidono.",
+      "passwordChanged": "Password modificata. Le altre sessioni sono state disconnesse.",
+      "changePassword": "Cambia password",
+      "current": "Password attuale",
+      "new": "Nuova password",
+      "confirm": "Conferma nuova password",
+      "updatePassword": "Aggiorna password",
+      "mfa": "Autenticazione a due fattori",
+      "mfaOn": "L'MFA è attiva sul tuo account.",
+      "mfaOff": "Aggiungi un'app di autenticazione per maggiore sicurezza.",
+      "enableMfa": "Attiva MFA",
+      "mfaCode": "Codice authenticator o di backup",
+      "disableMfa": "Disattiva MFA"
+    },
+    "passkeys": {
+      "title": "Passkey",
+      "desc": "Accedi senza password con Touch ID, Face ID, Windows Hello o una chiave di sicurezza.",
+      "add": "Aggiungi passkey",
+      "none": "Nessuna passkey.",
+      "namePrompt": "Assegna un nome a questa passkey",
+      "defaultName": "La mia passkey",
+      "confirmDelete": "Rimuovere questa passkey?",
+      "lastUsed": "Ultimo uso {{date}}",
+      "neverUsed": "Mai usata",
+      "delete": "Elimina passkey"
+    },
+    "sessions": {
+      "revokeOthers": "Disconnetti altre sessioni",
+      "none": "Nessuna sessione attiva.",
+      "session": "Sessione",
+      "current": "Questo dispositivo",
+      "started": "Avviata il {{date}}",
+      "revoke": "Revoca sessione"
+    },
+    "activity": {
+      "desc": "Accessi recenti ed eventi di sicurezza del tuo account.",
+      "none": "Nessuna attività registrata.",
+      "event": "Evento",
+      "method": "Metodo",
+      "ip": "Indirizzo IP",
+      "risk": "Rischio",
+      "when": "Quando",
+      "events": {
+        "login_success": "Accesso effettuato",
+        "login_failure": "Accesso fallito",
+        "mfa_challenge": "Verifica MFA",
+        "password_changed": "Password modificata",
+        "password_reset": "Password reimpostata",
+        "passkey_registered": "Passkey aggiunta",
+        "passkey_removed": "Passkey rimossa",
+        "mfa_disabled": "MFA disattivata",
+        "api_key_created": "Chiave API creata",
+        "api_key_revoked": "Chiave API revocata"
+      }
+    },
+    "apikeys": {
+      "title": "Token di accesso personali",
+      "desc": "Usa le chiavi API per autenticare script e servizi. Trattale come password.",
+      "copyNow": "Copia subito la nuova chiave — non sarà più visibile.",
+      "copy": "Copia",
+      "copied": "Copiata",
+      "dismiss": "Fatto",
+      "namePlaceholder": "Nome chiave (es. pipeline CI)",
+      "days": "giorni",
+      "never": "Nessuna scadenza",
+      "create": "Crea chiave",
+      "none": "Nessuna chiave API.",
+      "expires": "Scade il {{date}}",
+      "noExpiry": "Nessuna scadenza",
+      "lastUsed": "ultimo uso {{date}}",
+      "confirmRevoke": "Revocare questa chiave API? Le applicazioni che la usano smetteranno di funzionare.",
+      "revoke": "Revoca chiave"
+    }
+  },
+  "sso": {
+    "title": "Single Sign-On",
+    "desc": "Consenti l'accesso tramite il provider di identità aziendale con OIDC o SAML 2.0. I nuovi utenti vengono creati automaticamente al primo accesso.",
+    "add": "Aggiungi provider",
+    "addTitle": "Aggiungi provider di identità",
+    "editTitle": "Modifica provider di identità",
+    "none": "Nessun provider di identità configurato.",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "disabled": "Disattivato",
+    "confirmDelete": "Eliminare questo provider? Gli utenti collegati manterranno gli account ma perderanno l'SSO tramite questo provider.",
+    "save": "Salva provider",
+    "saving": "Salvataggio…",
+    "cancel": "Annulla",
+    "error": "Impossibile salvare il provider.",
+    "fields": {
+      "slug": "Slug (id URL)",
+      "name": "Nome visualizzato",
+      "protocol": "Protocollo",
+      "defaultRoles": "Ruoli predefiniti (separati da virgola)",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "issuer": "URL issuer",
+      "scopes": "Scope",
+      "idpEntityId": "Entity ID IdP",
+      "idpSsoUrl": "URL SSO IdP",
+      "idpCert": "Certificato X.509 IdP",
+      "enabled": "Attivo",
+      "autoProvision": "Crea automaticamente nuovi utenti"
+    }
+  }
+}

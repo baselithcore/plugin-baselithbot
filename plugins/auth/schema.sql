@@ -99,3 +99,206 @@ CREATE TABLE IF NOT EXISTS auth_webauthn_credentials (
 CREATE INDEX IF NOT EXISTS idx_webauthn_credentials_user ON auth_webauthn_credentials(user_id);
 CREATE INDEX IF NOT EXISTS idx_webauthn_credentials_credential_id ON auth_webauthn_credentials(credential_id);
 CREATE INDEX IF NOT EXISTS idx_webauthn_credentials_last_used ON auth_webauthn_credentials(last_used DESC);
+
+-- =============================================================================
+-- RBAC: granular permissions, custom roles, role/user assignments, tab policy.
+-- Additive layer on top of the legacy auth_users.roles[] column (compat shim):
+-- system roles are mirrored here so require_roles() keeps working unchanged.
+-- =============================================================================
+
+-- Permission catalog. Slug is "resource.action" or the dynamic tab form
+-- "tab:<plugin>:<tab_id>". The wildcard slug '*' grants everything.
+CREATE TABLE IF NOT EXISTS auth_permissions (
+    slug VARCHAR(180) PRIMARY KEY,
+    description TEXT DEFAULT '',
+    category VARCHAR(80) DEFAULT 'general',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Roles. System roles (is_system) mirror AuthRole enum values by slug;
+-- custom roles are admin-defined.
+CREATE TABLE IF NOT EXISTS auth_roles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    slug VARCHAR(80) UNIQUE NOT NULL,
+    name VARCHAR(120) NOT NULL,
+    description TEXT DEFAULT '',
+    is_system BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Role -> permission (M:N).
+CREATE TABLE IF NOT EXISTS auth_role_permissions (
+    role_id UUID REFERENCES auth_roles(id) ON DELETE CASCADE,
+    permission_slug VARCHAR(180) REFERENCES auth_permissions(slug) ON DELETE CASCADE,
+    PRIMARY KEY (role_id, permission_slug)
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_role_perms_role ON auth_role_permissions(role_id);
+
+-- User -> custom role (M:N). System roles stay in auth_users.roles[] for compat.
+CREATE TABLE IF NOT EXISTS auth_user_roles (
+    user_id UUID REFERENCES auth_users(id) ON DELETE CASCADE,
+    role_id UUID REFERENCES auth_roles(id) ON DELETE CASCADE,
+    granted_at TIMESTAMPTZ DEFAULT NOW(),
+    granted_by UUID,
+    PRIMARY KEY (user_id, role_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_user_roles_user ON auth_user_roles(user_id);
+
+-- Per-plugin-tab access policy. Default-allow: a tab with no row (or
+-- restricted=FALSE) is visible to every authenticated user (backward
+-- compatible). When restricted=TRUE, access requires the tab:<plugin>:<id>
+-- permission (admin / wildcard always allowed).
+CREATE TABLE IF NOT EXISTS auth_tab_policy (
+    plugin VARCHAR(120) NOT NULL,
+    tab_id VARCHAR(160) NOT NULL,
+    label VARCHAR(200) DEFAULT '',
+    restricted BOOLEAN DEFAULT FALSE,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (plugin, tab_id)
+);
+
+-- Groups: bundle users and assign roles in bulk (wikigen-style). A user's
+-- effective permissions are the union of their direct roles and the roles of
+-- every group they belong to.
+CREATE TABLE IF NOT EXISTS auth_groups (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    slug VARCHAR(80) UNIQUE NOT NULL,
+    name VARCHAR(120) NOT NULL,
+    description TEXT DEFAULT '',
+    is_system BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS auth_group_members (
+    group_id UUID REFERENCES auth_groups(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth_users(id) ON DELETE CASCADE,
+    added_at TIMESTAMPTZ DEFAULT NOW(),
+    added_by UUID,
+    PRIMARY KEY (group_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_group_members_user ON auth_group_members(user_id);
+
+CREATE TABLE IF NOT EXISTS auth_group_roles (
+    group_id UUID REFERENCES auth_groups(id) ON DELETE CASCADE,
+    role_id UUID REFERENCES auth_roles(id) ON DELETE CASCADE,
+    PRIMARY KEY (group_id, role_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_group_roles_group ON auth_group_roles(group_id);
+
+-- =============================================================================
+-- ENTERPRISE EXTENSIONS (additive; safe to run repeatedly)
+-- Account lifecycle, self-service recovery, login/security history, API keys,
+-- invitations, and SSO (OIDC/SAML) federation.
+-- =============================================================================
+
+-- Account lifecycle + security metadata on the user record.
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE;
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'active';
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMPTZ;
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS last_login_ip VARCHAR(45);
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS full_name VARCHAR(160);
+
+-- Single-use, time-limited tokens for password reset, email verification, and
+-- invitation acceptance. `purpose` discriminates the flow.
+CREATE TABLE IF NOT EXISTS auth_recovery_tokens (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth_users(id) ON DELETE CASCADE,
+    token_hash VARCHAR(64) NOT NULL UNIQUE,
+    purpose VARCHAR(30) NOT NULL,  -- password_reset | email_verify | invite
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_recovery_tokens_hash ON auth_recovery_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_recovery_tokens_user ON auth_recovery_tokens(user_id);
+
+-- Per-attempt login & security activity history (success and failure), used for
+-- the self-service "security activity" view and risk/anomaly assessment.
+CREATE TABLE IF NOT EXISTS auth_login_history (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth_users(id) ON DELETE CASCADE,
+    event VARCHAR(40) NOT NULL,  -- login_success | login_failure | mfa_challenge | passkey | sso | password_reset
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    location VARCHAR(120),
+    risk_score INTEGER DEFAULT 0,
+    method VARCHAR(30) DEFAULT 'password',  -- password | mfa | passkey | sso | api_key
+    success BOOLEAN DEFAULT TRUE,
+    details JSONB,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_login_history_user ON auth_login_history(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_login_history_created ON auth_login_history(created_at DESC);
+
+-- Personal Access Tokens / service API keys. Only the SHA-256 hash is stored;
+-- `prefix` is a short non-secret lookup/display fragment.
+CREATE TABLE IF NOT EXISTS auth_api_keys (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth_users(id) ON DELETE CASCADE,
+    name VARCHAR(120) NOT NULL,
+    prefix VARCHAR(16) NOT NULL,
+    key_hash VARCHAR(64) NOT NULL UNIQUE,
+    scopes TEXT[] DEFAULT ARRAY[]::TEXT[],
+    expires_at TIMESTAMPTZ,
+    last_used_at TIMESTAMPTZ,
+    revoked_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_by UUID
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_keys_user ON auth_api_keys(user_id);
+CREATE INDEX IF NOT EXISTS idx_api_keys_hash ON auth_api_keys(key_hash) WHERE revoked_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_api_keys_prefix ON auth_api_keys(prefix);
+
+-- Admin-issued invitations (email-based onboarding instead of admin-set passwords).
+CREATE TABLE IF NOT EXISTS auth_invitations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) NOT NULL,
+    roles TEXT[] NOT NULL DEFAULT ARRAY['user'],
+    token_hash VARCHAR(64) NOT NULL UNIQUE,
+    invited_by UUID,
+    expires_at TIMESTAMPTZ NOT NULL,
+    accepted_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_invitations_email ON auth_invitations(email);
+CREATE INDEX IF NOT EXISTS idx_invitations_hash ON auth_invitations(token_hash);
+
+-- SSO identity providers (OIDC / SAML 2.0), admin-configured at runtime.
+-- Secrets (client_secret, SAML SP private key) are stored encrypted-at-rest.
+CREATE TABLE IF NOT EXISTS auth_sso_providers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    slug VARCHAR(60) UNIQUE NOT NULL,
+    name VARCHAR(120) NOT NULL,
+    protocol VARCHAR(10) NOT NULL,  -- oidc | saml
+    enabled BOOLEAN DEFAULT TRUE,
+    config JSONB NOT NULL DEFAULT '{}'::jsonb,  -- non-secret settings
+    secret_enc TEXT,  -- encrypted client_secret / SP key
+    default_roles TEXT[] DEFAULT ARRAY['user'],
+    auto_provision BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Links a federated identity (provider + subject) to a local user account.
+CREATE TABLE IF NOT EXISTS auth_sso_identities (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    provider_id UUID REFERENCES auth_sso_providers(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES auth_users(id) ON DELETE CASCADE,
+    subject VARCHAR(255) NOT NULL,  -- IdP "sub" / NameID
+    email VARCHAR(255),
+    last_login TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (provider_id, subject)
+);
+
+CREATE INDEX IF NOT EXISTS idx_sso_identities_user ON auth_sso_identities(user_id);

@@ -6,10 +6,12 @@ Includes retry logic, circuit breaker integration, and health checks.
 """
 
 import asyncio
+import json
 from core.observability.logging import get_logger
 import time
 from typing import Any, Dict, Optional
 from dataclasses import dataclass
+from urllib.parse import urlparse
 
 try:
     import httpx
@@ -23,6 +25,7 @@ from .protocol import (
     A2AResponse,
     ErrorCode,
 )
+from .security import build_signature_headers, get_a2a_shared_secret
 
 logger = get_logger(__name__)
 
@@ -100,10 +103,23 @@ class A2AClient:
 
     @property
     def endpoint(self) -> str:
-        """Get agent endpoint."""
-        if not self.agent_card.endpoint:
+        """Get the validated agent endpoint.
+
+        Enforces an ``http(s)`` scheme so a malicious or misconfigured agent
+        card cannot coerce the client into ``file://``/``gopher://`` style
+        requests. Private/internal hosts are intentionally allowed: A2A meshes
+        commonly run peer agents on internal networks.
+        """
+        endpoint = self.agent_card.endpoint
+        if not endpoint:
             raise ValueError(f"Agent {self.agent_card.name} has no endpoint")
-        return self.agent_card.endpoint
+        scheme = urlparse(endpoint).scheme.lower()
+        if scheme not in ("http", "https"):
+            raise ValueError(
+                f"Agent {self.agent_card.name} endpoint must use http(s); "
+                f"got scheme '{scheme or 'none'}'"
+            )
+        return endpoint
 
     async def connect(self) -> None:
         """Initialize HTTP client."""
@@ -196,8 +212,17 @@ class A2AClient:
         message = request.to_message(to_agent=self.agent_card.name)
         url = f"{self.endpoint}/a2a/invoke"
 
+        # Serialize once so the signature is computed over the exact bytes
+        # sent on the wire. Signing is active only when the shared secret
+        # (BASELITH_A2A_SHARED_SECRET) is configured.
+        body = json.dumps(message.to_dict()).encode("utf-8")
+        headers: Dict[str, str] = {"Content-Type": "application/json"}
+        secret = get_a2a_shared_secret()
+        if secret is not None:
+            headers.update(build_signature_headers(body, secret))
+
         start = time.time()
-        response = await self._client.post(url, json=message.to_dict())
+        response = await self._client.post(url, content=body, headers=headers)
         latency = (time.time() - start) * 1000
 
         response.raise_for_status()
@@ -301,8 +326,11 @@ class A2AClientPool:
         self._clients.clear()
 
     async def health_check_all(self) -> Dict[str, bool]:
-        """Run health checks on all clients."""
-        results = {}
-        for name, client in self._clients.items():
-            results[name] = await client.health_check()
-        return results
+        """Run health checks on all clients concurrently."""
+        if not self._clients:
+            return {}
+        names = list(self._clients.keys())
+        checks = await asyncio.gather(
+            *(self._clients[name].health_check() for name in names)
+        )
+        return dict(zip(names, checks))

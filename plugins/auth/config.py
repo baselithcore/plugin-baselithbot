@@ -7,7 +7,7 @@ Pydantic Settings for authentication parameters.
 from core.observability.logging import get_logger
 from typing import Optional, List
 
-from pydantic import Field
+from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from core.config.env import PROJECT_ENV_FILE
 
@@ -27,6 +27,23 @@ class AuthConfig(BaseSettings):
     # === Core ===
     auth_required: bool = Field(default=False, alias="AUTH_REQUIRED")
     secret_key: Optional[str] = Field(default=None, alias="SECRET_KEY")
+
+    # === Bootstrap admin (seeded on startup if no admin exists yet) ===
+    bootstrap_admin_email: Optional[str] = Field(
+        default=None,
+        alias="AUTH_BOOTSTRAP_ADMIN_EMAIL",
+        description="Email of the admin user auto-created when no admin exists",
+    )
+    bootstrap_admin_password: Optional[SecretStr] = Field(
+        default=None,
+        alias="AUTH_BOOTSTRAP_ADMIN_PASSWORD",
+        description="Password for the bootstrap admin user",
+    )
+    bootstrap_admin_username: Optional[str] = Field(
+        default="admin",
+        alias="AUTH_BOOTSTRAP_ADMIN_USERNAME",
+        description="Username for the bootstrap admin user",
+    )
 
     # === Token Lifetimes ===
     session_lifetime: int = Field(
@@ -110,6 +127,13 @@ class AuthConfig(BaseSettings):
             "/api/auth/logout",
             "/api/auth/refresh",
             "/api/auth/mfa/verify",
+            "/api/auth/forgot-password",
+            "/api/auth/reset-password",
+            "/api/auth/verify-email",
+            "/api/auth/resend-verification",
+            "/api/auth/invitations/accept",
+            "/api/auth/webauthn/authenticate",
+            "/api/auth/sso",
             "/health",
             "/docs",
             "/openapi.json",
@@ -145,6 +169,84 @@ class AuthConfig(BaseSettings):
         default="http://localhost:8000",
         alias="AUTH_WEBAUTHN_ORIGIN",
         description="WebAuthn origin URL",
+    )
+
+    # === Reverse-proxy trust ===
+    # Client IP (used for audit/login-history) is read from X-Forwarded-For /
+    # X-Real-IP ONLY when the direct peer is a trusted proxy. Empty = never
+    # trust forwarded headers (use the socket peer). "*" trusts all peers — set
+    # only when an upstream edge strips/validates the header.
+    trusted_proxies: List[str] = Field(
+        default=[],
+        alias="AUTH_TRUSTED_PROXIES",
+        description="Peer IPs allowed to set X-Forwarded-For/X-Real-IP ('*' = all)",
+    )
+
+    # === Public base URL (used to build links in emails: reset, invite, verify) ===
+    app_base_url: str = Field(
+        default="http://localhost:8000",
+        alias="AUTH_APP_BASE_URL",
+        description="Public base URL of the app, used to build email links",
+    )
+
+    # === Transactional email (SMTP) ===
+    smtp_host: Optional[str] = Field(
+        default=None,
+        alias="AUTH_SMTP_HOST",
+        description="SMTP server host. When unset, emails are logged (dev mode).",
+    )
+    smtp_port: int = Field(default=587, alias="AUTH_SMTP_PORT")
+    smtp_username: Optional[str] = Field(default=None, alias="AUTH_SMTP_USERNAME")
+    smtp_password: Optional[SecretStr] = Field(default=None, alias="AUTH_SMTP_PASSWORD")
+    smtp_use_tls: bool = Field(default=True, alias="AUTH_SMTP_USE_TLS")
+    smtp_from: str = Field(
+        default="no-reply@baselith.local",
+        alias="AUTH_SMTP_FROM",
+        description="From address for transactional emails",
+    )
+    email_from_name: str = Field(default="Baselith", alias="AUTH_EMAIL_FROM_NAME")
+
+    # === Self-service & lifecycle ===
+    self_service_enabled: bool = Field(
+        default=True,
+        alias="AUTH_SELF_SERVICE_ENABLED",
+        description="Enable the self-service 'My Account' surface for end users",
+    )
+    email_verification_required: bool = Field(
+        default=False,
+        alias="AUTH_EMAIL_VERIFICATION_REQUIRED",
+        description="Require verified email before a new user can log in",
+    )
+    password_max_age_days: int = Field(
+        default=0,
+        alias="AUTH_PASSWORD_MAX_AGE_DAYS",
+        ge=0,
+        description="Force password rotation after N days (0 = never)",
+    )
+
+    # === API keys / Personal Access Tokens ===
+    api_keys_enabled: bool = Field(
+        default=True,
+        alias="AUTH_API_KEYS_ENABLED",
+        description="Allow issuing personal access tokens / service API keys",
+    )
+    api_key_max_lifetime_days: int = Field(
+        default=365,
+        alias="AUTH_API_KEY_MAX_LIFETIME_DAYS",
+        ge=0,
+        description="Maximum API-key lifetime in days (0 = no expiry allowed)",
+    )
+
+    # === SSO (OIDC / SAML) federation ===
+    sso_enabled: bool = Field(
+        default=False,
+        alias="AUTH_SSO_ENABLED",
+        description="Enable SSO federation (OIDC / SAML identity providers)",
+    )
+    sso_allow_signup: bool = Field(
+        default=True,
+        alias="AUTH_SSO_ALLOW_SIGNUP",
+        description="Auto-provision (JIT) local accounts for new SSO identities",
     )
 
     # =========================================================================

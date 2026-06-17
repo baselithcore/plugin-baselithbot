@@ -27,6 +27,21 @@ Plugin per l'autenticazione e autorizzazione del Baselith-Core. Fornisce autenti
 - 🆘 **Account Recovery**: Secure password reset and account unlock
 - 🛠️ **Admin Panel**: Web UI per gestione utenti e audit logs
 
+### Enterprise (v2.0)
+
+Le capacità storiche sono ora **completamente cablate** (route + UI) e affiancate da nuove funzionalità enterprise:
+
+- 🔁 **Self-service recovery**: `forgot-password` / `reset-password`, verifica email, accettazione inviti — con email transazionali localizzate (en/it) via SMTP (`mailer/`).
+- 🔑 **Passkey end-to-end**: enrolment (My Account) + login passwordless con credenziali discoverable (`/api/auth/webauthn/*`).
+- 🛡️ **Risk-based login + cronologia**: ogni accesso (successo/fallimento, MFA, passkey, SSO) è valutato e registrato in `auth_login_history` (visibile in *Security activity*).
+- 👤 **My Account** (`/auth/account`): profilo, cambio password, MFA, passkey, sessioni/dispositivi, attività di sicurezza, **Personal Access Token**.
+- 🪪 **API keys / PAT**: token `bsk_…` con scadenza e scopes; autenticano qualsiasi route (`X-API-Key` o `Authorization: Bearer bsk_…`). Solo l'hash è persistito.
+- 🌐 **SSO federation**: **OIDC** (discovery + JWKS + code flow) e **SAML 2.0** (python3-saml) con JIT provisioning, identity linking e configurazione provider da UI Admin → *SSO*.
+- ✉️ **Onboarding via invito**: l'admin invita per email (ruoli preassegnati); l'utente imposta la propria password.
+- ⏯️ **Lifecycle**: suspend / deactivate / reactivate (revoca sessioni, protezione ultimo admin).
+
+**Riuso del core** (Sacred Core rule): `FieldEncryptor` (AES-256-GCM per i secret SSO), `JWTHandler`/`AuthManager` (token), `RedisTTLCache`/`TaskScheduler` (disponibili per token effimeri/email async), `core.security.secrets`, RBAC guards (`require_admin`/`require_permission`). Dipendenze opzionali: `webauthn`, `python3-saml` (degradano con grazia se assenti).
+
 ---
 
 ## Quick Start

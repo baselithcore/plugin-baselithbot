@@ -11,120 +11,19 @@ import statistics
 import time
 import re
 from collections import defaultdict
-from dataclasses import dataclass, asdict
+from dataclasses import asdict
 from typing import Any, Dict, List, Optional
 
+from ._bot_patterns import (
+    BOT_USER_AGENTS,
+    AUTOMATED_SCAN_PATTERNS,
+    HIGH_BOT_THRESHOLD,
+    LOW_BOT_THRESHOLD,
+    MAX_TIMING_HISTORY,
+)
+from ._bot_models import BotDetectionSignals, BotDetectionResult
+
 logger = get_logger(__name__)
-
-# Detection thresholds
-HIGH_BOT_THRESHOLD = 0.70  # Confidenza forte -> BOT
-LOW_BOT_THRESHOLD = 0.35  # Confidenza bassa -> HUMAN
-# 0.35 < confidence < 0.70 -> PROBABLE_BOT o PROBABLE_HUMAN basato su mediana
-
-MIN_REQUESTS_FOR_ANALYSIS = 1  # Need at least 1 request (entropy only)
-MAX_TIMING_HISTORY = 50  # Keep last 50 request timestamps
-
-# Static Patterns
-BOT_USER_AGENTS = [
-    r"^curl/",
-    r"^wget/",
-    r"^python-requests/",
-    r"^python-urllib",
-    r"^Go-http-client",
-    r"^Java/",
-    r"^libwww-perl",
-    r"^Scrapy/",
-    r"^httpx",
-    r"^aiohttp",
-    r"^axios",
-    r"^node-fetch",
-    r"^ruby",
-    r"^PHP/",
-    r"^Nikto",
-    r"^Nmap",
-    r"^sqlmap",
-    r"^masscan",
-    r"^zgrab",
-    r"^Nuclei",
-    r"^dirsearch",
-    r"^gobuster",
-    r"^ffuf",
-    r"^feroxbuster",
-    r"^wfuzz",
-    r"^Hydra",
-    r"^Medusa",
-    r"^Ncrack",
-    r"(?i)bot",
-    r"(?i)crawler",
-    r"(?i)spider",
-    r"(?i)scanner",
-    r"(?i)scraper",
-    r"(?i)headless",
-]
-
-AUTOMATED_SCAN_PATTERNS = [
-    # Path traversal fuzzing
-    r"(?:\.\.[\\/]){3,}",  # Multiple path traversal
-    # SQL injection fuzzing
-    r"(?:union|select|insert|update|delete)\s+(?:union|select|insert|update|delete)",
-    # Command injection chains
-    r"[;&|]{2,}",  # Multiple command separators
-    # Base64 pipeline
-    r"base64.*\|\s*(?:bash|sh|python|perl)",
-    # Systematic fuzzing (incremental numbers or predictable patterns)
-    r"test[0-9]{3,}",
-    r"user[0-9]{3,}",
-    r"admin[0-9]{3,}",
-    # Common scanner probes
-    r"(?i)phpinfo\(",
-    r"(?i)/etc/passwd",
-    r"(?i)/win.ini",
-    r"(?i)sleep\(\d+\)",
-    r"(?i)benchmark\(",
-]
-
-
-@dataclass
-class BotDetectionSignals:
-    """Captured signals for bot detection."""
-
-    # Static Signals
-    user_agent_score: Optional[float] = None
-    payload_pattern_score: Optional[float] = None
-    ja4_fingerprint: Optional[str] = None
-
-    # Behavioral/Temporal Signals
-    inter_request_interval_ms: Optional[float] = None
-    request_rate_per_minute: Optional[float] = None
-    session_duration_ms: Optional[float] = None
-    payload_entropy: Optional[float] = None
-    pattern_repetition_score: Optional[float] = None
-    timing_variance: Optional[float] = None
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for serialization."""
-        return asdict(self)
-
-
-@dataclass
-class BotDetectionResult:
-    """Result of bot detection analysis."""
-
-    is_bot: bool
-    confidence: float
-    signals: BotDetectionSignals
-    classification: str  # "bot", "likely_bot", "likely_human", "human", "unknown"
-    reason: str
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary for serialization."""
-        return {
-            "is_bot": self.is_bot,
-            "confidence": self.confidence,
-            "signals": self.signals.to_dict(),
-            "classification": self.classification,
-            "reason": self.reason,
-        }
 
 
 class BotDetector:

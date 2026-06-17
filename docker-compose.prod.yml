@@ -13,6 +13,9 @@ services:
       - CORE_LOG_FORMAT=json
       - HOST=0.0.0.0
       - PORT=8000
+      # Uvicorn worker count (6 vCPU / 12 GB VPS). RAM-bound: ~2G/worker.
+      # Keep api memory limit >= WEB_CONCURRENCY * 2G + 1G headroom.
+      - WEB_CONCURRENCY=3
       - DOCKER_HOST=tcp://${SANDBOX_DOCKER_HOST:?SANDBOX_DOCKER_HOST must be set}
       - DOCKER_TLS_VERIFY=1
       - DOCKER_CERT_PATH=/certs/client
@@ -38,8 +41,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'
-          memory: 1G
+          cpus: '3.0'
+          memory: 6G
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -86,6 +89,16 @@ services:
       - no-new-privileges:true
     cap_drop:
       - ALL
+    # The official postgres entrypoint starts as root to chmod the data dir and
+    # then drops to the unprivileged `postgres` user via su-exec. With cap_drop
+    # ALL it cannot chown/chmod or switch user ("Operation not permitted"), so
+    # restore exactly the caps that bootstrap needs — nothing more.
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
     restart: unless-stopped
     deploy:
       resources:
@@ -103,7 +116,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-slim
-    container_name: baselith-core-worker
+    # No container_name: incompatible with deploy.replicas (names must be unique).
     env_file: configs/.env.production
     command: python -m core.task_queue.worker
     environment:
@@ -135,10 +148,11 @@ services:
       - /tmp:size=64m,noexec,nosuid
     restart: unless-stopped
     deploy:
+      replicas: 2          # limits below are PER replica → 2 x 1.5G = 3G total
       resources:
         limits:
-          cpus: '0.8'
-          memory: 1G
+          cpus: '1.0'
+          memory: 1.5G
 
   # Reverse Proxy
   gateway:

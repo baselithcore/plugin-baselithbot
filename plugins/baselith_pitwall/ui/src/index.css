@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ───────────────────────── design tokens ───────────────────────── */
+:root {
+  color-scheme: dark;
+
+  /* base + layered surfaces (cool near-black cockpit) */
+  --bg: #07090e;
+  --surface-1: #0c1018;
+  --surface-2: #11161f;
+  --surface-3: #161c27;
+  --hairline: rgba(255, 255, 255, 0.07);
+  --hairline-strong: rgba(255, 255, 255, 0.13);
+
+  /* text ramp */
+  --text: #e9eef6;
+  --text-dim: #98a3b4;
+  --text-faint: #5a6473;
+
+  /* brand ember (warm) — identity + primary action */
+  --ember: #ff5a36;
+  --ember-deep: #df3f1c;
+
+  /* semantic signals */
+  --go: #2ee6a6;
+  --caution: #ffc24b;
+  --danger: #ff4060;
+  --info: #34c8ff;
+  --violet: #8b7bff;
+
+  --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 18px 40px -24px rgba(0, 0, 0, 0.9);
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family:
+    'Inter',
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    sans-serif;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(900px 520px at 12% -8%, rgba(255, 90, 54, 0.1), transparent 60%),
+    radial-gradient(820px 480px at 92% -6%, rgba(52, 200, 255, 0.08), transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size:
+    auto,
+    auto,
+    48px 48px,
+    48px 48px;
+  background-attachment: fixed;
+}
+
+/* numeric / telemetry readouts */
+.tabular {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+/* glass panel surface */
+.glass {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 40%), var(--surface-1);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--shadow-panel);
+  backdrop-filter: blur(8px);
+}
+
+/* ───────────────────────── scrollbar ───────────────────────── */
+.scroll-slim::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+.scroll-slim::-webkit-scrollbar-thumb {
+  background: var(--hairline-strong);
+  border-radius: 9999px;
+}
+.scroll-slim::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+.scroll-slim::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ───────────────────────── range inputs ───────────────────────── */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--surface-3);
+  outline: none;
+}
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: var(--text);
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+  cursor: pointer;
+}
+
+/* ───────────────────────── keyframes ───────────────────────── */
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+.pulse-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
+@keyframes sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+.sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+  animation: sweep 2.4s ease-in-out infinite;
+}
+
+@keyframes flash-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 64, 96, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 14px rgba(255, 64, 96, 0);
+  }
+}
+.flash-glow {
+  animation: flash-glow 1.1s ease-out 1;
+}

@@ -141,6 +141,31 @@ def setup_tenant_context():
 
 
 @pytest.fixture(autouse=True)
+def _restore_isolated_env_toggles():
+    """Restore env toggles that plugin bootstraps clobber process-wide.
+
+    The BaselithWiki plugin bootstrap (``plugins/baselithwiki/_bootstrap.py``)
+    pins ``POSTGRES_ENABLED`` / ``APP_DOMAIN`` / ``AUTH_REQUIRED`` to setup-mode
+    defaults directly in ``os.environ`` and never restores them — it is
+    ``_done``-guarded by design and its own tests assert the mutation. When an
+    integration test loads that plugin the change bleeds into every later test
+    (e.g. flips ``POSTGRES_ENABLED`` to ``"false"``, so a fresh ``StorageConfig``
+    reports Postgres disabled and unrelated DB tests fail). Snapshot and restore
+    those keys around each test so the bleed cannot cross test boundaries.
+    """
+    keys = ("POSTGRES_ENABLED", "APP_DOMAIN", "AUTH_REQUIRED")
+    saved = {key: os.environ.get(key) for key in keys}
+    try:
+        yield
+    finally:
+        for key, value in saved.items():
+            if value is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = value
+
+
+@pytest.fixture(autouse=True)
 async def cleanup_global_state_between_tests():
     """Reset global registries and event bus between tests to prevent cross-test pollution."""
     yield
@@ -170,6 +195,17 @@ async def cleanup_global_state_between_tests():
         EventListener._instance = None
         ServiceRegistry.clear()
         reset_lazy_registry()
+    except (ImportError, Exception):
+        pass
+
+    # Clear the process-global ThoughtCache. ToT evaluation now routes through
+    # this shared LRU/TTL cache, so stale entries from a prior test could
+    # otherwise satisfy a later test's evaluation and skew LLM call counts.
+    try:
+        from core.reasoning.tot import cache as _tot_cache
+
+        if _tot_cache._global_thought_cache is not None:
+            _tot_cache._global_thought_cache.clear()
     except (ImportError, Exception):
         pass
 

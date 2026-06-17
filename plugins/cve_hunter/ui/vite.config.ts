@@ -12,12 +12,15 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: '@', replacement: resolve(__dirname, '../../src') },
-      // Map auth/src relative imports to the correct auth UI source directory
+      // Map auth/src relative imports to the correct auth UI source directory.
+      // The more specific `@auth/login` entry MUST precede `@auth` (first match wins).
+      { find: '@auth/login', replacement: resolve(__dirname, '../../auth/ui/src/login.ts') },
       { find: '@auth', replacement: resolve(__dirname, '../../auth/ui/src/index.ts') },
     ],
   },
   build: {
-    outDir: 'dist',
+    // Plugin serves from ../static (get_static_assets_path) — emit there.
+    outDir: '../static',
     emptyOutDir: true,
   },
   server: {

@@ -1,24 +1,40 @@
 <!doctype html>
-<html lang="it">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Baselith-Core · Console</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <script type="module" crossorigin src="/assets/index-COGZ4258.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/vendor-BXNZF9Zj.js" />
-    <link rel="modulepreload" crossorigin href="/assets/markdown-DEywCLwK.js" />
-    <link rel="modulepreload" crossorigin href="/assets/react-vendor-CMLWOTrK.js" />
-    <link rel="stylesheet" crossorigin href="/assets/vendor-D56HWL3_.css" />
-    <link rel="stylesheet" crossorigin href="/assets/index-B7UEtNvB.css" />
+    <link rel="icon" type="image/svg+xml" href="/static/frontend/favicon.svg" />
+    <link rel="stylesheet" href="/static/frontend/console.css" />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="logo">◢◣</span>
+          <span class="brand-name">Baselith-Core</span>
+          <span class="brand-sub">Console</span>
+        </div>
+        <div class="topbar-right">
+          <span id="health-badge" class="badge badge-unknown" title="Backend health"
+            >● checking…</span
+          >
+          <a class="link" href="/docs" target="_blank" rel="noopener">API Docs ↗</a>
+        </div>
+      </header>
+
+      <div class="shell">
+        <aside class="sidebar">
+          <nav id="nav" class="nav"></nav>
+          <div class="conn">
+            <div class="panel-head"><h2>Connection</h2></div>
+            <div id="conn-panel"></div>
+          </div>
+        </aside>
+
+        <main id="view-root" class="main"></main>
+      </div>
+    </div>
+    <script type="module" src="/static/frontend/js/app.js"></script>
   </body>
 </html>

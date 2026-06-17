@@ -1,4 +1,5 @@
-import { ShieldCheck, Wifi, WifiOff } from 'lucide-react';
+import { LogOut, ShieldCheck, UserRound, Wifi, WifiOff } from 'lucide-react';
+import { useAuth } from '@auth';
 import { Logo } from './Logo';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -37,6 +38,7 @@ export function TopBar({ pseudonym, sessionId, turns, online }: Props) {
             HITL attivo
           </span>
           <ThemeToggle />
+          <UserBadge />
         </div>
       </div>
     </header>
@@ -68,6 +70,36 @@ function SessionTelemetry({
       <span className="pill num" aria-label={`Turni: ${turns}`}>
         {turns} turni
       </span>
+    </div>
+  );
+}
+
+function UserBadge() {
+  const { user, isAuthenticated, logout } = useAuth();
+
+  // No authenticated session -> render nothing (never a login wall).
+  if (!isAuthenticated || !user) return null;
+
+  const name = user.username || user.email;
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="pill" aria-label={`Operatore: ${name}`} title={name}>
+        <UserRound className="h-3 w-3 text-accent-500" aria-hidden />
+        <span className="max-w-[10rem] truncate">{name}</span>
+      </span>
+      <button
+        type="button"
+        onClick={() => {
+          void logout();
+        }}
+        className="pill transition-colors hover:text-triage-red"
+        title="Esci"
+        aria-label="Esci"
+      >
+        <LogOut className="h-3 w-3" aria-hidden />
+        <span className="hidden sm:inline">Esci</span>
+      </button>
     </div>
   );
 }

@@ -36,6 +36,93 @@ graph LR
 
 ---
 
+## API Versioning
+
+The data routers (chat, indexing, metrics, status, feedback, tenant) are also
+mounted under a **`/v1`** prefix, in addition to their unprefixed paths:
+
+```text
+POST /chat        # unversioned (kept for backward compatibility)
+POST /v1/chat     # versioned alias — pin new clients here
+```
+
+Both resolve to the same handler, so versioning is **additive** and breaks no
+existing client. Set `API_V1_ENABLED=false` to disable the aliases. HTML/admin,
+plugin-management, Backstage, and discovery routes are not versioned.
+
+---
+
+## Error Envelope
+
+Unhandled errors return a standardized JSON envelope with a correlation id
+(`X-Request-ID`), so failures are machine-parseable and traceable:
+
+```json
+{
+  "error": {
+    "code": "not_found",
+    "message": "…",
+    "type": "ItemNotFoundError",
+    "request_id": "…"
+  }
+}
+```
+
+Status mapping for framework (`BaselithError`) exceptions:
+
+| Exception | Status | `code` |
+|---|---|---|
+| `ItemNotFoundError`        | 404 | `not_found` |
+| `DuplicateRegistrationError` | 409 | `conflict` |
+| `PluginConfigError`        | 400 | `invalid_configuration` |
+| `PluginIntegrityError`     | 403 | `integrity_error` |
+| `PluginDependencyError`    | 409 | `dependency_error` |
+| other `BaselithError` / uncaught | 500 | `internal_error` |
+
+Authorization failures raised by the role/scope guards are also enveloped:
+
+| Exception | Status | `code` |
+|---|---|---|
+| `InsufficientPermissionsError` (missing role) | 403 | `insufficient_permissions` |
+| `InsufficientScopeError` (missing capability)  | 403 | `insufficient_scope` |
+| `QuotaExceededError` (usage budget) | 429 | `quota_exceeded` |
+
+`HTTPException` and request-validation errors keep their standard FastAPI
+`{"detail": ...}` shape (the envelope is additive and does not override them).
+Uncaught 500s return a generic message — check the logged traceback by
+`request_id`.
+
+---
+
+## Pagination
+
+List endpoints use **opaque cursor pagination**. A page response carries the
+items plus a `next_cursor` (and `has_more`); pass the cursor back as the
+`cursor` query parameter to fetch the next page:
+
+```bash
+GET /v1/webhooks/deliveries?limit=50
+# → { "deliveries": [...], "next_cursor": "eyJvZmZzZXQiOjUwfQ", "has_more": true }
+GET /v1/webhooks/deliveries?limit=50&cursor=eyJvZmZzZXQiOjUwfQ
+```
+
+Cursors are **opaque** — do not parse or construct them; the server may change
+the encoding. `limit` is clamped to a per-endpoint maximum (default 200). An
+invalid cursor returns `400`.
+
+---
+
+## Usage quotas
+
+Beyond per-minute [rate limiting](../core-modules/auth.md#api-key-hashing),
+identities can carry **persistent usage budgets** per calendar window (daily /
+monthly), enabled with `QUOTAS_ENABLED=true`. When an identity exhausts a
+window, requests return `429` with code `quota_exceeded` until the window resets.
+Limits default per identity and can be raised per key. See
+[Usage Quotas](../core-modules/quotas.md).
+
+---
+
 ## Authentication
 
 The framework uses two distinct schemes depending on the surface:
@@ -58,6 +145,19 @@ curl -H "X-API-Key: your-api-key-here" \
   -d '{"query": "Hello"}' \
   http://localhost:8000/chat
 ```
+
+### Capability scopes & federated SSO
+
+Beyond coarse roles, identities can carry fine-grained **capability scopes**
+(`resource:action`, e.g. `webhooks:write`) — mint least-privilege keys via
+`API_KEYS_SCOPED` and enforce them with `enforce_scopes` / `@require_scopes`. A
+denied check returns **403** with code `insufficient_scope`.
+
+Bearer tokens may also be issued by an external **OpenID Connect** provider
+(Okta/Auth0/Azure AD/Keycloak): set `OIDC_ENABLED=true` + `OIDC_ISSUER` +
+`OIDC_AUDIENCE` and the framework validates the IdP token (local HS256 is tried
+first, OIDC as fallback). Full details — scope grammar, role map, claim
+mapping — are in [Authentication & Authorization](../core-modules/auth.md).
 
 ### HTTP Basic Auth (Admin)
 
@@ -164,12 +264,28 @@ Once upon a time...
 
 ### `GET /health` - Health Check
 
-Liveness probe (no auth). Returns a minimal payload.
+Liveness probe (no auth). Cheap, no dependency checks — fails only if the
+process is wedged. Use for the Kubernetes `livenessProbe`.
 
 **Response** (200 OK):
 
 ```json
 { "status": "ok" }
+```
+
+---
+
+### `GET /health/ready` - Readiness Check
+
+Readiness probe (no auth). Verifies critical dependencies and returns **503**
+when the database is unreachable, so Kubernetes drains traffic from the pod
+until it recovers. Redis is reported but advisory (the framework falls back to
+in-memory), so it does not gate readiness. Results are cached (~30s).
+
+**Response** (200 OK / 503 Service Unavailable):
+
+```json
+{ "status": "ready", "services": { "database": true, "redis": true }, "cached": false }
 ```
 
 ---
@@ -353,9 +469,15 @@ Multi-tenant management (`plugins/api_routers/tenant.py`), mounted under the
 
 ## Console
 
-The single-page admin console (`plugins/api_routers/console.py`) is served at
-`GET /console` and `GET /console/{path}` (client-side routing). Static assets
-are mounted under `/static`.
+The admin console (`plugins/api_routers/console.py`) is served at `GET /console`
+and `GET /console/{path}`, returning `core/static/frontend/index.html`. The
+shipped console is a self-contained, dependency-free page (`index.html` +
+`console.css` + `console.js`) served same-origin under `/static/frontend/`, so
+it satisfies the strict runtime CSP without any external CDN or build step. It
+provides a streaming chat client (`/chat/stream` with `/chat` fallback), a live
+`/health` badge, a `/status` panel, and an API-key field stored in
+`localStorage` and sent as `X-API-Key`. Static assets are mounted under
+`/static`.
 
 ---
 

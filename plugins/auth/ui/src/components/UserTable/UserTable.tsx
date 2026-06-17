@@ -6,6 +6,7 @@
 
 import { Edit, Trash2, Key, Unlock, ShieldOff, LogOut, MoreVertical, Check, X } from 'lucide-react';
 import { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { User } from '../../types';
 import { PortalDropdown } from '../ui/PortalDropdown';
 
@@ -39,6 +40,7 @@ const ActionMenu = ({
   onRevokeSessions,
   onDisableMFA,
 }: ActionMenuProps) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -67,7 +69,7 @@ const ActionMenu = ({
           }}
         >
           <Edit size={14} />
-          <span>Edit</span>
+          <span>{t('users.actions.edit')}</span>
         </button>
 
         <button
@@ -78,7 +80,7 @@ const ActionMenu = ({
           }}
         >
           <Key size={14} />
-          <span>Reset Password</span>
+          <span>{t('users.actions.resetPassword')}</span>
         </button>
 
         <button
@@ -89,7 +91,7 @@ const ActionMenu = ({
           }}
         >
           <LogOut size={14} />
-          <span>Revoke Sessions</span>
+          <span>{t('users.actions.revokeSessions')}</span>
         </button>
 
         {user.is_locked && (
@@ -101,7 +103,7 @@ const ActionMenu = ({
             }}
           >
             <Unlock size={14} />
-            <span>Unlock Account</span>
+            <span>{t('users.actions.unlock')}</span>
           </button>
         )}
 
@@ -114,7 +116,7 @@ const ActionMenu = ({
             }}
           >
             <ShieldOff size={14} />
-            <span>Disable MFA</span>
+            <span>{t('users.actions.disableMfa')}</span>
           </button>
         )}
 
@@ -128,7 +130,7 @@ const ActionMenu = ({
           }}
         >
           <Trash2 size={14} />
-          <span>Deactivate</span>
+          <span>{t('users.actions.deactivate')}</span>
         </button>
       </PortalDropdown>
     </div>
@@ -157,11 +159,13 @@ const UserTable = ({
   onRevokeSessions,
   onDisableMFA,
 }: UserTableProps) => {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="admin-empty">
         <div className="admin-spinner admin-spinner-lg" />
-        <p className="admin-empty-text">Loading users...</p>
+        <p className="admin-empty-text">{t('users.loading')}</p>
       </div>
     );
   }
@@ -172,8 +176,8 @@ const UserTable = ({
         <div className="admin-empty-icon">
           <X size={48} />
         </div>
-        <p className="admin-empty-title">No users found</p>
-        <p className="admin-empty-text">Try adjusting your search or filters.</p>
+        <p className="admin-empty-title">{t('users.empty')}</p>
+        <p className="admin-empty-text">{t('users.emptyHint')}</p>
       </div>
     );
   }
@@ -183,13 +187,13 @@ const UserTable = ({
       <table className="admin-table">
         <thead>
           <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Roles</th>
-            <th>Status</th>
-            <th>MFA</th>
-            <th>Last Login</th>
-            <th style={{ width: '60px' }}>Actions</th>
+            <th>{t('users.columns.username')}</th>
+            <th>{t('users.columns.email')}</th>
+            <th>{t('users.columns.roles')}</th>
+            <th>{t('users.columns.status')}</th>
+            <th>{t('users.columns.mfa')}</th>
+            <th>{t('users.columns.lastLogin')}</th>
+            <th style={{ width: '60px' }}>{t('users.columns.actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -203,7 +207,11 @@ const UserTable = ({
               <td>
                 <div className="user-email-cell">
                   <span className="user-email">{user.email}</span>
-                  {user.is_locked && <span className="admin-badge admin-badge-error">Locked</span>}
+                  {user.is_locked && (
+                    <span className="admin-badge admin-badge-error">
+                      {t('users.status.locked')}
+                    </span>
+                  )}
                 </div>
               </td>
               <td>
@@ -228,20 +236,20 @@ const UserTable = ({
                 {user.is_active ? (
                   <span className="user-status user-status-active">
                     <Check size={14} />
-                    Active
+                    {t('users.status.active')}
                   </span>
                 ) : (
                   <span className="user-status user-status-inactive">
                     <X size={14} />
-                    Inactive
+                    {t('users.status.inactive')}
                   </span>
                 )}
               </td>
               <td>
                 {user.mfa_enabled ? (
-                  <span className="admin-badge admin-badge-success">Enabled</span>
+                  <span className="admin-badge admin-badge-success">{t('common.enabled')}</span>
                 ) : (
-                  <span className="admin-badge admin-badge-neutral">Disabled</span>
+                  <span className="admin-badge admin-badge-neutral">{t('common.disabled')}</span>
                 )}
               </td>
               <td>

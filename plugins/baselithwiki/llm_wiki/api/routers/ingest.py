@@ -4,6 +4,11 @@ The raw-upload subset (``/api/ingest/raw*``) is the surface the wizard's
 "Documenti" step relies on. Auto-ingest of pending PDFs at startup is
 also exposed as a helper here so :mod:`main` can call it from the
 lifespan hook without re-implementing the dedup logic.
+
+Helpers and constants are in :mod:`_ingest_helpers`; raw-file listing
+and serving routes live in :mod:`_raw_file_serve` and are included via
+``router.include_router`` so external imports of ``router`` pick up all
+routes transparently.
 """
 
 from __future__ import annotations
@@ -11,19 +16,25 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import re
-import unicodedata
 from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from llm_wiki import config
-from llm_wiki.config import INGEST_SUPPORTED_EXTENSIONS
+from llm_wiki.api.routers._ingest_helpers import (
+    ALLOWED_UPLOAD_EXTS,
+    MAX_UPLOAD_BYTES,
+    _existing_source_slugs,
+    _is_pdf_pending,
+    _require_active_pack,
+    _sanitize_filename,
+    autostart_pending_ingest,
+)
+from llm_wiki.api.routers._raw_file_serve import router as _raw_router
 from llm_wiki.ingest_raw.jobs import get_registry, load_recent_jobs
-from llm_wiki.ingest_raw.planner import slug_from_raw
 from llm_wiki.ingest_raw.runner import spawn_worker
 from llm_wiki.wiki.ingest import ingest_all, ingest_file
 
@@ -50,127 +61,23 @@ def _require_ingest_or_setup_mode(request: Request) -> None:
 
 router = APIRouter()
 
-
-# Multi-format: estensioni accettate dal raw/ scan e dall'upload API.
-# Derived dall'env ``INGEST_SUPPORTED_EXTENSIONS``. PDF resta sempre
-# in lista anche se l'env non lo include (fallback safety).
-ALLOWED_UPLOAD_EXTS: set[str] = set(INGEST_SUPPORTED_EXTENSIONS) | {".pdf"}
-MAX_UPLOAD_BYTES = 50 * 1024 * 1024
-_SAFE_FILENAME_RE = re.compile(r"[^a-z0-9._-]+")
+# Pull in raw-file listing / serving routes from the sibling module so
+# all routes are reachable through this single ``router`` object as before.
+router.include_router(_raw_router)
 
 
-def _sanitize_filename(name: str) -> str:
-    if not name or "\x00" in name:
-        raise HTTPException(status_code=400, detail="invalid filename")
-    name = Path(name).name
-    norm = unicodedata.normalize("NFKD", name)
-    ascii_ = norm.encode("ascii", "ignore").decode("ascii")
-    base, _, ext = ascii_.rpartition(".")
-    if not base:
-        base = ascii_
-        ext = ""
-    base = _SAFE_FILENAME_RE.sub("-", base.lower()).strip("-")
-    ext = ext.lower()
-    if not base:
-        raise HTTPException(status_code=400, detail="filename empty after sanitisation")
-    if not ext or f".{ext}" not in ALLOWED_UPLOAD_EXTS:
-        raise HTTPException(
-            status_code=400,
-            detail=f"extension `.{ext}` not allowed. Allowed: {sorted(ALLOWED_UPLOAD_EXTS)}",
-        )
-    return f"{base}.{ext}"
-
-
-def _require_active_pack() -> None:
-    """Refuse ingest when no Domain Pack is active.
-
-    Without an active pack, ``COLLECTION_NAME`` falls back to the bare
-    ``"wiki"`` default and any vectors written here would be orphaned the
-    moment the wizard activates a real domain (which switches the
-    collection to ``"<domain>-wiki"``). Fail-fast with 409 instead.
-    """
-    import os
-
-    if not os.getenv("APP_DOMAIN", "").strip():
-        raise HTTPException(
-            status_code=409,
-            detail="no Domain Pack is active; complete the setup wizard before ingesting.",
-        )
-
-
-def _existing_source_slugs() -> set[str]:
-    """Set of source-page slugs already present in ``wiki/sources/``.
-
-    Page filenames are kebabized by the planner (`slug_from_raw`) so the
-    raw filename `foo_bar-44.pdf` lands at `wiki/sources/foo-bar-44.md`.
-    Comparing raw stem directly produced false negatives (`_` vs `-`,
-    duplicated dashes, etc.) and looped `autostart_pending_ingest` on
-    every boot. Strip critic suffixes so `.needs-review.md` / `.new.md`
-    still count as "already processed".
-    """
-    sources_dir = config.WIKI_DIR / "sources"
-    if not sources_dir.exists():
-        return set()
-    out: set[str] = set()
-    for p in sources_dir.rglob("*.md"):
-        stem = p.stem.lower()
-        for suffix in (".needs-review", ".new"):
-            if stem.endswith(suffix):
-                stem = stem[: -len(suffix)]
-                break
-        out.add(stem)
-    return out
-
-
-def _is_pdf_pending(raw_path: Path, existing_slugs: set[str]) -> bool:
-    return slug_from_raw(str(raw_path)) not in existing_slugs
-
-
-async def autostart_pending_ingest() -> None:
-    """Spawn ingest workers for any PDF in raw/ without a wiki source page.
-
-    Idempotent: runs once per boot. The pipeline's own filename lock
-    prevents double-processing if the user manually triggers an ingest
-    in parallel.
-    """
-    import os as _os
-
-    if not _os.getenv("APP_DOMAIN", "").strip():
-        logger.info("[startup] auto-ingest skipped: no Domain Pack active")
-        return
-    raw_dir = config.RAW_DIR
-    if not raw_dir.exists():
-        return
-    existing = _existing_source_slugs()
-    targets = [
-        p
-        for p in sorted(raw_dir.iterdir())
-        if p.is_file()
-        and p.suffix.lower() in ALLOWED_UPLOAD_EXTS
-        and _is_pdf_pending(p, existing)
-    ]
-    if not targets:
-        return
-    options = {
-        "overwrite": False,
-        "reindex": True,
-        "dry_run": False,
-        "only_source_page": False,
-    }
-    registry = get_registry()
-    registry.set_loop(asyncio.get_running_loop())
-    logger.info("[startup] auto-ingest: %d pending PDF(s) in raw/", len(targets))
-    for t in targets:
-        try:
-            job = registry.create(filename=t.name, options=options)
-            spawn_worker(job, t, options)
-            logger.info("[startup] auto-ingest spawned job=%s file=%s", job.id, t.name)
-        except Exception as exc:
-            logger.warning("[startup] auto-ingest failed for %s: %s", t.name, exc)
+# ---------------------------------------------------------------------------
+# Models
+# ---------------------------------------------------------------------------
 
 
 class IngestFileRequest(BaseModel):
     path: str
+
+
+# ---------------------------------------------------------------------------
+# Routes — full vault / single file
+# ---------------------------------------------------------------------------
 
 
 @router.post("/api/ingest", dependencies=[Depends(_require_ingest_or_setup_mode)])
@@ -214,106 +121,9 @@ async def api_ingest_file(req: IngestFileRequest) -> dict[str, Any]:
     return await ingest_file(path)
 
 
-@router.get("/api/raw/files")
-def list_raw_files() -> dict[str, Any]:
-    """Files dropped under ``raw/`` + processing state per file.
-
-    Each entry carries a ``processed`` flag computed against
-    :func:`_existing_source_slugs` (which already strips ``.needs-review``
-    and ``.new`` suffixes). The legacy ``count`` field stays as
-    "total raw files"; ``pending_count`` is the subset that has NO source
-    page on disk — the only number the UI should surface as "files
-    waiting to be ingested" (a ``.needs-review.md`` is the ingest's
-    output, not a pending state).
-    """
-    raw_dir = config.RAW_DIR
-    if not raw_dir.exists():
-        return {"count": 0, "pending_count": 0, "files": []}
-    existing = _existing_source_slugs()
-    out: list[dict[str, Any]] = []
-    pending = 0
-    for p in sorted(raw_dir.iterdir()):
-        if not p.is_file() or p.suffix.lower() not in ALLOWED_UPLOAD_EXTS:
-            continue
-        try:
-            stat = p.stat()
-        except OSError:
-            continue
-        processed = not _is_pdf_pending(p, existing)
-        if not processed:
-            pending += 1
-        out.append(
-            {
-                "name": p.name,
-                "size": stat.st_size,
-                "modified": stat.st_mtime,
-                "processed": processed,
-            }
-        )
-    return {"count": len(out), "pending_count": pending, "files": out}
-
-
-_RAW_MEDIA_TYPES: dict[str, str] = {
-    ".pdf": "application/pdf",
-    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    ".html": "text/html; charset=utf-8",
-    ".htm": "text/html; charset=utf-8",
-    ".md": "text/markdown; charset=utf-8",
-    ".png": "image/png",
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".tiff": "image/tiff",
-}
-
-
-@router.get("/api/raw/file/{filename}")
-def serve_raw_file(filename: str) -> FileResponse:
-    """Stream del file originale dentro ``raw/``.
-
-    Sblocca click-to-source UX: il frontend recupera l'URL per ogni
-    Source con ``source_file`` non vuoto e apre il PDF/DOCX/etc nel
-    visualizzatore nativo del browser. Per PDF, supporta deep-link
-    ``#page=N`` (rendered dal browser, non dal server).
-
-    Security:
-    - filename sanitizzato (no traversal, ASCII-only)
-    - resolved path deve stare dentro RAW_DIR
-    - solo estensioni allowed
-    - read-only (raw/ è read-only per convenzione)
-
-    NB: endpoint volutamente NON gated da ``require_user``. Le pagine
-    sources sono linkate con ``<a href={rawFileUrl(...)}>`` (apertura
-    in nuova tab native dal browser); l'access_token vive in JS e non
-    viaggia automaticamente nell'header su navigation classica, quindi
-    aggiungere ``require_user`` romperebbe il click-to-source. Hardening
-    futuro: signed URL a tempo o session cookie. Difese attuali:
-    sanitize filename + allowlist estensioni + path containment.
-    """
-    safe_name = _sanitize_filename(filename)
-    raw_dir = config.RAW_DIR.resolve()
-    target = (raw_dir / safe_name).resolve()
-    try:
-        target.relative_to(raw_dir)
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail="invalid path") from exc
-    if not target.is_file():
-        raise HTTPException(status_code=404, detail=f"raw file not found: {safe_name}")
-    ext = target.suffix.lower()
-    if ext not in ALLOWED_UPLOAD_EXTS:
-        raise HTTPException(status_code=400, detail=f"extension `{ext}` not allowed")
-    media_type = _RAW_MEDIA_TYPES.get(ext, "application/octet-stream")
-    # ``inline`` content-disposition consente al browser di renderizzare
-    # invece di forzare il download. PDF/HTML/IMG sono nativamente
-    # renderizzabili; gli altri formati ricadono in download (browser
-    # decide a runtime).
-    return FileResponse(
-        path=str(target),
-        media_type=media_type,
-        filename=safe_name,
-        headers={"Content-Disposition": f'inline; filename="{safe_name}"'},
-    )
+# ---------------------------------------------------------------------------
+# Routes — raw upload
+# ---------------------------------------------------------------------------
 
 
 @router.post("/api/ingest/raw", dependencies=[Depends(_require_ingest_or_setup_mode)])
@@ -477,6 +287,11 @@ async def api_ingest_raw_from_disk(
     return {"started": len(started), "jobs": started}
 
 
+# ---------------------------------------------------------------------------
+# Routes — job management
+# ---------------------------------------------------------------------------
+
+
 @router.get("/api/ingest/raw/jobs")
 def list_jobs(limit: int = 20) -> dict[str, Any]:
     registry = get_registry()
@@ -521,3 +336,11 @@ async def stream_job(job_id: str) -> StreamingResponse:
         media_type="application/x-ndjson",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+__all__ = [
+    "router",
+    "autostart_pending_ingest",
+    "IngestFileRequest",
+    "_require_ingest_or_setup_mode",
+]

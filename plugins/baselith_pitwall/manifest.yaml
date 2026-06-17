@@ -1,0 +1,36 @@
+name: baselith_pitwall
+version: 1.0.0
+description: "Sentient digital pit wall for motorsport \u2014 high-rate async telemetry\
+  \ ingestion, a vertical agent swarm (tyres / engine / strategy) coordinated by digital\
+  \ pheromones, semantic historical recall, Monte Carlo Tree Search race simulation,\
+  \ and proactive natural-language recommendations validated by FIA-regulation guardrails."
+author: Baselith
+homepage: https://github.com/baselithcore
+license: Apache-2.0
+category: AI
+readiness: stable
+tags:
+- motorsport
+- telemetry
+- swarm
+- mcts
+- strategy
+- pit-wall
+- enterprise
+python_dependencies: []
+plugin_dependencies: {}
+optional_resources:
+- llm
+- qdrant
+- postgres
+environment_variables:
+- BASELITH_PITWALL_ENABLED
+- BASELITH_PITWALL_USE_LLM
+- BASELITH_PITWALL_SEMANTIC_ENABLED
+- BASELITH_PITWALL_PERSISTENCE
+- BASELITH_PITWALL_AUTH_ENABLED
+- BASELITH_PITWALL_RATE_LIMIT_PER_MIN
+- BASELITH_PITWALL_WEBSOCKET_URL
+- BASELITH_PITWALL_UDP_PORT
+- BASELITH_PITWALL_REPLAY_PATH
+integrity_sha256: a617d7d4ee6adf22214033ec1403c90bbb4af99add13bf17158d1fc4d0321513

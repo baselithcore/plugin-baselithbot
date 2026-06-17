@@ -20,6 +20,8 @@ from .sast_tools import SASTToolsHandler
 from .scanning import ScanningMixin
 from .status import StatusMixin
 from .analysis import AnalysisMixin
+from .discovery_loop import DiscoveryLoopMixin
+from .alert import AlertMixin
 
 __all__ = [
     "CorrelationsHandler",
@@ -32,4 +34,6 @@ __all__ = [
     "ScanningMixin",
     "StatusMixin",
     "AnalysisMixin",
+    "DiscoveryLoopMixin",
+    "AlertMixin",
 ]

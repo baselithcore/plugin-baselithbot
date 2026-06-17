@@ -29,6 +29,21 @@ class AuditAction:
     USER_UNLOCKED = "user.unlocked"
     USER_SESSIONS_REVOKED = "user.sessions_revoked"
     USER_MFA_DISABLED = "user.mfa_disabled"
+    USER_INVITED = "user.invited"
+    INVITATION_REVOKED = "user.invitation_revoked"
+    USER_STATUS_CHANGED = "user.status_changed"
+    # RBAC administration
+    ROLE_CREATED = "rbac.role_created"
+    ROLE_DELETED = "rbac.role_deleted"
+    ROLE_PERMISSIONS_CHANGED = "rbac.role_permissions_changed"
+    USER_ROLE_ASSIGNED = "rbac.user_role_assigned"
+    USER_ROLE_REVOKED = "rbac.user_role_revoked"
+    TAB_POLICY_CHANGED = "rbac.tab_policy_changed"
+    GROUP_CREATED = "rbac.group_created"
+    GROUP_DELETED = "rbac.group_deleted"
+    GROUP_MEMBER_ADDED = "rbac.group_member_added"
+    GROUP_MEMBER_REMOVED = "rbac.group_member_removed"
+    GROUP_ROLE_CHANGED = "rbac.group_role_changed"
 
 
 @dataclass

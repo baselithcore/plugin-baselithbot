@@ -17,6 +17,8 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 import yaml
 
+from core.api.spa import SPAStaticFiles
+
 try:
     from fastapi_limiter import FastAPILimiter
 
@@ -30,7 +32,7 @@ import redis.asyncio as redis
 
 from core.services.bootstrap import bootstrapper, ensure_startup_bootstrap
 from core.config import get_app_config, get_storage_config
-from core.config.environment import is_production_env
+from core.api.startup_checks import run_startup_health_checks, warm_auth_singletons
 from core.plugins import PluginRegistry, PluginLoader, PluginState
 
 logger = get_logger(__name__)
@@ -41,85 +43,6 @@ _storage_config = get_storage_config()
 INDEX_BOOTSTRAP_BACKGROUND = getattr(_app_config, "index_bootstrap_background", False)
 POSTGRES_ENABLED = getattr(_storage_config, "postgres_enabled", False)
 CACHE_REDIS_URL = getattr(_storage_config, "cache_redis_url", "")
-
-
-async def _run_startup_health_checks() -> None:
-    """
-    Ping critical infrastructure services at startup.
-
-    Logs a WARNING (or ERROR in production) when a required service is
-    unreachable.  Does not raise — the framework uses lazy initialization
-    and individual operations will surface connection errors at call time.
-    In production a failed check is escalated to
-    ERROR level so alerting systems can act on it.
-    """
-    is_production = is_production_env()
-    log_fn = logger.error if is_production else logger.warning
-
-    if POSTGRES_ENABLED:
-        try:
-            from core.db.connection import get_async_connection
-
-            async with get_async_connection() as conn:
-                await conn.execute("SELECT 1")
-            logger.info("✅ Startup health check: PostgreSQL OK")
-        except Exception as exc:
-            log_fn(
-                "Startup health check FAILED — PostgreSQL unreachable: %s",
-                type(exc).__name__,
-            )
-
-    if CACHE_REDIS_URL:
-        try:
-            _redis_check = redis.from_url(CACHE_REDIS_URL)
-            await _redis_check.ping()
-            await _redis_check.close()
-            logger.info("✅ Startup health check: Redis OK")
-        except Exception as exc:
-            log_fn(
-                "Startup health check FAILED — Redis unreachable: %s",
-                type(exc).__name__,
-            )
-
-    if is_production and POSTGRES_ENABLED:
-        try:
-            import asyncio as _asyncio
-            from alembic.config import Config as AlembicConfig
-            from alembic.runtime.migration import MigrationContext
-            from alembic.script import ScriptDirectory
-
-            def _check_migrations() -> tuple[str, str]:
-                from sqlalchemy import create_engine
-
-                alembic_cfg = AlembicConfig("alembic.ini")
-                script = ScriptDirectory.from_config(alembic_cfg)
-                head_rev: str = script.get_current_head() or "unknown"
-
-                db_url = (
-                    alembic_cfg.get_main_option("sqlalchemy.url")
-                    or _storage_config.conninfo
-                )
-                engine = create_engine(db_url)
-                with engine.connect() as conn:
-                    ctx = MigrationContext.configure(conn)
-                    current_rev: str = ctx.get_current_revision() or "none"
-                engine.dispose()
-                return current_rev, head_rev
-
-            current, head = await _asyncio.to_thread(_check_migrations)
-            if current != head:
-                logger.error(
-                    "Database migrations are NOT up to date — "
-                    "current: %s, head: %s. Run `alembic upgrade head` before deploying.",
-                    current,
-                    head,
-                )
-            else:
-                logger.info(
-                    "✅ Startup health check: DB migrations up to date (%s)", current
-                )
-        except Exception as exc:
-            logger.warning("Could not verify migration status: %s", type(exc).__name__)
 
 
 @asynccontextmanager
@@ -135,17 +58,20 @@ async def lifespan(app: FastAPI):
         "on" if POSTGRES_ENABLED else "off",
     )
 
-    # Setup OpenTelemetry tracing
+    # Setup OpenTelemetry tracing + metrics (centralized in observability.otel:
+    # rich resource, sampling, OTLP traces/metrics, propagators, shutdown).
     if getattr(_app_config, "telemetry_enabled", False):
         logger.info("📊 Initializing OpenTelemetry...")
         try:
-            from core.observability.tracing import setup_telemetry
+            from core.observability.otel import setup_telemetry
 
-            setup_telemetry(
+            if setup_telemetry(
                 service_name="baselith-core",
-                otlp_endpoint=getattr(_app_config, "telemetry_otel_endpoint", ""),
-            )
-            logger.info("📊 OpenTelemetry initialized")
+                otlp_endpoint=getattr(_app_config, "telemetry_otel_endpoint", None),
+            ):
+                logger.info("📊 OpenTelemetry initialized")
+            else:
+                logger.info("📊 OpenTelemetry inactive (SDK unavailable)")
         except Exception as e:
             logger.warning(f"📊 OpenTelemetry initialization skipped: {e}")
     else:
@@ -331,7 +257,7 @@ async def lifespan(app: FastAPI):
         if spa_index.exists():
             app.mount(
                 f"/{plugin_name}",
-                StaticFiles(directory=str(static_path), html=True),
+                SPAStaticFiles(directory=str(static_path), html=True),
                 name=f"{plugin_name}-spa",
             )
             logger.info("🔌 Plugin SPA mounted: /%s", plugin_name)
@@ -446,7 +372,10 @@ async def lifespan(app: FastAPI):
                         )
                 except Exception as exc:
                     logger.error(
-                        "Plugin auto-activation %s raised: %s", canonical_name, exc
+                        "Plugin auto-activation %s raised: %s",
+                        canonical_name,
+                        exc,
+                        exc_info=True,
                     )
     except Exception as exc:
         logger.warning("Plugin auto-activation setup failed: %s", exc)
@@ -456,8 +385,8 @@ async def lifespan(app: FastAPI):
 
         initialize_chat_service_with_plugins(plugin_registry)
         logger.info("✅ Chat service initialized with plugin registry")
-    except ImportError:
-        pass
+    except ImportError as exc:
+        logger.warning("Chat service unavailable (init skipped): %s", exc)
 
     if "evaluation" in required_resources:
         try:
@@ -465,7 +394,7 @@ async def lifespan(app: FastAPI):
             evaluation_service: Any = await lazy_registry.get_or_create("evaluation")
             app.state.evaluation_service = evaluation_service
         except Exception as e:
-            logger.error(f"Failed to start Evaluation Service: {e}")
+            logger.error(f"Failed to start Evaluation Service: {e}", exc_info=True)
 
     if "evolution" in required_resources:
         try:
@@ -473,7 +402,7 @@ async def lifespan(app: FastAPI):
             evolution_service: Any = await lazy_registry.get_or_create("evolution")
             app.state.evolution_service = evolution_service
         except Exception as e:
-            logger.error(f"Failed to start Evolution Service: {e}")
+            logger.error(f"Failed to start Evolution Service: {e}", exc_info=True)
 
     if INDEX_BOOTSTRAP_BACKGROUND:
         logger.info(
@@ -509,8 +438,10 @@ async def lifespan(app: FastAPI):
         else:
             logger.info("🛡️ Rate Limiter skipped (local cache mode, no Redis).")
 
-    # === Startup health checks ===
-    await _run_startup_health_checks()
+    # === Eager auth/security singleton warmup + health checks ===
+    # (see core.api.startup_checks — extracted for the 500-line cap)
+    warm_auth_singletons()
+    await run_startup_health_checks()
 
     try:
         yield
@@ -541,6 +472,13 @@ async def lifespan(app: FastAPI):
             await get_security_manager().rate_limiter.close()
         except Exception as e:
             logger.error(f"Error closing rate limiter Redis connection: {e}")
+
+        try:
+            from core.observability.otel import shutdown_telemetry
+
+            shutdown_telemetry()
+        except Exception as e:
+            logger.debug("OpenTelemetry shutdown skipped: %s", e)
 
         await bootstrapper.shutdown()
         logger.info("✅ FastAPI backend stopped successfully.")

@@ -1,0 +1,17 @@
+name: baselithtwin
+version: 0.2.0
+description: "Engineered WhatsApp Digital Twin \u2014 learns the user's communicative\
+  \ style, stores salient facts in hierarchical long-term memory, and drafts/sends\
+  \ replies that simulate the user under a whitelist-governed, human-in-the-loop autonomy\
+  \ policy. OpenWA-backed, fully async, with a React monitoring dashboard."
+author: BaselithCore Team
+tags:
+- digital-twin
+- whatsapp
+- openwa
+- memory
+- persona
+- hitl
+python_dependencies: []
+plugin_dependencies: {}
+integrity_sha256: 79596516b9675619804190ab904cacfba85734638daf66f86720495e2b6b73e6

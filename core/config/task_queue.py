@@ -9,7 +9,6 @@ class TaskQueueConfig(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="",  # Read from both TASK_QUEUE_ and QUEUE_ prefixes
         case_sensitive=False,
-        env_file=".env",
         extra="ignore",
     )
 
@@ -39,3 +38,7 @@ class TaskQueueConfig(BaseSettings):
     # Retry settings
     default_retry_count: int = 3
     default_retry_delay: int = 60
+
+    # Connection pool settings
+    max_connections: int = 50  # cap connections on the shared queue Redis pool
+    health_check_interval: float = 30.0  # idle-connection health-check seconds

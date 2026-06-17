@@ -25,6 +25,7 @@ class MessageHandlerMixin:
     info: Any
     _tools: Dict[str, Any]
     _resources: Dict[str, Any]
+    _autonomy_policy: Any
 
     async def handle_message(self, message: dict[str, Any]) -> dict[str, Any] | None:
         """
@@ -123,8 +124,20 @@ class MessageHandlerMixin:
         if not isinstance(arguments, dict):
             raise ValueError(f"Invalid arguments for tool {tool_name}: expected object")
 
+        # Prefer the validator compiled once at registration; fall back to a
+        # one-off validate() for tools constructed without a cached validator.
+        validator = getattr(tool, "validator", None)
         schema = getattr(tool, "input_schema", None)
-        if isinstance(schema, dict) and schema:
+        if validator is not None:
+            from jsonschema import ValidationError
+
+            try:
+                validator.validate(arguments)
+            except ValidationError as exc:
+                raise ValueError(
+                    f"Invalid arguments for tool {tool_name}: {exc.message}"
+                ) from exc
+        elif isinstance(schema, dict) and schema:
             from jsonschema import ValidationError, validate
 
             try:
@@ -133,6 +146,25 @@ class MessageHandlerMixin:
                 raise ValueError(
                     f"Invalid arguments for tool {tool_name}: {exc.message}"
                 ) from exc
+
+        # Autonomy gate — fail-closed: MCP transports carry no human-approval
+        # channel, so categories requiring approval at the active level are
+        # rejected outright instead of executing unsupervised.
+        policy = getattr(self, "_autonomy_policy", None)
+        if policy is not None:
+            category = getattr(tool, "category", "read_only")
+            if policy.requires_approval(category):
+                logger.warning(
+                    "mcp_tool_blocked_by_autonomy_policy",
+                    tool_name=tool_name,
+                    category=category,
+                    level=policy.level.name,
+                )
+                raise PermissionError(
+                    f"Tool '{tool_name}' (category={category}) requires human "
+                    f"approval at autonomy level {policy.level.name}; MCP "
+                    "transport has no approval channel."
+                )
 
         logger.info(f"MCP tool call: tool={tool_name}, arguments={arguments}")
 
@@ -143,9 +175,9 @@ class MessageHandlerMixin:
         if isinstance(result, str):
             content = [{"type": "text", "text": result}]
         elif isinstance(result, dict):
-            content = [{"type": "text", "text": json.dumps(result, indent=2)}]
+            content = [{"type": "text", "text": json.dumps(result)}]
         elif isinstance(result, list):
-            content = [{"type": "text", "text": json.dumps(result, indent=2)}]
+            content = [{"type": "text", "text": json.dumps(result)}]
         else:
             content = [{"type": "text", "text": str(result)}]
 

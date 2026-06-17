@@ -6,6 +6,7 @@
 
 import { type ReactNode } from 'react';
 import { ShieldAlert } from 'lucide-react';
+import { useAuthT } from '../i18n/standalone';
 import { useAuth } from '../hooks/useAuthContext';
 import LoginPage from './LoginPage';
 
@@ -16,13 +17,14 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiredRole, requiredTab }: ProtectedRouteProps) {
+  const t = useAuthT();
   const { isAuthenticated, isLoading, hasRole, canAccessTab, user } = useAuth();
 
   if (isLoading) {
     return (
       <div className="auth-loading">
         <div className="auth-spinner-large" />
-        <p>Loading...</p>
+        <p>{t('protected.loading')}</p>
       </div>
     );
   }
@@ -35,10 +37,10 @@ export function ProtectedRoute({ children, requiredRole, requiredTab }: Protecte
     return (
       <div className="auth-forbidden">
         <ShieldAlert size={64} className="auth-forbidden-icon" />
-        <h1>Access Denied</h1>
-        <p>You don't have permission to access this page.</p>
+        <h1>{t('protected.accessDenied')}</h1>
+        <p>{t('protected.noPagePermission')}</p>
         <p className="auth-forbidden-detail">
-          Required role: <code>{requiredRole}</code>
+          {t('protected.requiredRole')} <code>{requiredRole}</code>
         </p>
       </div>
     );
@@ -48,11 +50,11 @@ export function ProtectedRoute({ children, requiredRole, requiredTab }: Protecte
     return (
       <div className="auth-forbidden">
         <ShieldAlert size={64} className="auth-forbidden-icon" />
-        <h1>Access Denied</h1>
-        <p>You don't have access to this section.</p>
+        <h1>{t('protected.accessDenied')}</h1>
+        <p>{t('protected.noSectionAccess')}</p>
         {user?.allowed_tabs && (
           <p className="auth-forbidden-detail">
-            Your access is limited to: {user.allowed_tabs.join(', ')}
+            {t('protected.limitedTo', { tabs: user.allowed_tabs.join(', ') })}
           </p>
         )}
       </div>

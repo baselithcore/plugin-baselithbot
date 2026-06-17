@@ -82,3 +82,17 @@ Thumbs.db
 # --- Build Artifacts ---
 mkdocs-site/site/
 app/static/frontend/
+
+# BaselithBrain runtime vault (user notes — never committed)
+plugins/baselithbrain/vault/
+/vault/
+
+# BaselithTwin — WhatsApp gateway runtime artifacts (never commit sessions)
+.wwebjs_auth/
+.wwebjs_cache/
+plugins/baselithtwin/sidecar/.wwebjs_auth/
+plugins/baselithtwin/sidecar/.wwebjs_cache/
+# Legacy @open-wa/wa-automate session + debug output
+_IGNORE_*/
+**/session*.data.json
+**/screenshot_session_*.png

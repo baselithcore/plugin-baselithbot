@@ -136,11 +136,19 @@ def create_redis_client(url: str) -> Redis:
     with _shared_pools_lock:
         pool = _shared_pools.get(url)
         if pool is None:
-            pool = ConnectionPool.from_url(url)
+            pool = ConnectionPool.from_url(
+                url,
+                max_connections=cfg.max_connections,
+                health_check_interval=cfg.health_check_interval,
+            )
             _shared_pools[url] = pool
 
     return Redis(connection_pool=pool)
 ```
+
+The pool is bounded (`max_connections`, default 50) so a connection leak applies
+backpressure instead of exhausting Redis `maxclients`; see *Bounded Redis
+Connection Pools* under the 0.14 optimizations below.
 
 **Benefits:**
 
@@ -261,6 +269,201 @@ items = await memory.get_many(item_ids)
 ```
 
 ---
+
+## Request-Path and LLM Optimizations (0.13)
+
+### Single-Round-Trip Rate Limiting
+
+The distributed rate limiter (`core/middleware/rate_limiter.py`) executes one
+atomic Lua script per check (`INCR` + first-hit `EXPIRE`) instead of the
+previous `SET NX EX` + `INCR` pair — half the Redis latency on **every
+authenticated request**, with the same TOCTOU-free semantics.
+
+### Streaming Token Estimation
+
+All four LLM providers (Anthropic, OpenAI, Ollama, HuggingFace) estimate the
+prompt's tokens once per stream and accumulate per-delta. Previously every
+chunk re-tokenized the prompt plus the full accumulated text — O(n²) over the
+stream, tens of ms wasted on long responses.
+
+### Shared Vision HTTP Client
+
+`VisionService` keeps a lazily created, pooled `httpx.AsyncClient` (20
+connections, keep-alive) shared by the Anthropic/Google/Ollama providers.
+Each `analyze()` no longer pays TLS handshake + connection setup
+(50–200 ms per image call). Call `await service.close()` on shutdown.
+
+### Cache-Key Hashing with orjson
+
+`RedisTTLCache` serializes keys with `orjson` (`OPT_SORT_KEYS` keeps digests
+deterministic across processes). ~5–10× faster than `json.dumps(sort_keys=True)`
+on every cache operation. Note: the digest changes once at deploy time, so the
+first rollout starts with a cold (TTL-bounded) cache.
+
+### Semantic-Cache Embedding Memo
+
+`SemanticLLMCache` memoizes query embeddings in a bounded LRU (256 entries):
+repeated hot prompts skip sentence-transformer inference entirely on the
+cache-lookup path.
+
+### Vectorized Semantic-Cache Scan
+
+The similarity scan over cached entries is a single NumPy matrix-vector
+product (embeddings are L2-normalized at insert time, so dot product ==
+cosine). Replaces one Python-level cosine call per entry — the lookup no
+longer degrades linearly in interpreter time as the cache fills toward its
+per-tenant cap.
+
+### Eager Auth/Security Warmup at Boot
+
+The FastAPI lifespan constructs the `SecurityManager` (rate limiter + Lua
+script registration) and `AuthManager` (JWT handler, API-key validator)
+singletons at startup instead of inside the first authenticated request,
+removing the first-request latency spike. Best-effort: on failure the lazy
+path still applies.
+
+### Single Query Embedding per Recall
+
+`HierarchicalMemory.recall()` encodes the query once and shares the vector
+across the STM and MTM tier searches (previously each tier re-encoded the
+same query — the dominant recall cost with remote embedders).
+
+### Batched Redis and Off-Loop Reranking
+
+- `RedisFeedbackStore.load_by_agent()/load_all()` use one `MGET` instead of
+  one `GET` per item.
+- The cross-encoder reranker runs in `asyncio.to_thread` (it is sync
+  CPU/GPU-bound work) and flushes its score-cache writes with one
+  `asyncio.gather` instead of a sequential await per hit.
+- `A2AClientPool.health_check_all()` checks all peers concurrently.
+- Marketplace `uninstall()` uses an async subprocess for `pip` and
+  `asyncio.to_thread` for directory removal — no event-loop stalls.
+
+### Single `.env` Parse at Import
+
+`core.config` loads the repository `.env` into `os.environ` exactly once at
+package import (`core.config.env.load_project_env`). Settings classes no
+longer declare `env_file`, so instantiating the ~30 config classes dropped
+from ~230ms (each re-reading and re-parsing the same file) to ~7ms.
+
+### Concurrent Feedback Analytics
+
+`get_feedback_analytics()` runs its six independent aggregations with
+`asyncio.gather`, each on its own pooled connection — dashboard latency is
+now the slowest single query instead of the sum of all six.
+
+## Request-Path and LLM Optimizations (0.14)
+
+### Keyword-First Intent Classification
+
+`IntentClassifier.classify_with_confidence()` runs cheap keyword matching first
+and only falls through to the LLM classifier on a miss. Previously every request
+with plugin intents registered paid a full LLM round-trip before the keyword
+path was even tried — the single largest avoidable latency/cost item on the
+request path.
+
+### Cached JWT Verification
+
+`JWTHandler.verify_token()` caches verified tokens in a small TTL map (keyed on
+the SHA-256 of the raw token, ≤5 s) so repeat requests skip both the signature
+decode and the Redis blacklist round-trip. For asymmetric algorithms (RS256 /
+ES256 / EdDSA) the verification key is parsed once at construction instead of per
+call. Revocation staleness is bounded by the TTL, and `revoke_token()` evicts
+the local entry immediately. The map is a bounded LRU (8192 entries) so a burst
+of distinct valid tokens (rotation or token spray) cannot grow it without limit
+— the oldest entries are evicted once the cap is reached.
+
+### Reused HuggingFace Local Pipeline
+
+The HuggingFace provider's local streaming path reuses the cached `transformers`
+pipeline (model + tokenizer) instead of reloading multi-GB weights from disk on
+every request.
+
+### Off-Loop Cross-Encoder Reranking
+
+The vectorstore reranker runs its synchronous cross-encoder inference in
+`asyncio.to_thread`, so a rerank no longer blocks the event loop (and every other
+concurrent request) for the duration of the torch forward pass. The same
+treatment applies to the sync `encode()` in `VectorMemoryProvider.search()`,
+which now awaits async embedders and offloads sync ones to a thread.
+
+### Batched Vectorstore Indexing
+
+`VectorStoreService.index()` collects chunks across all supplied documents into a
+single `encode()` call and a single `upsert` (with `wait=False` for bulk
+ingestion) instead of one embed + one upsert per document. `chunk_text()` also
+reuses a cached splitter rather than rebuilding it per call.
+
+### Thought-Evaluation Memoization
+
+The async Tree-of-Thoughts engine routes thought scoring through the shared
+`ThoughtCache`, so structurally identical thoughts re-encountered during MCTS
+expansion reuse their score instead of re-hitting the LLM.
+
+### Concurrent Cognitive Fan-Out
+
+Independent LLM calls now run concurrently (bounded by a semaphore) instead of
+serially: adversarial probe suites (red-team / hallucination-trap / boundary),
+persona-ensemble perspective generation, internal-debate counterarguments, the
+composite evaluator's sub-judges, and MCP `list_all_tools` across servers.
+
+### Vectorized Memory Clustering
+
+`cluster_memories()` builds a single L2-normalized matrix and computes all
+pairwise cosine similarities with one matmul (`M @ M.T`) instead of an O(n²)
+Python loop that re-converted lists to arrays and recomputed norms per pair.
+
+### Concurrent RAG Fallback Recall
+
+The per-document fallback lookups in the retrieval mixins issue their Qdrant
+queries concurrently (bounded) instead of one serial round-trip per missing
+document.
+
+### Cached Plugin Metadata and Discovery
+
+`Plugin.metadata` is a `cached_property` (it was re-parsing the manifest YAML on
+every one of ~84 access sites), and `ResourceAnalyzer.discover_plugin()` memoizes
+its manifest + AST parse keyed on file mtimes — startup and the plugin admin
+endpoints no longer re-read and re-parse unchanged plugins.
+
+### Bounded Redis Connection Pools
+
+Both the cache (`RedisCacheConfig`) and task-queue (`TaskQueueConfig`) connection
+pools accept `max_connections` (default 50) and `health_check_interval` (default
+30 s), so a connection leak applies backpressure instead of exhausting Redis
+`maxclients` / file descriptors.
+
+### orjson Cache Values
+
+`RedisTTLCache` serializes cache *values* with `orjson` as well as keys — 5–10×
+faster than stdlib `json` on the (larger) payload of every `get` / `set`.
+
+### Fewer Redis Round-Trips
+
+The dead-letter queue's `list()` pipelines its per-job `HGETALL`s into one
+round-trip (was N+1), and the indexing job builds one pub/sub manager per run
+instead of reconnecting for each of its three status publishes.
+
+### Bounded Feedback Analytics
+
+`get_feedback_analytics()` and `get_document_feedback_summary()` always apply a
+time window (default 90 days, `feedback_analytics_default_days`) and a row cap
+(`feedback_analytics_doc_scan_limit`, default 10 000), so the per-document
+aggregation can no longer grow into an unbounded full-table scan.
+
+### Misc Hot-Path Trims
+
+- `ParallelToolExecutor` indexes calls by id once (O(G+N) instead of O(G·N)).
+- `build_prompt()` splits the static system prompt around the date field once at
+  import instead of re-running `str.format` over the full template per turn.
+- Learning loop: a running score-sum instead of summing the buffer per sample, an
+  id→experience index for O(1) feedback lookup, `heapq.nlargest` for top-k
+  actions, and a bounded `deque` for the episode history.
+- A2A responses use `ORJSONResponse`; MCP tool-result frames drop pretty-print
+  indentation and compile each tool's JSON-schema validator once at registration.
+- Marketplace registry indexes plugins by id (O(1) `get_plugin`).
+- Background evaluation fan-out is bounded by a semaphore
+  (`EvaluationService.max_concurrent`, default 8).
 
 ## Event System Optimizations
 

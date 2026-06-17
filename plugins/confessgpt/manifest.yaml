@@ -27,4 +27,4 @@ environment_variables:
 - CONFESSGPT_VOICE_PROVIDER
 - CONFESSGPT_VOICE_NAME
 homepage: https://baselithcore.xyz/plugins/confessgpt
-integrity_sha256: 848d0d7130520522610c2da521581fc374aaa00b318713649984a723c4792c95
+integrity_sha256: e06295a9653490a228b51eb8f8858b1988656602b76b473d1ad74ac3322f1a44

@@ -1,6 +1,9 @@
-import { Cross, Lock } from 'lucide-react';
+import { Cross, Lock, LogOut } from 'lucide-react';
+import { useAuth } from '@auth';
 
 export function Header() {
+  const { user, logout } = useAuth();
+
   return (
     <header className="flex items-center justify-between gap-4 border-b border-gold-subtle pb-3">
       <div className="flex items-center gap-3">
@@ -18,18 +21,41 @@ export function Header() {
         </div>
       </div>
 
-      <div
-        role="status"
-        aria-live="polite"
-        title="Sigillum sacramentale — nulla di quanto confessi viene registrato, salvato o trasmesso. La sessione esiste solo in memoria volatile e viene cancellata al termine del rito."
-        className="inline-flex items-center gap-2 rounded-full border border-gold-medium bg-surface-2 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.18em] text-gold-bright backdrop-blur-md transition-colors hover:border-gold-strong hover:bg-surface-3"
-      >
-        <span
-          className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold-bright shadow-[0_0_8px_#c9a86a]"
-          aria-hidden
-        />
-        <Lock className="h-3 w-3" strokeWidth={1.8} aria-hidden />
-        Sigillum
+      <div className="flex items-center gap-2">
+        <div
+          role="status"
+          aria-live="polite"
+          title="Sigillum sacramentale — nulla di quanto confessi viene registrato, salvato o trasmesso. La sessione esiste solo in memoria volatile e viene cancellata al termine del rito."
+          className="inline-flex items-center gap-2 rounded-full border border-gold-medium bg-surface-2 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.18em] text-gold-bright backdrop-blur-md transition-colors hover:border-gold-strong hover:bg-surface-3"
+        >
+          <span
+            className="h-1.5 w-1.5 animate-pulse rounded-full bg-gold-bright shadow-[0_0_8px_#c9a86a]"
+            aria-hidden
+          />
+          <Lock className="h-3 w-3" strokeWidth={1.8} aria-hidden />
+          Sigillum
+        </div>
+
+        {user && (
+          <>
+            <span
+              title={user.email}
+              className="inline-flex items-center rounded-full border border-gold-subtle bg-surface-2 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.18em] text-ash"
+            >
+              {user.username || user.email}
+            </span>
+            <button
+              type="button"
+              onClick={() => void logout()}
+              title="Esci"
+              aria-label="Esci"
+              className="inline-flex items-center gap-1.5 rounded-full border border-gold-medium bg-surface-2 px-3 py-1.5 text-[0.65rem] font-medium uppercase tracking-[0.18em] text-gold-bright backdrop-blur-md transition-colors hover:border-gold-strong hover:bg-surface-3"
+            >
+              <LogOut className="h-3 w-3" strokeWidth={1.8} aria-hidden />
+              Esci
+            </button>
+          </>
+        )}
       </div>
     </header>
   );

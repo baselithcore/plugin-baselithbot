@@ -1,5 +1,6 @@
 import React from 'react';
 import { X, Copy, Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface DetailModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface DetailModalProps {
 }
 
 const DetailModal: React.FC<DetailModalProps> = ({ isOpen, onClose, title, data, formatters }) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = React.useState(false);
 
   if (!isOpen || !data) return null;
@@ -26,12 +28,14 @@ const DetailModal: React.FC<DetailModalProps> = ({ isOpen, onClose, title, data,
     }
 
     if (value === null || value === undefined) {
-      return <span className="text-muted">null</span>;
+      return <span className="text-muted">{t('common.nullValue')}</span>;
     }
 
     if (typeof value === 'boolean') {
       return (
-        <span className={value ? 'text-success' : 'text-danger'}>{value ? 'True' : 'False'}</span>
+        <span className={value ? 'text-success' : 'text-danger'}>
+          {value ? t('common.true') : t('common.false')}
+        </span>
       );
     }
 
@@ -51,14 +55,14 @@ const DetailModal: React.FC<DetailModalProps> = ({ isOpen, onClose, title, data,
             <button
               className="admin-btn admin-btn-ghost admin-btn-icon"
               onClick={handleCopy}
-              title="Copy JSON"
+              title={t('modals.detail.copyJson')}
             >
               {copied ? <Check size={16} className="text-success" /> : <Copy size={16} />}
             </button>
             <button
               className="admin-btn admin-btn-ghost admin-btn-icon"
               onClick={onClose}
-              title="Close"
+              title={t('common.close')}
             >
               <X size={20} />
             </button>

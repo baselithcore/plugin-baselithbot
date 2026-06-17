@@ -29,6 +29,12 @@ class User:
     last_login: Optional[datetime] = None
     failed_login_attempts: int = 0
     locked_until: Optional[datetime] = None
+    # Enterprise lifecycle / profile metadata
+    email_verified: bool = False
+    status: str = "active"  # active | suspended | invited | deactivated
+    full_name: Optional[str] = None
+    password_changed_at: Optional[datetime] = None
+    last_login_ip: Optional[str] = None
 
     def is_locked(self) -> bool:
         """Check if account is currently locked."""
@@ -70,6 +76,9 @@ class User:
             "allowed_tabs": self.allowed_tabs,
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "last_login": self.last_login.isoformat() if self.last_login else None,
+            "email_verified": self.email_verified,
+            "status": self.status,
+            "full_name": self.full_name,
         }
 
 

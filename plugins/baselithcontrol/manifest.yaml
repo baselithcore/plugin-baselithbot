@@ -1,0 +1,30 @@
+name: baselithcontrol
+version: 0.1.0
+description: "Centralized control-plane dashboard \u2014 dynamically discovers every\
+  \ loaded plugin, monitors it in real time over SSE, aggregates its UI (sandboxed\
+  \ embed + A2UI status widgets), and exposes governed lifecycle control (enable/disable/reload)\
+  \ behind RBAC, an optional autonomy gate, and an append-only audit trail. Fully\
+  \ async, React/Vite dashboard, en + it i18n."
+author: BaselithCore Team
+license: Apache-2.0
+category: operations
+readiness: alpha
+tags:
+- dashboard
+- control-plane
+- observability
+- orchestration
+- governance
+homepage: https://baselithcore.xyz/plugins/baselithcontrol
+min_core_version: 1.0.0
+required_resources: []
+optional_resources:
+- redis
+plugin_dependencies:
+  auth: '>=0.1.0'
+python_dependencies: []
+environment_variables:
+- BASELITHCONTROL_ENABLED
+- BASELITHCONTROL_REQUIRE_ADMIN
+- BASELITHCONTROL_GATE_LEVEL
+integrity_sha256: 06b3d793a117770db0facf3d4ae7ba70c37326a0059f2c32c80186394b162b32

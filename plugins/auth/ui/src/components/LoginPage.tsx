@@ -4,70 +4,25 @@
  * Handles email/password login and MFA verification.
  */
 
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
+import { useAuthT } from '../i18n/standalone';
 import { useAuth } from '../hooks/useAuthContext';
+import { loginWithPasskey, isPasskeySupported } from '../api/webauthn';
+import SsoButtons from './SsoButtons';
+import AuthLogo from './ui/AuthLogo';
 import '../index.css';
-
-interface AuthLogoProps {
-  size?: number;
-}
-
-function AuthLogo({ size = 80 }: AuthLogoProps) {
-  const scaledSize = size || 64;
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 64 64"
-      fill="none"
-      width={scaledSize}
-      height={scaledSize}
-    >
-      <defs>
-        <linearGradient
-          id="hydra_grad"
-          x1="0"
-          y1="0"
-          x2="64"
-          y2="64"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor="#7ee0ff" />
-          <stop offset="1" stopColor="#7c8cff" />
-        </linearGradient>
-        <filter id="glow" x="-10" y="-10" width="84" height="84" filterUnits="userSpaceOnUse">
-          <feGaussianBlur stdDeviation="3" result="blur" />
-          <feComposite in="SourceGraphic" in2="blur" operator="over" />
-        </filter>
-      </defs>
-      {/* Background Shield */}
-      <path
-        d="M32 4L54 12V30C54 44.4 44.6 57.6 32 62C19.4 57.6 10 44.4 10 30V12L32 4Z"
-        fill="#04060f"
-        stroke="url(#hydra_grad)"
-        strokeWidth="2"
-      />
-
-      {/* Central Lock/Shield Hexagon */}
-      <path d="M32 18L44 25V39L32 46L20 39V25L32 18Z" fill="url(#hydra_grad)" opacity="0.9">
-        <animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite" />
-      </path>
-
-      {/* Inner Lock Detail */}
-      <circle cx="32" cy="30" r="3" fill="#04060f" />
-      <rect x="30" y="32" width="4" height="6" rx="1" fill="#04060f" />
-    </svg>
-  );
-}
 
 interface LoginPageProps {
   onSuccess?: () => void;
 }
 
 export default function LoginPage({ onSuccess }: LoginPageProps) {
+  const t = useAuthT();
   const {
     login,
     logout,
     verifyMFA,
+    refreshAuth,
     isLoading,
     error: authError,
     mfaRequired,
@@ -78,8 +33,31 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
   const [password, setPassword] = useState('');
   const [mfaCode, setMfaCode] = useState('');
   const [localError, setLocalError] = useState('');
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
+
+  // Surface an SSO redirect failure passed back as ?sso_error=...
+  useEffect(() => {
+    const reason = new URLSearchParams(window.location.search).get('sso_error');
+    if (reason) setLocalError(t('login.ssoError'));
+  }, [t]);
 
   const displayError = localError || authError;
+
+  const handlePasskeyLogin = async () => {
+    setLocalError('');
+    setPasskeyBusy(true);
+    try {
+      await loginWithPasskey();
+      await refreshAuth();
+      onSuccess?.();
+    } catch (err) {
+      // A user-cancelled prompt is not an error worth surfacing loudly.
+      const msg = err instanceof Error ? err.message : t('login.errors.loginFailed');
+      if (!/cancel|abort|not allowed/i.test(msg)) setLocalError(msg);
+    } finally {
+      setPasskeyBusy(false);
+    }
+  };
 
   const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
@@ -91,7 +69,7 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
         onSuccess?.();
       }
     } catch (err) {
-      setLocalError(err instanceof Error ? err.message : 'Login failed');
+      setLocalError(err instanceof Error ? err.message : t('login.errors.loginFailed'));
     }
   };
 
@@ -100,7 +78,7 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
     setLocalError('');
 
     if (!mfaTempToken) {
-      setLocalError('Missing MFA token');
+      setLocalError(t('login.errors.missingMfaToken'));
       return;
     }
 
@@ -108,17 +86,18 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
       await verifyMFA(mfaTempToken, mfaCode);
       onSuccess?.();
     } catch (err) {
-      setLocalError(err instanceof Error ? err.message : 'MFA verification failed');
+      setLocalError(err instanceof Error ? err.message : t('login.errors.mfaVerificationFailed'));
     }
   };
 
   if (mfaRequired) {
     return (
       <div className="auth-page">
+        <div className="aurora" aria-hidden="true" />
         <div className="auth-card">
           <div className="auth-header">
-            <h1 className="auth-title">Two-Factor Authentication</h1>
-            <p className="auth-subtitle">Enter the code from your authenticator app</p>
+            <h1 className="auth-title">{t('login.mfaHeader')}</h1>
+            <p className="auth-subtitle">{t('login.mfaHeaderSubtitle')}</p>
           </div>
 
           <form onSubmit={handleMFAVerify} className="auth-form">
@@ -131,7 +110,7 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
 
             <div className="auth-field">
               <label htmlFor="mfaCode" className="auth-label">
-                Verification Code
+                {t('login.mfaCodeLabel')}
               </label>
               <input
                 id="mfaCode"
@@ -139,7 +118,7 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
                 inputMode="numeric"
                 pattern="[0-9A-Za-z\-]*"
                 autoComplete="one-time-code"
-                placeholder="000000"
+                placeholder={t('login.mfaCodePlaceholder')}
                 value={mfaCode}
                 onChange={(e) => setMfaCode(e.target.value)}
                 className="auth-input auth-input-code"
@@ -147,11 +126,11 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
                 required
                 autoFocus
               />
-              <p className="auth-hint">Enter your 6-digit code or a backup code</p>
+              <p className="auth-hint">{t('login.mfaCodeHint')}</p>
             </div>
 
             <button type="submit" className="auth-button" disabled={isLoading}>
-              {isLoading ? <span className="auth-spinner" /> : 'Verify'}
+              {isLoading ? <span className="auth-spinner" /> : t('login.verify')}
             </button>
 
             <button
@@ -163,7 +142,7 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
                 setLocalError('');
               }}
             >
-              ← Back to login
+              ← {t('login.backToLogin')}
             </button>
           </form>
         </div>
@@ -173,6 +152,7 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
 
   return (
     <div className="auth-page">
+      <div className="aurora" aria-hidden="true" />
       <div className="auth-card">
         <div className="auth-header">
           <div className="auth-logo">
@@ -181,7 +161,7 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
           <h1 className="auth-title baselith-brand">
             BaselithAuth<span className="baselith-brand-dot">.</span>
           </h1>
-          <p className="auth-subtitle">Sign in to access the system</p>
+          <p className="auth-subtitle">{t('login.brandSubtitle')}</p>
         </div>
 
         <form onSubmit={handleLogin} className="auth-form">
@@ -194,13 +174,13 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
 
           <div className="auth-field">
             <label htmlFor="identifier" className="auth-label">
-              Email or Username
+              {t('login.identifier')}
             </label>
             <input
               id="identifier"
               type="text"
               autoComplete="username"
-              placeholder="you@example.com or username"
+              placeholder={t('login.identifierPlaceholderCombined')}
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               className="auth-input"
@@ -211,13 +191,13 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
 
           <div className="auth-field">
             <label htmlFor="password" className="auth-label">
-              Password
+              {t('login.password')}
             </label>
             <input
               id="password"
               type="password"
               autoComplete="current-password"
-              placeholder="••••••••"
+              placeholder={t('login.passwordDots')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="auth-input"
@@ -226,12 +206,34 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
           </div>
 
           <button type="submit" className="auth-button" disabled={isLoading}>
-            {isLoading ? <span className="auth-spinner" /> : 'Sign In'}
+            {isLoading ? <span className="auth-spinner" /> : t('login.submit')}
           </button>
+
+          {isPasskeySupported() && (
+            <>
+              <div className="auth-divider">
+                <span>{t('login.or')}</span>
+              </div>
+              <button
+                type="button"
+                className="auth-button auth-button-secondary"
+                onClick={handlePasskeyLogin}
+                disabled={passkeyBusy}
+              >
+                {passkeyBusy ? <span className="auth-spinner" /> : `🔑 ${t('login.passkey')}`}
+              </button>
+            </>
+          )}
+
+          <SsoButtons />
+
+          <a href="/auth/forgot-password" className="auth-link auth-link-muted">
+            {t('login.forgotPassword')}
+          </a>
         </form>
       </div>
 
-      <p className="auth-footer">© 2026 Gippo. All rights reserved.</p>
+      <p className="auth-footer">{t('login.footer')}</p>
     </div>
   );
 }

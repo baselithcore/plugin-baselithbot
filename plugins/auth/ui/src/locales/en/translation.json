@@ -1,0 +1,603 @@
+{
+  "common": {
+    "appName": "BaselithAuth",
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "confirm": "Confirm",
+    "search": "Search",
+    "loading": "Loading…",
+    "actions": "Actions",
+    "yes": "Yes",
+    "no": "No",
+    "refresh": "Refresh",
+    "back": "Back",
+    "none": "None",
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "copy": "Copy",
+    "copied": "Copied",
+    "saving": "Saving…",
+    "retry": "Retry",
+    "previous": "Previous",
+    "next": "Next",
+    "prev": "Prev",
+    "dismiss": "Dismiss",
+    "errorLabel": "Error: {{message}}",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "true": "True",
+    "false": "False",
+    "nullValue": "null",
+    "unknown": "Unknown",
+    "never": "Never"
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Access the administration console",
+    "identifier": "Email or username",
+    "identifierPlaceholder": "you@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Your password",
+    "submit": "Sign in",
+    "signingIn": "Signing in…",
+    "registerTitle": "Create account",
+    "registerSubtitle": "Register a new account",
+    "email": "Email",
+    "username": "Username",
+    "usernameOptional": "Username (optional)",
+    "register": "Register",
+    "registering": "Creating account…",
+    "mfaTitle": "Two-factor verification",
+    "mfaSubtitle": "Enter the 6-digit code from your authenticator app",
+    "mfaCode": "Verification code",
+    "verify": "Verify",
+    "verifying": "Verifying…",
+    "needAccount": "Need an account?",
+    "haveAccount": "Already have an account?",
+    "switchToRegister": "Register",
+    "switchToLogin": "Sign in",
+    "brandSubtitle": "Sign in to access the system",
+    "identifierPlaceholderCombined": "you@example.com or username",
+    "passwordDots": "••••••••",
+    "mfaHeader": "Two-Factor Authentication",
+    "mfaHeaderSubtitle": "Enter the code from your authenticator app",
+    "mfaCodeLabel": "Verification Code",
+    "mfaCodePlaceholder": "000000",
+    "mfaCodeHint": "Enter your 6-digit code or a backup code",
+    "backToLogin": "Back to login",
+    "footer": "© 2026 Gippo. All rights reserved.",
+    "errors": {
+      "invalidCredentials": "Invalid credentials",
+      "mfaInvalid": "Invalid verification code",
+      "generic": "Sign in failed. Please try again.",
+      "loginFailed": "Login failed",
+      "missingMfaToken": "Missing MFA token",
+      "mfaVerificationFailed": "MFA verification failed"
+    }
+  },
+  "protected": {
+    "loading": "Loading...",
+    "accessDenied": "Access Denied",
+    "noPagePermission": "You don't have permission to access this page.",
+    "noSectionAccess": "You don't have access to this section.",
+    "requiredRole": "Required role:",
+    "limitedTo": "Your access is limited to: {{tabs}}"
+  },
+  "nav": {
+    "adminPanel": "Admin Panel",
+    "users": "Users",
+    "sessions": "Sessions",
+    "audit": "Audit Log",
+    "roles": "Roles",
+    "groups": "Groups",
+    "access": "Access Control",
+    "logout": "Logout",
+    "version": "Admin Panel v1.0",
+    "myAccount": "My account",
+    "sso": "SSO"
+  },
+  "groups": {
+    "title": "Groups",
+    "addGroup": "New Group",
+    "description": "Bundle users and assign roles in bulk. Members inherit every role granted to the group.",
+    "slug": "Slug",
+    "name": "Name",
+    "descriptionField": "Description",
+    "empty": "No groups defined",
+    "deleteConfirm": "Delete group \"{{name}}\"? This cannot be undone.",
+    "memberCount": "{{count}} members",
+    "roleCount": "{{count}} roles",
+    "roles": "Granted roles",
+    "members": "Members",
+    "noMembers": "No members yet",
+    "addMember": "Add a member…",
+    "removeMember": "Remove from group"
+  },
+  "users": {
+    "title": "User Management",
+    "searchPlaceholder": "Search by email or username…",
+    "searchByEmail": "Search by email...",
+    "addUser": "Add User",
+    "createUser": "Create User",
+    "showInactive": "Show inactive",
+    "empty": "No users found",
+    "emptyHint": "Try adjusting your search or filters.",
+    "loading": "Loading users...",
+    "columns": {
+      "user": "User",
+      "email": "Email",
+      "username": "Username",
+      "roles": "Roles",
+      "status": "Status",
+      "mfa": "MFA",
+      "lastLogin": "Last Login",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "locked": "Locked"
+    },
+    "actions": {
+      "view": "View details",
+      "edit": "Edit",
+      "resetPassword": "Reset Password",
+      "unlock": "Unlock Account",
+      "revokeSessions": "Revoke Sessions",
+      "disableMfa": "Disable MFA",
+      "delete": "Delete",
+      "deactivate": "Deactivate"
+    },
+    "pagination": {
+      "showing": "Showing {{from}}-{{to}} of {{total}} users",
+      "pageOf": "Page {{page}} of {{total}}"
+    },
+    "confirm": {
+      "deactivateTitle": "Deactivate User",
+      "unlockTitle": "Unlock Account",
+      "revokeTitle": "Revoke Sessions",
+      "disableMfaTitle": "Disable MFA",
+      "deactivateMessage": "Are you sure you want to deactivate {{email}}? They will no longer be able to log in.",
+      "unlockMessage": "Unlock the account for {{email}}? This will clear failed login attempts.",
+      "revokeMessage": "Revoke all active sessions for {{email}}? They will be logged out everywhere.",
+      "disableMfaMessage": "Disable MFA for {{email}}? They will need to set it up again."
+    },
+    "errors": {
+      "createFailed": "Failed to create user",
+      "updateFailed": "Failed to update user",
+      "resetFailed": "Failed to reset password",
+      "actionFailed": "Action failed"
+    },
+    "createdSuccessfully": "User {{email}} created successfully",
+    "never": "Never",
+    "invite": {
+      "button": "Invite",
+      "title": "Invite a user",
+      "desc": "Send an email invitation. The recipient sets their own password to activate the account.",
+      "email": "Email address",
+      "roles": "Roles",
+      "send": "Send invitation",
+      "sending": "Sending…",
+      "error": "Could not send the invitation.",
+      "pending": "Pending invitations ({{count}})",
+      "expires": "expires {{date}}",
+      "statusPending": "Pending",
+      "revoke": "Revoke invitation",
+      "confirmRevoke": "Revoke this invitation?"
+    }
+  },
+  "sessions": {
+    "title": "Active Sessions",
+    "empty": "No active sessions",
+    "emptyHint": "There are currently no active user sessions.",
+    "loading": "Loading sessions...",
+    "countActive": "{{count}} active",
+    "detailTitle": "Session Details",
+    "expired": "Expired",
+    "columns": {
+      "user": "User",
+      "sessionId": "Session ID",
+      "created": "Created",
+      "expires": "Expires",
+      "timeRemaining": "Time Remaining",
+      "actions": "Actions"
+    },
+    "viewDetails": "View Details",
+    "revoke": "Revoke"
+  },
+  "audit": {
+    "title": "Audit Log",
+    "empty": "No audit entries",
+    "emptyFiltered": "No entries match the selected filter.",
+    "emptyHint": "No audit log entries recorded yet.",
+    "loading": "Loading audit log...",
+    "countEntries": "{{count}} entries",
+    "detailTitle": "Audit Log Details",
+    "viewDetails": "View Details",
+    "moreCount": "+{{count}} more",
+    "empties": "(empty)",
+    "filterAction": "Filter by action",
+    "actionsFilter": {
+      "all": "All Actions",
+      "userCreated": "User Created",
+      "userUpdated": "User Updated",
+      "userDeleted": "User Deleted",
+      "passwordReset": "Password Reset",
+      "userUnlocked": "User Unlocked",
+      "sessionsRevoked": "Sessions Revoked",
+      "mfaDisabled": "MFA Disabled",
+      "loginSuccess": "Login Success",
+      "loginFailure": "Login Failure",
+      "logout": "Logout"
+    },
+    "columns": {
+      "timestamp": "Timestamp",
+      "action": "Action",
+      "actor": "Actor",
+      "target": "Target",
+      "content": "Content",
+      "ip": "IP Address",
+      "time": "Time",
+      "actions": "Actions"
+    }
+  },
+  "roles": {
+    "title": "Roles & Permissions",
+    "addRole": "New Role",
+    "system": "System",
+    "custom": "Custom",
+    "slug": "Slug",
+    "name": "Name",
+    "description": "Description",
+    "permissions": "Permissions",
+    "permissionsCount": "{{count}} permissions",
+    "editPermissions": "Edit permissions",
+    "wildcardNote": "Full access (wildcard)",
+    "empty": "No roles defined",
+    "deleteConfirm": "Delete role \"{{name}}\"? This cannot be undone.",
+    "systemProtected": "System roles cannot be deleted",
+    "create": {
+      "title": "Create role",
+      "slugHint": "Lowercase letters, numbers, hyphen and underscore only"
+    },
+    "permissionCategories": {
+      "system": "System",
+      "users": "Users",
+      "rbac": "Access control",
+      "audit": "Audit",
+      "sessions": "Sessions",
+      "tab": "Plugin tabs",
+      "general": "General"
+    }
+  },
+  "access": {
+    "title": "Access Control",
+    "description": "Decide which roles can reach each plugin tab. Tabs are open to everyone until you restrict them.",
+    "refreshTabs": "Re-scan plugins",
+    "empty": "No plugin tabs discovered yet",
+    "columns": {
+      "tab": "Tab",
+      "plugin": "Plugin",
+      "policy": "Policy",
+      "roles": "Roles with access"
+    },
+    "open": "Open to all",
+    "restricted": "Restricted",
+    "openHint": "Everyone authenticated can access this tab",
+    "restrictedHint": "Only roles you grant below can access this tab",
+    "grantedTo": "Granted to",
+    "adminAlways": "Admins always have access"
+  },
+  "modals": {
+    "tempPassword": "Temporary password",
+    "tempPasswordHint": "Share this with the user securely. It is shown only once.",
+    "fields": {
+      "emailAddress": "Email Address",
+      "usernameOptional": "Username (Optional)",
+      "username": "Username",
+      "password": "Password",
+      "roles": "Roles",
+      "allowedTabs": "Allowed Tabs (Guest Permissions)",
+      "accountActive": "Account active",
+      "userInfo": "User Info"
+    },
+    "placeholders": {
+      "email": "user@example.com",
+      "username": "jdoe",
+      "enterPassword": "Enter password"
+    },
+    "autoGeneratePassword": "Auto-generate secure password",
+    "allowedTabsHint": "Select which tabs the guest user can access. If none selected, all tabs are accessible (read-only).",
+    "noPluginTabs": "No plugin tabs available",
+    "deactivateWarning": "Deactivating will revoke all active sessions.",
+    "info": {
+      "id": "ID: {{id}}",
+      "mfa": "MFA: {{status}}",
+      "created": "Created: {{date}}",
+      "lastLogin": "Last Login: {{date}}"
+    },
+    "errors": {
+      "emailRequired": "Email is required",
+      "passwordRequired": "Password is required",
+      "roleRequired": "At least one role is required",
+      "createFailed": "Failed to create user",
+      "updateFailed": "Failed to update user"
+    },
+    "createUser": {
+      "title": "Create New User",
+      "submit": "Create User"
+    },
+    "editUser": {
+      "title": "Edit User",
+      "submit": "Save Changes",
+      "assignRoles": "Custom roles",
+      "assignRolesHint": "Assign additional custom roles to this user"
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "submit": "Reset Password",
+      "auto": "Generate a temporary password",
+      "tempPasswordLabel": "Temporary Password",
+      "onceWarning": "This password will only be shown once. Please copy it now and share it securely with the user."
+    },
+    "detail": {
+      "title": "User Details",
+      "copyJson": "Copy JSON"
+    },
+    "confirm": {
+      "title": "Are you sure?",
+      "defaultConfirm": "Confirm"
+    }
+  },
+  "errors": {
+    "required": "This field is required",
+    "generic": "Something went wrong",
+    "loadFailed": "Failed to load data",
+    "saveFailed": "Failed to save changes"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "it": "Italiano"
+  },
+  "wizard": {
+    "title": "Create user",
+    "submit": "Create user",
+    "errors": {
+      "fixStep": "Please complete this step before continuing."
+    },
+    "identity": {
+      "step": "Identity",
+      "title": "User identity",
+      "hint": "Who is this account for? Email is required; the username is optional."
+    },
+    "credentials": {
+      "step": "Credentials",
+      "title": "Password",
+      "hint": "Auto-generate a strong temporary password, or set one manually.",
+      "autoGenerate": "Auto-generate a secure password",
+      "passwordPlaceholder": "Enter a password",
+      "reveal": "Show password",
+      "hide": "Hide password",
+      "copy": "Copy",
+      "generate": "Generate",
+      "strength": {
+        "weak": "Weak",
+        "fair": "Fair",
+        "good": "Good",
+        "strong": "Strong"
+      }
+    },
+    "access": {
+      "step": "Access",
+      "title": "Roles & access",
+      "hint": "Pick the roles this user gets. Guests can be scoped to specific tabs."
+    },
+    "review": {
+      "step": "Review",
+      "title": "Review & confirm",
+      "hint": "Check the details before creating the account.",
+      "password": "Password",
+      "autoGenerated": "Auto-generated",
+      "manual": "Set manually"
+    },
+    "roles": {
+      "admin": {
+        "name": "Admin",
+        "desc": "Full access to administration and every surface."
+      },
+      "user": {
+        "name": "User",
+        "desc": "Standard access to permitted plugin tabs."
+      },
+      "guest": {
+        "name": "Guest",
+        "desc": "Restricted access; scope to specific tabs below."
+      }
+    }
+  },
+  "security": {
+    "mfa": {
+      "title": "Two-factor authentication",
+      "enabledTitle": "Two-factor is on",
+      "enabledSub": "Your account is protected with an authenticator app.",
+      "disabledTitle": "Two-factor is off",
+      "disabledSub": "Add an authenticator app for an extra layer of security.",
+      "enable": "Enable two-factor",
+      "disable": "Disable two-factor",
+      "scanHint": "Scan this QR code with your authenticator app, or enter the key manually.",
+      "qrAlt": "MFA setup QR code",
+      "verifyHint": "Enter the 6-digit code from your authenticator app.",
+      "verifyEnable": "Verify & enable",
+      "backupHint": "Save these backup codes somewhere safe. Each works once if you lose your device.",
+      "copyCodes": "Copy",
+      "downloadCodes": "Download",
+      "backupWarn": "These codes are shown only once. Store them now.",
+      "done": "Done",
+      "errors": {
+        "generic": "Something went wrong. Please try again."
+      }
+    }
+  },
+  "recovery": {
+    "forgotTitle": "Reset your password",
+    "forgotSubtitle": "Enter your email or username and we'll send you a reset link.",
+    "identifier": "Email or username",
+    "identifierPlaceholder": "you@example.com or username",
+    "sendLink": "Send reset link",
+    "checkInbox": "If an account matches, you'll receive an email with next steps shortly.",
+    "backToLogin": "Back to sign in",
+    "genericError": "Something went wrong. Please try again.",
+    "resetTitle": "Choose a new password",
+    "resetSubtitle": "Your new password must meet the security policy.",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm password",
+    "resetSubmit": "Update password",
+    "resetDone": "Your password has been updated. You can now sign in.",
+    "passwordsMismatch": "Passwords do not match.",
+    "invalidLink": "This link is invalid or has expired.",
+    "requestNew": "Request a new link",
+    "verifyTitle": "Verifying your email",
+    "inviteTitle": "Accept your invitation",
+    "inviteSubtitle": "Create your account for {{email}}.",
+    "inviteDone": "Account created. You can now sign in.",
+    "fullName": "Full name",
+    "usernameOptional": "Username (optional)",
+    "createAccount": "Create account"
+  },
+  "account": {
+    "title": "My Account",
+    "toAdmin": "Admin",
+    "saving": "Saving…",
+    "loading": "Loading…",
+    "error": "Something went wrong.",
+    "tabs": {
+      "profile": "Profile",
+      "security": "Security",
+      "sessions": "Sessions & devices",
+      "activity": "Security activity",
+      "apikeys": "API keys"
+    },
+    "profile": {
+      "saved": "Profile updated.",
+      "email": "Email",
+      "verified": "Verified",
+      "unverified": "Unverified",
+      "roles": "Roles",
+      "status": "Status",
+      "fullName": "Full name",
+      "username": "Username",
+      "save": "Save changes"
+    },
+    "security": {
+      "mismatch": "Passwords do not match.",
+      "passwordChanged": "Password changed. Other sessions were signed out.",
+      "changePassword": "Change password",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "updatePassword": "Update password",
+      "mfa": "Two-factor authentication",
+      "mfaOn": "MFA is enabled on your account.",
+      "mfaOff": "Add an authenticator app for stronger security.",
+      "enableMfa": "Enable MFA",
+      "mfaCode": "Authenticator or backup code",
+      "disableMfa": "Disable MFA"
+    },
+    "passkeys": {
+      "title": "Passkeys",
+      "desc": "Sign in without a password using Touch ID, Face ID, Windows Hello, or a security key.",
+      "add": "Add passkey",
+      "none": "No passkeys yet.",
+      "namePrompt": "Name this passkey",
+      "defaultName": "My passkey",
+      "confirmDelete": "Remove this passkey?",
+      "lastUsed": "Last used {{date}}",
+      "neverUsed": "Never used",
+      "delete": "Delete passkey"
+    },
+    "sessions": {
+      "revokeOthers": "Sign out other sessions",
+      "none": "No active sessions.",
+      "session": "Session",
+      "current": "This device",
+      "started": "Started {{date}}",
+      "revoke": "Revoke session"
+    },
+    "activity": {
+      "desc": "Recent sign-ins and security events on your account.",
+      "none": "No activity recorded yet.",
+      "event": "Event",
+      "method": "Method",
+      "ip": "IP address",
+      "risk": "Risk",
+      "when": "When",
+      "events": {
+        "login_success": "Signed in",
+        "login_failure": "Failed sign-in",
+        "mfa_challenge": "MFA challenge",
+        "password_changed": "Password changed",
+        "password_reset": "Password reset",
+        "passkey_registered": "Passkey added",
+        "passkey_removed": "Passkey removed",
+        "mfa_disabled": "MFA disabled",
+        "api_key_created": "API key created",
+        "api_key_revoked": "API key revoked"
+      }
+    },
+    "apikeys": {
+      "title": "Personal access tokens",
+      "desc": "Use API keys to authenticate scripts and services. Treat them like passwords.",
+      "copyNow": "Copy your new key now — you won't be able to see it again.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "dismiss": "Done",
+      "namePlaceholder": "Key name (e.g. CI pipeline)",
+      "days": "days",
+      "never": "No expiry",
+      "create": "Create key",
+      "none": "No API keys yet.",
+      "expires": "Expires {{date}}",
+      "noExpiry": "No expiry",
+      "lastUsed": "last used {{date}}",
+      "confirmRevoke": "Revoke this API key? Applications using it will stop working.",
+      "revoke": "Revoke key"
+    }
+  },
+  "sso": {
+    "title": "Single Sign-On",
+    "desc": "Let users sign in with your enterprise identity provider via OIDC or SAML 2.0. New users are provisioned automatically on first login.",
+    "add": "Add provider",
+    "addTitle": "Add identity provider",
+    "editTitle": "Edit identity provider",
+    "none": "No identity providers configured yet.",
+    "edit": "Edit",
+    "delete": "Delete",
+    "disabled": "Disabled",
+    "confirmDelete": "Delete this provider? Linked users will keep their accounts but lose SSO via this provider.",
+    "save": "Save provider",
+    "saving": "Saving…",
+    "cancel": "Cancel",
+    "error": "Could not save the provider.",
+    "fields": {
+      "slug": "Slug (URL id)",
+      "name": "Display name",
+      "protocol": "Protocol",
+      "defaultRoles": "Default roles (comma-separated)",
+      "clientId": "Client ID",
+      "clientSecret": "Client secret",
+      "issuer": "Issuer URL",
+      "scopes": "Scopes",
+      "idpEntityId": "IdP entity ID",
+      "idpSsoUrl": "IdP SSO URL",
+      "idpCert": "IdP X.509 certificate",
+      "enabled": "Enabled",
+      "autoProvision": "Auto-provision new users"
+    }
+  }
+}

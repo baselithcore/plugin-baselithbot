@@ -103,6 +103,8 @@ class IntentClassifier:
         self._plugin_intent_patterns: Dict[str, Dict] = {}
         # Sorted intents cache: invalidated whenever a new intent is registered.
         self._sorted_intents_cache: Optional[List[tuple[str, Dict]]] = None
+        self._intents_list_cache: Optional[str] = None
+        self._valid_intents_cache: Optional[set[str]] = None
         self._llm_call: Optional[Any] = None
 
         # Fallback logic for LLM service acquisition.
@@ -145,6 +147,8 @@ class IntentClassifier:
             if all_patterns:
                 logger.info(f"Loaded {len(all_patterns)} intent patterns from plugins")
                 self._sorted_intents_cache = None
+                self._intents_list_cache = None
+                self._valid_intents_cache = None
         except Exception as e:
             logger.warning(f"Failed to load plugin intents: {e}")
         finally:
@@ -174,6 +178,8 @@ class IntentClassifier:
         }
         # Invalidate the sorted-intents cache so the next classify call rebuilds it.
         self._sorted_intents_cache = None
+        self._intents_list_cache = None
+        self._valid_intents_cache = None
         logger.debug(f"Registered intent: {intent_name} with {len(patterns)} patterns")
 
     async def classify(self, text: str) -> str:
@@ -194,8 +200,8 @@ class IntentClassifier:
         Perform a full tiered classification with confidence scoring.
 
         Logic:
-        1. LLM: If enabled, ask the model to pick from all available intents.
-        2. Keyword: If LLM is not confident or disabled, check pattern matches.
+        1. Keyword: Check pattern matches first (cheap, no network call).
+        2. LLM: If no keyword match and enabled, ask the model to pick an intent.
         3. Default: Fallback if no specific intent is detected.
 
         Args:
@@ -207,7 +213,16 @@ class IntentClassifier:
         # Ensure latest plugin intents are available.
         self._load_plugin_intents()
 
-        # Strategy 1: LLM semantic analysis.
+        # Strategy 1: Keyword pattern matching (cheap, no network round-trip).
+        # Run first so frequent/exact phrases short-circuit before any LLM call.
+        keyword_result = self._classify_with_keywords(text)
+        if keyword_result:
+            self._record_telemetry(keyword_result.intent)
+            logger.debug(f"Keyword matched intent: {keyword_result.intent}")
+            return keyword_result
+
+        # Strategy 2: LLM semantic analysis. Only reached when keyword matching
+        # found no match, so the expensive call is avoided on the common path.
         if self.llm_enabled and self._plugin_intent_patterns:
             llm_result = await self._classify_with_llm(text)
             if llm_result and llm_result.confidence >= self.confidence_threshold:
@@ -217,13 +232,6 @@ class IntentClassifier:
                     f"(confidence: {llm_result.confidence:.2f})"
                 )
                 return llm_result
-
-        # Strategy 2: Keyword pattern matching.
-        keyword_result = self._classify_with_keywords(text)
-        if keyword_result:
-            self._record_telemetry(keyword_result.intent)
-            logger.debug(f"Keyword matched intent: {keyword_result.intent}")
-            return keyword_result
 
         # Strategy 3: Default fallback.
         self._record_telemetry(self.default_intent)
@@ -250,14 +258,19 @@ class IntentClassifier:
         if not self.llm_service:
             return None
 
-        # Build descriptions for semantic guidance.
-        intents_list = "\n".join(
-            f"- {name}: {info.get('description', 'No description')}"
-            for name, info in self._plugin_intent_patterns.items()
-        )
-        intents_list += (
-            f"\n- {self.default_intent}: General Q&A and documentation queries"
-        )
+        # Build descriptions for semantic guidance. The list only changes
+        # when an intent is (un)registered, so cache the rendered block
+        # instead of rebuilding the string on every LLM classification.
+        if self._intents_list_cache is None:
+            parts = [
+                f"- {name}: {info.get('description', 'No description')}"
+                for name, info in self._plugin_intent_patterns.items()
+            ]
+            parts.append(
+                f"- {self.default_intent}: General Q&A and documentation queries"
+            )
+            self._intents_list_cache = "\n".join(parts)
+        intents_list = self._intents_list_cache
 
         prompt = CLASSIFICATION_PROMPT.format(
             intents_list=intents_list,
@@ -275,10 +288,14 @@ class IntentClassifier:
             intent = result.get("intent", self.default_intent)
             confidence = float(result.get("confidence", 0.5))
 
-            # Validate that the LLM didn't hallucinate an unknown intent.
-            valid_intents = set(self._plugin_intent_patterns.keys())
-            valid_intents.add(self.default_intent)
-            if intent not in valid_intents:
+            # Validate that the LLM didn't hallucinate an unknown intent. The
+            # set only changes when an intent is (un)registered, so cache it
+            # alongside _intents_list_cache and invalidate it the same way.
+            if self._valid_intents_cache is None:
+                valid_intents = set(self._plugin_intent_patterns.keys())
+                valid_intents.add(self.default_intent)
+                self._valid_intents_cache = valid_intents
+            if intent not in self._valid_intents_cache:
                 logger.warning(f"LLM returned unknown intent: {intent}")
                 return None
 

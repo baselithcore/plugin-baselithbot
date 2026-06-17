@@ -131,6 +131,29 @@ export async function getCurrentUser(accessToken: string): Promise<UserInfo> {
   return response.json();
 }
 
+export interface AccessibleTab {
+  plugin: string;
+  tab_id: string;
+  label: string;
+  restricted: boolean;
+  allowed: boolean;
+}
+
+/**
+ * The caller's accessible plugin tabs from the central RBAC policy.
+ * Consumed by every plugin (via @auth) to hide tabs the user may not access.
+ */
+export async function getAccessibleTabs(accessToken: string): Promise<AccessibleTab[]> {
+  const response = await fetch(`${API_BASE}/access/tabs`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to get accessible tabs');
+  }
+  return response.json();
+}
+
 /**
  * Setup MFA.
  */
@@ -165,6 +188,24 @@ export async function enableMFA(accessToken: string, code: string): Promise<void
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'Failed to enable MFA' }));
     throw new Error(error.detail || 'Failed to enable MFA');
+  }
+}
+
+/**
+ * Disable MFA for the current user (admin session required by the backend).
+ */
+export async function disableMFA(accessToken: string): Promise<void> {
+  const response = await fetch(`${API_BASE}/mfa/disable`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to disable MFA' }));
+    throw new Error(error.detail || 'Failed to disable MFA');
   }
 }
 

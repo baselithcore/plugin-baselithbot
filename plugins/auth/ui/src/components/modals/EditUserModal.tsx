@@ -4,9 +4,11 @@
 
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import type { User, UpdateUserRequest, PluginTab } from '../../types';
+import { useTranslation } from 'react-i18next';
+import type { User, UpdateUserRequest, PluginTab, RbacRole } from '../../types';
 import { ROLES } from '../../types';
 import { getPluginTabs } from '../../api/auth';
+import * as rbac from '../../api/rbac';
 import { useAuth } from '../../hooks/useAuthContext';
 
 interface EditUserModalProps {
@@ -17,6 +19,7 @@ interface EditUserModalProps {
 }
 
 const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProps) => {
+  const { t, i18n } = useTranslation();
   const { accessToken } = useAuth();
   const [email, setEmail] = useState(user.email);
   const [username, setUsername] = useState(user.username || '');
@@ -24,6 +27,8 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
   const [isActive, setIsActive] = useState(user.is_active);
   const [allowedTabs, setAllowedTabs] = useState<string[]>(user.allowed_tabs || []);
   const [availableTabs, setAvailableTabs] = useState<PluginTab[]>([]);
+  const [customRoles, setCustomRoles] = useState<RbacRole[]>([]);
+  const [assignedRoleIds, setAssignedRoleIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const isGuestRole = roles.includes('guest');
@@ -42,17 +47,45 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
     fetchTabs();
   }, [accessToken]);
 
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const [all, assigned] = await Promise.all([rbac.listRoles(), rbac.getUserRoles(user.id)]);
+        setCustomRoles(all.filter((r) => !r.is_system));
+        setAssignedRoleIds(assigned.map((r) => r.id));
+      } catch (err) {
+        console.error('Failed to load custom roles', err);
+      }
+    };
+    fetchRoles();
+  }, [user.id]);
+
+  const toggleCustomRole = async (role: RbacRole) => {
+    const has = assignedRoleIds.includes(role.id);
+    try {
+      if (has) {
+        await rbac.revokeUserRole(user.id, role.id);
+        setAssignedRoleIds((prev) => prev.filter((id) => id !== role.id));
+      } else {
+        await rbac.assignUserRole(user.id, role.id);
+        setAssignedRoleIds((prev) => [...prev, role.id]);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('errors.saveFailed'));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!email) {
-      setError('Email is required');
+      setError(t('modals.errors.emailRequired'));
       return;
     }
 
     if (roles.length === 0) {
-      setError('At least one role is required');
+      setError(t('modals.errors.roleRequired'));
       return;
     }
 
@@ -92,7 +125,7 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
         onClose();
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update user');
+      setError(err instanceof Error ? err.message : t('modals.errors.updateFailed'));
     }
   };
 
@@ -116,7 +149,7 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
     <div className="admin-modal-overlay">
       <div className="admin-modal">
         <div className="admin-modal-header">
-          <h3>Edit User</h3>
+          <h3>{t('modals.editUser.title')}</h3>
           <button onClick={onClose} className="admin-close-btn" disabled={isLoading}>
             <X size={20} />
           </button>
@@ -127,7 +160,7 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
         <form onSubmit={handleSubmit} className="admin-form">
           <div className="admin-modal-body">
             <div className="admin-form-group">
-              <label className="admin-label">Email Address</label>
+              <label className="admin-label">{t('modals.fields.emailAddress')}</label>
               <input
                 type="email"
                 className="admin-input"
@@ -138,7 +171,7 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
             </div>
 
             <div className="admin-form-group">
-              <label className="admin-label">Username</label>
+              <label className="admin-label">{t('modals.fields.username')}</label>
               <input
                 type="text"
                 className="admin-input"
@@ -148,7 +181,7 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
             </div>
 
             <div className="admin-form-group">
-              <label className="admin-label">Roles</label>
+              <label className="admin-label">{t('modals.fields.roles')}</label>
               <div className="admin-checkbox-group">
                 {ROLES.map((role) => (
                   <label key={role} className="admin-checkbox-label">
@@ -163,9 +196,29 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
               </div>
             </div>
 
+            {customRoles.length > 0 && (
+              <div className="admin-form-group">
+                <label className="admin-label">{t('modals.editUser.assignRoles')}</label>
+                <div className="admin-checkbox-group">
+                  {customRoles.map((role) => (
+                    <label key={role.id} className="admin-checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={assignedRoleIds.includes(role.id)}
+                        onChange={() => toggleCustomRole(role)}
+                      />
+                      {role.name}{' '}
+                      <span style={{ opacity: 0.6, fontSize: '0.8em' }}>({role.slug})</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="admin-form-hint">{t('modals.editUser.assignRolesHint')}</p>
+              </div>
+            )}
+
             {isGuestRole && (
               <div className="admin-form-group">
-                <label className="admin-label">Allowed Tabs (Guest Permissions)</label>
+                <label className="admin-label">{t('modals.fields.allowedTabs')}</label>
                 <div className="admin-checkbox-group">
                   {availableTabs.length > 0 ? (
                     availableTabs.map((tab) => (
@@ -181,14 +234,11 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
                     ))
                   ) : (
                     <div style={{ color: '#888', fontStyle: 'italic' }}>
-                      No plugin tabs available
+                      {t('modals.noPluginTabs')}
                     </div>
                   )}
                 </div>
-                <p className="admin-form-hint">
-                  Select which tabs the guest user can access. If none selected, all tabs are
-                  accessible (read-only).
-                </p>
+                <p className="admin-form-hint">{t('modals.allowedTabsHint')}</p>
               </div>
             )}
 
@@ -199,27 +249,37 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
                   checked={isActive}
                   onChange={(e) => setIsActive(e.target.checked)}
                 />
-                Account active
+                {t('modals.fields.accountActive')}
               </label>
               {!isActive && (
                 <p className="admin-form-hint" style={{ color: 'var(--admin-warning)' }}>
-                  Deactivating will revoke all active sessions.
+                  {t('modals.deactivateWarning')}
                 </p>
               )}
             </div>
 
             <div className="admin-form-group">
-              <label className="admin-label">User Info</label>
+              <label className="admin-label">{t('modals.fields.userInfo')}</label>
               <div style={{ fontSize: '0.8125rem', color: 'var(--admin-text-muted)' }}>
-                <p>ID: {user.id}</p>
-                <p>MFA: {user.mfa_enabled ? 'Enabled' : 'Disabled'}</p>
+                <p>{t('modals.info.id', { id: user.id })}</p>
                 <p>
-                  Created:{' '}
-                  {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
+                  {t('modals.info.mfa', {
+                    status: user.mfa_enabled ? t('common.enabled') : t('common.disabled'),
+                  })}
                 </p>
                 <p>
-                  Last Login:{' '}
-                  {user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Never'}
+                  {t('modals.info.created', {
+                    date: user.created_at
+                      ? new Date(user.created_at).toLocaleDateString(i18n.language)
+                      : t('common.unknown'),
+                  })}
+                </p>
+                <p>
+                  {t('modals.info.lastLogin', {
+                    date: user.last_login
+                      ? new Date(user.last_login).toLocaleDateString(i18n.language)
+                      : t('common.never'),
+                  })}
                 </p>
               </div>
             </div>
@@ -232,10 +292,10 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
               onClick={onClose}
               disabled={isLoading}
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button type="submit" className="admin-btn admin-btn-primary" disabled={isLoading}>
-              {isLoading ? <span className="admin-spinner" /> : 'Save Changes'}
+              {isLoading ? <span className="admin-spinner" /> : t('modals.editUser.submit')}
             </button>
           </div>
         </form>

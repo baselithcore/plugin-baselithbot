@@ -15,7 +15,10 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: 'dist',
+    // The plugin serves built assets from ../static (see
+    // AuthPlugin.get_static_assets_path). Emit there directly so a build is
+    // immediately live — no manual dist -> static copy step.
+    outDir: '../static',
     emptyOutDir: true,
   },
   server: {

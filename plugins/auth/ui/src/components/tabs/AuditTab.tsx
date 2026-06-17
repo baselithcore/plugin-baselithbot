@@ -15,6 +15,8 @@ import {
   Filter,
   Eye,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useAudit } from '../../hooks';
 import { DetailModal } from '../modals';
 import { AuditEntry } from '../../types';
@@ -30,18 +32,18 @@ const formatDate = (dateStr: string): string => {
   });
 };
 
-const AUDIT_ACTIONS = [
-  { value: '', label: 'All Actions' },
-  { value: 'user_created', label: 'User Created' },
-  { value: 'user_updated', label: 'User Updated' },
-  { value: 'user_deleted', label: 'User Deleted' },
-  { value: 'user_password_reset', label: 'Password Reset' },
-  { value: 'user_unlocked', label: 'User Unlocked' },
-  { value: 'user_sessions_revoked', label: 'Sessions Revoked' },
-  { value: 'user_mfa_disabled', label: 'MFA Disabled' },
-  { value: 'login_success', label: 'Login Success' },
-  { value: 'login_failure', label: 'Login Failure' },
-  { value: 'logout', label: 'Logout' },
+const getAuditActions = (t: TFunction) => [
+  { value: '', label: t('audit.actionsFilter.all') },
+  { value: 'user_created', label: t('audit.actionsFilter.userCreated') },
+  { value: 'user_updated', label: t('audit.actionsFilter.userUpdated') },
+  { value: 'user_deleted', label: t('audit.actionsFilter.userDeleted') },
+  { value: 'user_password_reset', label: t('audit.actionsFilter.passwordReset') },
+  { value: 'user_unlocked', label: t('audit.actionsFilter.userUnlocked') },
+  { value: 'user_sessions_revoked', label: t('audit.actionsFilter.sessionsRevoked') },
+  { value: 'user_mfa_disabled', label: t('audit.actionsFilter.mfaDisabled') },
+  { value: 'login_success', label: t('audit.actionsFilter.loginSuccess') },
+  { value: 'login_failure', label: t('audit.actionsFilter.loginFailure') },
+  { value: 'logout', label: t('audit.actionsFilter.logout') },
 ];
 
 const getActionBadgeClass = (action: string): string => {
@@ -56,7 +58,7 @@ const formatActionLabel = (action: string): string => {
 };
 
 // Helper to render detail items as pills
-const renderDetailPills = (details: Record<string, unknown>) => {
+const renderDetailPills = (details: Record<string, unknown>, t: TFunction) => {
   if (!details || Object.keys(details).length === 0)
     return <span className="audit-content-empty">-</span>;
 
@@ -73,8 +75,8 @@ const renderDetailPills = (details: Record<string, unknown>) => {
         if (typeof value === 'object' && value !== null) {
           const valObj = value as Record<string, unknown>;
           if ('from' in valObj || 'to' in valObj) {
-            const from = valObj.from !== undefined ? String(valObj.from) : '(empty)';
-            const to = valObj.to !== undefined ? String(valObj.to) : '(empty)';
+            const from = valObj.from !== undefined ? String(valObj.from) : t('audit.empties');
+            const to = valObj.to !== undefined ? String(valObj.to) : t('audit.empties');
             displayValue = `${from} → ${to}`;
           } else {
             displayValue = '{...}';
@@ -90,15 +92,21 @@ const renderDetailPills = (details: Record<string, unknown>) => {
           </span>
         );
       })}
-      {remainder > 0 && <span className="audit-pill audit-pill-more">+{remainder} more</span>}
+      {remainder > 0 && (
+        <span className="audit-pill audit-pill-more">
+          {t('audit.moreCount', { count: remainder })}
+        </span>
+      )}
     </div>
   );
 };
 
 const AuditTab = () => {
+  const { t } = useTranslation();
   const { entries, total, page, limit, isLoading, error, refresh, setPage, setActionFilter } =
     useAudit();
 
+  const auditActions = getAuditActions(t);
   const [filterAction, setFilterAction] = useState('');
   const [selectedEntry, setSelectedEntry] = useState<AuditEntry | null>(null);
   const totalPages = Math.ceil(total / limit);
@@ -114,8 +122,8 @@ const AuditTab = () => {
       <div className="audit-header">
         <div className="audit-title">
           <Activity size={20} />
-          <h2>Audit Log</h2>
-          <span className="audit-count">{total} entries</span>
+          <h2>{t('audit.title')}</h2>
+          <span className="audit-count">{t('audit.countEntries', { count: total })}</span>
         </div>
 
         <div className="audit-controls">
@@ -127,7 +135,7 @@ const AuditTab = () => {
               onChange={(e) => handleFilterChange(e.target.value)}
               className="audit-filter-select"
             >
-              {AUDIT_ACTIONS.map((action) => (
+              {auditActions.map((action) => (
                 <option key={action.value} value={action.value}>
                   {action.label}
                 </option>
@@ -138,7 +146,7 @@ const AuditTab = () => {
           <button
             className="admin-btn admin-btn-ghost admin-btn-icon"
             onClick={() => refresh()}
-            title="Refresh"
+            title={t('common.refresh')}
           >
             <RefreshCw size={16} />
           </button>
@@ -148,7 +156,7 @@ const AuditTab = () => {
       {/* Error display */}
       {error && (
         <div className="admin-alert admin-alert-error">
-          <span>Error: {error}</span>
+          <span>{t('common.errorLabel', { message: error })}</span>
         </div>
       )}
 
@@ -157,31 +165,29 @@ const AuditTab = () => {
         {isLoading ? (
           <div className="admin-empty">
             <div className="admin-spinner admin-spinner-lg" />
-            <p className="admin-empty-text">Loading audit log...</p>
+            <p className="admin-empty-text">{t('audit.loading')}</p>
           </div>
         ) : entries.length === 0 ? (
           <div className="admin-empty">
             <div className="admin-empty-icon">
               <Activity size={48} />
             </div>
-            <p className="admin-empty-title">No audit entries</p>
+            <p className="admin-empty-title">{t('audit.empty')}</p>
             <p className="admin-empty-text">
-              {filterAction
-                ? 'No entries match the selected filter.'
-                : 'No audit log entries recorded yet.'}
+              {filterAction ? t('audit.emptyFiltered') : t('audit.emptyHint')}
             </p>
           </div>
         ) : (
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Timestamp</th>
-                <th>Action</th>
-                <th>Actor</th>
-                <th>Target</th>
-                <th>Content</th>
-                <th>IP Address</th>
-                <th>Actions</th>
+                <th>{t('audit.columns.timestamp')}</th>
+                <th>{t('audit.columns.action')}</th>
+                <th>{t('audit.columns.actor')}</th>
+                <th>{t('audit.columns.target')}</th>
+                <th>{t('audit.columns.content')}</th>
+                <th>{t('audit.columns.ip')}</th>
+                <th>{t('audit.columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -215,7 +221,7 @@ const AuditTab = () => {
                       <span className="audit-na">-</span>
                     )}
                   </td>
-                  <td>{renderDetailPills(entry.details)}</td>
+                  <td>{renderDetailPills(entry.details, t)}</td>
                   <td>
                     {entry.ip_address ? (
                       <code className="audit-ip">{entry.ip_address}</code>
@@ -230,7 +236,7 @@ const AuditTab = () => {
                         e.stopPropagation();
                         setSelectedEntry(entry);
                       }}
-                      title="View Details"
+                      title={t('audit.viewDetails')}
                     >
                       <Eye size={16} />
                     </button>
@@ -245,7 +251,7 @@ const AuditTab = () => {
         {totalPages > 1 && (
           <div className="audit-pagination">
             <span className="audit-pagination-info">
-              Page {page} of {totalPages}
+              {t('users.pagination.pageOf', { page, total: totalPages })}
             </span>
             <div className="audit-pagination-controls">
               <button
@@ -254,14 +260,14 @@ const AuditTab = () => {
                 disabled={page <= 1}
               >
                 <ChevronLeft size={16} />
-                <span>Prev</span>
+                <span>{t('common.prev')}</span>
               </button>
               <button
                 className="admin-btn admin-btn-ghost admin-btn-sm"
                 onClick={() => setPage(page + 1)}
                 disabled={page >= totalPages}
               >
-                <span>Next</span>
+                <span>{t('common.next')}</span>
                 <ChevronRight size={16} />
               </button>
             </div>
@@ -272,7 +278,7 @@ const AuditTab = () => {
       <DetailModal
         isOpen={!!selectedEntry}
         onClose={() => setSelectedEntry(null)}
-        title="Audit Log Details"
+        title={t('audit.detailTitle')}
         data={
           selectedEntry
             ? {

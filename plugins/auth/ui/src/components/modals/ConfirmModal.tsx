@@ -5,6 +5,7 @@
  */
 
 import { AlertTriangle, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmModalProps {
   title: string;
@@ -19,12 +20,14 @@ interface ConfirmModalProps {
 const ConfirmModal = ({
   title,
   message,
-  confirmLabel = 'Confirm',
+  confirmLabel,
   isDanger = false,
   onConfirm,
   onCancel,
   isLoading = false,
 }: ConfirmModalProps) => {
+  const { t } = useTranslation();
+  const resolvedConfirmLabel = confirmLabel ?? t('modals.confirm.defaultConfirm');
   return (
     <div className="admin-modal-overlay" onClick={onCancel}>
       <div
@@ -77,14 +80,14 @@ const ConfirmModal = ({
 
         <div className="admin-modal-footer">
           <button className="admin-btn admin-btn-secondary" onClick={onCancel} disabled={isLoading}>
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             className={`admin-btn ${isDanger ? 'admin-btn-danger' : 'admin-btn-primary'}`}
             onClick={onConfirm}
             disabled={isLoading}
           >
-            {isLoading ? <span className="admin-spinner" /> : confirmLabel}
+            {isLoading ? <span className="admin-spinner" /> : resolvedConfirmLabel}
           </button>
         </div>
       </div>

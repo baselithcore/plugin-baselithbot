@@ -1,0 +1,11 @@
+# Root marker for the BaselithBrain plugin tree.
+#
+# Pins vault/path resolution to the plugin directory (parents that contain both
+# `pyproject.toml` and `manifest.yaml`) instead of accidentally resolving to the
+# host BaselithCore root. Not built as a standalone package — the host wheel
+# ships this tree as package-data (compiled SPA under `ui/dist/`).
+[project]
+name = "baselithbrain-plugin"
+version = "0.1.0"
+description = "BaselithBrain second-brain plugin (do not build standalone)."
+requires-python = ">=3.12"

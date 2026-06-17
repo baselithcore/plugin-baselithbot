@@ -5,16 +5,20 @@
  */
 
 import { useState } from 'react';
-import { Plus, Search, RefreshCw } from 'lucide-react';
+import { Plus, Search, RefreshCw, Mail } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useUsers } from '../../hooks';
 import UserTable from '../UserTable';
-import CreateUserModal from '../modals/CreateUserModal';
+import InvitationsPanel from './InvitationsPanel';
+import InviteUserModal from '../modals/InviteUserModal';
+import CreateUserWizard from '../modals/CreateUserWizard';
 import EditUserModal from '../modals/EditUserModal';
 import ResetPasswordModal from '../modals/ResetPasswordModal';
 import ConfirmModal from '../modals/ConfirmModal';
 import type { User, CreateUserResponse, ResetPasswordResponse } from '../../types';
 
 const UsersTab = () => {
+  const { t } = useTranslation();
   const {
     users,
     total,
@@ -37,6 +41,8 @@ const UsersTab = () => {
 
   const [searchInput, setSearchInput] = useState('');
   const [showInactive, setShowInactive] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteRefresh, setInviteRefresh] = useState(0);
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -81,7 +87,7 @@ const UsersTab = () => {
         setCreatedUser(result);
       }
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Failed to create user');
+      setActionError(err instanceof Error ? err.message : t('users.errors.createFailed'));
       throw err;
     } finally {
       setActionLoading(false);
@@ -95,7 +101,7 @@ const UsersTab = () => {
       await updateUser(userId, data);
       setEditingUser(null);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Failed to update user');
+      setActionError(err instanceof Error ? err.message : t('users.errors.updateFailed'));
       throw err;
     } finally {
       setActionLoading(false);
@@ -109,7 +115,7 @@ const UsersTab = () => {
       const result = await resetPassword(user.id);
       setPasswordResetResult(result);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Failed to reset password');
+      setActionError(err instanceof Error ? err.message : t('users.errors.resetFailed'));
     } finally {
       setActionLoading(false);
     }
@@ -138,7 +144,7 @@ const UsersTab = () => {
       }
       setConfirmAction(null);
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'Action failed');
+      setActionError(err instanceof Error ? err.message : t('users.errors.actionFailed'));
     } finally {
       setActionLoading(false);
     }
@@ -155,7 +161,7 @@ const UsersTab = () => {
             <Search size={16} className="users-search-icon" />
             <input
               type="text"
-              placeholder="Search by email..."
+              placeholder={t('users.searchByEmail')}
               className="admin-input users-search-input"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
@@ -163,46 +169,53 @@ const UsersTab = () => {
             />
           </div>
           <button className="admin-btn admin-btn-secondary" onClick={handleSearch}>
-            Search
+            {t('common.search')}
           </button>
         </div>
 
         <div className="users-filters">
           <label className="admin-checkbox-label">
             <input type="checkbox" checked={showInactive} onChange={handleToggleInactive} />
-            Show inactive
+            {t('users.showInactive')}
           </label>
 
           <button
             className="admin-btn admin-btn-ghost admin-btn-icon"
             onClick={() => refresh()}
-            title="Refresh"
+            title={t('common.refresh')}
           >
             <RefreshCw size={16} />
           </button>
         </div>
 
+        <button className="admin-btn admin-btn-secondary" onClick={() => setShowInviteModal(true)}>
+          <Mail size={16} />
+          {t('users.invite.button')}
+        </button>
+
         <button className="admin-btn admin-btn-primary" onClick={() => setShowCreateModal(true)}>
           <Plus size={16} />
-          Create User
+          {t('users.createUser')}
         </button>
       </div>
+
+      <InvitationsPanel refreshKey={inviteRefresh} />
 
       {/* Error display */}
       {error && (
         <div className="admin-alert admin-alert-error">
-          <span>Error: {error}</span>
+          <span>{t('common.errorLabel', { message: error })}</span>
         </div>
       )}
 
       {actionError && (
         <div className="admin-alert admin-alert-error">
-          <span>Error: {actionError}</span>
+          <span>{t('common.errorLabel', { message: actionError })}</span>
           <button
             className="admin-btn admin-btn-ghost admin-btn-sm"
             onClick={() => setActionError(null)}
           >
-            Dismiss
+            {t('common.dismiss')}
           </button>
         </div>
       )}
@@ -224,7 +237,11 @@ const UsersTab = () => {
         {totalPages > 1 && (
           <div className="users-pagination">
             <span className="users-pagination-info">
-              Showing {(page - 1) * limit + 1}-{Math.min(page * limit, total)} of {total} users
+              {t('users.pagination.showing', {
+                from: (page - 1) * limit + 1,
+                to: Math.min(page * limit, total),
+                total,
+              })}
             </span>
             <div className="users-pagination-controls">
               <button
@@ -232,17 +249,17 @@ const UsersTab = () => {
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
               >
-                Previous
+                {t('common.previous')}
               </button>
               <span className="users-pagination-page">
-                Page {page} of {totalPages}
+                {t('users.pagination.pageOf', { page, total: totalPages })}
               </span>
               <button
                 className="admin-btn admin-btn-ghost admin-btn-sm"
                 disabled={page >= totalPages}
                 onClick={() => setPage(page + 1)}
               >
-                Next
+                {t('common.next')}
               </button>
             </div>
           </div>
@@ -250,8 +267,15 @@ const UsersTab = () => {
       </div>
 
       {/* Modals */}
+      {showInviteModal && (
+        <InviteUserModal
+          onClose={() => setShowInviteModal(false)}
+          onInvited={() => setInviteRefresh((n) => n + 1)}
+        />
+      )}
+
       {showCreateModal && (
-        <CreateUserModal
+        <CreateUserWizard
           onClose={() => setShowCreateModal(false)}
           onCreate={handleCreateUser}
           isLoading={actionLoading}
@@ -277,7 +301,7 @@ const UsersTab = () => {
       {createdUser && createdUser.temporary_password && (
         <ResetPasswordModal
           result={{
-            message: `User ${createdUser.user.email} created successfully`,
+            message: t('users.createdSuccessfully', { email: createdUser.user.email }),
             temporary_password: createdUser.temporary_password,
           }}
           onClose={() => setCreatedUser(null)}
@@ -288,23 +312,25 @@ const UsersTab = () => {
         <ConfirmModal
           title={
             confirmAction.type === 'delete'
-              ? 'Deactivate User'
+              ? t('users.confirm.deactivateTitle')
               : confirmAction.type === 'unlock'
-                ? 'Unlock Account'
+                ? t('users.confirm.unlockTitle')
                 : confirmAction.type === 'revoke'
-                  ? 'Revoke Sessions'
-                  : 'Disable MFA'
+                  ? t('users.confirm.revokeTitle')
+                  : t('users.confirm.disableMfaTitle')
           }
           message={
             confirmAction.type === 'delete'
-              ? `Are you sure you want to deactivate ${confirmAction.user.email}? They will no longer be able to log in.`
+              ? t('users.confirm.deactivateMessage', { email: confirmAction.user.email })
               : confirmAction.type === 'unlock'
-                ? `Unlock the account for ${confirmAction.user.email}? This will clear failed login attempts.`
+                ? t('users.confirm.unlockMessage', { email: confirmAction.user.email })
                 : confirmAction.type === 'revoke'
-                  ? `Revoke all active sessions for ${confirmAction.user.email}? They will be logged out everywhere.`
-                  : `Disable MFA for ${confirmAction.user.email}? They will need to set it up again.`
+                  ? t('users.confirm.revokeMessage', { email: confirmAction.user.email })
+                  : t('users.confirm.disableMfaMessage', { email: confirmAction.user.email })
           }
-          confirmLabel={confirmAction.type === 'delete' ? 'Deactivate' : 'Confirm'}
+          confirmLabel={
+            confirmAction.type === 'delete' ? t('users.actions.deactivate') : t('common.confirm')
+          }
           isDanger={confirmAction.type === 'delete' || confirmAction.type === 'mfa'}
           onConfirm={handleConfirmAction}
           onCancel={() => setConfirmAction(null)}

@@ -1,0 +1,31 @@
+id: baselithoptimizeprocess
+entry_point: plugin:BopPlugin
+name: baselithoptimizeprocess
+version: 0.1.0
+description: Map complex business processes as execution graphs, monitor user-defined
+  efficiency KPIs in real time over Server-Sent Events, and generate advisory, human-in-the-loop
+  optimization proposals grounded in detected bottlenecks.
+author: Baselith
+homepage: https://docs.baselithcore.xyz/plugins/optimize-process
+license: AGPL-3.0-only
+readiness: beta
+category: ai
+min_core_version: 0.7.0
+tags:
+- process
+- optimization
+- monitoring
+- bpmn
+- metrics
+- bottleneck
+- sse
+- workflow
+- graph
+required_resources:
+- llm
+optional_resources:
+- graph
+- storage
+python_dependencies: []
+plugin_dependencies: {}
+integrity_sha256: 9ddb3b03481007b27fe415ad601c6e03ca8e3906082dbd031ef6c8b65600aa09

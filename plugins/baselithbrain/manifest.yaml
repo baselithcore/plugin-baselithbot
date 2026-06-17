@@ -1,0 +1,36 @@
+name: baselithbrain
+version: 0.1.0
+description: "BaselithBrain \u2014 a local-first Second Brain (PKM) plugin. Markdown-first\
+  \ notes with a block-based TipTap editor, [[wikilink]] backlinks, Zettelkasten +\
+  \ LYT graph navigation, and a fast command palette. Mounted as a self-contained\
+  \ sub-application with its React/Vite SPA."
+author: BaselithCore Team
+license: Apache-2.0
+category: knowledge
+readiness: alpha
+tags:
+- pkm
+- second-brain
+- notes
+- zettelkasten
+- knowledge-graph
+- markdown
+- local-first
+homepage: https://baselithcore.xyz/plugins/baselithbrain
+min_core_version: 1.0.0
+required_resources: []
+optional_resources:
+- qdrant
+- redis
+python_dependencies:
+- fastapi>=0.110.0
+- pydantic>=2.5.2
+- pydantic-settings>=2.2.0
+- pyyaml>=6.0
+- python-multipart>=0.0.9
+plugin_dependencies: {}
+environment_variables:
+- BASELITHBRAIN_VAULT_ROOT
+- BASELITHBRAIN_SEMANTIC_ENABLED
+- BASELITHBRAIN_WATCH_ENABLED
+integrity_sha256: 5dcccd7bd3a22fd6bea7f6f38360b6668818ed86be45cf51306015cf0fe8e1f9

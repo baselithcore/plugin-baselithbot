@@ -53,6 +53,29 @@ await close_async_pool()
 Both `get_cursor` and `get_async_cursor` accept an optional keyword-only
 `row_factory` (e.g. `psycopg.rows.dict_row`).
 
+### Read replicas (opt-in)
+
+Set `DB_REPLICA_URL` to route **read-only** queries to a Postgres read replica
+and offload the primary. Use the dedicated read API:
+
+```python
+from core.db import get_read_connection, get_async_read_connection
+
+async with get_async_read_connection() as conn:
+    await conn.execute("SELECT ...")   # served by the replica when configured
+```
+
+Behaviour is **additive and safe**:
+
+- When `DB_REPLICA_URL` is unset, the read API transparently falls back to the
+  primary pool — existing call sites are unchanged.
+- The replica pool is created lazily only when configured.
+- Use it only for queries that tolerate replication lag; never for writes or
+  read-after-write within the same logical operation (those must use the primary
+  `get_connection` / `get_async_connection`).
+
+`close_pool()` / `close_async_pool()` also close the replica pools.
+
 ---
 
 ## Feedback Persistence
@@ -83,6 +106,14 @@ positives = await get_feedbacks("positive", limit=50)
 # Rich analytics: counts, daily time series, recent + top queries, cited sources
 analytics = await get_feedback_analytics(days=30, recent_limit=20, top_limit=10)
 ```
+
+!!! note "Bounded scans"
+    `get_feedback_analytics()` always applies a time window — when `days` is
+    `None` it falls back to `feedback_analytics_default_days` (default 90) — and
+    the per-document source aggregation is capped at
+    `feedback_analytics_doc_scan_limit` rows (default 10 000). This keeps the
+    cited-sources rollup from degrading into an unbounded full-table scan as the
+    feedback table grows.
 
 ---
 

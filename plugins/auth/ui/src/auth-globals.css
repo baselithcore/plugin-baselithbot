@@ -1,0 +1,102 @@
+/**
+ * Auth APP global base styles — imported ONLY by the standalone auth app
+ * (main.tsx), never by the shared login wall.
+ *
+ * These are global element/`body`/`#root` rules. They must NOT travel with the
+ * `@auth/login` entry: when a consuming plugin renders the shared LoginPage, it
+ * would otherwise inherit this global reset + body gradient + heading restyle
+ * and have its own layout hijacked ("login page looks broken"). The login wall
+ * is fully self-contained via the scoped `.auth-page` rules in index.css, so
+ * splitting these out keeps the auth app's look unchanged while leaving the
+ * login UI safe to embed anywhere.
+ */
+
+/* ============================================
+   Global Reset & Base
+   ============================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: linear-gradient(
+    135deg,
+    var(--admin-bg-start) 0%,
+    var(--admin-bg-mid) 50%,
+    var(--admin-bg-end) 100%
+  );
+  background-attachment: fixed;
+  color: var(--admin-text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  position: relative;
+}
+
+/* Add teal glow effect to body */
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(0, 217, 255, 0.06) 0%,
+    rgba(0, 217, 255, 0.03) 25%,
+    transparent 50%
+  );
+  animation: admin-glow-pulse 10s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes admin-glow-pulse {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(-3%, -3%) scale(1.03);
+    opacity: 0.8;
+  }
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ============================================
+   Typography
+   ============================================ */
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--admin-text);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+h2 {
+  font-size: 1.25rem;
+}
+h3 {
+  font-size: 1rem;
+}

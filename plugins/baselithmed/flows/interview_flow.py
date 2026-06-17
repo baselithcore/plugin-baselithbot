@@ -42,10 +42,10 @@ from ..agents.differential_dx_agent import (
     select_discriminator_question,
 )
 from ..graph.repository import SymptomGraphRepository
-from ..models.clinical import DifferentialDiagnosis, ReportStatus, TriageReport
+from ..models.clinical import DifferentialDiagnosis
 from ..models.triage import TriageEngine
 from ..safety.redflags import RedFlagEvaluator
-from .intake_report import render_intake_report
+from .interview_helpers import build_interview_preview, finalize_inline
 
 logger = get_logger(__name__)
 
@@ -205,7 +205,13 @@ class InterviewFlowHandler:
                     "matrix": snap.to_matrix(red_flags=evaluation.matches).model_dump(
                         mode="json"
                     ),
-                    "preview": self._build_preview(snap, evaluation.matches),
+                    "preview": build_interview_preview(
+                        snap,
+                        evaluation.matches,
+                        dx_agent=self._dx,
+                        triage_engine=self._triage,
+                        limit=self.PREVIEW_HYPOTHESES_LIMIT,
+                    ),
                 },
                 message="Red flag clinico rilevato.",
                 metadata={"requires_human": True, "session_id": session_id},
@@ -222,7 +228,7 @@ class InterviewFlowHandler:
             and self._triage_handler is not None
             and snap.symptoms
         ):
-            return await self._finalize_inline(
+            return await finalize_inline(
                 context=context,
                 session_id=session_id,
                 question_text=(
@@ -232,6 +238,8 @@ class InterviewFlowHandler:
                 tone="reassuring",
                 evaluation_matches=evaluation.matches,
                 snap=snap,
+                dx_agent=self._dx,
+                triage_engine=self._triage,
             )
 
         # Hypothesis-driven reasoner path. When enabled and the LLM is
@@ -274,7 +282,13 @@ class InterviewFlowHandler:
             slots_total = 12
             slots_unfilled = len(self._graph.find_unfilled_slots(session_id))
             progress = 1 - (slots_unfilled / slots_total)
-            preview = self._build_preview(snap, evaluation.matches)
+            preview = build_interview_preview(
+                snap,
+                evaluation.matches,
+                dx_agent=self._dx,
+                triage_engine=self._triage,
+                limit=self.PREVIEW_HYPOTHESES_LIMIT,
+            )
             envelope = ok(
                 data={
                     "session_id": session_id,
@@ -301,7 +315,7 @@ class InterviewFlowHandler:
         if (is_end_sentinel or next_q.target_slot == "finalize") and (
             self._triage_handler is not None and snap.symptoms
         ):
-            return await self._finalize_inline(
+            return await finalize_inline(
                 context=context,
                 session_id=session_id,
                 question_text=(
@@ -311,6 +325,8 @@ class InterviewFlowHandler:
                 tone=next_q.tone or "reassuring",
                 evaluation_matches=evaluation.matches,
                 snap=snap,
+                dx_agent=self._dx,
+                triage_engine=self._triage,
             )
 
         # Count the ask so the same slot is not pursued indefinitely when the
@@ -328,7 +344,13 @@ class InterviewFlowHandler:
         slots_unfilled = len(self._graph.find_unfilled_slots(session_id))
         progress = 1 - (slots_unfilled / slots_total)
 
-        preview = self._build_preview(snap, evaluation.matches)
+        preview = build_interview_preview(
+            snap,
+            evaluation.matches,
+            dx_agent=self._dx,
+            triage_engine=self._triage,
+            limit=self.PREVIEW_HYPOTHESES_LIMIT,
+        )
         envelope = ok(
             data={
                 "session_id": session_id,
@@ -379,7 +401,7 @@ class InterviewFlowHandler:
         )
 
         if turn.ready_to_finalize and self._triage_handler is not None:
-            return await self._finalize_inline(
+            return await finalize_inline(
                 context=context,
                 session_id=session_id,
                 question_text=(
@@ -389,6 +411,8 @@ class InterviewFlowHandler:
                 tone="reassuring",
                 evaluation_matches=evaluation_matches,
                 snap=snap,
+                dx_agent=self._dx,
+                triage_engine=self._triage,
                 reasoner_ddx=reasoner_ddx,
             )
 
@@ -407,8 +431,13 @@ class InterviewFlowHandler:
             if question.probes_for
             else "ragionamento clinico"
         )
-        preview = self._build_preview(
-            snap, evaluation_matches, reasoner_ddx=reasoner_ddx
+        preview = build_interview_preview(
+            snap,
+            evaluation_matches,
+            dx_agent=self._dx,
+            triage_engine=self._triage,
+            limit=self.PREVIEW_HYPOTHESES_LIMIT,
+            reasoner_ddx=reasoner_ddx,
         )
         envelope = ok(
             data={
@@ -430,118 +459,3 @@ class InterviewFlowHandler:
             },
         )
         return envelope.model_dump(mode="json")
-
-    async def _finalize_inline(
-        self,
-        *,
-        context: dict[str, Any],
-        session_id: str,
-        question_text: str,
-        tone: str,
-        evaluation_matches: list[str],
-        snap: Any,
-        reasoner_ddx: DifferentialDiagnosis | None = None,
-    ) -> dict[str, Any]:
-        """Finalize the interview synchronously using the heuristic ranker.
-
-        The full ``/triage/finalize`` endpoint still runs the LLM-backed
-        ranker; this inline path is invoked automatically when the agent
-        decides it is done and must return *fast* — a slow LLM call here
-        leaves the patient staring at the typing indicator. The clinician
-        gets the same payload shape (so the UI doesn't branch) but built
-        from the deterministic ranking + intake renderer.
-        """
-        del context
-        pseudonym = f"pt-{session_id[:8]}"
-        matrix = snap.to_matrix(red_flags=evaluation_matches)
-        # Prefer the reasoner's accumulated differential; fall back to the
-        # deterministic ranker when the reasoner is off or was unavailable.
-        ddx = (
-            reasoner_ddx
-            if reasoner_ddx is not None and reasoner_ddx.hypotheses
-            else self._dx._heuristic_rank(matrix)  # noqa: SLF001 — fast path
-        )
-        decision = self._triage.classify(matrix, ddx)
-        intake_md = render_intake_report(
-            matrix,
-            medications=list(snap.medications),
-            risk_factors=list(snap.risk_factors),
-            allergies=list(snap.allergies),
-            differential=ddx,
-            triage=decision.model_dump(mode="json"),
-            discriminator_answers=list(snap.discriminator_answers),
-            patient_pseudonym=pseudonym,
-            session_id=session_id,
-        )
-        report = TriageReport(
-            session_id=session_id,
-            patient_pseudonym=pseudonym,
-            symptom_matrix=matrix,
-            differential=ddx,
-            triage=decision.model_dump(mode="json"),
-            status=ReportStatus.PENDING_VALIDATION,
-            intake_report=intake_md,
-        )
-        triage_data = report.model_dump(mode="json")
-        return {
-            "success": True,
-            "data": {
-                "session_id": session_id,
-                "question": question_text,
-                "target_slot": "finalize",
-                "tone": tone,
-                "progress": 1.0,
-                "known_symptoms": [s.canonical_name for s in snap.symptoms],
-                "matrix": snap.to_matrix(red_flags=evaluation_matches).model_dump(
-                    mode="json"
-                ),
-                "preview": triage_data,
-                "auto_finalized": True,
-            },
-            "metadata": {"session_id": session_id, "auto_finalized": True},
-            "message": "Anamnesi completata; report generato.",
-        }
-
-    def _build_preview(
-        self,
-        snap,
-        red_flags: list[str],
-        *,
-        reasoner_ddx: DifferentialDiagnosis | None = None,
-    ) -> dict[str, Any] | None:
-        """Build a live preview of the differential the clinician is watching.
-
-        Uses the reasoner's live differential when supplied; otherwise the
-        deterministic heuristic ranking (no LLM call). The preview never
-        claims to be final.
-        """
-        matrix = snap.to_matrix(red_flags=red_flags)
-        if not matrix.symptoms and not matrix.denied_symptoms:
-            return None
-        ddx = (
-            reasoner_ddx
-            if reasoner_ddx is not None
-            else self._dx._heuristic_rank(matrix)  # noqa: SLF001 — internal helper
-        )
-        ddx = ddx.model_copy(
-            update={"hypotheses": ddx.hypotheses[: self.PREVIEW_HYPOTHESES_LIMIT]}
-        )
-        decision = self._triage.classify(matrix, ddx)
-        intake = render_intake_report(
-            matrix,
-            medications=list(snap.medications),
-            risk_factors=list(snap.risk_factors),
-            allergies=list(snap.allergies),
-            differential=ddx,
-            triage=decision.model_dump(mode="json"),
-            discriminator_answers=list(snap.discriminator_answers),
-        )
-        return {
-            "is_preview": True,
-            "differential": ddx.model_dump(mode="json"),
-            "triage": decision.model_dump(mode="json"),
-            "symptom_count": len(matrix.symptoms),
-            "red_flag_count": len(matrix.red_flags),
-            "denied_symptoms": list(matrix.denied_symptoms),
-            "intake_report": intake,
-        }

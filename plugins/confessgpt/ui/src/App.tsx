@@ -9,8 +9,16 @@ import { Toast } from './components/Toast';
 import { Welcome } from './components/Welcome';
 import { useConfession } from './hooks/useConfession';
 import { useVoiceRecording } from './hooks/useVoiceRecording';
+import { useAuth } from '@auth';
+
+const TAB_ID = 'confessgpt';
 
 export default function App() {
+  // Central RBAC gate. Default-allow (true when policy unknown/unrestricted)
+  // so anonymous and normal end-user access is never blocked.
+  const { canAccessTab } = useAuth();
+  const allowed = canAccessTab(TAB_ID, 'confessgpt');
+
   const {
     sessionId,
     currentPhase,
@@ -74,6 +82,21 @@ export default function App() {
       : pending
         ? 'Apertura della sessione…'
         : 'Sessione non aperta';
+
+  if (!allowed) {
+    return (
+      <div className="flex h-full items-center justify-center p-6">
+        <div className="max-w-md rounded-2xl border border-gold-subtle bg-surface-1 px-8 py-10 text-center">
+          <div className="font-serif text-2xl font-medium tracking-wide text-parchment">
+            Accesso negato
+          </div>
+          <p className="mt-3 text-sm text-ash">
+            Non disponi dei permessi necessari per accedere al Confessionale.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto grid h-full max-w-[1240px] grid-rows-[auto_auto_1fr_auto_auto] gap-3 p-3 sm:gap-5 sm:p-5">

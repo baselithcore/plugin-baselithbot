@@ -5,6 +5,7 @@ Provides secure endpoints for administrative tasks, including analytics
 dashboards and system monitoring. Protected by HTTP Basic Authentication.
 """
 
+from dataclasses import asdict
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from fastapi.responses import FileResponse, JSONResponse
@@ -20,6 +21,11 @@ from core.middleware import (
     clear_admin_failures,
 )
 from core.config import get_security_config
+from core.task_queue.dead_letter import (
+    DeadLetterError,
+    DeadLetterRecord,
+    get_dead_letter_queue,
+)
 
 router = APIRouter(tags=["admin"])
 security = HTTPBasic()
@@ -99,3 +105,65 @@ async def admin_data(
         top_limit=top_limit,
     )
     return JSONResponse(analytics)
+
+
+# --------------------------------------------------------------------------- #
+# Dead-letter queue (DLQ) administration                                      #
+#                                                                             #
+# Inspect, replay, and purge terminally-failed background jobs. All routes    #
+# are behind the same Basic-Auth guard as the rest of the admin surface.      #
+# --------------------------------------------------------------------------- #
+
+
+def _dlq_summary(record: DeadLetterRecord) -> dict:
+    """Compact view for the list endpoint — omits the heavy traceback/payload."""
+    data = asdict(record)
+    data.pop("traceback", None)
+    data.pop("payload_b64", None)
+    return data
+
+
+@router.get("/admin/dlq")
+def dlq_list(
+    _user: str = Depends(verify_credentials),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+):
+    """List dead-lettered jobs (summary view) with the total count."""
+    dlq = get_dead_letter_queue()
+    items = [_dlq_summary(r) for r in dlq.list(limit=limit, offset=offset)]
+    return {"total": dlq.count(), "items": items, "limit": limit, "offset": offset}
+
+
+@router.get("/admin/dlq/{job_id}")
+def dlq_detail(job_id: str, _user: str = Depends(verify_credentials)):
+    """Return the full dead-letter record (including traceback); 404 if absent."""
+    record = get_dead_letter_queue().get(job_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Dead-letter record not found.")
+    return asdict(record)
+
+
+@router.post("/admin/dlq/{job_id}/replay")
+def dlq_replay(job_id: str, _user: str = Depends(verify_credentials)):
+    """Re-enqueue a dead-lettered job; 409 if it cannot be replayed."""
+    try:
+        new_id = get_dead_letter_queue().replay(job_id)
+    except DeadLetterError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return {"job_id": new_id}
+
+
+@router.delete("/admin/dlq")
+def dlq_purge_all(_user: str = Depends(verify_credentials)):
+    """Purge every dead-letter record; returns how many were removed."""
+    removed = get_dead_letter_queue().purge_all()
+    return {"removed": removed}
+
+
+@router.delete("/admin/dlq/{job_id}")
+def dlq_purge(job_id: str, _user: str = Depends(verify_credentials)):
+    """Purge a single dead-letter record; 404 if it does not exist."""
+    if not get_dead_letter_queue().purge(job_id):
+        raise HTTPException(status_code=404, detail="Dead-letter record not found.")
+    return {"status": "purged", "job_id": job_id}

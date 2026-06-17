@@ -13,7 +13,11 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OFFICIAL_PLUGIN_DIRS = (
     "plugins/api_routers",
+    "plugins/baselith_pitwall",
     "plugins/baselithbot",
+    "plugins/baselithcontrol",
+    "plugins/baselithcore_agents_platform",
+    "plugins/baselithoptimizeprocess",
     "plugins/browser_agent",
     "plugins/coding_agent",
     "plugins/document_sources",
@@ -29,6 +33,12 @@ EXCLUDED_SUBPATHS: tuple[str, ...] = (
     "plugins/baselithbot/docs",
     "plugins/baselithbot/.state",
     "plugins/baselithbot/tests",
+    "plugins/baselithcore_agents_platform/ui",
+    "plugins/baselithcore_agents_platform/tests",
+    "plugins/baselithcontrol/ui",
+    "plugins/baselithcontrol/tests",
+    "plugins/baselith_pitwall/ui",
+    "plugins/baselith_pitwall/tests",
 )
 
 

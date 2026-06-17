@@ -1,16 +1,15 @@
 /**
- * Auth Module Exports
+ * Auth Module Exports — context + API only.
  *
- * Public API for authentication functionality.
+ * This barrel is dependency-free (React only) so any plugin can consume the
+ * auth context via the `@auth` alias without inheriting the login UI's deps
+ * (lucide-react, the auth stylesheet). The login wall (LoginPage,
+ * ProtectedRoute) lives in the separate `@auth/login` entry (login.ts).
  */
 
 // Context & Providers
 export { AuthProvider, useAuth, AuthContext } from './hooks/useAuthContext';
 export type { AuthState, AuthContextValue } from './hooks/useAuthContext';
-
-// Components
-export { default as LoginPage } from './components/LoginPage';
-export { ProtectedRoute, useProtectedContent } from './components/ProtectedRoute';
 
 // API
 export * from './api/auth';

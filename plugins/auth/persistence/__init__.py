@@ -1,0 +1,69 @@
+"""
+Auth Plugin Persistence Layer.
+
+PostgreSQL storage for users, tokens, and MFA backup codes.
+Uses the core connection pool. The public ``AuthPersistence`` API is composed
+from cohesive mixins kept in sibling modules to honour the 500 LOC cap.
+"""
+
+from pathlib import Path
+from typing import Optional
+
+from core.db.connection import get_connection
+from core.di.container import ServiceRegistry
+from core.observability.logging import get_logger
+from plugins.auth.config import AuthConfig
+from plugins.auth.persistence._apikeys import ApiKeyPersistenceMixin
+from plugins.auth.persistence._history import HistoryPersistenceMixin
+from plugins.auth.persistence._recovery import RecoveryPersistenceMixin
+from plugins.auth.persistence._sso import SsoPersistenceMixin
+from plugins.auth.persistence._tokens import TokenPersistenceMixin
+from plugins.auth.persistence._users import UserPersistenceMixin
+from plugins.auth.persistence._webauthn import WebAuthnPersistenceMixin
+
+logger = get_logger(__name__)
+
+
+class AuthPersistence(
+    UserPersistenceMixin,
+    TokenPersistenceMixin,
+    RecoveryPersistenceMixin,
+    HistoryPersistenceMixin,
+    WebAuthnPersistenceMixin,
+    ApiKeyPersistenceMixin,
+    SsoPersistenceMixin,
+):
+    """PostgreSQL persistence for authentication data."""
+
+    def __init__(self) -> None:
+        self._schema_path = Path(__file__).parent.parent / "schema.sql"
+        self._config = ServiceRegistry.get(AuthConfig)
+
+    def create_tables(self) -> None:
+        """Create auth tables if they don't exist."""
+        if not self._schema_path.exists():
+            logger.error(f"Schema file not found: {self._schema_path}")
+            return
+
+        schema_sql = self._schema_path.read_text()
+
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(schema_sql)  # nosec B608 - trusted schema file
+            conn.commit()
+            logger.info("Auth database tables created/verified")
+
+
+# Global instance
+_persistence: Optional[AuthPersistence] = None
+
+
+def get_auth_persistence() -> AuthPersistence:
+    """Get or create the global auth persistence instance."""
+    global _persistence
+    if _persistence is None:
+        _persistence = AuthPersistence()
+    return _persistence
+
+
+__all__ = ["AuthPersistence", "get_auth_persistence"]

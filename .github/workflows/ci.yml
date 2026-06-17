@@ -40,8 +40,8 @@ jobs:
       - name: Lint with Ruff
         run: |
           uv pip install --system ruff
-          ruff check . --exclude templates,examples
-          ruff format --check . --exclude templates,examples
+          ruff check .
+          ruff format --check .
 
   architecture_boundaries:
     name: Architecture Boundaries

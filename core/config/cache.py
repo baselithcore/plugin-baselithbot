@@ -19,8 +19,6 @@ class CacheConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="CACHE_",
-        env_file=".env",
-        env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
     )
@@ -43,8 +41,6 @@ class RedisCacheConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="REDIS_",
-        env_file=".env",
-        env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
     )
@@ -63,6 +59,18 @@ class RedisCacheConfig(BaseSettings):
         default=3600.0, description="Default TTL for Redis cache entries"
     )
 
+    max_connections: int = Field(
+        default=50,
+        ge=1,
+        description="Maximum connections per shared Redis connection pool",
+    )
+
+    health_check_interval: float = Field(
+        default=30.0,
+        ge=0.0,
+        description="Seconds between idle-connection health checks (0 disables)",
+    )
+
 
 class SemanticCacheConfig(BaseSettings):
     """
@@ -73,8 +81,6 @@ class SemanticCacheConfig(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_prefix="SEMANTIC_CACHE_",
-        env_file=".env",
-        env_file_encoding="utf-8",
         case_sensitive=False,
         extra="ignore",
     )

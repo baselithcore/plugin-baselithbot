@@ -8,7 +8,7 @@ validation of plugin structures, and dependency management.
 import asyncio
 import logging
 import shutil
-import subprocess
+import sys
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path, PurePath
@@ -156,7 +156,12 @@ class PluginInstaller:
                 logger.info(f"Installing dependencies for {plugin.name}")
                 # We use 'pip install -e' or just 'pip install' depending on environment
                 # For core, we usually want them installed in the current environment
+                # Use the running interpreter's pip (sys.executable -m pip) so
+                # deps land in the active environment and a rogue ``pip`` on
+                # PATH cannot be invoked instead.
                 dep_process = await asyncio.create_subprocess_exec(
+                    sys.executable,
+                    "-m",
                     "pip",
                     "install",
                     "--disable-pip-version-check",
@@ -208,11 +213,19 @@ class PluginInstaller:
 
         if plugin_dir.exists() and plugin_dir.is_dir():
             try:
-                # Try to uninstall from pip first if it was installed as a package
-                subprocess.run(
-                    ["pip", "uninstall", "-y", plugin_name], capture_output=True
+                # Try to uninstall from pip first if it was installed as a
+                # package. Async subprocess + to_thread keep the event loop
+                # free during pip and the directory removal.
+                proc = await asyncio.create_subprocess_exec(
+                    "pip",
+                    "uninstall",
+                    "-y",
+                    plugin_name,
+                    stdout=asyncio.subprocess.DEVNULL,
+                    stderr=asyncio.subprocess.DEVNULL,
                 )
-                shutil.rmtree(plugin_dir)
+                await proc.wait()
+                await asyncio.to_thread(shutil.rmtree, plugin_dir)
                 return True
             except Exception as e:
                 logger.error(f"Failed to uninstall plugin {plugin_name}: {e}")

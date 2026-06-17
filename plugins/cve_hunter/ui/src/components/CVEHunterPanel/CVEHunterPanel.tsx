@@ -4,7 +4,7 @@
  * Refactored to use modular hooks and tab components.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Activity, Eye, Shield, Zap, LogOut } from 'lucide-react';
 import { useAuth } from '../../../../../auth/ui/src';
 
@@ -41,7 +41,18 @@ const CVEHunterPanel = ({ onCVESelect }: CVEHunterPanelProps) => {
   const [isScanning, setIsScanning] = useState(false);
   const [selectedAgentFilter, setSelectedAgentFilter] = useState<string | null>(null);
 
-  const { logout, user } = useAuth();
+  const { logout, user, canAccessTab } = useAuth();
+
+  // Hide internal tabs the central RBAC policy denies (scoped to cve_hunter).
+  const canTab = useCallback((id: TabType) => canAccessTab(id, 'cve_hunter'), [canAccessTab]);
+
+  // Redirect away from a tab that becomes inaccessible.
+  useEffect(() => {
+    if (!canTab(activeTab)) {
+      const fallback = (['monitor', 'analytics', 'feed'] as TabType[]).find(canTab);
+      if (fallback) setActiveTab(fallback);
+    }
+  }, [activeTab, canTab]);
 
   // Data hooks
   const {
@@ -160,26 +171,32 @@ const CVEHunterPanel = ({ onCVESelect }: CVEHunterPanelProps) => {
             CVE<span>_</span>HUNTER
           </h1>
 
-          {/* Internal Tabs */}
+          {/* Internal Tabs (filtered by central RBAC policy) */}
           <div className="cve-tabs">
-            <button
-              className={`cve-tab-button ${activeTab === 'monitor' ? 'active' : ''}`}
-              onClick={() => setActiveTab('monitor')}
-            >
-              <Activity size={14} /> Swarm Monitor
-            </button>
-            <button
-              className={`cve-tab-button ${activeTab === 'analytics' ? 'active' : ''}`}
-              onClick={() => setActiveTab('analytics')}
-            >
-              <Zap size={14} /> Analytics
-            </button>
-            <button
-              className={`cve-tab-button ${activeTab === 'feed' ? 'active' : ''}`}
-              onClick={() => setActiveTab('feed')}
-            >
-              <Eye size={14} /> CVE Feed
-            </button>
+            {canTab('monitor') && (
+              <button
+                className={`cve-tab-button ${activeTab === 'monitor' ? 'active' : ''}`}
+                onClick={() => setActiveTab('monitor')}
+              >
+                <Activity size={14} /> Swarm Monitor
+              </button>
+            )}
+            {canTab('analytics') && (
+              <button
+                className={`cve-tab-button ${activeTab === 'analytics' ? 'active' : ''}`}
+                onClick={() => setActiveTab('analytics')}
+              >
+                <Zap size={14} /> Analytics
+              </button>
+            )}
+            {canTab('feed') && (
+              <button
+                className={`cve-tab-button ${activeTab === 'feed' ? 'active' : ''}`}
+                onClick={() => setActiveTab('feed')}
+              >
+                <Eye size={14} /> CVE Feed
+              </button>
+            )}
           </div>
         </div>
 

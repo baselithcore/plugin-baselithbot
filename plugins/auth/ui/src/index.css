@@ -230,6 +230,35 @@
   cursor: not-allowed;
 }
 
+.auth-button-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #e5e7eb;
+}
+
+.auth-button-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  color: #6b7280;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .auth-spinner {
   display: inline-block;
   width: 1rem;
@@ -291,6 +320,37 @@
 
 .auth-error-icon {
   font-size: 1rem;
+}
+
+.auth-success {
+  padding: 0.75rem 1rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #86efac;
+  text-align: center;
+}
+
+.auth-center {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0;
+}
+
+.auth-link-muted {
+  display: block;
+  text-align: center;
+  margin-top: 0.25rem;
+  font-size: 0.8125rem;
+  opacity: 0.85;
+}
+
+.auth-lang-floating {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  z-index: 2;
 }
 
 /* ============================================
@@ -379,6 +439,12 @@
   --admin-table-row-hover: hsla(220, 30%, 25%, 0.5);
   --admin-table-border: hsla(220, 30%, 30%, 0.3);
 
+  /* Surface helpers (used by the wizard / MFA surfaces) */
+  --admin-border: hsla(220, 40%, 40%, 0.2);
+  --admin-border-strong: hsla(220, 40%, 50%, 0.4);
+  --admin-surface-2: hsla(220, 25%, 22%, 0.6);
+  --admin-accent-soft: hsla(200, 80%, 50%, 0.12);
+
   /* Spacing */
   --admin-radius-sm: 0.5rem;
   --admin-radius: 0.75rem;
@@ -394,95 +460,11 @@
     sans-serif;
 }
 
-/* ============================================
-   Global Reset & Base
-   ============================================ */
-
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html,
-body {
-  height: 100%;
-}
-
-body {
-  background: linear-gradient(
-    135deg,
-    var(--admin-bg-start) 0%,
-    var(--admin-bg-mid) 50%,
-    var(--admin-bg-end) 100%
-  );
-  background-attachment: fixed;
-  color: var(--admin-text);
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  position: relative;
-}
-
-/* Add teal glow effect to body */
-body::before {
-  content: '';
-  position: fixed;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    circle at 50% 50%,
-    rgba(0, 217, 255, 0.06) 0%,
-    rgba(0, 217, 255, 0.03) 25%,
-    transparent 50%
-  );
-  animation: admin-glow-pulse 10s ease-in-out infinite;
-  pointer-events: none;
-  z-index: 0;
-}
-
-@keyframes admin-glow-pulse {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.5;
-  }
-  50% {
-    transform: translate(-3%, -3%) scale(1.03);
-    opacity: 0.8;
-  }
-}
-
-#root {
-  min-height: 100vh;
-}
-
-/* ============================================
-   Typography
-   ============================================ */
-
-h1,
-h2,
-h3,
-h4 {
-  color: var(--admin-text);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-h1 {
-  font-size: 1.5rem;
-}
-h2 {
-  font-size: 1.25rem;
-}
-h3 {
-  font-size: 1rem;
-}
+/* Global reset + body/#root/heading base rules moved to ``auth-globals.css``
+   (imported only by the standalone auth app's main.tsx). They are intentionally
+   NOT here: this file ships with the shared ``@auth/login`` wall, and global
+   element rules would hijack a consuming plugin's layout. The login wall is
+   self-contained via the scoped ``.auth-page`` rules above. */
 
 /* ============================================
    Buttons

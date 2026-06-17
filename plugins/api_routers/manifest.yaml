@@ -1,11 +1,11 @@
-name: api-routers
-version: 0.1.0
+name: api_routers
+version: 0.2.0
 description: Default FastAPI routers for chat, admin, feedback, tenant, indexing,
-  metrics, status, and console
+  metrics, status, console, privacy, and webhooks
 author: Baselith
 tags:
 - api
 - routers
 - fastapi
 category: infrastructure
-integrity_sha256: 337345320ea796ba44723f6a944b8bf6c621ce8a80383791df735f4137ea8c92
+integrity_sha256: 99588a4d8324ae9af180cff219ee7128035ac74ac09805a733f1cdd6594cd8f4

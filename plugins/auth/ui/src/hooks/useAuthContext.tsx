@@ -5,13 +5,14 @@
  */
 
 import { createContext, useContext, useCallback, useEffect, useState, type ReactNode } from 'react';
-import type { UserInfo } from '../api/auth';
+import type { UserInfo, AccessibleTab } from '../api/auth';
 import {
   login as apiLogin,
   verifyMFA as apiVerifyMFA,
   logout as apiLogout,
   refreshToken as apiRefreshToken,
   getCurrentUser,
+  getAccessibleTabs,
   isMFARequired,
 } from '../api/auth';
 
@@ -30,7 +31,7 @@ export interface AuthContextValue extends AuthState {
   verifyMFA: (tempToken: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
-  canAccessTab: (tabId: string) => boolean;
+  canAccessTab: (tabId: string, plugin?: string) => boolean;
   hasRole: (role: string) => boolean;
 }
 
@@ -85,6 +86,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
     mfaRequired: false,
     mfaTempToken: null,
   });
+
+  // Central per-tab access policy (from /api/auth/access/tabs). Empty until
+  // loaded; canAccessTab defaults to allow while unknown to avoid flicker.
+  const [accessibleTabs, setAccessibleTabs] = useState<AccessibleTab[] | null>(null);
+
+  // Fetch the central tab policy whenever an access token becomes available.
+  useEffect(() => {
+    if (!state.isAuthenticated || !state.accessToken) {
+      setAccessibleTabs(null);
+      return;
+    }
+    let cancelled = false;
+    getAccessibleTabs(state.accessToken)
+      .then((tabs) => {
+        if (!cancelled) setAccessibleTabs(tabs);
+      })
+      .catch(() => {
+        if (!cancelled) setAccessibleTabs(null); // fail-open
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [state.isAuthenticated, state.accessToken]);
 
   // Load token from storage on mount
   useEffect(() => {
@@ -262,13 +286,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const canAccessTab = useCallback(
-    (tabId: string): boolean => {
-      if (!state.user) return true;
-      if (!state.user.roles.includes('guest')) return true;
-      if (state.user.allowed_tabs === null) return true;
-      return state.user.allowed_tabs.includes(tabId);
+    (tabId: string, plugin?: string): boolean => {
+      // Policy not loaded yet -> allow (avoid flicker / accidental lockout).
+      if (accessibleTabs === null) return true;
+      const matches = accessibleTabs.filter(
+        (t) => t.tab_id === tabId && (!plugin || t.plugin === plugin)
+      );
+      // Unmanaged tab (not in policy) -> default-allow. Otherwise allow when
+      // at least one matching entry is allowed.
+      if (matches.length === 0) return true;
+      return matches.some((t) => t.allowed);
     },
-    [state.user]
+    [accessibleTabs]
   );
 
   const hasRole = useCallback(

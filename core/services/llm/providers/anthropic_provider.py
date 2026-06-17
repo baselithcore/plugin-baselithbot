@@ -5,6 +5,8 @@ Anthropic Claude provider implementation.
 from core.observability.logging import get_logger
 from typing import Any, AsyncIterator, Optional
 
+from pydantic import SecretStr
+
 try:
     import anthropic
 except ImportError:
@@ -14,7 +16,6 @@ from core.services.llm.cost_control import estimate_tokens
 from core.services.llm.exceptions import LLMProviderError
 from core.services.llm.thinking import resolve_thinking
 from core.resilience.circuit_breaker import get_circuit_breaker
-from core.resilience.retry import retry
 
 # Provider-specific kwargs handled explicitly (not forwarded verbatim).
 _RESERVED_KWARGS = frozenset(
@@ -27,12 +28,12 @@ logger = get_logger(__name__)
 class AnthropicProvider:
     """Anthropic Claude LLM provider (Async)."""
 
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str | SecretStr):
         """
         Initialize Anthropic provider.
 
         Args:
-            api_key: Anthropic API key
+            api_key: Anthropic API key (raw ``str`` or wrapped ``SecretStr``).
         """
         if not api_key:
             raise LLMProviderError("Anthropic API key is required")
@@ -42,7 +43,11 @@ class AnthropicProvider:
                 "Anthropic library is not installed. Run 'pip install anthropic'"
             )
 
-        self.api_key = api_key
+        # Keep the credential wrapped so it never appears in repr()/tracebacks/
+        # Sentry frames; unwrap only at the SDK boundary in _ensure_client.
+        self._api_key: SecretStr = (
+            api_key if isinstance(api_key, SecretStr) else SecretStr(api_key)
+        )
         self.client: Optional[anthropic.AsyncAnthropic] = None
 
     def _ensure_client(self) -> anthropic.AsyncAnthropic:
@@ -55,7 +60,7 @@ class AnthropicProvider:
         if self.client is not None:
             return self.client
 
-        self.client = anthropic.AsyncAnthropic(api_key=self.api_key)
+        self.client = anthropic.AsyncAnthropic(api_key=self._api_key.get_secret_value())
         logger.info("Initialized Anthropic provider (Async)")
         return self.client
 
@@ -71,8 +76,12 @@ class AnthropicProvider:
             except Exception as e:
                 logger.warning(f"Error closing Anthropic client: {e}")
 
+    # Single retry owner is LLMService._generate_with_retry (rate-limit
+    # aware). A provider-level blanket retry on Exception would multiply
+    # attempts (3x3 upstream calls per request) and pointlessly retry
+    # non-transient failures (bad key, invalid request). The circuit
+    # breaker stays: failure isolation, not retry.
     @get_circuit_breaker("anthropic_provider")
-    @retry(max_attempts=3, exponential_base=2.0)
     async def generate(
         self, prompt: str, model: str, json_mode: bool = False, **kwargs
     ) -> tuple[str, int]:
@@ -142,8 +151,11 @@ class AnthropicProvider:
             logger.error(f"Anthropic generation error: {e}")
             raise LLMProviderError(f"Anthropic error: {e}") from e
 
+    # No @retry here either: decorating an async generator never retried
+    # anything (errors surface during iteration, outside the wrapper) —
+    # the decorator was dead code. Retrying a partially consumed stream
+    # would also duplicate already-yielded chunks.
     @get_circuit_breaker("anthropic_provider")
-    @retry(max_attempts=3, exponential_base=2.0)
     async def generate_stream(
         self, prompt: str, model: str, **kwargs
     ) -> AsyncIterator[tuple[str, int]]:
@@ -170,17 +182,16 @@ class AnthropicProvider:
                 temperature=kwargs.get("temperature", 0.7),
                 **{k: v for k, v in kwargs.items() if k not in _RESERVED_KWARGS},
             ) as stream:
-                accumulated_content = ""
+                # Estimate prompt tokens once; accumulate per-delta instead of
+                # re-tokenizing the full accumulated text on every chunk
+                # (which is O(n^2) over the stream).
+                tokens = estimate_tokens(prompt)
                 async for chunk in stream:
                     # Anthropic stream events: TextEvent, ContentBlockStartEvent, etc.
                     # For text content, we want the delta text from 'text_delta' events
                     if chunk.type == "text_delta":
                         text = chunk.text
-                        accumulated_content += text
-                        # Estimate tokens
-                        tokens = estimate_tokens(prompt) + estimate_tokens(
-                            accumulated_content
-                        )
+                        tokens += estimate_tokens(text)
                         yield text, tokens
 
         except Exception as e:

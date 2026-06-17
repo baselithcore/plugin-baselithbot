@@ -1,0 +1,31 @@
+# FIA-style sporting-regulation parameters for the strategy guardrail.
+# Deterministic, auditable knobs — the guardrail logic lives in guardrails.py
+# and only reads these values. Tune per championship/season without touching
+# code. Values approximate Formula-style dry-race rules.
+
+# Art. 30.5 (a): at least two different dry compounds must be used in a race
+# that is declared dry (started on slick tyres).
+mandatory_compound_change: true
+
+# Earliest lap a green-flag stop is sensible (avoid lap-1 strategy nonsense).
+min_pit_lap: 2
+
+# Legal dry compounds; fitting a wet/intermediate in a declared-dry race is a
+# compound-legality conflict surfaced as a violation.
+dry_legal_compounds:
+  - soft
+  - medium
+  - hard
+
+wet_legal_compounds:
+  - intermediate
+  - wet
+
+# Advisory maximum stint length per compound (laps). Exceeding it is a *note*,
+# not a hard violation — degradation models, not regs, govern this.
+advisory_max_stint_laps:
+  soft: 26
+  medium: 38
+  hard: 48
+  intermediate: 30
+  wet: 30

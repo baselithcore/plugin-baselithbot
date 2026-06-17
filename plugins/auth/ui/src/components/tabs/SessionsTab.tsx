@@ -5,6 +5,8 @@
  */
 
 import { RefreshCw, Key, User, Clock, Eye } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { useSessions } from '../../hooks';
 import { DetailModal } from '../modals';
 import { Session } from '../../types';
@@ -21,12 +23,12 @@ const formatDate = (dateStr: string): string => {
   });
 };
 
-const getTimeRemaining = (expiresAt: string): string => {
+const getTimeRemaining = (expiresAt: string, t: TFunction): string => {
   const now = new Date();
   const expires = new Date(expiresAt);
   const diff = expires.getTime() - now.getTime();
 
-  if (diff <= 0) return 'Expired';
+  if (diff <= 0) return t('sessions.expired');
 
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -38,6 +40,7 @@ const getTimeRemaining = (expiresAt: string): string => {
 };
 
 const SessionsTab = () => {
+  const { t } = useTranslation();
   const { sessions, total, isLoading, error, refresh } = useSessions();
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 
@@ -47,14 +50,14 @@ const SessionsTab = () => {
       <div className="sessions-header">
         <div className="sessions-title">
           <Key size={20} />
-          <h2>Active Sessions</h2>
-          <span className="sessions-count">{total} active</span>
+          <h2>{t('sessions.title')}</h2>
+          <span className="sessions-count">{t('sessions.countActive', { count: total })}</span>
         </div>
 
         <button
           className="admin-btn admin-btn-ghost admin-btn-icon"
           onClick={() => refresh()}
-          title="Refresh"
+          title={t('common.refresh')}
         >
           <RefreshCw size={16} />
         </button>
@@ -63,7 +66,7 @@ const SessionsTab = () => {
       {/* Error display */}
       {error && (
         <div className="admin-alert admin-alert-error">
-          <span>Error: {error}</span>
+          <span>{t('common.errorLabel', { message: error })}</span>
         </div>
       )}
 
@@ -72,26 +75,26 @@ const SessionsTab = () => {
         {isLoading ? (
           <div className="admin-empty">
             <div className="admin-spinner admin-spinner-lg" />
-            <p className="admin-empty-text">Loading sessions...</p>
+            <p className="admin-empty-text">{t('sessions.loading')}</p>
           </div>
         ) : sessions.length === 0 ? (
           <div className="admin-empty">
             <div className="admin-empty-icon">
               <Key size={48} />
             </div>
-            <p className="admin-empty-title">No active sessions</p>
-            <p className="admin-empty-text">There are currently no active user sessions.</p>
+            <p className="admin-empty-title">{t('sessions.empty')}</p>
+            <p className="admin-empty-text">{t('sessions.emptyHint')}</p>
           </div>
         ) : (
           <table className="admin-table">
             <thead>
               <tr>
-                <th>User</th>
-                <th>Session ID</th>
-                <th>Created</th>
-                <th>Expires</th>
-                <th>Time Remaining</th>
-                <th>Actions</th>
+                <th>{t('sessions.columns.user')}</th>
+                <th>{t('sessions.columns.sessionId')}</th>
+                <th>{t('sessions.columns.created')}</th>
+                <th>{t('sessions.columns.expires')}</th>
+                <th>{t('sessions.columns.timeRemaining')}</th>
+                <th>{t('sessions.columns.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -115,14 +118,14 @@ const SessionsTab = () => {
                   <td>
                     <div className="session-time-remaining">
                       <Clock size={14} />
-                      <span>{getTimeRemaining(session.expires_at)}</span>
+                      <span>{getTimeRemaining(session.expires_at, t)}</span>
                     </div>
                   </td>
                   <td>
                     <button
                       className="admin-btn admin-btn-ghost admin-btn-icon"
                       onClick={() => setSelectedSession(session)}
-                      title="View Details"
+                      title={t('sessions.viewDetails')}
                     >
                       <Eye size={16} />
                     </button>
@@ -137,12 +140,12 @@ const SessionsTab = () => {
       <DetailModal
         isOpen={!!selectedSession}
         onClose={() => setSelectedSession(null)}
-        title="Session Details"
+        title={t('sessions.detailTitle')}
         data={
           selectedSession
             ? {
                 ...selectedSession,
-                time_remaining: getTimeRemaining(selectedSession.expires_at),
+                time_remaining: getTimeRemaining(selectedSession.expires_at, t),
               }
             : null
         }

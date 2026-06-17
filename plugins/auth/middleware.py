@@ -76,10 +76,22 @@ class AuthMiddleware(BaseHTTPMiddleware):
         return False
 
     async def _authenticate(self, request: Request) -> AuthUser:
-        """Authenticate request from header or cookie."""
+        """Authenticate request from API key, header, or cookie."""
         auth_manager = ServiceRegistry.get(AuthManager)
 
-        # Try Authorization header first
+        # Try an API key (X-API-Key or bearer bsk_...) first.
+        from plugins.auth.api_key_auth import (
+            extract_api_key,
+            maybe_authenticate_api_key,
+        )
+
+        if extract_api_key(request.headers):
+            persistence = ServiceRegistry.get(AuthPersistence)
+            api_user = maybe_authenticate_api_key(persistence, request.headers)
+            if api_user:
+                return api_user
+
+        # Try Authorization header (JWT)
         auth_header = request.headers.get("Authorization")
         if auth_header:
             user = await auth_manager.authenticate(auth_header)

@@ -1,0 +1,8 @@
+{
+  "control.action.not_found": "Il plugin '{plugin}' non è registrato.",
+  "control.action.ok": "Operazione '{op}' su '{plugin}' completata.",
+  "control.action.failed": "Operazione '{op}' su '{plugin}' fallita.",
+  "control.action.denied": "Operazione '{op}' su '{plugin}' negata: {reason}.",
+  "control.action.unsupported": "Operazione '{op}' non supportata.",
+  "control.stream.connected": "Stream di controllo connesso."
+}

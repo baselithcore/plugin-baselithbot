@@ -18,5 +18,13 @@ def test_legacy_core_router_imports_resolve_to_plugin_exports() -> None:
 def test_api_routers_plugin_exposes_manifest_metadata() -> None:
     plugin = ApiRoutersPlugin()
 
-    assert plugin.metadata.name == "api-routers"
+    assert plugin.metadata.name == "api_routers"
     assert "fastapi" in plugin.metadata.tags
+
+
+def test_api_routers_plugin_exposes_dynamic_routers() -> None:
+    plugin = ApiRoutersPlugin()
+
+    assert plugin.get_router_prefix() == ""
+    mounted = {r.prefix for r in plugin.get_routers()}
+    assert {"/privacy", "/webhooks"} <= mounted

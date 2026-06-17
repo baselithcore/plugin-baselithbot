@@ -152,6 +152,15 @@ async def get_current_user(
     if request.url.path in config.public_paths:
         return AuthUser(user_id="anonymous", roles={AuthRole.ANONYMOUS})
 
+    # Try an API key (X-API-Key or bearer bsk_...) first.
+    from plugins.auth.api_key_auth import extract_api_key, maybe_authenticate_api_key
+
+    if extract_api_key(request.headers):
+        api_user = maybe_authenticate_api_key(persistence, request.headers)
+        if api_user:
+            request.state.user = api_user
+            return api_user
+
     # Try Bearer token from Authorization header
     if credentials:
         auth_header = f"Bearer {credentials.credentials}"
@@ -315,3 +324,69 @@ def require_tab_access(tab_id: str) -> Callable:
         return user
 
     return _tab_checker
+
+
+# =============================================================================
+# Granular RBAC guards (permission- and tab-based)
+# =============================================================================
+
+
+def require_permission(*slugs: str, mode: str = "any") -> Callable:
+    """Factory requiring one (``mode='any'``) or all (``mode='all'``) of the
+    given permission slugs, resolved from the central RBAC store.
+
+    The admin wildcard ('*') satisfies any requirement. Anonymous callers are
+    rejected with 401.
+
+    Usage:
+        @router.get("/x")
+        async def x(user: AuthUser = Depends(require_permission("rbac.manage"))):
+            ...
+    """
+
+    async def _perm_checker(user: AuthUser = Depends(require_auth)) -> AuthUser:
+        from plugins.auth.rbac.permissions import has_permission
+        from plugins.auth.rbac.service import get_rbac_service
+
+        if not user.is_authenticated or user.user_id == "anonymous":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication required",
+            )
+
+        perms = get_rbac_service().effective_permissions(user.user_id, user.roles)
+        checks = [has_permission(perms, slug) for slug in slugs]
+        ok = all(checks) if mode == "all" else any(checks)
+        if not ok:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Requires permission(s): {list(slugs)}",
+            )
+        return user
+
+    return _perm_checker
+
+
+def require_tab(plugin: str, tab_id: str) -> Callable:
+    """Factory enforcing the central per-tab access policy.
+
+    Default-allow: an unmanaged or unrestricted tab is open to every
+    authenticated user. A restricted tab requires its ``tab:<plugin>:<id>``
+    permission (admin/wildcard always passes).
+    """
+
+    async def _tab_policy_checker(
+        user: AuthUser = Depends(require_auth),
+    ) -> AuthUser:
+        from plugins.auth.rbac.service import get_rbac_service
+
+        if not get_rbac_service().can_access_tab(
+            user.user_id, user.roles, plugin, tab_id
+        ):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Access to '{plugin}:{tab_id}' is not permitted",
+            )
+        return user
+
+    return _tab_policy_checker

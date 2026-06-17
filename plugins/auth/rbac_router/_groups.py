@@ -1,0 +1,165 @@
+"""Admin endpoints: groups, membership, and group-role grants (wikigen-style)."""
+
+from __future__ import annotations
+
+from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException, Request
+
+from core.auth import AuthUser
+from plugins.auth.audit import AuditAction
+from plugins.auth.dependencies import require_permission
+from plugins.auth.rbac.permissions import Permission
+from plugins.auth.rbac.service import RBACService, get_rbac_service
+from plugins.auth.rbac_router._audit import audit_rbac
+from plugins.auth.rbac_router._models import (
+    AddMember,
+    AssignGroupRole,
+    GroupCreate,
+    GroupMember,
+    GroupOut,
+    GroupUpdate,
+)
+
+router = APIRouter()
+
+
+def _service() -> RBACService:
+    return get_rbac_service()
+
+
+@router.get("/groups", response_model=List[GroupOut])
+async def list_groups(
+    user: AuthUser = Depends(require_permission(Permission.RBAC_READ)),
+):
+    """All groups with member counts and granted roles."""
+    return _service().store.list_groups()
+
+
+@router.post("/groups", response_model=GroupOut, status_code=201)
+async def create_group(
+    body: GroupCreate,
+    request: Request,
+    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+):
+    """Create a custom group."""
+    store = _service().store
+    if store.get_group_by_slug(body.slug):
+        raise HTTPException(status_code=409, detail="Group slug already exists")
+    group = store.create_group(body.slug, body.name, body.description)
+    audit_rbac(
+        request,
+        user.user_id,
+        AuditAction.GROUP_CREATED,
+        target_id=group["id"],
+        details={"slug": body.slug, "name": body.name},
+    )
+    return group
+
+
+@router.patch("/groups/{group_id}", response_model=GroupOut)
+async def update_group(
+    group_id: str,
+    body: GroupUpdate,
+    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+):
+    """Update a group's name/description."""
+    group = _service().store.update_group(group_id, body.name, body.description)
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    return group
+
+
+@router.delete("/groups/{group_id}", status_code=204)
+async def delete_group(
+    group_id: str,
+    request: Request,
+    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+):
+    """Delete a custom group (system groups are protected)."""
+    if not _service().store.delete_group(group_id):
+        raise HTTPException(
+            status_code=409, detail="Group not found or is a protected system group"
+        )
+    audit_rbac(request, user.user_id, AuditAction.GROUP_DELETED, target_id=group_id)
+
+
+@router.get("/groups/{group_id}/members", response_model=List[GroupMember])
+async def list_members(
+    group_id: str,
+    user: AuthUser = Depends(require_permission(Permission.RBAC_READ)),
+):
+    """Members of a group."""
+    return _service().store.list_members(group_id)
+
+
+@router.post("/groups/{group_id}/members", status_code=204)
+async def add_member(
+    group_id: str,
+    body: AddMember,
+    request: Request,
+    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+):
+    """Add a user to a group."""
+    _service().store.add_member(group_id, body.user_id, added_by=user.user_id)
+    audit_rbac(
+        request,
+        user.user_id,
+        AuditAction.GROUP_MEMBER_ADDED,
+        target_id=group_id,
+        details={"user_id": body.user_id},
+    )
+
+
+@router.delete("/groups/{group_id}/members/{user_id}", status_code=204)
+async def remove_member(
+    group_id: str,
+    user_id: str,
+    request: Request,
+    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+):
+    """Remove a user from a group."""
+    _service().store.remove_member(group_id, user_id)
+    audit_rbac(
+        request,
+        user.user_id,
+        AuditAction.GROUP_MEMBER_REMOVED,
+        target_id=group_id,
+        details={"user_id": user_id},
+    )
+
+
+@router.post("/groups/{group_id}/roles", status_code=204)
+async def assign_group_role(
+    group_id: str,
+    body: AssignGroupRole,
+    request: Request,
+    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+):
+    """Grant a role to a group."""
+    _service().store.assign_group_role(group_id, body.role_id)
+    audit_rbac(
+        request,
+        user.user_id,
+        AuditAction.GROUP_ROLE_CHANGED,
+        target_id=group_id,
+        details={"assign": body.role_id},
+    )
+
+
+@router.delete("/groups/{group_id}/roles/{role_id}", status_code=204)
+async def revoke_group_role(
+    group_id: str,
+    role_id: str,
+    request: Request,
+    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+):
+    """Remove a role grant from a group."""
+    _service().store.revoke_group_role(group_id, role_id)
+    audit_rbac(
+        request,
+        user.user_id,
+        AuditAction.GROUP_ROLE_CHANGED,
+        target_id=group_id,
+        details={"revoke": role_id},
+    )

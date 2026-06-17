@@ -9,6 +9,12 @@ The configuration is split into domain-specific modules (services, storage, secu
 to maintain modularity and prevent a monolithic configuration file.
 """
 
+# Importing core.config.env loads the repository .env into os.environ exactly
+# once, BEFORE any BaseSettings class is imported/instantiated (some
+# instantiate at import time). Individual config classes no longer declare
+# env_file — see core.config.env.load_project_env.
+from core.config import env as _env  # noqa: F401
+
 from core.config.base import CoreConfig, get_core_config
 from core.config.services import (
     LLMConfig,
@@ -27,6 +33,7 @@ from core.config.services import (
 from core.config.plugins import PluginConfig, get_plugin_config
 from core.config.storage import StorageConfig, get_storage_config
 from core.config.security import SecurityConfig, get_security_config
+from core.config.webhooks import WebhookConfig, get_webhook_config
 from core.config.processing import ProcessingConfig, get_processing_config
 from core.config.app import AppConfig, get_app_config
 from core.config.environment import get_runtime_environment, is_production_env
@@ -83,6 +90,8 @@ __all__ = [
     "get_storage_config",
     "SecurityConfig",
     "get_security_config",
+    "WebhookConfig",
+    "get_webhook_config",
     "ProcessingConfig",
     "get_processing_config",
     "AppConfig",

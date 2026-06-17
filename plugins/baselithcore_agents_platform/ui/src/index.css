@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: #070b14;
+  color: #e7ecf6;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Animated aurora backdrop — the "Aurora Glass" signature of the dashboard. */
+.aurora {
+  position: fixed;
+  inset: -20%;
+  z-index: 0;
+  background:
+    radial-gradient(40% 40% at 20% 25%, rgba(124, 108, 255, 0.28), transparent 70%),
+    radial-gradient(35% 35% at 80% 20%, rgba(34, 211, 238, 0.22), transparent 70%),
+    radial-gradient(45% 45% at 60% 85%, rgba(99, 102, 241, 0.2), transparent 70%);
+  filter: blur(40px);
+  animation: aurora-drift 22s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes aurora-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(2%, -3%, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(-2%, 2%, 0) scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora {
+    animation: none;
+  }
+}
+
+.glass {
+  background: linear-gradient(180deg, rgba(26, 37, 64, 0.55), rgba(11, 17, 32, 0.65));
+  border: 1px solid rgba(124, 108, 255, 0.16);
+  backdrop-filter: blur(14px);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 108, 255, 0.3);
+  border-radius: 9999px;
+}

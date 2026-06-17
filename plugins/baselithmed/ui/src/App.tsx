@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertOctagon } from 'lucide-react';
+import { AlertOctagon, ShieldX } from 'lucide-react';
+import { useAuth } from '@auth';
 import { TopBar } from './components/TopBar';
 import { ChatPanel } from './components/ChatPanel';
 import { SymptomMatrixPanel } from './components/SymptomMatrixPanel';
@@ -27,7 +28,11 @@ const SEED_MESSAGE: ChatMessage = {
   timestamp: new Date().toISOString(),
 };
 
+// Tab id advertised by the plugin's get_ui_tabs(); gated via central RBAC.
+const TAB_ID = 'baselithmed';
+
 export default function App() {
+  const { canAccessTab } = useAuth();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [pseudonym, setPseudonym] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([SEED_MESSAGE]);
@@ -203,6 +208,12 @@ export default function App() {
     [sessionId, report]
   );
 
+  // Central RBAC gate (scoped to baselithmed). Default-allow: only blocks
+  // when the policy explicitly denies this tab — never a login wall.
+  if (!canAccessTab(TAB_ID, 'baselithmed')) {
+    return <AccessDenied />;
+  }
+
   return (
     <div className="flex h-full flex-col">
       <TopBar pseudonym={pseudonym} sessionId={sessionId} turns={turns} online={online} />
@@ -243,6 +254,25 @@ export default function App() {
         onSubmit={submitValidation}
         pending={validating}
       />
+    </div>
+  );
+}
+
+function AccessDenied() {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
+      <span
+        aria-hidden
+        className="grid h-14 w-14 place-items-center rounded-2xl bg-triage-red-soft/60 text-triage-red dark:bg-triage-red-soft/15"
+      >
+        <ShieldX className="h-7 w-7" />
+      </span>
+      <div className="space-y-1">
+        <h1 className="font-display text-lg font-semibold tracking-tight">Accesso negato</h1>
+        <p className="max-w-sm text-sm text-ink-400">
+          Il tuo profilo non dispone delle autorizzazioni necessarie per accedere al triage clinico.
+        </p>
+      </div>
     </div>
   );
 }

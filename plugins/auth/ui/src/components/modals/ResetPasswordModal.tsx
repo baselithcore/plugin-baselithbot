@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { X, Copy, Check, AlertTriangle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import type { ResetPasswordResponse } from '../../types';
 
 interface ResetPasswordModalProps {
@@ -14,6 +15,7 @@ interface ResetPasswordModalProps {
 }
 
 const ResetPasswordModal = ({ result, onClose }: ResetPasswordModalProps) => {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -32,7 +34,7 @@ const ResetPasswordModal = ({ result, onClose }: ResetPasswordModalProps) => {
     <div className="admin-modal-overlay" onClick={onClose}>
       <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
         <div className="admin-modal-header">
-          <h2 className="admin-modal-title">Password Reset</h2>
+          <h2 className="admin-modal-title">{t('modals.resetPassword.title')}</h2>
           <button className="admin-btn admin-btn-ghost admin-btn-icon" onClick={onClose}>
             <X size={18} />
           </button>
@@ -48,14 +50,13 @@ const ResetPasswordModal = ({ result, onClose }: ResetPasswordModalProps) => {
             <>
               <div className="admin-alert admin-alert-warning" style={{ marginBottom: '1rem' }}>
                 <AlertTriangle size={18} />
-                <span>
-                  This password will only be shown once. Please copy it now and share it securely
-                  with the user.
-                </span>
+                <span>{t('modals.resetPassword.onceWarning')}</span>
               </div>
 
               <div className="admin-password-display">
-                <div className="admin-password-display-label">Temporary Password</div>
+                <div className="admin-password-display-label">
+                  {t('modals.resetPassword.tempPasswordLabel')}
+                </div>
                 <div
                   style={{
                     display: 'flex',
@@ -69,7 +70,7 @@ const ResetPasswordModal = ({ result, onClose }: ResetPasswordModalProps) => {
                     onClick={handleCopy}
                   >
                     {copied ? <Check size={14} /> : <Copy size={14} />}
-                    {copied ? 'Copied!' : 'Copy'}
+                    {copied ? t('common.copied') : t('common.copy')}
                   </button>
                 </div>
               </div>
@@ -79,7 +80,7 @@ const ResetPasswordModal = ({ result, onClose }: ResetPasswordModalProps) => {
 
         <div className="admin-modal-footer">
           <button className="admin-btn admin-btn-primary" onClick={onClose}>
-            Close
+            {t('common.close')}
           </button>
         </div>
       </div>

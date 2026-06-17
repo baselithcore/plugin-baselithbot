@@ -19,17 +19,42 @@ the doctrine guardrails in code rather than in the prompt alone.
 from __future__ import annotations
 
 import json
-import re
 from typing import Protocol
 
 from core.observability.logging import get_logger
 from pydantic import ValidationError
 
+from ._heuristics import (
+    ABSOLUTION_REQUIRED_FRAGMENTS,
+    _detect_amendment_during,
+    _detect_contrition,
+    _detect_refusal,
+    _extract_json,
+    _has_full_absolution,
+)
+from ._liturgy import (
+    CANONICAL_ABSOLUTION,
+    DEFAULT_REFUSAL_UTTERANCE,
+    _LITURGY,
+    _liturgy_turn,
+)
 from .models import ConfessorTurn, RitePhase, SessionState
 from .prompt import build_turn_prompt
 from .sigillum import SigillumStore, is_terminal
 
 logger = get_logger(__name__)
+
+# Re-export so existing ``from .flow import …`` call sites keep working.
+__all__ = [
+    "ConfessionFlow",
+    "LLMBackend",
+    "SessionNotFound",
+    "SessionAlreadyClosed",
+    # constants that callers may reference via flow
+    "ABSOLUTION_REQUIRED_FRAGMENTS",
+    "CANONICAL_ABSOLUTION",
+    "DEFAULT_REFUSAL_UTTERANCE",
+]
 
 
 class LLMBackend(Protocol):
@@ -41,32 +66,6 @@ class LLMBackend(Protocol):
     """
 
     async def generate(self, prompt: str, *, system: str) -> str: ...
-
-
-# Hardcoded canonical CEI absolution. Used to validate that the LLM did
-# not paraphrase or shorten the formula.
-ABSOLUTION_REQUIRED_FRAGMENTS: tuple[str, ...] = (
-    "Dio, Padre di misericordia",
-    "ti assolvo dai tuoi peccati",
-    "nel nome del Padre",
-    "del Figlio",
-    "Spirito Santo",
-)
-
-CANONICAL_ABSOLUTION: str = (
-    "Dio, Padre di misericordia, che ha riconciliato a sé il mondo nella "
-    "morte e risurrezione del suo Figlio, e ha effuso lo Spirito Santo "
-    "per la remissione dei peccati, ti conceda, mediante il ministero "
-    "della Chiesa, il perdono e la pace. E io ti assolvo dai tuoi "
-    "peccati nel nome del Padre e del Figlio ✝ e dello Spirito Santo."
-)
-
-DEFAULT_REFUSAL_UTTERANCE: str = (
-    "Figlio mio, il sacramento esige un cuore che si pente e che propone, "
-    "con l'aiuto di Dio, di non offenderlo più. Senza questo non posso "
-    "assolverti, non per durezza ma per verità. Torna quando il tuo cuore "
-    "sarà pronto: il Padre attende. Va' in pace."
-)
 
 
 class ConfessionFlow:
@@ -372,289 +371,3 @@ def _merge_tri(prior: bool | None, current: bool | None) -> bool | None:
     if prior is False or current is False:
         return False
     return None
-
-
-# ---------------------------------------------------------------------------
-# Liturgy fallback — canonical phrases when the LLM is unavailable.
-#
-# Each phase has a deterministic Italian utterance taken straight from the
-# Roman Rite (CEI). When the LLM is unreachable, off-budget, or returns
-# unusable output, the flow still completes the sacrament using these
-# texts. The LLM is a personalization layer, not a doctrinal one.
-# ---------------------------------------------------------------------------
-
-_LITURGY: dict[RitePhase, tuple[str, RitePhase, bool]] = {
-    # phase: (utterance, next_phase, advance_on_user_reply)
-    RitePhase.ACCOGLIENZA: (
-        "Sia lodato Gesù Cristo. Il Signore sia nel tuo cuore perché tu possa "
-        "confessare sinceramente i tuoi peccati.",
-        RitePhase.INVITO,
-        True,
-    ),
-    RitePhase.INVITO: (
-        "Nel nome del Padre, del Figlio e dello Spirito Santo. Ti ascolto.",
-        RitePhase.ASCOLTO,
-        True,
-    ),
-    RitePhase.ASCOLTO: (
-        "Vuoi aggiungere altro?",
-        RitePhase.ESORTAZIONE,
-        True,
-    ),
-    RitePhase.ESORTAZIONE: (
-        "Il Padre attende sempre il figlio che torna a casa. La sua "
-        "misericordia è più grande di ogni peccato: lascia che ti rinnovi "
-        "il cuore.",
-        RitePhase.PENITENZA,
-        True,
-    ),
-    RitePhase.PENITENZA: (
-        "Per penitenza ti propongo di recitare tre Padre Nostro, tre Ave "
-        "Maria e di compiere un gesto concreto di carità verso chi hai "
-        "ferito o trascurato.",
-        RitePhase.ATTO_DOLORE,
-        True,
-    ),
-    RitePhase.ATTO_DOLORE: (
-        "Ora esprimi con le tue parole il dolore per i tuoi peccati e il "
-        "proposito, con l'aiuto di Dio, di non offenderlo più. Se non "
-        "ricordi una formula, ripeti: «Mio Dio, mi pento e mi dolgo con "
-        "tutto il cuore dei miei peccati; propongo con il tuo santo aiuto "
-        "di non offenderti mai più.»",
-        RitePhase.ASSOLUZIONE,
-        True,
-    ),
-    RitePhase.ASSOLUZIONE: (
-        CANONICAL_ABSOLUTION,
-        RitePhase.CONGEDO,
-        True,
-    ),
-    RitePhase.CONGEDO: (
-        "Rendiamo grazie al Signore, perché è buono. Va' in pace.",
-        RitePhase.CONGEDO,
-        False,
-    ),
-    RitePhase.INVITO_RIFLESSIONE: (
-        DEFAULT_REFUSAL_UTTERANCE,
-        RitePhase.CONGEDO,
-        False,
-    ),
-    RitePhase.VERIFICA_CONTRIZIONE: (
-        "Senti nel cuore il dolore per i tuoi peccati?",
-        RitePhase.ATTO_DOLORE,
-        True,
-    ),
-}
-
-
-def _liturgy_turn(
-    phase: RitePhase,
-    *,
-    penitent_utterance: str,
-    contrition: bool | None,
-    amendment: bool | None,
-    refusal: bool,
-) -> ConfessorTurn:
-    """Build a canonical turn for ``phase`` without LLM intervention.
-
-    Heuristics:
-    - If the penitent explicitly refused repentance, jump to
-      ``INVITO_RIFLESSIONE``.
-    - If we are in ``ASCOLTO`` and the penitent has given some
-      utterance (i.e. at least one sin enumerated), close the listening
-      with the standard "anything else?" probe. On a *second* listening
-      turn following silence or a closing phrase, advance to
-      ``ESORTAZIONE``.
-    """
-    if refusal:
-        utt, nxt, adv = _LITURGY[RitePhase.INVITO_RIFLESSIONE]
-        return ConfessorTurn(
-            phase=RitePhase.INVITO_RIFLESSIONE,
-            utterance=utt,
-            next_phase=nxt,
-            advance_on_user_reply=adv,
-            contrition_detected=False,
-            amendment_purpose_detected=False,
-            explicit_refusal_of_repentance=True,
-            rationale="liturgy:refusal",
-        )
-
-    # ASCOLTO progression: close the listening when the penitent signals
-    # they are done ("è tutto", "basta", "non ricordo altro", "ho finito",
-    # "mi accuso di questi peccati").
-    if phase is RitePhase.ASCOLTO and _signals_listen_end(penitent_utterance):
-        utt, nxt, adv = _LITURGY[RitePhase.ESORTAZIONE]
-        return ConfessorTurn(
-            phase=RitePhase.ESORTAZIONE,
-            utterance=utt,
-            next_phase=nxt,
-            advance_on_user_reply=adv,
-            contrition_detected=contrition,
-            rationale="liturgy:listen_end",
-        )
-
-    utt, nxt, adv = _LITURGY[phase]
-    # When the penitent recites the Act of Contrition the heuristic will
-    # have lit both flags — propagate them so the doctrine guard does
-    # not loop back asking for contrition again.
-    return ConfessorTurn(
-        phase=phase,
-        utterance=utt,
-        next_phase=nxt,
-        advance_on_user_reply=adv,
-        contrition_detected=contrition,
-        amendment_purpose_detected=amendment,
-        rationale="liturgy",
-    )
-
-
-# ---------------------------------------------------------------------------
-# Heuristic detectors over the penitent utterance.
-# ---------------------------------------------------------------------------
-
-_CONTRITION_TOKENS: tuple[str, ...] = (
-    "mi pento",
-    "sono pentit",
-    "mi dolgo",
-    "mi rincresce",
-    "mi vergogn",
-    "perdona",
-    "perdono",
-    "chiedo perdono",
-    "ho peccato",
-    "propongo di non",
-    "non lo farò più",
-    "non lo faro piu",
-    "non voglio più peccare",
-)
-
-_AMENDMENT_TOKENS: tuple[str, ...] = (
-    "propongo di non",
-    "propongo con",
-    "non lo farò più",
-    "non lo faro piu",
-    "non lo rifarò",
-    "non lo rifaro",
-    "non offenderti",
-    "non offenderlo",
-    "non peccare più",
-    "non peccare piu",
-    "voglio cambiare",
-    "voglio convertirmi",
-    "non commettere più",
-    "non commettere piu",
-    "prometto",
-    "promesso",
-    "lo giuro",
-    "giuro di",
-    "mai più",
-    "mai piu",
-    "convertirmi",
-    "cambiare vita",
-    "santo aiuto",
-    "fuggire le occasioni",
-    "atto di dolore",
-)
-
-_REFUSAL_TOKENS: tuple[str, ...] = (
-    "non mi pento",
-    "non sono pentit",
-    "continuerò a",
-    "continuero a",
-    "voglio continuare",
-    "non voglio cambiare",
-    "non smetterò",
-    "non smettero",
-    "non ho intenzione di smettere",
-    "lo rifarei",
-)
-
-_LISTEN_END_TOKENS: tuple[str, ...] = (
-    "è tutto",
-    "e' tutto",
-    "basta",
-    "ho finito",
-    "non ricordo altro",
-    "non ricordo nulla",
-    "nient'altro",
-    "niente altro",
-    "mi accuso di questi peccati",
-    "ho detto tutto",
-)
-
-
-def _detect_contrition(utterance: str) -> bool | None:
-    """Return True if contrition is signalled, else None (unknown)."""
-    text = utterance.lower()
-    if any(tok in text for tok in _REFUSAL_TOKENS):
-        return False
-    if any(tok in text for tok in _CONTRITION_TOKENS):
-        return True
-    return None
-
-
-def _detect_amendment(utterance: str) -> bool | None:
-    """Return True if proposito-di-emendamento is signalled, else None.
-
-    The caller can pass ``phase_hint`` via ``_detect_amendment_during``
-    to take the Catholic doctrine shortcut: reciting the Act of
-    Contrition during ATTO_DOLORE implicitly carries the firm purpose
-    of amendment (CCC §1451). Without the hint we stay strict.
-    """
-    text = utterance.lower()
-    if any(tok in text for tok in _REFUSAL_TOKENS):
-        return False
-    if any(tok in text for tok in _AMENDMENT_TOKENS):
-        return True
-    return None
-
-
-def _detect_amendment_during(utterance: str, *, phase: RitePhase) -> bool | None:
-    """Phase-aware amendment detector.
-
-    During ATTO_DOLORE, any contrition expression also satisfies
-    amendment (recital of the Act of Contrition contains the purpose
-    of amendment by liturgical definition).
-    """
-    base = _detect_amendment(utterance)
-    if base is not None:
-        return base
-    if phase == RitePhase.ATTO_DOLORE:
-        text = utterance.lower()
-        if any(tok in text for tok in _REFUSAL_TOKENS):
-            return False
-        if any(tok in text for tok in _CONTRITION_TOKENS):
-            return True
-    return None
-
-
-def _detect_refusal(utterance: str) -> bool:
-    """True only when the penitent explicitly refuses to repent."""
-    text = utterance.lower()
-    return any(tok in text for tok in _REFUSAL_TOKENS)
-
-
-def _signals_listen_end(utterance: str) -> bool:
-    """True when the penitent indicates the sin enumeration is over."""
-    text = utterance.lower().strip()
-    if not text:
-        return False
-    return any(tok in text for tok in _LISTEN_END_TOKENS)
-
-
-_JSON_OBJECT_RE = re.compile(r"\{.*\}", re.DOTALL)
-
-
-def _extract_json(text: str) -> str:
-    """Pull the first JSON object out of the LLM response.
-
-    Some providers wrap JSON in code fences or chatty prose. Be lenient
-    on the wrapper; strict on the content.
-    """
-    match = _JSON_OBJECT_RE.search(text)
-    return match.group(0) if match else text
-
-
-def _has_full_absolution(text: str) -> bool:
-    """Check that the absolution utterance contains every required fragment."""
-    return all(fragment in text for fragment in ABSOLUTION_REQUIRED_FRAGMENTS)
