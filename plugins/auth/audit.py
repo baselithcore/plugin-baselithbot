@@ -32,6 +32,9 @@ class AuditAction:
     USER_INVITED = "user.invited"
     INVITATION_REVOKED = "user.invitation_revoked"
     USER_STATUS_CHANGED = "user.status_changed"
+    # Admin impersonation ("log in as user")
+    IMPERSONATION_STARTED = "user.impersonation_started"
+    IMPERSONATION_ENDED = "user.impersonation_ended"
     # RBAC administration
     ROLE_CREATED = "rbac.role_created"
     ROLE_DELETED = "rbac.role_deleted"

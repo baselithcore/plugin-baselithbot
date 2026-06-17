@@ -4,7 +4,18 @@
  * Displays a table of users with actions.
  */
 
-import { Edit, Trash2, Key, Unlock, ShieldOff, LogOut, MoreVertical, Check, X } from 'lucide-react';
+import {
+  Edit,
+  Trash2,
+  Key,
+  Unlock,
+  ShieldOff,
+  LogOut,
+  UserCog,
+  MoreVertical,
+  Check,
+  X,
+} from 'lucide-react';
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { User } from '../../types';
@@ -19,6 +30,8 @@ interface UserTableProps {
   onUnlock: (user: User) => void;
   onRevokeSessions: (user: User) => void;
   onDisableMFA: (user: User) => void;
+  onImpersonate?: (user: User) => void;
+  currentUserId?: string;
 }
 
 interface ActionMenuProps {
@@ -29,6 +42,8 @@ interface ActionMenuProps {
   onUnlock: () => void;
   onRevokeSessions: () => void;
   onDisableMFA: () => void;
+  onImpersonate?: () => void;
+  canImpersonate: boolean;
 }
 
 const ActionMenu = ({
@@ -39,6 +54,8 @@ const ActionMenu = ({
   onUnlock,
   onRevokeSessions,
   onDisableMFA,
+  onImpersonate,
+  canImpersonate,
 }: ActionMenuProps) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -93,6 +110,19 @@ const ActionMenu = ({
           <LogOut size={14} />
           <span>{t('users.actions.revokeSessions')}</span>
         </button>
+
+        {canImpersonate && onImpersonate && (
+          <button
+            className="user-action-item"
+            onClick={() => {
+              onImpersonate();
+              setIsOpen(false);
+            }}
+          >
+            <UserCog size={14} />
+            <span>{t('users.actions.impersonate')}</span>
+          </button>
+        )}
 
         {user.is_locked && (
           <button
@@ -158,6 +188,8 @@ const UserTable = ({
   onUnlock,
   onRevokeSessions,
   onDisableMFA,
+  onImpersonate,
+  currentUserId,
 }: UserTableProps) => {
   const { t } = useTranslation();
 
@@ -264,6 +296,10 @@ const UserTable = ({
                   onUnlock={() => onUnlock(user)}
                   onRevokeSessions={() => onRevokeSessions(user)}
                   onDisableMFA={() => onDisableMFA(user)}
+                  onImpersonate={onImpersonate ? () => onImpersonate(user) : undefined}
+                  canImpersonate={
+                    user.is_active && user.id !== currentUserId && !user.roles.includes('admin')
+                  }
                 />
               </td>
             </tr>

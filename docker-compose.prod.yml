@@ -21,6 +21,23 @@ services:
       - DOCKER_CERT_PATH=/certs/client
       - TELEMETRY_OTEL_ENDPOINT=http://jaeger:4317
       - SENTRY_DSN=${SENTRY_DSN}
+      # env_file (configs/.env.production) is a template whose ${...} entries are NOT
+      # interpolated by env_file loading — they would reach the app as literal strings.
+      # These environment: overrides ARE interpolated by compose (from the gitignored
+      # root .env), so real secrets stay out of git. DB_* must match the postgres init
+      # (defaults baselithcore); the app's built-in default DB user is "baselith".
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY must be set}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-baselithcore}
+      - DB_NAME=${DB_NAME:-baselithcore}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
+      - VECTORSTORE_QDRANT_HOST=qdrant
+      - SUPERMEMORY_ENABLED=false
+      - SUPERMEMORY_API_KEY=
+      - LLM_OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - API_KEY=${API_KEY:-}
+      - ADMIN_PASS_HASHED=${ADMIN_PASS_HASHED:-}
     volumes:
       - ${SANDBOX_CERTS_DIR:-./deploy/sandbox/client-certs}:/certs/client:ro
       - ./data:/app/data
@@ -128,6 +145,20 @@ services:
       - DOCKER_CERT_PATH=/certs/client
       - TELEMETRY_OTEL_ENDPOINT=http://jaeger:4317
       - SENTRY_DSN=${SENTRY_DSN}
+      # See api service: override the env_file template's literal ${...} placeholders
+      # with compose-interpolated values (real secrets from the gitignored root .env).
+      - SECRET_KEY=${SECRET_KEY:?SECRET_KEY must be set}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-baselithcore}
+      - DB_NAME=${DB_NAME:-baselithcore}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD must be set}
+      - VECTORSTORE_QDRANT_HOST=qdrant
+      - SUPERMEMORY_ENABLED=false
+      - SUPERMEMORY_API_KEY=
+      - LLM_OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - API_KEY=${API_KEY:-}
+      - ADMIN_PASS_HASHED=${ADMIN_PASS_HASHED:-}
     volumes:
       - ${SANDBOX_CERTS_DIR:-./deploy/sandbox/client-certs}:/certs/client:ro
       - ./data:/app/data

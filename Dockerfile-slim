@@ -66,6 +66,12 @@ COPY migrations/ migrations/
 # Install the package itself in non-editable mode
 RUN pip install .
 
+# Plugin runtime deps declared in pyproject extras but not pulled by the base install:
+# pyotp/webauthn power the auth plugin (MFA + passkeys — the RBAC hub other plugins
+# depend on); cryptography is required by the api_routers plugin. Without these the
+# slim image loads with auth/api_routers FAILED.
+RUN pip install "pyotp>=2.9.0" "webauthn>=2.0.0" "cryptography>=42.0.0"
+
 # Create necessary directories if they don't exist (e.g. data, logs)
 RUN mkdir -p data logs documents
 

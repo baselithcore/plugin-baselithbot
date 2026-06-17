@@ -9,6 +9,7 @@ from core.auth import AuthUser
 from core.observability.logging import get_logger
 from plugins.auth.config import AuthConfig
 from plugins.auth.dependencies import (
+    forbid_while_impersonating,
     get_auth_config_dep,
     get_auth_persistence_dep,
     get_current_active_user,
@@ -52,7 +53,12 @@ async def list_my_keys(
     return [_to_info(r) for r in persistence.list_api_keys(user.user_id)]
 
 
-@router.post("", response_model=ApiKeyCreated, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "",
+    response_model=ApiKeyCreated,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(forbid_while_impersonating)],
+)
 async def create_my_key(
     body: ApiKeyCreateRequest,
     user: AuthUser = Depends(get_current_active_user),

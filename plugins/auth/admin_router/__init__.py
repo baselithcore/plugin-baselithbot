@@ -8,6 +8,7 @@ split across sibling modules (user management vs. monitoring) to honour the
 
 from fastapi import APIRouter
 
+from plugins.auth.admin_router._impersonation import router as _impersonation_router
 from plugins.auth.admin_router._lifecycle import router as _lifecycle_router
 from plugins.auth.admin_router._monitoring import router as _monitoring_router
 from plugins.auth.admin_router._user_actions import router as _user_actions_router
@@ -16,6 +17,7 @@ from plugins.auth.admin_router._users import router as _users_router
 admin_router = APIRouter(prefix="/admin", tags=["Admin"])
 admin_router.include_router(_users_router)
 admin_router.include_router(_user_actions_router)
+admin_router.include_router(_impersonation_router)
 admin_router.include_router(_lifecycle_router)
 admin_router.include_router(_monitoring_router)
 

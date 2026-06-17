@@ -11,6 +11,7 @@ from core.auth import AuthUser
 from core.observability.logging import get_logger
 from plugins.auth.config import AuthConfig
 from plugins.auth.dependencies import (
+    forbid_while_impersonating,
     get_auth_config_dep,
     get_auth_persistence_dep,
     get_current_active_user,
@@ -82,7 +83,11 @@ async def update_profile(
     return _account_response(persistence, user.user_id)
 
 
-@router.post("/change-password", response_model=MessageResponse)
+@router.post(
+    "/change-password",
+    response_model=MessageResponse,
+    dependencies=[Depends(forbid_while_impersonating)],
+)
 async def change_password(
     body: ChangePasswordRequest,
     user: AuthUser = Depends(get_current_active_user),
@@ -179,7 +184,11 @@ async def my_activity(
     ]
 
 
-@router.post("/mfa/disable", response_model=MessageResponse)
+@router.post(
+    "/mfa/disable",
+    response_model=MessageResponse,
+    dependencies=[Depends(forbid_while_impersonating)],
+)
 async def disable_my_mfa(
     body: SelfMfaDisableRequest,
     user: AuthUser = Depends(get_current_active_user),

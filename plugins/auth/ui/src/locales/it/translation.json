@@ -151,7 +151,8 @@
       "revokeSessions": "Revoca sessioni",
       "disableMfa": "Disattiva MFA",
       "delete": "Elimina",
-      "deactivate": "Disattiva"
+      "deactivate": "Disattiva",
+      "impersonate": "Impersonifica"
     },
     "pagination": {
       "showing": "Visualizzati {{from}}-{{to}} di {{total}} utenti",
@@ -165,7 +166,9 @@
       "deactivateMessage": "Vuoi davvero disattivare {{email}}? Non potrà più accedere.",
       "unlockMessage": "Sbloccare l'account di {{email}}? Verranno azzerati i tentativi di accesso falliti.",
       "revokeMessage": "Revocare tutte le sessioni attive di {{email}}? Verrà disconnesso ovunque.",
-      "disableMfaMessage": "Disattivare l'MFA per {{email}}? Dovrà riconfigurarlo."
+      "disableMfaMessage": "Disattivare l'MFA per {{email}}? Dovrà riconfigurarlo.",
+      "impersonateTitle": "Impersonificare l'utente?",
+      "impersonateMessage": "Userai l'app come {{email}} con i suoi permessi. La tua sessione admin resta attiva e puoi terminare in qualsiasi momento. L'azione è tracciata."
     },
     "errors": {
       "createFailed": "Creazione utente non riuscita",
@@ -599,5 +602,10 @@
       "enabled": "Attivo",
       "autoProvision": "Crea automaticamente nuovi utenti"
     }
+  },
+  "impersonation": {
+    "banner": "Stai usando l'app come {{target}} (impersonato da {{admin}}).",
+    "stop": "Termina impersonificazione",
+    "stopping": "Terminazione…"
   }
 }

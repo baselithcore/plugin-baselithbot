@@ -237,6 +237,26 @@ class AuthConfig(BaseSettings):
         description="Maximum API-key lifetime in days (0 = no expiry allowed)",
     )
 
+    # === Admin impersonation ("log in as user") ===
+    impersonation_enabled: bool = Field(
+        default=True,
+        alias="AUTH_IMPERSONATION_ENABLED",
+        description="Allow admins to impersonate other users (RFC 8693 actor claim)",
+    )
+    impersonation_lifetime: int = Field(
+        default=1800,  # 30 minutes
+        alias="AUTH_IMPERSONATION_LIFETIME",
+        ge=60,
+        le=28800,
+        description="Impersonation access-token lifetime in seconds (bounded)",
+    )
+    allow_impersonate_admins: bool = Field(
+        default=False,
+        alias="AUTH_ALLOW_IMPERSONATE_ADMINS",
+        description="Permit impersonating other admins (off by default to "
+        "prevent lateral privilege movement between administrators)",
+    )
+
     # === SSO (OIDC / SAML) federation ===
     sso_enabled: bool = Field(
         default=False,

@@ -5,12 +5,14 @@
  */
 
 import { createContext, useContext, useCallback, useEffect, useState, type ReactNode } from 'react';
-import type { UserInfo, AccessibleTab } from '../api/auth';
+import type { UserInfo, AccessibleTab, Impersonator } from '../api/auth';
 import {
   login as apiLogin,
   verifyMFA as apiVerifyMFA,
   logout as apiLogout,
   refreshToken as apiRefreshToken,
+  startImpersonation as apiStartImpersonation,
+  stopImpersonation as apiStopImpersonation,
   getCurrentUser,
   getAccessibleTabs,
   isMFARequired,
@@ -33,6 +35,14 @@ export interface AuthContextValue extends AuthState {
   refreshAuth: () => Promise<void>;
   canAccessTab: (tabId: string, plugin?: string) => boolean;
   hasRole: (role: string) => boolean;
+  /** Begin impersonating a user (admin only). Swaps the active session token. */
+  impersonate: (userId: string, reason?: string) => Promise<void>;
+  /** End the current impersonation session and restore the administrator. */
+  stopImpersonation: () => Promise<void>;
+  /** Whether the current session is an admin acting as another user. */
+  isImpersonating: boolean;
+  /** The real administrator behind an active impersonation session. */
+  impersonator: Impersonator | null;
 }
 
 const defaultContext: AuthContextValue = {
@@ -49,6 +59,10 @@ const defaultContext: AuthContextValue = {
   refreshAuth: async () => {},
   canAccessTab: () => true,
   hasRole: () => false,
+  impersonate: async () => {},
+  stopImpersonation: async () => {},
+  isImpersonating: false,
+  impersonator: null,
 };
 
 export const AuthContext = createContext<AuthContextValue>(defaultContext);
@@ -285,6 +299,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await tryRefresh();
   }, []);
 
+  const impersonate = useCallback(async (userId: string, reason?: string) => {
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    if (!token) throw new Error('Not authenticated');
+    const resp = await apiStartImpersonation(token, userId, reason);
+    storeToken(resp.access_token, resp.expires_in);
+    await loadUser(resp.access_token);
+  }, []);
+
+  const stopImpersonation = useCallback(async () => {
+    const token = sessionStorage.getItem(TOKEN_KEY);
+    if (!token) {
+      await tryRefresh();
+      return;
+    }
+    try {
+      const resp = await apiStopImpersonation(token);
+      storeToken(resp.access_token, resp.expires_in);
+      await loadUser(resp.access_token);
+    } catch {
+      // The admin's own refresh session was never touched, so a plain refresh
+      // restores the administrator even if the stop call fails.
+      await tryRefresh();
+    }
+  }, []);
+
   const canAccessTab = useCallback(
     (tabId: string, plugin?: string): boolean => {
       // Policy not loaded yet -> allow (avoid flicker / accidental lockout).
@@ -318,6 +357,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         refreshAuth,
         canAccessTab,
         hasRole,
+        impersonate,
+        stopImpersonation,
+        isImpersonating: !!state.user?.is_impersonating,
+        impersonator: state.user?.impersonator ?? null,
       }}
     >
       {children}

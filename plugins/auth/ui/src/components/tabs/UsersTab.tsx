@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { Plus, Search, RefreshCw, Mail } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../index';
 import { useUsers } from '../../hooks';
 import UserTable from '../UserTable';
 import InvitationsPanel from './InvitationsPanel';
@@ -19,6 +20,7 @@ import type { User, CreateUserResponse, ResetPasswordResponse } from '../../type
 
 const UsersTab = () => {
   const { t } = useTranslation();
+  const { user: currentUser, impersonate } = useAuth();
   const {
     users,
     total,
@@ -51,7 +53,7 @@ const UsersTab = () => {
     null
   );
   const [confirmAction, setConfirmAction] = useState<{
-    type: 'delete' | 'unlock' | 'revoke' | 'mfa';
+    type: 'delete' | 'unlock' | 'revoke' | 'mfa' | 'impersonate';
     user: User;
   } | null>(null);
   const [createdUser, setCreatedUser] = useState<CreateUserResponse | null>(null);
@@ -141,6 +143,11 @@ const UsersTab = () => {
         case 'mfa':
           await disableMFA(confirmAction.user.id);
           break;
+        case 'impersonate':
+          await impersonate(confirmAction.user.id);
+          // Re-evaluate the session as the impersonated user from the root.
+          window.location.href = '/auth/';
+          return;
       }
       setConfirmAction(null);
     } catch (err) {
@@ -231,6 +238,8 @@ const UsersTab = () => {
           onUnlock={(user) => setConfirmAction({ type: 'unlock', user })}
           onRevokeSessions={(user) => setConfirmAction({ type: 'revoke', user })}
           onDisableMFA={(user) => setConfirmAction({ type: 'mfa', user })}
+          onImpersonate={(user) => setConfirmAction({ type: 'impersonate', user })}
+          currentUserId={currentUser?.id}
         />
 
         {/* Pagination */}
@@ -317,7 +326,9 @@ const UsersTab = () => {
                 ? t('users.confirm.unlockTitle')
                 : confirmAction.type === 'revoke'
                   ? t('users.confirm.revokeTitle')
-                  : t('users.confirm.disableMfaTitle')
+                  : confirmAction.type === 'impersonate'
+                    ? t('users.confirm.impersonateTitle')
+                    : t('users.confirm.disableMfaTitle')
           }
           message={
             confirmAction.type === 'delete'
@@ -326,10 +337,16 @@ const UsersTab = () => {
                 ? t('users.confirm.unlockMessage', { email: confirmAction.user.email })
                 : confirmAction.type === 'revoke'
                   ? t('users.confirm.revokeMessage', { email: confirmAction.user.email })
-                  : t('users.confirm.disableMfaMessage', { email: confirmAction.user.email })
+                  : confirmAction.type === 'impersonate'
+                    ? t('users.confirm.impersonateMessage', { email: confirmAction.user.email })
+                    : t('users.confirm.disableMfaMessage', { email: confirmAction.user.email })
           }
           confirmLabel={
-            confirmAction.type === 'delete' ? t('users.actions.deactivate') : t('common.confirm')
+            confirmAction.type === 'delete'
+              ? t('users.actions.deactivate')
+              : confirmAction.type === 'impersonate'
+                ? t('users.actions.impersonate')
+                : t('common.confirm')
           }
           isDanger={confirmAction.type === 'delete' || confirmAction.type === 'mfa'}
           onConfirm={handleConfirmAction}

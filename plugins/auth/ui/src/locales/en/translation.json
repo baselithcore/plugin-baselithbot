@@ -151,7 +151,8 @@
       "revokeSessions": "Revoke Sessions",
       "disableMfa": "Disable MFA",
       "delete": "Delete",
-      "deactivate": "Deactivate"
+      "deactivate": "Deactivate",
+      "impersonate": "Impersonate"
     },
     "pagination": {
       "showing": "Showing {{from}}-{{to}} of {{total}} users",
@@ -165,7 +166,9 @@
       "deactivateMessage": "Are you sure you want to deactivate {{email}}? They will no longer be able to log in.",
       "unlockMessage": "Unlock the account for {{email}}? This will clear failed login attempts.",
       "revokeMessage": "Revoke all active sessions for {{email}}? They will be logged out everywhere.",
-      "disableMfaMessage": "Disable MFA for {{email}}? They will need to set it up again."
+      "disableMfaMessage": "Disable MFA for {{email}}? They will need to set it up again.",
+      "impersonateTitle": "Impersonate user?",
+      "impersonateMessage": "You will browse the app as {{email}} with their permissions. Your admin session is preserved and you can stop at any time. This action is audited."
     },
     "errors": {
       "createFailed": "Failed to create user",
@@ -599,5 +602,10 @@
       "enabled": "Enabled",
       "autoProvision": "Auto-provision new users"
     }
+  },
+  "impersonation": {
+    "banner": "You are viewing the app as {{target}} (impersonated by {{admin}}).",
+    "stop": "Stop impersonating",
+    "stopping": "Stopping…"
   }
 }

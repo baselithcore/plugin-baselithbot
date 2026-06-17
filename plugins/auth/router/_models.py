@@ -42,6 +42,14 @@ class MFARequiredResponse(BaseModel):
     temp_token: str
 
 
+class ImpersonatorInfo(BaseModel):
+    """The real administrator behind an active impersonation session."""
+
+    id: str
+    email: Optional[str] = None
+    since: Optional[int] = None  # epoch seconds the impersonation started
+
+
 class UserInfoResponse(BaseModel):
     """Current user info response."""
 
@@ -51,6 +59,33 @@ class UserInfoResponse(BaseModel):
     roles: list[str]
     mfa_enabled: bool
     allowed_tabs: Optional[list[str]] = None
+    # Impersonation context (present only when viewing as another user).
+    is_impersonating: bool = False
+    impersonator: Optional[ImpersonatorInfo] = None
+
+
+class ImpersonateRequest(BaseModel):
+    """Optional justification when an admin starts impersonating a user."""
+
+    reason: Optional[str] = Field(None, max_length=280)
+
+
+class ImpersonatedUser(BaseModel):
+    """Summary of the user now being impersonated."""
+
+    id: str
+    email: str
+    username: Optional[str] = None
+    roles: list[str]
+
+
+class ImpersonateResponse(BaseModel):
+    """Response when impersonation starts: a short-lived access token."""
+
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    impersonated: ImpersonatedUser
 
 
 class MFASetupResponse(BaseModel):

@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from core.auth import AuthUser
 from core.observability.logging import get_logger
 from plugins.auth.dependencies import (
+    forbid_while_impersonating,
     get_auth_persistence_dep,
     get_current_active_user,
     require_admin,
@@ -20,6 +21,7 @@ from plugins.auth.mfa import (
 )
 from plugins.auth.persistence import AuthPersistence
 from plugins.auth.router._models import (
+    ImpersonatorInfo,
     MessageResponse,
     MFASetupResponse,
     UserInfoResponse,
@@ -46,6 +48,20 @@ async def get_current_user_info(
             detail="User not found",
         )
 
+    # Surface impersonation context so the UI can render a banner + Stop control.
+    from plugins.auth.impersonation import extract_actor
+
+    actor = extract_actor(user)
+    impersonator = (
+        ImpersonatorInfo(
+            id=str(actor.get("sub")),
+            email=actor.get("email"),
+            since=actor.get("ts"),
+        )
+        if actor
+        else None
+    )
+
     return UserInfoResponse(
         id=db_user.id,
         email=db_user.email,
@@ -53,10 +69,16 @@ async def get_current_user_info(
         roles=[r.value for r in db_user.roles],
         mfa_enabled=db_user.mfa_enabled,
         allowed_tabs=db_user.allowed_tabs,
+        is_impersonating=impersonator is not None,
+        impersonator=impersonator,
     )
 
 
-@router.post("/mfa/setup", response_model=MFASetupResponse)
+@router.post(
+    "/mfa/setup",
+    response_model=MFASetupResponse,
+    dependencies=[Depends(forbid_while_impersonating)],
+)
 async def setup_mfa(
     user: AuthUser = Depends(get_current_active_user),
     persistence: AuthPersistence = Depends(get_auth_persistence_dep),
@@ -101,7 +123,11 @@ async def setup_mfa(
     )
 
 
-@router.post("/mfa/enable", response_model=MessageResponse)
+@router.post(
+    "/mfa/enable",
+    response_model=MessageResponse,
+    dependencies=[Depends(forbid_while_impersonating)],
+)
 async def enable_mfa(
     code: str,
     user: AuthUser = Depends(get_current_active_user),

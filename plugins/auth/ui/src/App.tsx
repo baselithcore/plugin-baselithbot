@@ -7,6 +7,7 @@ import ResetPasswordPage from './components/public/ResetPasswordPage';
 import VerifyEmailPage from './components/public/VerifyEmailPage';
 import AcceptInvitePage from './components/public/AcceptInvitePage';
 import AccountPage from './components/account/AccountPage';
+import ImpersonationBanner from './components/ImpersonationBanner';
 
 /**
  * Reads an optional `?redirect=` target from the current URL. Only same-origin
@@ -65,6 +66,7 @@ const App = () => {
   return (
     <AuthProvider>
       <Router basename="/auth">
+        <ImpersonationBanner />
         <Routes>
           <Route path="/login" element={<LoginWrapper />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />

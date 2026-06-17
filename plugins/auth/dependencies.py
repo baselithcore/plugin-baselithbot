@@ -292,6 +292,27 @@ async def get_current_active_user(
     return user
 
 
+async def forbid_while_impersonating(
+    user: AuthUser = Depends(get_current_user),
+) -> AuthUser:
+    """Reject credential-altering actions while an admin is impersonating.
+
+    Applied to sensitive self-service routes (password change, MFA changes,
+    API-key minting) so an impersonating administrator cannot alter the
+    target's credentials or create persistent grants that would outlive the
+    impersonation session. A no-op for normal (non-impersonation) tokens, so it
+    introduces no behaviour change on the regular auth path.
+    """
+    from plugins.auth.impersonation import is_impersonating
+
+    if is_impersonating(user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This action is not allowed while impersonating a user",
+        )
+    return user
+
+
 def require_tab_access(tab_id: str) -> Callable:
     """
     Factory for tab access checking (for guest users).

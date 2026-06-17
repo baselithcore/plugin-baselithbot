@@ -26,9 +26,7 @@ router = APIRouter(prefix="/privacy", tags=["privacy"])
 _MANAGE_SCOPE = "privacy:manage"
 
 
-def require_privacy_scope(
-    request: Request, _: str = Depends(require_user)
-) -> AuthUser:
+def require_privacy_scope(request: Request, _: str = Depends(require_user)) -> AuthUser:
     """Authenticated identity must hold the ``privacy:manage`` capability."""
     user = getattr(request.state, "user", None)
     if not isinstance(user, AuthUser) or not user.has_scope(_MANAGE_SCOPE):

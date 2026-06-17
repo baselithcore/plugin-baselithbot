@@ -27,6 +27,12 @@ export interface MFAVerifyRequest {
   code: string;
 }
 
+export interface Impersonator {
+  id: string;
+  email: string | null;
+  since: number | null;
+}
+
 export interface UserInfo {
   id: string;
   email: string;
@@ -34,6 +40,22 @@ export interface UserInfo {
   roles: string[];
   mfa_enabled: boolean;
   allowed_tabs: string[] | null;
+  is_impersonating?: boolean;
+  impersonator?: Impersonator | null;
+}
+
+export interface ImpersonatedUser {
+  id: string;
+  email: string;
+  username: string | null;
+  roles: string[];
+}
+
+export interface ImpersonateResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  impersonated: ImpersonatedUser;
 }
 
 export interface MFASetupResponse {
@@ -150,6 +172,48 @@ export async function getAccessibleTabs(accessToken: string): Promise<Accessible
   });
   if (!response.ok) {
     throw new Error('Failed to get accessible tabs');
+  }
+  return response.json();
+}
+
+/**
+ * Start impersonating a user (admin only). Returns a short-lived access token
+ * whose identity is the target user; the admin's own session is untouched.
+ */
+export async function startImpersonation(
+  accessToken: string,
+  userId: string,
+  reason?: string
+): Promise<ImpersonateResponse> {
+  const response = await fetch(`/api/auth/admin/users/${userId}/impersonate`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    credentials: 'include',
+    body: JSON.stringify({ reason: reason ?? null }),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to impersonate' }));
+    throw new Error(error.detail || 'Failed to impersonate');
+  }
+  return response.json();
+}
+
+/**
+ * Stop the current impersonation session and restore the administrator.
+ * Returns a fresh admin access token.
+ */
+export async function stopImpersonation(accessToken: string): Promise<TokenResponse> {
+  const response = await fetch(`${API_BASE}/impersonation/stop`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Failed to stop impersonation' }));
+    throw new Error(error.detail || 'Failed to stop impersonation');
   }
   return response.json();
 }
