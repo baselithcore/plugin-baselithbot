@@ -37,7 +37,7 @@ export async function getSetupStatus(): Promise<SetupStatus> {
 
 /** Create the initial admin and receive a logged-in access token. */
 export async function initializeAdmin(
-  payload: SetupInitializePayload,
+  payload: SetupInitializePayload
 ): Promise<SetupTokenResponse> {
   const response = await fetch(`${API_BASE}/setup/initialize`, {
     method: 'POST',

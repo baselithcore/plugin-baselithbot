@@ -46,8 +46,7 @@ export function CredentialsStep(props: CredentialsProps) {
   const [reveal, setReveal] = useState(false);
   const strength = useMemo(() => scorePassword(password), [password]);
   const mismatch = confirm.length > 0 && confirm !== password;
-  const canSubmit =
-    !busy && email.includes('@') && password.length >= 8 && password === confirm;
+  const canSubmit = !busy && email.includes('@') && password.length >= 8 && password === confirm;
 
   return (
     <form
@@ -181,7 +180,11 @@ export function MfaStep({ data, code, onCodeChange, onVerify, busy, error }: Mfa
       <div className="setup-backup">
         <div className="setup-backup-head">
           <span>{t('setup.mfa.backupTitle')}</span>
-          <button type="button" className="admin-btn admin-btn-secondary admin-btn-icon" onClick={copyCodes}>
+          <button
+            type="button"
+            className="admin-btn admin-btn-secondary admin-btn-icon"
+            onClick={copyCodes}
+          >
             {copied ? <Check size={14} /> : <Copy size={14} />}
           </button>
         </div>

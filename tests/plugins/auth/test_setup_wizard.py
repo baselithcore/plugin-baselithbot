@@ -50,7 +50,9 @@ class FakePersistence:
         return self.by_username.get(username)
 
     def create_user(self, *, email, username=None, roles=None, **_):
-        user = FakeUser(id="new", email=email, username=username, roles=set(roles or set()))
+        user = FakeUser(
+            id="new", email=email, username=username, roles=set(roles or set())
+        )
         self.created.append(user)
         self._users += 1
         return user
@@ -78,7 +80,9 @@ def test_setup_not_needed_when_any_user_exists():
 
 async def test_create_initial_admin_success():
     persistence = FakePersistence(users=0)
-    ServiceRegistry.register(AuthConfig, _config())  # password validator reads it from DI
+    ServiceRegistry.register(
+        AuthConfig, _config()
+    )  # password validator reads it from DI
     user = await create_initial_admin(
         persistence,
         _config(),

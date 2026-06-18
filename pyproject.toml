@@ -140,6 +140,10 @@ computer_use = [
 auth = [
   # TOTP/MFA for the auth plugin (plugins/auth/mfa.py).
   "pyotp>=2.9.0",
+  # QR-code rendering for MFA enrollment (mfa.get_qr_code_base64). The [pil]
+  # extra pulls Pillow so PNG generation works; without it MFA setup degrades
+  # to manual-key entry only (no QR shown).
+  "qrcode[pil]>=7.4",
   # WebAuthn / passkeys (plugins/auth/webauthn.py). Degrades gracefully if absent.
   "webauthn>=2.0.0",
   # SAML 2.0 SSO (plugins/auth/sso/saml.py). Degrades gracefully if absent.

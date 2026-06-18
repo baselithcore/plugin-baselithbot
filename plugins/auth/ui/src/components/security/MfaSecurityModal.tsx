@@ -119,11 +119,7 @@ const MfaSecurityModal = ({ onClose }: { onClose: () => void }) => {
                 {t('security.mfa.scanHint')}
               </p>
               {setup.qr_code && (
-                <img
-                  className="mfa-qr"
-                  src={`data:image/png;base64,${setup.qr_code}`}
-                  alt={t('security.mfa.qrAlt')}
-                />
+                <img className="mfa-qr" src={setup.qr_code} alt={t('security.mfa.qrAlt')} />
               )}
               <div className="mfa-secret">{setup.secret}</div>
             </div>
