@@ -3,6 +3,10 @@
 Solves the chicken-and-egg problem: the admin console requires an admin user,
 but a fresh database has none and ``/register`` only grants the USER role.
 
+This is the **headless / CI** path to seed the first account. The interactive
+equivalent is the first-run setup wizard (see ``plugins.auth.setup_service``);
+both create an admin and both self-disable once any user exists.
+
 When ``AUTH_BOOTSTRAP_ADMIN_EMAIL`` / ``AUTH_BOOTSTRAP_ADMIN_PASSWORD`` are set
 and that email does not yet exist, an admin account is created on startup.
 """

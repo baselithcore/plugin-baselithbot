@@ -607,5 +607,46 @@
     "banner": "Stai usando l'app come {{target}} (impersonato da {{admin}}).",
     "stop": "Termina impersonificazione",
     "stopping": "Terminazione…"
+  },
+  "setup": {
+    "title": "Benvenuto in BaselithAuth",
+    "subtitle": "Creiamo il primo account amministratore",
+    "welcome": {
+      "lead": "Questo sistema non ha ancora utenti. Crea l'amministratore iniziale — l'account che configura e gestisce tutto il resto.",
+      "point1": "Accesso completo a ogni area di amministrazione.",
+      "point2": "Può creare e gestire tutti gli altri utenti.",
+      "point3": "Protetto da autenticazione a due fattori obbligatoria.",
+      "start": "Inizia"
+    },
+    "credentials": {
+      "email": "Indirizzo email",
+      "emailPlaceholder": "tu@esempio.com",
+      "username": "Nome utente (opzionale)",
+      "usernamePlaceholder": "es. admin",
+      "password": "Password",
+      "passwordPlaceholder": "Scegli una password robusta",
+      "confirm": "Conferma password",
+      "confirmPlaceholder": "Ripeti la password",
+      "mismatch": "Le password non coincidono.",
+      "creating": "Creazione account…",
+      "continue": "Crea admin"
+    },
+    "mfa": {
+      "lead": "Scansiona questo codice QR con la tua app di autenticazione, poi inserisci il codice a 6 cifre per completare.",
+      "qrAlt": "Codice QR MFA",
+      "secret": "Chiave di configurazione",
+      "backupTitle": "Codici di backup — conservali al sicuro",
+      "codeLabel": "Codice di verifica",
+      "verifying": "Verifica in corso…",
+      "verify": "Attiva MFA e completa"
+    },
+    "done": {
+      "lead": "Tutto pronto! Il tuo account amministratore è attivo e protetto con MFA.",
+      "enter": "Entra nella dashboard"
+    },
+    "errors": {
+      "generic": "Qualcosa è andato storto. Riprova.",
+      "invalidCode": "Codice di verifica non valido. Riprova."
+    }
   }
 }

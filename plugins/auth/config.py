@@ -123,6 +123,8 @@ class AuthConfig(BaseSettings):
     # === Public Paths ===
     public_paths: List[str] = Field(
         default=[
+            "/api/auth/setup/status",
+            "/api/auth/setup/initialize",
             "/api/auth/login",
             "/api/auth/logout",
             "/api/auth/refresh",

@@ -607,5 +607,46 @@
     "banner": "You are viewing the app as {{target}} (impersonated by {{admin}}).",
     "stop": "Stop impersonating",
     "stopping": "Stopping…"
+  },
+  "setup": {
+    "title": "Welcome to BaselithAuth",
+    "subtitle": "Let's create the first administrator account",
+    "welcome": {
+      "lead": "This system has no users yet. Create the initial administrator — the account that sets up and manages everything else.",
+      "point1": "Full access to every administration surface.",
+      "point2": "Can create and manage all other users.",
+      "point3": "Protected by mandatory two-factor authentication.",
+      "start": "Get started"
+    },
+    "credentials": {
+      "email": "Email address",
+      "emailPlaceholder": "you@example.com",
+      "username": "Username (optional)",
+      "usernamePlaceholder": "e.g. admin",
+      "password": "Password",
+      "passwordPlaceholder": "Choose a strong password",
+      "confirm": "Confirm password",
+      "confirmPlaceholder": "Repeat the password",
+      "mismatch": "Passwords do not match.",
+      "creating": "Creating account…",
+      "continue": "Create admin"
+    },
+    "mfa": {
+      "lead": "Scan this QR code with your authenticator app, then enter the 6-digit code to finish.",
+      "qrAlt": "MFA QR code",
+      "secret": "Setup key",
+      "backupTitle": "Backup codes — store them safely",
+      "codeLabel": "Verification code",
+      "verifying": "Verifying…",
+      "verify": "Enable MFA & finish"
+    },
+    "done": {
+      "lead": "All set! Your administrator account is ready and secured with MFA.",
+      "enter": "Enter the dashboard"
+    },
+    "errors": {
+      "generic": "Something went wrong. Please try again.",
+      "invalidCode": "Invalid verification code. Please try again."
+    }
   }
 }

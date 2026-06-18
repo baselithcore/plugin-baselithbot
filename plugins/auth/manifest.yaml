@@ -1,6 +1,7 @@
 name: auth
 version: 2.0.0
-description: Enterprise authentication — MFA, passkeys (WebAuthn), SSO (OIDC/SAML), API keys, self-service, and RBAC
+description: "Enterprise authentication \u2014 MFA, passkeys (WebAuthn), SSO (OIDC/SAML),\
+  \ API keys, self-service, and RBAC"
 author: White-Label Team
 category: Security
 readiness: stable
@@ -45,4 +46,4 @@ environment_variables:
 - AUTH_IMPERSONATION_ENABLED
 - AUTH_IMPERSONATION_LIFETIME
 - AUTH_ALLOW_IMPERSONATE_ADMINS
-integrity_sha256: 3d26fb7c2dbe255cb52c7d35187273c74c65067fa687eaa0cc91bc1a8a04f239
+integrity_sha256: 7709df3b76cd1952b3103b086479cfcf73d541e84e50eeba8bfd7942746c5c23

@@ -185,6 +185,16 @@ class UserPersistenceMixin:
             row = cur.fetchone()
             return int(row["n"]) if row else 0
 
+    def count_users(self) -> int:
+        """Total number of user rows (active or not).
+
+        Drives first-run setup detection: an empty table ⇒ show the wizard.
+        """
+        with get_cursor(row_factory=dict_row) as cur:
+            cur.execute("SELECT COUNT(*) AS n FROM auth_users")
+            row = cur.fetchone()
+            return int(row["n"]) if row else 0
+
     def list_users(self, include_inactive: bool = False) -> List[User]:
         """List all users."""
         with get_cursor(row_factory=dict_row) as cur:

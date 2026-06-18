@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AdminPanel from './components/AdminPanel';
 import { AuthProvider, useAuth } from './index';
@@ -8,6 +9,8 @@ import VerifyEmailPage from './components/public/VerifyEmailPage';
 import AcceptInvitePage from './components/public/AcceptInvitePage';
 import AccountPage from './components/account/AccountPage';
 import ImpersonationBanner from './components/ImpersonationBanner';
+import SetupWizard from './components/public/SetupWizard';
+import { getSetupStatus } from './api/setup';
 
 /**
  * Reads an optional `?redirect=` target from the current URL. Only same-origin
@@ -62,28 +65,59 @@ const RootRoute = () => {
   );
 };
 
+/**
+ * Gates the whole app behind first-run setup. On a fresh install (empty user
+ * table) the setup wizard is shown instead of the login/app; once any account
+ * exists the check is a cheap GET that returns `needs_setup: false` and the
+ * normal routes render. Fails open (renders the app) if the probe errors, so a
+ * transient backend hiccup never blocks login.
+ */
+const SetupGate = ({ children }: { children: React.ReactNode }) => {
+  const [state, setState] = useState<'checking' | 'needed' | 'ready'>('checking');
+
+  useEffect(() => {
+    let cancelled = false;
+    getSetupStatus()
+      .then((s) => !cancelled && setState(s.needs_setup ? 'needed' : 'ready'))
+      .catch(() => !cancelled && setState('ready'));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (state === 'checking') {
+    return <div className="auth-page" aria-busy="true" />;
+  }
+  if (state === 'needed') {
+    return <SetupWizard onComplete={() => (window.location.href = '/auth/')} />;
+  }
+  return <>{children}</>;
+};
+
 const App = () => {
   return (
     <AuthProvider>
-      <Router basename="/auth">
-        <ImpersonationBanner />
-        <Routes>
-          <Route path="/login" element={<LoginWrapper />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
-          <Route path="/verify-email" element={<VerifyEmailPage />} />
-          <Route path="/accept-invite" element={<AcceptInvitePage />} />
-          <Route
-            path="/account"
-            element={
-              <ProtectedRoute>
-                <AccountPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/" element={<RootRoute />} />
-        </Routes>
-      </Router>
+      <SetupGate>
+        <Router basename="/auth">
+          <ImpersonationBanner />
+          <Routes>
+            <Route path="/login" element={<LoginWrapper />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/accept-invite" element={<AcceptInvitePage />} />
+            <Route
+              path="/account"
+              element={
+                <ProtectedRoute>
+                  <AccountPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/" element={<RootRoute />} />
+          </Routes>
+        </Router>
+      </SetupGate>
     </AuthProvider>
   );
 };
