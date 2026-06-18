@@ -21,7 +21,11 @@ build/
 *.egg-info/
 
 # --- Local caches (marketplace registry, etc.) ---
+# NB: 'cache/' is unanchored => it also matched the SOURCE packages core/cache/
+# and tests/unit/core/cache/. Re-include them explicitly (negation after the rule).
 cache/
+!core/cache/
+!tests/unit/core/cache/
 
 # --- Testing and Coverage ---
 .pytest_cache/
