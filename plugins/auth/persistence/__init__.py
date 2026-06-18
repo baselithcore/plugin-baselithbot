@@ -49,7 +49,18 @@ class AuthPersistence(
 
         with get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute(schema_sql)  # nosec B608 - trusted schema file
+                # Serialize concurrent initializers. Multiple uvicorn workers call
+                # create_tables() at boot; running the same DDL at once deadlocks on
+                # Postgres catalog locks (e.g. pg_proc for the CREATE FUNCTIONs).
+                # get_connection() is autocommit, so a *session*-level advisory lock is
+                # required (a txn-level one would release immediately). One worker runs
+                # the schema while the rest wait, then re-run it idempotently.
+                lock_key = 0x41757468  # "Auth"
+                cur.execute("SELECT pg_advisory_lock(%s)", (lock_key,))
+                try:
+                    cur.execute(schema_sql)  # nosec B608 - trusted schema file
+                finally:
+                    cur.execute("SELECT pg_advisory_unlock(%s)", (lock_key,))
             conn.commit()
             logger.info("Auth database tables created/verified")
 

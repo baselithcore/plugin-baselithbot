@@ -36,6 +36,7 @@ services:
       - SUPERMEMORY_ENABLED=false
       - SUPERMEMORY_API_KEY=
       - LLM_OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - API_KEY=${API_KEY:-}
       - ADMIN_PASS_HASHED=${ADMIN_PASS_HASHED:-}
     volumes:
@@ -157,6 +158,7 @@ services:
       - SUPERMEMORY_ENABLED=false
       - SUPERMEMORY_API_KEY=
       - LLM_OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - API_KEY=${API_KEY:-}
       - ADMIN_PASS_HASHED=${ADMIN_PASS_HASHED:-}
     volumes:
@@ -170,6 +172,19 @@ services:
         condition: service_healthy
       falkordb:
         condition: service_healthy
+    # The worker runs an RQ loop, not an HTTP server, so the image's default
+    # curl /health probe always fails. Check the worker process is alive in THIS
+    # container instead (its cmdline carries core.task_queue.worker as a distinct arg;
+    # the probe's own `python -c` code does not, so it never matches itself).
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import os, sys\ndef alive():\n    for p in os.listdir('/proc'):\n        if not p.isdigit():\n            continue\n        try:\n            if b'core.task_queue.worker' in open('/proc/' + p + '/cmdline', 'rb').read().split(b'\\0'):\n                return True\n        except Exception:\n            pass\n    return False\nsys.exit(0 if alive() else 1)"
+      interval: 30s
+      timeout: 10s
+      retries: 3
     init: true
     security_opt:
       - no-new-privileges:true
