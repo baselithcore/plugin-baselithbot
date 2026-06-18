@@ -2,8 +2,16 @@
  * Shared fetch helpers (bearer auth + JSON error handling).
  */
 
+// Single source of truth for the access token. MUST match the key/storage the
+// auth context writes on login (useAuthContext: sessionStorage 'auth_access_token').
+// Splitting these silently sends a stale token → spurious 401/403 (e.g. admin
+// routes failing right after a role change).
+export function getAccessToken(): string | null {
+  return sessionStorage.getItem('auth_access_token');
+}
+
 export async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
-  const token = localStorage.getItem('access_token');
+  const token = getAccessToken();
   const response = await fetch(url, {
     ...options,
     headers: {
