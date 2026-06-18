@@ -37,9 +37,7 @@ const ImpersonationBanner = () => {
     <div className="impersonation-banner" role="alert">
       <div className="impersonation-banner-msg">
         <UserCog size={18} aria-hidden />
-        <span>
-          {t('impersonation.banner', { target: targetLabel, admin: adminLabel })}
-        </span>
+        <span>{t('impersonation.banner', { target: targetLabel, admin: adminLabel })}</span>
       </div>
       <button
         type="button"

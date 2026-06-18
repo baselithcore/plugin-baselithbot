@@ -67,17 +67,23 @@ def test_build_actor_claim_truncates_long_reason():
 def test_extract_actor_requires_both_imp_and_act():
     actor = {"sub": "admin-1", "email": "a@x.io"}
     full = AuthUser(
-        user_id="target", roles={AuthRole.USER}, metadata={IMP_CLAIM: True, ACT_CLAIM: actor}
+        user_id="target",
+        roles={AuthRole.USER},
+        metadata={IMP_CLAIM: True, ACT_CLAIM: actor},
     )
     assert extract_actor(full) == actor
     assert is_impersonating(full) is True
 
     # Marker without an actor object -> not impersonation.
-    no_act = AuthUser(user_id="target", roles={AuthRole.USER}, metadata={IMP_CLAIM: True})
+    no_act = AuthUser(
+        user_id="target", roles={AuthRole.USER}, metadata={IMP_CLAIM: True}
+    )
     assert extract_actor(no_act) is None
 
     # Actor without the imp marker -> not impersonation.
-    no_marker = AuthUser(user_id="target", roles={AuthRole.USER}, metadata={ACT_CLAIM: actor})
+    no_marker = AuthUser(
+        user_id="target", roles={AuthRole.USER}, metadata={ACT_CLAIM: actor}
+    )
     assert extract_actor(no_marker) is None
     assert is_impersonating(no_marker) is False
 
@@ -114,13 +120,17 @@ def test_eligibility_blocks_self_impersonation():
 
 def test_eligibility_blocks_inactive_target():
     with pytest.raises(HTTPException) as exc:
-        assert_target_impersonatable(_admin(), FakeUser(id="u1", is_active=False), _config())
+        assert_target_impersonatable(
+            _admin(), FakeUser(id="u1", is_active=False), _config()
+        )
     assert exc.value.status_code == 409
 
 
 def test_eligibility_blocks_locked_target():
     with pytest.raises(HTTPException) as exc:
-        assert_target_impersonatable(_admin(), FakeUser(id="u1", locked=True), _config())
+        assert_target_impersonatable(
+            _admin(), FakeUser(id="u1", locked=True), _config()
+        )
     assert exc.value.status_code == 409
 
 
@@ -133,7 +143,9 @@ def test_eligibility_blocks_admin_target_by_default():
 
 def test_eligibility_allows_admin_target_when_enabled():
     target = FakeUser(id="u1", roles={AuthRole.ADMIN})
-    assert_target_impersonatable(_admin(), target, _config(allow_impersonate_admins=True))
+    assert_target_impersonatable(
+        _admin(), target, _config(allow_impersonate_admins=True)
+    )
 
 
 def test_eligibility_blocks_nested_impersonation():

@@ -81,9 +81,7 @@ async def start_impersonation(
         details={"target_email": target.email, "reason": reason},
         ip_address=get_client_ip(request),
     )
-    logger.info(
-        "Admin %s started impersonating user %s", admin.user_id, target.id
-    )
+    logger.info("Admin %s started impersonating user %s", admin.user_id, target.id)
 
     return ImpersonateResponse(
         access_token=token,
