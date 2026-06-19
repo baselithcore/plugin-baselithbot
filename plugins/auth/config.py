@@ -129,6 +129,7 @@ class AuthConfig(BaseSettings):
             "/api/auth/logout",
             "/api/auth/refresh",
             "/api/auth/mfa/verify",
+            "/api/auth/mfa/enroll-verify",
             "/api/auth/forgot-password",
             "/api/auth/reset-password",
             "/api/auth/verify-email",

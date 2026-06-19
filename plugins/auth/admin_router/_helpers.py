@@ -17,6 +17,7 @@ def user_to_response(user) -> UserDetailResponse:
         roles=[r.value for r in user.roles],
         is_active=user.is_active,
         mfa_enabled=user.mfa_enabled,
+        mfa_required=getattr(user, "mfa_required", False),
         allowed_tabs=user.allowed_tabs,
         created_at=user.created_at,
         last_login=user.last_login,

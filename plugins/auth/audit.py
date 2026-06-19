@@ -48,6 +48,8 @@ class AuditAction:
     GROUP_MEMBER_REMOVED = "rbac.group_member_removed"
     GROUP_ROLE_CHANGED = "rbac.group_role_changed"
 
+    MFA_POLICY_CHANGED = "security.mfa_policy_changed"
+
 
 @dataclass
 class AuditEntry:

@@ -15,7 +15,12 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "useDefineForClassFields": true,
-    "types": ["vite/client"]
+    "types": ["vite/client"],
+    "baseUrl": ".",
+    "paths": {
+      "@auth": ["../../auth/ui/src/index.ts"],
+      "@auth/login": ["../../auth/ui/src/login.ts"]
+    }
   },
   "include": ["src"]
 }

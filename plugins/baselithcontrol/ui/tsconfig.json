@@ -17,7 +17,11 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
-    "paths": { "@/*": ["./src/*"] }
+    "paths": {
+      "@/*": ["./src/*"],
+      "@auth": ["../../auth/ui/src/index.ts"],
+      "@auth/login": ["../../auth/ui/src/login.ts"]
+    }
   },
   "include": ["src"],
   "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx", "src/test"]

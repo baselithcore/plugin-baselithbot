@@ -273,6 +273,17 @@ async def update_user(
         }
         user.allowed_tabs = data.allowed_tabs
 
+    # Update per-user MFA requirement (stored on its own column; takes effect at
+    # the user's next login).
+    current_mfa_required = getattr(user, "mfa_required", False)
+    if data.mfa_required is not None and data.mfa_required != current_mfa_required:
+        persistence.set_user_mfa_required(user.id, data.mfa_required)
+        changes["mfa_required"] = {
+            "from": current_mfa_required,
+            "to": data.mfa_required,
+        }
+        user.mfa_required = data.mfa_required
+
     # Save changes
     if changes:
         persistence.update_user(user)

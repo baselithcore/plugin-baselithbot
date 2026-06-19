@@ -7,10 +7,11 @@
  * always have access.
  */
 
-import { useMemo } from 'react';
-import { Lock, Unlock, RefreshCw, Check } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Lock, Unlock, RefreshCw, Check, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useRbac } from '../../hooks/useRbac';
+import { getMfaPolicy, setMfaPolicy } from '../../api/security';
 import type { RbacRole } from '../../types';
 
 const tabSlug = (plugin: string, tabId: string) => `tab:${plugin}:${tabId}`;
@@ -19,6 +20,28 @@ const AccessTab = () => {
   const { t } = useTranslation();
   const { roles, tabs, loading, error, refreshTabs, toggleRestricted, togglePermission } =
     useRbac();
+
+  const [mfaAll, setMfaAll] = useState(false);
+  const [mfaSaving, setMfaSaving] = useState(false);
+
+  useEffect(() => {
+    getMfaPolicy()
+      .then((p) => setMfaAll(p.mfa_required_all))
+      .catch(() => {});
+  }, []);
+
+  const toggleMfaAll = async () => {
+    const next = !mfaAll;
+    setMfaSaving(true);
+    setMfaAll(next); // optimistic
+    try {
+      await setMfaPolicy(next);
+    } catch {
+      setMfaAll(!next); // revert on failure
+    } finally {
+      setMfaSaving(false);
+    }
+  };
 
   // Roles that can be granted per-tab access (wildcard roles always have it).
   const grantableRoles = useMemo(() => roles.filter((r) => !r.permissions.includes('*')), [roles]);
@@ -41,6 +64,28 @@ const AccessTab = () => {
       {wildcardRoles.length > 0 && <p className="access-note">{t('access.adminAlways')}</p>}
 
       {error && <div className="admin-alert admin-alert-error">{error}</div>}
+
+      <div className="admin-card mfa-policy-card">
+        <div className="mfa-policy-row">
+          <div className="mfa-policy-info">
+            <ShieldCheck size={18} />
+            <div>
+              <div className="mfa-policy-title">{t('access.security.mfaAll')}</div>
+              <div className="mfa-policy-hint">{t('access.security.mfaAllHint')}</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={mfaAll}
+            disabled={mfaSaving}
+            className={`mfa-switch ${mfaAll ? 'on' : ''}`}
+            onClick={toggleMfaAll}
+          >
+            <span className="mfa-switch-knob" />
+          </button>
+        </div>
+      </div>
 
       <div className="admin-card">
         {loading ? (
@@ -128,6 +173,18 @@ const AccessTab = () => {
           display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; }
         .perm-check.on { background: var(--admin-accent); border-color: var(--admin-accent); }
         .perm-check.muted { opacity: 0.3; cursor: not-allowed; }
+        .mfa-policy-card { padding: 0.9rem 1rem; }
+        .mfa-policy-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        .mfa-policy-info { display: flex; align-items: center; gap: 0.7rem; color: var(--admin-text); }
+        .mfa-policy-title { font-weight: 600; font-size: 0.9rem; }
+        .mfa-policy-hint { color: var(--admin-text-muted); font-size: 0.8rem; }
+        .mfa-switch { position: relative; width: 44px; height: 24px; border-radius: 9999px; flex-shrink: 0;
+          border: none; cursor: pointer; background: var(--admin-border, hsla(220,25%,40%,0.4)); transition: background 0.2s; }
+        .mfa-switch.on { background: var(--admin-accent); }
+        .mfa-switch:disabled { opacity: 0.6; cursor: wait; }
+        .mfa-switch-knob { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
+          background: #fff; transition: transform 0.2s; }
+        .mfa-switch.on .mfa-switch-knob { transform: translateX(20px); }
       `}</style>
     </div>
   );

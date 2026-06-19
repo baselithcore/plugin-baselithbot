@@ -6,6 +6,7 @@
 import type {
   AccessibleTab,
   GroupCreateRequest,
+  GroupUpdateRequest,
   GroupMember,
   MePermissions,
   RbacGroup,
@@ -143,6 +144,15 @@ export async function createGroup(data: GroupCreateRequest): Promise<RbacGroup> 
   return handleResponse(
     await fetchWithAuth(`${ADMIN}/groups`, {
       method: 'POST',
+      body: JSON.stringify(data),
+    })
+  );
+}
+
+export async function updateGroup(groupId: string, data: GroupUpdateRequest): Promise<RbacGroup> {
+  return handleResponse(
+    await fetchWithAuth(`${ADMIN}/groups/${groupId}`, {
+      method: 'PATCH',
       body: JSON.stringify(data),
     })
   );

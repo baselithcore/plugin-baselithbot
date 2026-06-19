@@ -42,6 +42,29 @@ class MFARequiredResponse(BaseModel):
     temp_token: str
 
 
+class MFAEnrollmentRequiredResponse(BaseModel):
+    """Response when policy mandates MFA but the user has not enrolled yet.
+
+    Carries a freshly-generated (not-yet-active) TOTP secret + QR + backup codes
+    plus a short-lived ``enroll_token``; the client completes enrollment via
+    ``/mfa/enroll-verify``. No session is issued until that succeeds.
+    """
+
+    mfa_enrollment_required: bool = True
+    enroll_token: str
+    secret: str
+    provisioning_uri: str
+    qr_code: Optional[str] = None  # Base64 PNG data URI
+    backup_codes: list[str]
+
+
+class EnrollVerifyRequest(BaseModel):
+    """Complete forced MFA enrollment: verify the first TOTP code."""
+
+    enroll_token: str
+    code: str = Field(..., min_length=6, max_length=8)
+
+
 class ImpersonatorInfo(BaseModel):
     """The real administrator behind an active impersonation session."""
 

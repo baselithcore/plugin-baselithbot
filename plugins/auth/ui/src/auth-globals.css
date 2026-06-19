@@ -100,3 +100,38 @@ h2 {
 h3 {
   font-size: 1rem;
 }
+
+/* Forced MFA enrollment view on the login screen. */
+.auth-enroll-qr {
+  display: block;
+  width: 180px;
+  height: 180px;
+  margin: 0 auto 0.5rem;
+  border-radius: 12px;
+  background: #fff;
+  padding: 8px;
+}
+.auth-enroll-secret {
+  display: block;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  letter-spacing: 0.06em;
+  word-break: break-all;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.85rem;
+}
+.auth-enroll-backup {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.3rem;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.8rem;
+}
+.auth-enroll-backup code {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 6px;
+  padding: 0.25rem 0.4rem;
+  text-align: center;
+}

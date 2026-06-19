@@ -65,10 +65,40 @@ export interface MFASetupResponse {
   backup_codes: string[];
 }
 
-export type LoginResponse = TokenResponse | MFARequiredResponse;
+export interface MFAEnrollmentRequiredResponse {
+  mfa_enrollment_required: boolean;
+  enroll_token: string;
+  secret: string;
+  provisioning_uri: string;
+  qr_code: string | null;
+  backup_codes: string[];
+}
+
+export type LoginResponse = TokenResponse | MFARequiredResponse | MFAEnrollmentRequiredResponse;
 
 export function isMFARequired(response: LoginResponse): response is MFARequiredResponse {
   return !!(response as any).mfa_required;
+}
+
+export function isMFAEnrollmentRequired(
+  response: LoginResponse
+): response is MFAEnrollmentRequiredResponse {
+  return !!(response as any).mfa_enrollment_required;
+}
+
+/** Complete forced MFA enrollment with the first TOTP code; returns a session. */
+export async function enrollVerifyMFA(enrollToken: string, code: string): Promise<TokenResponse> {
+  const response = await fetch(`${API_BASE}/mfa/enroll-verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ enroll_token: enrollToken, code }),
+  });
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Verification failed' }));
+    throw new Error(error.detail || 'Verification failed');
+  }
+  return response.json();
 }
 
 /**

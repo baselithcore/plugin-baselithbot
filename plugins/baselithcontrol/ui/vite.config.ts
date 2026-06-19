@@ -9,7 +9,15 @@ import path from 'node:path';
 export default defineConfig({
   base: process.env.VITE_BASE_PATH || '/baselithcontrol/',
   plugins: [react(), tailwindcss()],
-  resolve: { alias: { '@': path.resolve(__dirname, './src') } },
+  resolve: {
+    // Central auth context (shared single-source SSO). `@auth/login` and
+    // `@auth` MUST precede `@` — array order is first-match-wins.
+    alias: [
+      { find: '@auth/login', replacement: path.resolve(__dirname, '../../auth/ui/src/login.ts') },
+      { find: '@auth', replacement: path.resolve(__dirname, '../../auth/ui/src/index.ts') },
+      { find: '@', replacement: path.resolve(__dirname, './src') },
+    ],
+  },
   build: { outDir: 'dist', emptyOutDir: true },
   server: {
     port: 5181,

@@ -5,10 +5,16 @@
  */
 
 import { createContext, useContext, useCallback, useEffect, useState, type ReactNode } from 'react';
-import type { UserInfo, AccessibleTab, Impersonator } from '../api/auth';
+import type {
+  UserInfo,
+  AccessibleTab,
+  Impersonator,
+  MFAEnrollmentRequiredResponse,
+} from '../api/auth';
 import {
   login as apiLogin,
   verifyMFA as apiVerifyMFA,
+  enrollVerifyMFA as apiEnrollVerifyMFA,
   logout as apiLogout,
   refreshToken as apiRefreshToken,
   startImpersonation as apiStartImpersonation,
@@ -16,7 +22,16 @@ import {
   getCurrentUser,
   getAccessibleTabs,
   isMFARequired,
+  isMFAEnrollmentRequired,
 } from '../api/auth';
+
+/** Result of a login attempt — may require an MFA challenge or forced enrollment. */
+export interface LoginResult {
+  mfaRequired: boolean;
+  tempToken?: string;
+  mfaEnrollmentRequired?: boolean;
+  enrollment?: MFAEnrollmentRequiredResponse;
+}
 
 export interface AuthState {
   isAuthenticated: boolean;
@@ -29,8 +44,10 @@ export interface AuthState {
 }
 
 export interface AuthContextValue extends AuthState {
-  login: (email: string, password: string) => Promise<{ mfaRequired: boolean; tempToken?: string }>;
+  login: (email: string, password: string) => Promise<LoginResult>;
   verifyMFA: (tempToken: string, code: string) => Promise<void>;
+  /** Complete a policy-forced MFA enrollment, then finish login. */
+  enrollVerify: (enrollToken: string, code: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
   canAccessTab: (tabId: string, plugin?: string) => boolean;
@@ -55,6 +72,7 @@ const defaultContext: AuthContextValue = {
   mfaTempToken: null,
   login: async () => ({ mfaRequired: false }),
   verifyMFA: async () => {},
+  enrollVerify: async () => {},
   logout: async () => {},
   refreshAuth: async () => {},
   canAccessTab: () => true,
@@ -211,54 +229,78 @@ export function AuthProvider({ children }: AuthProviderProps) {
     sessionStorage.removeItem(TOKEN_EXPIRY_KEY);
   };
 
-  const login = useCallback(
-    async (
-      email: string,
-      password: string
-    ): Promise<{ mfaRequired: boolean; tempToken?: string }> => {
-      setState((s) => ({ ...s, error: null, isLoading: true }));
+  const login = useCallback(async (email: string, password: string): Promise<LoginResult> => {
+    setState((s) => ({ ...s, error: null, isLoading: true }));
 
-      try {
-        const response = await apiLogin(email, password);
+    try {
+      const response = await apiLogin(email, password);
 
-        if (isMFARequired(response)) {
-          setState((s) => ({
-            ...s,
-            isLoading: false,
-            mfaRequired: true,
-            mfaTempToken: response.temp_token,
-          }));
-          return { mfaRequired: true, tempToken: response.temp_token };
-        }
-
-        storeToken(response.access_token, response.expires_in);
-        const user = await getCurrentUser(response.access_token);
-
-        setState({
-          isAuthenticated: true,
+      if (isMFARequired(response)) {
+        setState((s) => ({
+          ...s,
           isLoading: false,
-          user,
-          accessToken: response.access_token,
-          error: null,
-          mfaRequired: false,
-          mfaTempToken: null,
-        });
-
-        return { mfaRequired: false };
-      } catch (err) {
-        const message = err instanceof Error ? err.message : 'Login failed';
-        setState((s) => ({ ...s, isLoading: false, error: message }));
-        throw err;
+          mfaRequired: true,
+          mfaTempToken: response.temp_token,
+        }));
+        return { mfaRequired: true, tempToken: response.temp_token };
       }
-    },
-    []
-  );
+
+      if (isMFAEnrollmentRequired(response)) {
+        // Policy mandates MFA but the user has not enrolled — no session yet.
+        setState((s) => ({ ...s, isLoading: false }));
+        return { mfaRequired: false, mfaEnrollmentRequired: true, enrollment: response };
+      }
+
+      storeToken(response.access_token, response.expires_in);
+      const user = await getCurrentUser(response.access_token);
+
+      setState({
+        isAuthenticated: true,
+        isLoading: false,
+        user,
+        accessToken: response.access_token,
+        error: null,
+        mfaRequired: false,
+        mfaTempToken: null,
+      });
+
+      return { mfaRequired: false };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Login failed';
+      setState((s) => ({ ...s, isLoading: false, error: message }));
+      throw err;
+    }
+  }, []);
 
   const verifyMFA = useCallback(async (tempToken: string, code: string) => {
     setState((s) => ({ ...s, error: null, isLoading: true }));
 
     try {
       const response = await apiVerifyMFA(tempToken, code);
+      storeToken(response.access_token, response.expires_in);
+      const user = await getCurrentUser(response.access_token);
+
+      setState({
+        isAuthenticated: true,
+        isLoading: false,
+        user,
+        accessToken: response.access_token,
+        error: null,
+        mfaRequired: false,
+        mfaTempToken: null,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'MFA verification failed';
+      setState((s) => ({ ...s, isLoading: false, error: message }));
+      throw err;
+    }
+  }, []);
+
+  const enrollVerify = useCallback(async (enrollToken: string, code: string) => {
+    setState((s) => ({ ...s, error: null, isLoading: true }));
+
+    try {
+      const response = await apiEnrollVerifyMFA(enrollToken, code);
       storeToken(response.access_token, response.expires_in);
       const user = await getCurrentUser(response.access_token);
 
@@ -353,6 +395,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         ...state,
         login,
         verifyMFA,
+        enrollVerify,
         logout,
         refreshAuth,
         canAccessTab,

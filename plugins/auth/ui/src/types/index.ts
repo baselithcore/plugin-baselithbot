@@ -9,6 +9,7 @@ export interface User {
   roles: string[];
   is_active: boolean;
   mfa_enabled: boolean;
+  mfa_required: boolean;
   allowed_tabs: string[] | null;
   created_at: string | null;
   last_login: string | null;
@@ -42,6 +43,7 @@ export interface UpdateUserRequest {
   roles?: string[];
   is_active?: boolean;
   allowed_tabs?: string[] | null;
+  mfa_required?: boolean;
 }
 
 export interface ResetPasswordRequest {
@@ -149,6 +151,7 @@ export interface RbacGroup {
   name: string;
   description: string;
   is_system: boolean;
+  mfa_required: boolean;
   member_count: number;
   roles: string[];
 }
@@ -163,4 +166,11 @@ export interface GroupCreateRequest {
   slug: string;
   name: string;
   description?: string;
+  mfa_required?: boolean;
+}
+
+export interface GroupUpdateRequest {
+  name: string;
+  description?: string;
+  mfa_required?: boolean;
 }

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, Field
 
@@ -70,6 +70,7 @@ class GroupOut(BaseModel):
     name: str
     description: str = ""
     is_system: bool = False
+    mfa_required: bool = False
     member_count: int = 0
     roles: List[str] = Field(default_factory=list)
 
@@ -78,11 +79,13 @@ class GroupCreate(BaseModel):
     slug: str = Field(min_length=2, max_length=80, pattern=r"^[a-z0-9_\-]+$")
     name: str = Field(min_length=1, max_length=120)
     description: str = ""
+    mfa_required: bool = False
 
 
 class GroupUpdate(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     description: str = ""
+    mfa_required: Optional[bool] = None
 
 
 class GroupMember(BaseModel):

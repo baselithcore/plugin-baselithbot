@@ -8,6 +8,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useAuthT } from '../i18n/standalone';
 import { useAuth } from '../hooks/useAuthContext';
 import { loginWithPasskey, isPasskeySupported } from '../api/webauthn';
+import type { MFAEnrollmentRequiredResponse } from '../api/auth';
 import SsoButtons from './SsoButtons';
 import AuthLogo from './ui/AuthLogo';
 import '../index.css';
@@ -22,6 +23,7 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
     login,
     logout,
     verifyMFA,
+    enrollVerify,
     refreshAuth,
     isLoading,
     error: authError,
@@ -34,6 +36,7 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
   const [mfaCode, setMfaCode] = useState('');
   const [localError, setLocalError] = useState('');
   const [passkeyBusy, setPasskeyBusy] = useState(false);
+  const [enrollment, setEnrollment] = useState<MFAEnrollmentRequiredResponse | null>(null);
 
   // Surface an SSO redirect failure passed back as ?sso_error=...
   useEffect(() => {
@@ -65,11 +68,25 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
 
     try {
       const result = await login(identifier, password);
-      if (!result.mfaRequired) {
+      if (result.mfaEnrollmentRequired && result.enrollment) {
+        setEnrollment(result.enrollment);
+      } else if (!result.mfaRequired) {
         onSuccess?.();
       }
     } catch (err) {
       setLocalError(err instanceof Error ? err.message : t('login.errors.loginFailed'));
+    }
+  };
+
+  const handleEnrollVerify = async (e: FormEvent) => {
+    e.preventDefault();
+    setLocalError('');
+    if (!enrollment) return;
+    try {
+      await enrollVerify(enrollment.enroll_token, mfaCode.trim());
+      onSuccess?.();
+    } catch (err) {
+      setLocalError(err instanceof Error ? err.message : t('login.errors.mfaVerificationFailed'));
     }
   };
 
@@ -89,6 +106,82 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
       setLocalError(err instanceof Error ? err.message : t('login.errors.mfaVerificationFailed'));
     }
   };
+
+  if (enrollment) {
+    return (
+      <div className="auth-page">
+        <div className="aurora" aria-hidden="true" />
+        <div className="auth-card">
+          <div className="auth-header">
+            <h1 className="auth-title">{t('login.enrollHeader')}</h1>
+            <p className="auth-subtitle">{t('login.enrollSubtitle')}</p>
+          </div>
+
+          <form onSubmit={handleEnrollVerify} className="auth-form">
+            {displayError && (
+              <div className="auth-error">
+                <span className="auth-error-icon">⚠️</span>
+                {displayError}
+              </div>
+            )}
+
+            {enrollment.qr_code ? (
+              <img className="auth-enroll-qr" src={enrollment.qr_code} alt="MFA QR" />
+            ) : null}
+
+            <div className="auth-field">
+              <label className="auth-label">{t('login.enrollSecretLabel')}</label>
+              <code className="auth-enroll-secret">{enrollment.secret}</code>
+            </div>
+
+            <div className="auth-field">
+              <label className="auth-label">{t('login.enrollBackupLabel')}</label>
+              <div className="auth-enroll-backup">
+                {enrollment.backup_codes.map((c) => (
+                  <code key={c}>{c}</code>
+                ))}
+              </div>
+            </div>
+
+            <div className="auth-field">
+              <label htmlFor="enrollCode" className="auth-label">
+                {t('login.mfaCodeLabel')}
+              </label>
+              <input
+                id="enrollCode"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder={t('login.mfaCodePlaceholder')}
+                value={mfaCode}
+                onChange={(e) => setMfaCode(e.target.value)}
+                className="auth-input auth-input-code"
+                maxLength={8}
+                required
+                autoFocus
+              />
+            </div>
+
+            <button type="submit" className="auth-button" disabled={isLoading}>
+              {isLoading ? <span className="auth-spinner" /> : t('login.verify')}
+            </button>
+
+            <button
+              type="button"
+              className="auth-link"
+              onClick={() => {
+                setEnrollment(null);
+                setMfaCode('');
+                setLocalError('');
+              }}
+            >
+              ← {t('login.backToLogin')}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   if (mfaRequired) {
     return (

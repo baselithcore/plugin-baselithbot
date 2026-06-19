@@ -302,3 +302,22 @@ CREATE TABLE IF NOT EXISTS auth_sso_identities (
 );
 
 CREATE INDEX IF NOT EXISTS idx_sso_identities_user ON auth_sso_identities(user_id);
+
+-- =============================================================================
+-- MFA ENFORCEMENT POLICY (additive; safe to run repeatedly)
+-- Mandatory two-factor can be required globally, per group, or per user. The
+-- effective requirement for a user is the OR of all three. Enforced at login:
+-- a required-but-unenrolled user is forced through enrollment before a session
+-- is issued.
+-- =============================================================================
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS mfa_required BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE auth_groups ADD COLUMN IF NOT EXISTS mfa_required BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Singleton row holding org-wide security toggles (id is pinned to 1).
+CREATE TABLE IF NOT EXISTS auth_security_policy (
+    id SMALLINT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+    mfa_required_all BOOLEAN NOT NULL DEFAULT FALSE,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+INSERT INTO auth_security_policy (id, mfa_required_all)
+VALUES (1, FALSE) ON CONFLICT (id) DO NOTHING;

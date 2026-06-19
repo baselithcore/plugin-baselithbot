@@ -14,13 +14,19 @@ import '@fontsource/jetbrains-mono/500.css';
 import './i18n';
 import './store/useTheme'; // applies the persisted theme to <html> before first paint
 import './index.css';
+import { AuthProvider } from '@auth';
+import { ProtectedRoute } from '@auth/login';
 import App from './App';
 
 const root = document.getElementById('root');
 if (root) {
   createRoot(root).render(
     <StrictMode>
-      <App />
+      <AuthProvider>
+        <ProtectedRoute>
+          <App />
+        </ProtectedRoute>
+      </AuthProvider>
     </StrictMode>
   );
 }

@@ -116,7 +116,8 @@
     "members": "Membri",
     "noMembers": "Nessun membro",
     "addMember": "Aggiungi un membro…",
-    "removeMember": "Rimuovi dal gruppo"
+    "removeMember": "Rimuovi dal gruppo",
+    "mfaRequired": "Richiedi MFA per i membri"
   },
   "users": {
     "title": "Gestione Utenti",
@@ -294,7 +295,11 @@
     "openHint": "Tutti gli utenti autenticati possono accedere a questo tab",
     "restrictedHint": "Solo i ruoli che autorizzi sotto possono accedere a questo tab",
     "grantedTo": "Concesso a",
-    "adminAlways": "Gli admin hanno sempre accesso"
+    "adminAlways": "Gli admin hanno sempre accesso",
+    "security": {
+      "mfaAll": "Richiedi MFA per tutti",
+      "mfaAllHint": "Ogni utente dovrà configurare l'autenticazione a due fattori al prossimo accesso."
+    }
   },
   "modals": {
     "tempPassword": "Password temporanea",
@@ -307,7 +312,9 @@
       "roles": "Ruoli",
       "allowedTabs": "Tab consentiti (permessi guest)",
       "accountActive": "Account attivo",
-      "userInfo": "Informazioni utente"
+      "userInfo": "Informazioni utente",
+      "mfaRequired": "Richiedi MFA per questo utente",
+      "mfaRequiredHint": "L'utente dovrà configurare l'autenticazione a due fattori al prossimo accesso."
     },
     "placeholders": {
       "email": "utente@esempio.com",

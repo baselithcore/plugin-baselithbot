@@ -24,10 +24,12 @@ from plugins.auth.router._helpers import (
     log_login_success,
     verify_backup_code,
 )
+from plugins.auth.router._mfa_enroll_routes import build_mfa_enrollment_challenge
 from plugins.auth.router._models import (
     CSRFTokenResponse,
     LoginRequest,
     MessageResponse,
+    MFAEnrollmentRequiredResponse,
     MFARequiredResponse,
     MFAVerifyRequest,
     RegisterRequest,
@@ -62,7 +64,7 @@ async def get_csrf_token(response: Response):
 @router.post(
     "/login",
     dependencies=[Depends(RateLimiter(times=5, seconds=60))],
-    response_model=TokenResponse | MFARequiredResponse,
+    response_model=TokenResponse | MFARequiredResponse | MFAEnrollmentRequiredResponse,
     responses={
         401: {"description": "Invalid credentials"},
         423: {"description": "Account locked"},
@@ -149,6 +151,16 @@ async def login(
             logger.info(f"MFA challenge required for user {user.id}")
             persistence.record_login_event(user.id, "mfa_challenge", method="mfa")
             return MFARequiredResponse(temp_token=temp_token)
+
+        # Policy may mandate MFA for this user (global / group / per-user) even
+        # though they have not enrolled. Force enrollment before any session is
+        # issued — no tokens until the second factor is proven.
+        if persistence.is_mfa_required(user.id):
+            logger.info(f"MFA enrollment required by policy for user {user.id}")
+            persistence.record_login_event(
+                user.id, "mfa_enrollment_required", method="mfa"
+            )
+            return build_mfa_enrollment_challenge(user)
 
         # No MFA required - assess risk, record success, issue tokens
         logger.info(f"Login successful (no MFA) for user {user.id}")

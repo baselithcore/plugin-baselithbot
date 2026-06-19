@@ -116,7 +116,8 @@
     "members": "Members",
     "noMembers": "No members yet",
     "addMember": "Add a member…",
-    "removeMember": "Remove from group"
+    "removeMember": "Remove from group",
+    "mfaRequired": "Require MFA for members"
   },
   "users": {
     "title": "User Management",
@@ -294,7 +295,11 @@
     "openHint": "Everyone authenticated can access this tab",
     "restrictedHint": "Only roles you grant below can access this tab",
     "grantedTo": "Granted to",
-    "adminAlways": "Admins always have access"
+    "adminAlways": "Admins always have access",
+    "security": {
+      "mfaAll": "Require MFA for everyone",
+      "mfaAllHint": "Every user must set up two-factor authentication at their next login."
+    }
   },
   "modals": {
     "tempPassword": "Temporary password",
@@ -307,7 +312,9 @@
       "roles": "Roles",
       "allowedTabs": "Allowed Tabs (Guest Permissions)",
       "accountActive": "Account active",
-      "userInfo": "User Info"
+      "userInfo": "User Info",
+      "mfaRequired": "Require MFA for this user",
+      "mfaRequiredHint": "The user must enroll in two-factor authentication at their next login."
     },
     "placeholders": {
       "email": "user@example.com",

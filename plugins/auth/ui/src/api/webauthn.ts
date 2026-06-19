@@ -20,7 +20,7 @@ function b64urlToBuf(value: string): ArrayBuffer {
 function bufToB64url(buf: ArrayBuffer): string {
   const bytes = new Uint8Array(buf);
   let str = '';
-  for (let i = 0; i < bytes.length; i++) str += String.fromCharCode(bytes[i]);
+  for (let i = 0; i < bytes.length; i++) str += String.fromCharCode(bytes[i]!);
   return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 

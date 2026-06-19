@@ -24,6 +24,7 @@ class GroupStoreMixin:
             cur.execute(
                 """
                 SELECT g.id, g.slug, g.name, g.description, g.is_system,
+                       g.mfa_required,
                        COUNT(DISTINCT gm.user_id) AS member_count,
                        COALESCE(
                            ARRAY_AGG(DISTINCT r.slug)
@@ -46,6 +47,7 @@ class GroupStoreMixin:
             cur.execute(
                 """
                 SELECT g.id, g.slug, g.name, g.description, g.is_system,
+                       g.mfa_required,
                        COUNT(DISTINCT gm.user_id) AS member_count,
                        COALESCE(
                            ARRAY_AGG(DISTINCT r.slug)
@@ -71,15 +73,22 @@ class GroupStoreMixin:
             row = cur.fetchone()
             return self.get_group(str(row["id"])) if row else None
 
-    def create_group(self, slug: str, name: str, description: str = "") -> Dict:
+    def create_group(
+        self,
+        slug: str,
+        name: str,
+        description: str = "",
+        mfa_required: bool = False,
+    ) -> Dict:
         """Create a custom group."""
         group_id = str(uuid.uuid4())
         with get_connection() as conn:
             with conn.cursor() as cur:
                 cur.execute(
-                    "INSERT INTO auth_groups (id, slug, name, description, is_system) "
-                    "VALUES (%s, %s, %s, %s, FALSE)",
-                    (group_id, slug, name, description),
+                    "INSERT INTO auth_groups "
+                    "(id, slug, name, description, is_system, mfa_required) "
+                    "VALUES (%s, %s, %s, %s, FALSE, %s)",
+                    (group_id, slug, name, description, mfa_required),
                 )
             conn.commit()
         return {
@@ -88,21 +97,33 @@ class GroupStoreMixin:
             "name": name,
             "description": description,
             "is_system": False,
+            "mfa_required": mfa_required,
             "member_count": 0,
             "roles": [],
         }
 
     def update_group(
-        self, group_id: str, name: str, description: str
+        self,
+        group_id: str,
+        name: str,
+        description: str,
+        mfa_required: Optional[bool] = None,
     ) -> Optional[Dict]:
-        """Update a group's name/description."""
+        """Update a group's name/description and optionally its MFA mandate."""
         with get_connection() as conn:
             with conn.cursor() as cur:
-                cur.execute(
-                    "UPDATE auth_groups SET name = %s, description = %s, "
-                    "updated_at = NOW() WHERE id = %s",
-                    (name, description, group_id),
-                )
+                if mfa_required is None:
+                    cur.execute(
+                        "UPDATE auth_groups SET name = %s, description = %s, "
+                        "updated_at = NOW() WHERE id = %s",
+                        (name, description, group_id),
+                    )
+                else:
+                    cur.execute(
+                        "UPDATE auth_groups SET name = %s, description = %s, "
+                        "mfa_required = %s, updated_at = NOW() WHERE id = %s",
+                        (name, description, mfa_required, group_id),
+                    )
             conn.commit()
         return self.get_group(group_id)
 
@@ -211,4 +232,5 @@ class GroupStoreMixin:
         out["id"] = str(out["id"])
         out["roles"] = list(out.get("roles") or [])
         out["member_count"] = int(out.get("member_count") or 0)
+        out["mfa_required"] = bool(out.get("mfa_required", False))
         return out

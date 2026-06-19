@@ -25,6 +25,7 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
   const [username, setUsername] = useState(user.username || '');
   const [roles, setRoles] = useState<string[]>(user.roles);
   const [isActive, setIsActive] = useState(user.is_active);
+  const [mfaRequired, setMfaRequired] = useState(!!user.mfa_required);
   const [allowedTabs, setAllowedTabs] = useState<string[]>(user.allowed_tabs || []);
   const [availableTabs, setAvailableTabs] = useState<PluginTab[]>([]);
   const [customRoles, setCustomRoles] = useState<RbacRole[]>([]);
@@ -104,6 +105,9 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
       updates.roles = roles;
     }
 
+    if (mfaRequired !== !!user.mfa_required) {
+      updates.mfa_required = mfaRequired;
+    }
     if (isActive !== user.is_active) {
       updates.is_active = isActive;
     }
@@ -256,6 +260,18 @@ const EditUserModal = ({ user, onClose, onUpdate, isLoading }: EditUserModalProp
                   {t('modals.deactivateWarning')}
                 </p>
               )}
+            </div>
+
+            <div className="admin-form-group">
+              <label className="admin-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={mfaRequired}
+                  onChange={(e) => setMfaRequired(e.target.checked)}
+                />
+                {t('modals.fields.mfaRequired')}
+              </label>
+              <p className="admin-form-hint">{t('modals.fields.mfaRequiredHint')}</p>
             </div>
 
             <div className="admin-form-group">

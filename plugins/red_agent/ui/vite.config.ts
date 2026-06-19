@@ -1,9 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'node:path';
 
 export default defineConfig({
   plugins: [react()],
   base: '/red-agent/ui/',
+  resolve: {
+    // Central auth context (shared single-source SSO). `@auth/login` MUST
+    // precede `@auth` — first match wins.
+    alias: [
+      { find: '@auth/login', replacement: path.resolve(__dirname, '../../auth/ui/src/login.ts') },
+      { find: '@auth', replacement: path.resolve(__dirname, '../../auth/ui/src/index.ts') },
+    ],
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,

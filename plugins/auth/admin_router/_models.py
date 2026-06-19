@@ -15,6 +15,7 @@ class UserDetailResponse(BaseModel):
     roles: List[str]
     is_active: bool
     mfa_enabled: bool
+    mfa_required: bool = False
     allowed_tabs: Optional[List[str]] = None
     created_at: Optional[datetime] = None
     last_login: Optional[datetime] = None
@@ -65,6 +66,7 @@ class UpdateUserRequest(BaseModel):
     roles: Optional[List[str]] = None
     is_active: Optional[bool] = None
     allowed_tabs: Optional[List[str]] = None
+    mfa_required: Optional[bool] = None
 
 
 class ResetPasswordRequest(BaseModel):

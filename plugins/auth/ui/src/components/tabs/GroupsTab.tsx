@@ -21,7 +21,7 @@ const GroupsTab = () => {
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
-  const [form, setForm] = useState({ slug: '', name: '', description: '' });
+  const [form, setForm] = useState({ slug: '', name: '', description: '', mfa_required: false });
   const [error, setError] = useState<string | null>(null);
 
   const selected = groups.find((g) => g.id === selectedId) || null;
@@ -59,8 +59,21 @@ const GroupsTab = () => {
     if (!form.slug || !form.name) return;
     try {
       await rbac.createGroup(form);
-      setForm({ slug: '', name: '', description: '' });
+      setForm({ slug: '', name: '', description: '', mfa_required: false });
       setCreating(false);
+      await reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'error');
+    }
+  };
+
+  const toggleGroupMfa = async (g: RbacGroup) => {
+    try {
+      await rbac.updateGroup(g.id, {
+        name: g.name,
+        description: g.description,
+        mfa_required: !g.mfa_required,
+      });
       await reload();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'error');
@@ -130,6 +143,14 @@ const GroupsTab = () => {
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
+          <label className="admin-checkbox-label">
+            <input
+              type="checkbox"
+              checked={form.mfa_required}
+              onChange={(e) => setForm({ ...form, mfa_required: e.target.checked })}
+            />
+            {t('groups.mfaRequired')}
+          </label>
           <button className="admin-btn admin-btn-primary" onClick={handleCreate}>
             {t('common.create')}
           </button>
@@ -174,6 +195,15 @@ const GroupsTab = () => {
                 </button>
               )}
             </div>
+
+            <label className="admin-checkbox-label group-mfa-toggle">
+              <input
+                type="checkbox"
+                checked={selected.mfa_required}
+                onChange={() => toggleGroupMfa(selected)}
+              />
+              {t('groups.mfaRequired')}
+            </label>
 
             <h4>{t('groups.roles')}</h4>
             <div className="group-roles">

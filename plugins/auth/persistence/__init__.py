@@ -16,6 +16,7 @@ from plugins.auth.config import AuthConfig
 from plugins.auth.persistence._apikeys import ApiKeyPersistenceMixin
 from plugins.auth.persistence._history import HistoryPersistenceMixin
 from plugins.auth.persistence._recovery import RecoveryPersistenceMixin
+from plugins.auth.persistence._security_policy import SecurityPolicyMixin
 from plugins.auth.persistence._sso import SsoPersistenceMixin
 from plugins.auth.persistence._tokens import TokenPersistenceMixin
 from plugins.auth.persistence._users import UserPersistenceMixin
@@ -32,6 +33,7 @@ class AuthPersistence(
     WebAuthnPersistenceMixin,
     ApiKeyPersistenceMixin,
     SsoPersistenceMixin,
+    SecurityPolicyMixin,
 ):
     """PostgreSQL persistence for authentication data."""
 

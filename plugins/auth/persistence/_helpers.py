@@ -36,6 +36,7 @@ def row_to_user(row: dict) -> User:
         roles=parse_roles(row["roles"]),
         mfa_secret=row.get("mfa_secret"),
         mfa_enabled=row.get("mfa_enabled", False),
+        mfa_required=row.get("mfa_required", False),
         is_active=row.get("is_active", True),
         allowed_tabs=row.get("allowed_tabs"),
         created_at=row.get("created_at", datetime.now(timezone.utc)),

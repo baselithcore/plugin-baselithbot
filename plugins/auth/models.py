@@ -22,6 +22,7 @@ class User:
     roles: Set[AuthRole] = field(default_factory=lambda: {AuthRole.USER})
     mfa_secret: Optional[str] = None  # TOTP secret (encrypted at rest)
     mfa_enabled: bool = False
+    mfa_required: bool = False  # Per-user MFA mandate (policy enforced at login)
     is_active: bool = True
     allowed_tabs: Optional[List[str]] = None  # For GUEST: specific tabs allowed
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))

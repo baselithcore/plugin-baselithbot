@@ -46,13 +46,19 @@ async def create_group(
     store = _service().store
     if store.get_group_by_slug(body.slug):
         raise HTTPException(status_code=409, detail="Group slug already exists")
-    group = store.create_group(body.slug, body.name, body.description)
+    group = store.create_group(
+        body.slug, body.name, body.description, body.mfa_required
+    )
     audit_rbac(
         request,
         user.user_id,
         AuditAction.GROUP_CREATED,
         target_id=group["id"],
-        details={"slug": body.slug, "name": body.name},
+        details={
+            "slug": body.slug,
+            "name": body.name,
+            "mfa_required": body.mfa_required,
+        },
     )
     return group
 
@@ -63,8 +69,10 @@ async def update_group(
     body: GroupUpdate,
     user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
 ):
-    """Update a group's name/description."""
-    group = _service().store.update_group(group_id, body.name, body.description)
+    """Update a group's name/description and optional MFA mandate."""
+    group = _service().store.update_group(
+        group_id, body.name, body.description, body.mfa_required
+    )
     if not group:
         raise HTTPException(status_code=404, detail="Group not found")
     return group

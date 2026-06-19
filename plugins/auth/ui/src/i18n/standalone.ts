@@ -36,6 +36,11 @@ const EN: Catalog = {
   'login.mfaCodeHint': 'Enter your 6-digit code or a backup code',
   'login.verify': 'Verify',
   'login.backToLogin': 'Back to login',
+  'login.enrollHeader': 'Set up Two-Factor Authentication',
+  'login.enrollSubtitle':
+    'Your account requires MFA. Scan the QR code with your authenticator app, then enter the code.',
+  'login.enrollSecretLabel': 'Or enter this key manually',
+  'login.enrollBackupLabel': 'Backup codes — save them somewhere safe',
   'login.errors.loginFailed': 'Login failed',
   'login.errors.missingMfaToken': 'Missing MFA token',
   'login.errors.mfaVerificationFailed': 'MFA verification failed',
@@ -67,6 +72,11 @@ const IT: Catalog = {
   'login.mfaCodeHint': 'Inserisci il codice a 6 cifre o un codice di backup',
   'login.verify': 'Verifica',
   'login.backToLogin': "Torna all'accesso",
+  'login.enrollHeader': "Configura l'autenticazione a due fattori",
+  'login.enrollSubtitle':
+    "Il tuo account richiede l'MFA. Scansiona il codice QR con la tua app di autenticazione, poi inserisci il codice.",
+  'login.enrollSecretLabel': 'Oppure inserisci questa chiave manualmente',
+  'login.enrollBackupLabel': 'Codici di backup — conservali in un luogo sicuro',
   'login.errors.loginFailed': 'Accesso non riuscito',
   'login.errors.missingMfaToken': 'Token MFA mancante',
   'login.errors.mfaVerificationFailed': 'Verifica MFA non riuscita',
