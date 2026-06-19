@@ -145,8 +145,12 @@ const UsersTab = () => {
           break;
         case 'impersonate':
           await impersonate(confirmAction.user.id);
-          // Re-evaluate the session as the impersonated user from the root.
-          window.location.href = '/auth/';
+          // Land on the control-plane host shell so the admin experiences the
+          // app exactly as the impersonated user — only the tabs/actions that
+          // user is entitled to are visible (the auth admin console would be an
+          // access-denied wall for a non-admin target). A persistent banner +
+          // Stop is rendered there by the shell to exit impersonation.
+          window.location.href = '/baselithcontrol/';
           return;
       }
       setConfirmAction(null);

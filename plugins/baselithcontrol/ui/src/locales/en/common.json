@@ -172,5 +172,8 @@
   "console.no_output": "No output captured.",
   "console.job_started": "Started {{kind}}",
   "console.admin_only": "Admin access required",
-  "console.admin_only_hint": "Dev tools run code on the server, so they are restricted to administrators."
+  "console.admin_only_hint": "Dev tools run code on the server, so they are restricted to administrators.",
+  "impersonation.banner": "Viewing as {{target}} — impersonated by {{admin}}",
+  "impersonation.stop": "Stop impersonation",
+  "impersonation.stopping": "Stopping…"
 }

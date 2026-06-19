@@ -172,5 +172,8 @@
   "console.no_output": "Nessun output catturato.",
   "console.job_started": "Avviato {{kind}}",
   "console.admin_only": "Accesso admin richiesto",
-  "console.admin_only_hint": "Gli strumenti di sviluppo eseguono codice sul server, quindi sono riservati agli amministratori."
+  "console.admin_only_hint": "Gli strumenti di sviluppo eseguono codice sul server, quindi sono riservati agli amministratori.",
+  "impersonation.banner": "Stai agendo come {{target}} — impersonificato da {{admin}}",
+  "impersonation.stop": "Termina impersonificazione",
+  "impersonation.stopping": "Arresto…"
 }

@@ -55,6 +55,7 @@ services:
     depends_on:
       - falkordb
       - postgres
+      - qdrant
     init: true
     security_opt:
       - no-new-privileges:true
@@ -148,6 +149,38 @@ services:
       timeout: 5s
       retries: 5
 
+  # Vector Database
+  qdrant:
+    image: qdrant/qdrant:v1.12.1
+    container_name: baselith-qdrant
+    # Publish to host loopback so a natively-deployed app (running on the host,
+    # not in a container) can reach Qdrant at 127.0.0.1. Bound to 127.0.0.1
+    # only — not exposed on any external interface. 6333 = REST/HTTP, 6334 =
+    # gRPC. Harmless for the all-in-container deployment (services still talk
+    # over app_net at VECTORSTORE_QDRANT_HOST=qdrant).
+    ports:
+      - "127.0.0.1:6333:6333"
+      - "127.0.0.1:6334:6334"
+    environment:
+      - QDRANT__LOG_LEVEL=INFO
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - app_net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+    # The qdrant image ships no curl/wget/shell utilities, so an HTTP /healthz
+    # probe is not expressible here (same reason dev.yml omits it). api/worker
+    # therefore depend on it with condition: service_started, not _healthy.
+
   # Worker for Async Tasks
   worker:
     build:
@@ -191,6 +224,8 @@ services:
         condition: service_healthy
       falkordb:
         condition: service_healthy
+      qdrant:
+        condition: service_started
     # The worker runs an RQ loop, not an HTTP server, so the image's default
     # curl /health probe always fails. Check the worker process is alive in THIS
     # container instead (its cmdline carries core.task_queue.worker as a distinct arg;
@@ -294,6 +329,7 @@ services:
 volumes:
   falkordb_data:
   postgres_data:
+  qdrant_data:
   prometheus_data:
 
 networks:
