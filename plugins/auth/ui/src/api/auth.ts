@@ -215,7 +215,10 @@ export async function startImpersonation(
   userId: string,
   reason?: string
 ): Promise<ImpersonateResponse> {
-  const response = await fetch(`/api/auth/admin/users/${userId}/impersonate`, {
+  // admin_router mounts at /api/admin (NOT /api/auth/admin) — same base the user
+  // management calls use (api/users.ts API_BASE='/api/admin'). The wrong prefix
+  // here was the "Errore: Not Found" 404 on impersonation start.
+  const response = await fetch(`/api/admin/users/${userId}/impersonate`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
