@@ -69,7 +69,14 @@ from plugins.red_agent.routers import (
 )
 from plugins.red_agent.sandbox_runner import SandboxRunner
 
+from pathlib import Path
+
 logger = get_logger(__name__)
+
+# Built React/Vite SPA. Vite ``base`` is ``/red-agent/ui/`` (see
+# ui/vite.config.ts), so the bundle's asset URLs resolve only under this mount.
+_UI_DIST = Path(__file__).resolve().parent / "ui" / "dist"
+_UI_MOUNT_PATH = "/red-agent/ui"
 
 
 def _resolve_dsn(plugin_dsn: str | None) -> str:
@@ -439,6 +446,45 @@ class RedAgentPlugin(AgentPlugin):
                 "priority": 100,
             }
         ]
+
+    # -- UI ----------------------------------------------------------------
+
+    def get_ui_tabs(self) -> list[dict[str, str]]:
+        """Register the dashboard so the host shell and RBAC matrix see it.
+
+        One statically-readable tab id (the plugin name) so central Access
+        Control can key per-tab RBAC on ``(red_agent, …)``.
+        """
+        return [
+            {
+                "id": self.metadata.name,
+                "label": "Red Agent",
+                "url": _UI_MOUNT_PATH,
+                "icon": "shield",
+            }
+        ]
+
+    @classmethod
+    def setup_app_middleware(cls, app: Any) -> None:
+        """Mount the built SPA before the middleware stack freezes.
+
+        Missing build output degrades gracefully — the API still serves; only
+        the bundled UI is unavailable.
+        """
+        if not _UI_DIST.exists():
+            logger.info("red_agent_ui_not_built", path=str(_UI_DIST))
+            return
+        try:
+            from core.api.spa import SPAStaticFiles
+
+            app.mount(
+                _UI_MOUNT_PATH,
+                SPAStaticFiles(directory=str(_UI_DIST), html=True),
+                name="red_agent",
+            )
+            logger.info("red_agent_spa_mounted", path=_UI_MOUNT_PATH)
+        except Exception as exc:  # noqa: BLE001 — never break app construction
+            logger.error("red_agent_spa_mount_failed", error=str(exc))
 
     @staticmethod
     def _maybe_register_agent_ca() -> None:

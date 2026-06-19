@@ -58,9 +58,7 @@ class SecurityPolicyMixin:
     def get_user_mfa_required(self, user_id: str) -> bool:
         """The per-user MFA requirement flag (not the effective requirement)."""
         with get_cursor(row_factory=dict_row) as cur:
-            cur.execute(
-                "SELECT mfa_required FROM auth_users WHERE id = %s", (user_id,)
-            )
+            cur.execute("SELECT mfa_required FROM auth_users WHERE id = %s", (user_id,))
             row = cur.fetchone()
             return bool(row["mfa_required"]) if row else False
 

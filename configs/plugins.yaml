@@ -109,4 +109,4 @@ cve_hunter:
   enable_sast: false
   enable_dast: false
 red_agent:
-  enabled: false
+  enabled: true
