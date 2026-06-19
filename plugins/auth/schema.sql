@@ -35,6 +35,21 @@ CREATE TABLE IF NOT EXISTS auth_mfa_backup_codes (
 
 CREATE INDEX IF NOT EXISTS idx_backup_codes_user ON auth_mfa_backup_codes(user_id);
 
+-- Short-lived MFA challenge tokens (login temp tokens + forced-enrollment tokens).
+-- Shared across uvicorn workers so a challenge minted on one worker can be
+-- verified on another (multi-worker / WEB_CONCURRENCY>1 deployments). Rows are
+-- short-lived and reaped by expiry; an in-memory tier still fronts this table.
+CREATE TABLE IF NOT EXISTS auth_mfa_challenges (
+    token_hash VARCHAR(64) PRIMARY KEY,
+    user_id UUID REFERENCES auth_users(id) ON DELETE CASCADE,
+    purpose VARCHAR(32) NOT NULL,
+    data JSONB NOT NULL DEFAULT '{}'::jsonb,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_mfa_challenges_expires ON auth_mfa_challenges(expires_at);
+
 -- Refresh tokens for session management
 CREATE TABLE IF NOT EXISTS auth_refresh_tokens (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

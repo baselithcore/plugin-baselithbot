@@ -26,10 +26,20 @@ logger = get_logger(__name__)
 
 
 class SecureTokenStore:
-    """
-    In-memory token store with automatic expiration.
+    """Short-lived store for MFA challenge tokens (login temp tokens and
+    forced-enrollment tokens).
 
-    For production with multiple instances, replace with Redis.
+    Primary backend is Postgres (table ``auth_mfa_challenges``) so a challenge
+    minted on one uvicorn worker can be verified on another. The previous
+    in-memory-only store silently broke MFA whenever ``WEB_CONCURRENCY > 1``:
+    the verify request usually landed on a different worker than the login that
+    minted the token, so ``get()`` missed and the user saw "Invalid or expired
+    temporary token". An in-memory dict is kept as a fast path and as the sole
+    backend when no database pool is initialized (unit tests / DB-less dev),
+    where a single process makes that safe.
+
+    DB access is best-effort: a failure degrades to the in-memory entry instead
+    of turning a transient hiccup into a login-blocking 500.
     """
 
     def __init__(self) -> None:
@@ -38,7 +48,7 @@ class SecureTokenStore:
         self._cleanup_interval = 60  # Every minute
 
     def _cleanup(self) -> None:
-        """Remove expired tokens."""
+        """Remove expired tokens from the in-memory tier."""
         now = datetime.now(timezone.utc)
         if time.time() - self._last_cleanup < self._cleanup_interval:
             return
@@ -57,42 +67,128 @@ class SecureTokenStore:
 
         self._last_cleanup = time.time()
 
+    # -- shared (cross-worker) Postgres tier -------------------------------
+    @staticmethod
+    def _hash(token: str) -> str:
+        return hashlib.sha256(token.encode()).hexdigest()
+
+    @staticmethod
+    def _db_available() -> bool:
+        """True only once the core Postgres pool is initialized (i.e. the app
+        runs with a DB). Keeps DB-less unit tests on the in-memory path without
+        ever attempting a connection."""
+        try:
+            from core.db import connection
+
+            return connection._POOL is not None
+        except Exception:
+            return False
+
+    def _db_store(self, token: str, data: Dict, expires_at: datetime) -> None:
+        if not self._db_available():
+            return
+        try:
+            from core.db.connection import get_connection
+            from psycopg.types.json import Json
+
+            purpose = "enroll" if "secret" in data else "login"
+            with get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        """
+                        INSERT INTO auth_mfa_challenges
+                            (token_hash, user_id, purpose, data, expires_at)
+                        VALUES (%s, %s, %s, %s, %s)
+                        ON CONFLICT (token_hash) DO UPDATE
+                            SET data = EXCLUDED.data, expires_at = EXCLUDED.expires_at
+                        """,
+                        (
+                            self._hash(token),
+                            data.get("user_id"),
+                            purpose,
+                            Json(data),
+                            expires_at,
+                        ),
+                    )
+                conn.commit()
+        except Exception as exc:  # pragma: no cover - best-effort shared tier
+            logger.debug("MFA challenge DB store skipped: %s", exc)
+
+    def _db_get(self, token: str) -> Optional[Dict]:
+        if not self._db_available():
+            return None
+        try:
+            from core.db.connection import get_cursor
+            from psycopg.rows import dict_row
+
+            with get_cursor(row_factory=dict_row) as cur:
+                cur.execute(
+                    """
+                    SELECT data FROM auth_mfa_challenges
+                    WHERE token_hash = %s AND expires_at > NOW()
+                    """,
+                    (self._hash(token),),
+                )
+                row = cur.fetchone()
+                return dict(row["data"]) if row else None
+        except Exception as exc:  # pragma: no cover - best-effort shared tier
+            logger.debug("MFA challenge DB get skipped: %s", exc)
+            return None
+
+    def _db_delete(self, token: str) -> None:
+        if not self._db_available():
+            return
+        try:
+            from core.db.connection import get_connection
+
+            with get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(
+                        "DELETE FROM auth_mfa_challenges WHERE token_hash = %s",
+                        (self._hash(token),),
+                    )
+                conn.commit()
+        except Exception as exc:  # pragma: no cover - best-effort shared tier
+            logger.debug("MFA challenge DB delete skipped: %s", exc)
+
+    # -- public API (in-memory fast path + shared tier) --------------------
     def store(
         self,
         token: str,
         data: Dict,
         ttl_seconds: int = 300,  # 5 minutes
     ) -> None:
-        """Store token with expiration."""
+        """Store a challenge token with expiration in both tiers."""
         self._cleanup()
-        self._tokens[token] = {
-            **data,
-            "expires_at": datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds),
-        }
+        expires_at = datetime.now(timezone.utc) + timedelta(seconds=ttl_seconds)
+        self._tokens[token] = {**data, "expires_at": expires_at}
+        self._db_store(token, data, expires_at)
 
     def get(self, token: str) -> Optional[Dict]:
-        """Get token data if valid."""
+        """Get token data if valid (in-memory first, then the shared tier)."""
         self._cleanup()
         data = self._tokens.get(token)
 
-        if not data:
-            return None
+        if data is not None:
+            if data.get("expires_at", datetime.now(timezone.utc)) < datetime.now(
+                timezone.utc
+            ):
+                del self._tokens[token]
+                self._db_delete(token)
+                return None
+            return data
 
-        if data.get("expires_at", datetime.min) < datetime.now(timezone.utc):
-            del self._tokens[token]
-            return None
-
-        return data
+        # In-memory miss (e.g. another worker minted it) -> shared tier.
+        return self._db_get(token)
 
     def delete(self, token: str) -> bool:
-        """Delete a token."""
-        if token in self._tokens:
-            del self._tokens[token]
-            return True
-        return False
+        """Delete a token from both tiers."""
+        existed = self._tokens.pop(token, None) is not None
+        self._db_delete(token)
+        return existed
 
     def size(self) -> int:
-        """Get current number of stored tokens."""
+        """Get current number of in-memory tokens."""
         self._cleanup()
         return len(self._tokens)
 
