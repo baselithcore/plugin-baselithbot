@@ -21,6 +21,13 @@ services:
       - DOCKER_CERT_PATH=/certs/client
       - TELEMETRY_OTEL_ENDPOINT=http://jaeger:4317
       - SENTRY_DSN=${SENTRY_DSN}
+      # Refresh-token cookie. This deployment is served over plain HTTP on the
+      # LAN, so the Secure flag (default true) makes the browser silently drop
+      # the cookie -> /api/auth/refresh always 401s -> every new tab (a plugin
+      # opened from baselithcontrol) is forced to re-login once the 15-min
+      # access token expires. Disable Secure for HTTP. FLIP BACK TO true (or
+      # remove this line) the moment the site is served over HTTPS.
+      - AUTH_COOKIE_SECURE=false
       # env_file (configs/.env.production) is a template whose ${...} entries are NOT
       # interpolated by env_file loading — they would reach the app as literal strings.
       # These environment: overrides ARE interpolated by compose (from the gitignored
