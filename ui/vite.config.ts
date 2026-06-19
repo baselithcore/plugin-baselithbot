@@ -1,9 +1,21 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+// Resolve a path relative to this config file without Node typings (tsc -b
+// type-checks this file and @types/node is not installed here).
+const fromHere = (p: string) => new URL(p, import.meta.url).pathname;
+
 export default defineConfig(({ command }) => ({
   plugins: [react()],
   base: command === 'build' ? '/baselithbot/ui/' : '/',
+  resolve: {
+    // Central auth context (shared single-source SSO). `@auth/login` MUST
+    // precede `@auth` — first match wins.
+    alias: [
+      { find: '@auth/login', replacement: fromHere('../../auth/ui/src/login.ts') },
+      { find: '@auth', replacement: fromHere('../../auth/ui/src/index.ts') },
+    ],
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,

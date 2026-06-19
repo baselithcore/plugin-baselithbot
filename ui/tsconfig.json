@@ -17,7 +17,9 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@auth": ["../../auth/ui/src/index.ts"],
+      "@auth/login": ["../../auth/ui/src/login.ts"]
     }
   },
   "include": ["src"],
