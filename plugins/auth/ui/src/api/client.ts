@@ -3,11 +3,12 @@
  */
 
 // Single source of truth for the access token. MUST match the key/storage the
-// auth context writes on login (useAuthContext: sessionStorage 'auth_access_token').
-// Splitting these silently sends a stale token → spurious 401/403 (e.g. admin
-// routes failing right after a role change).
+// auth context writes on login (useAuthContext: localStorage 'auth_access_token').
+// localStorage is shared across all same-origin tabs so a plugin opened in a new
+// tab inherits the session. Splitting these silently sends a stale token →
+// spurious 401/403 (e.g. admin routes failing right after a role change).
 export function getAccessToken(): string | null {
-  return sessionStorage.getItem('auth_access_token');
+  return localStorage.getItem('auth_access_token');
 }
 
 export async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {

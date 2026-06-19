@@ -142,19 +142,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     };
   }, [state.isAuthenticated, state.accessToken]);
 
-  // Load token from storage on mount
+  // Load token from storage on mount. The access token lives in localStorage
+  // (shared across all same-origin tabs/windows) so opening another plugin —
+  // e.g. launched from baselithcontrol with target="_blank" — inherits the
+  // session immediately, with no re-login and no /refresh round-trip. The
+  // sensitive long-lived refresh token stays in an httpOnly cookie.
   useEffect(() => {
-    const storedToken = sessionStorage.getItem(TOKEN_KEY);
-    const storedExpiry = sessionStorage.getItem(TOKEN_EXPIRY_KEY);
-
-    if (storedToken && storedExpiry) {
-      const expiry = parseInt(storedExpiry, 10);
-      if (expiry > Date.now()) {
-        loadUser(storedToken);
-        return;
-      }
-    }
-
     const handleUnauthorized = () => {
       setState((s) => ({
         ...s,
@@ -165,11 +158,36 @@ export function AuthProvider({ children }: AuthProviderProps) {
       clearToken();
     };
 
+    // Cross-tab session sync: a login or logout in any other tab fires a
+    // `storage` event here. Adopt a new session, or drop ours when cleared.
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key !== TOKEN_KEY) return;
+      if (e.newValue) {
+        loadUser(e.newValue);
+      } else {
+        setState((s) => ({
+          ...s,
+          isAuthenticated: false,
+          user: null,
+          accessToken: null,
+        }));
+      }
+    };
+
     window.addEventListener('auth:unauthorized', handleUnauthorized);
-    tryRefresh();
+    window.addEventListener('storage', handleStorage);
+
+    const storedToken = localStorage.getItem(TOKEN_KEY);
+    const storedExpiry = localStorage.getItem(TOKEN_EXPIRY_KEY);
+    if (storedToken && storedExpiry && parseInt(storedExpiry, 10) > Date.now()) {
+      loadUser(storedToken);
+    } else {
+      tryRefresh();
+    }
 
     return () => {
       window.removeEventListener('auth:unauthorized', handleUnauthorized);
+      window.removeEventListener('storage', handleStorage);
     };
   }, []);
 
@@ -220,13 +238,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const storeToken = (token: string, expiresIn: number) => {
     const expiry = Date.now() + expiresIn * 1000;
-    sessionStorage.setItem(TOKEN_KEY, token);
-    sessionStorage.setItem(TOKEN_EXPIRY_KEY, expiry.toString());
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(TOKEN_EXPIRY_KEY, expiry.toString());
   };
 
   const clearToken = () => {
-    sessionStorage.removeItem(TOKEN_KEY);
-    sessionStorage.removeItem(TOKEN_EXPIRY_KEY);
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_EXPIRY_KEY);
   };
 
   const login = useCallback(async (email: string, password: string): Promise<LoginResult> => {
@@ -342,7 +360,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const impersonate = useCallback(async (userId: string, reason?: string) => {
-    const token = sessionStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem(TOKEN_KEY);
     if (!token) throw new Error('Not authenticated');
     const resp = await apiStartImpersonation(token, userId, reason);
     storeToken(resp.access_token, resp.expires_in);
@@ -350,7 +368,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const stopImpersonation = useCallback(async () => {
-    const token = sessionStorage.getItem(TOKEN_KEY);
+    const token = localStorage.getItem(TOKEN_KEY);
     if (!token) {
       await tryRefresh();
       return;

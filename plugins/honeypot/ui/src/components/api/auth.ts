@@ -15,8 +15,9 @@ let refreshPromise: Promise<boolean> | null = null;
 export function getAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = {};
 
-  // Bearer token from auth system (primary)
-  const token = sessionStorage.getItem('auth_access_token');
+  // Bearer token from auth system (primary). Shared across same-origin tabs via
+  // localStorage, matching the central auth context.
+  const token = localStorage.getItem('auth_access_token');
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
@@ -52,7 +53,7 @@ export async function refreshAccessToken(): Promise<boolean> {
       if (resp.ok) {
         const data = await resp.json();
         if (data.access_token) {
-          sessionStorage.setItem('auth_access_token', data.access_token);
+          localStorage.setItem('auth_access_token', data.access_token);
           console.debug('[API] Token refreshed successfully');
           return true;
         }

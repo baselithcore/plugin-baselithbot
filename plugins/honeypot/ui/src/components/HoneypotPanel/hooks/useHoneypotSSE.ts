@@ -134,7 +134,7 @@ export function useHoneypotSSE({
 
     const connectSSE = () => {
       // Get token from storage (same key as used in auth provider)
-      const token = sessionStorage.getItem('auth_access_token');
+      const token = localStorage.getItem('auth_access_token');
       const url = token
         ? `${API_BASE}/honeypot/stream/attacks?include_history=false&token=${token}`
         : `${API_BASE}/honeypot/stream/attacks?include_history=false`;

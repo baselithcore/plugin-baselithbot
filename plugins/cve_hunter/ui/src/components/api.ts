@@ -14,8 +14,9 @@ const API_KEY = import.meta.env.VITE_API_KEY || '';
 function getAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = {};
 
-  // Bearer token from auth system (primary)
-  const token = sessionStorage.getItem('auth_access_token');
+  // Bearer token from auth system (primary). Shared across same-origin tabs via
+  // localStorage, matching the central auth context.
+  const token = localStorage.getItem('auth_access_token');
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
@@ -44,9 +45,9 @@ async function tryRefreshToken(): Promise<boolean> {
 
     const data = await response.json();
     if (data.access_token) {
-      sessionStorage.setItem('auth_access_token', data.access_token);
+      localStorage.setItem('auth_access_token', data.access_token);
       const expiry = Date.now() + (data.expires_in || 900) * 1000;
-      sessionStorage.setItem('auth_token_expiry', expiry.toString());
+      localStorage.setItem('auth_token_expiry', expiry.toString());
       return true;
     }
     return false;

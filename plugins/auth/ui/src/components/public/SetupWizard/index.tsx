@@ -3,7 +3,7 @@
  *
  * Flow: welcome → credentials (creates the admin + logs in) → mandatory MFA
  * enrollment → done. The created access token is stored the same way the auth
- * context stores it (sessionStorage 'auth_access_token'), so finishing reloads
+ * context stores it (localStorage 'auth_access_token'), so finishing reloads
  * straight into the authenticated admin console.
  */
 
@@ -22,8 +22,8 @@ const TOKEN_KEY = 'auth_access_token';
 const TOKEN_EXPIRY_KEY = 'auth_token_expiry';
 
 function storeToken(token: string, expiresIn: number) {
-  sessionStorage.setItem(TOKEN_KEY, token);
-  sessionStorage.setItem(TOKEN_EXPIRY_KEY, (Date.now() + expiresIn * 1000).toString());
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(TOKEN_EXPIRY_KEY, (Date.now() + expiresIn * 1000).toString());
 }
 
 interface Props {

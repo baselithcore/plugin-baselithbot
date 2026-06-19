@@ -7,7 +7,7 @@ import type { SessionListResponse } from '../types';
 const API_BASE = '/api/admin';
 
 async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
-  const token = sessionStorage.getItem('auth_access_token');
+  const token = localStorage.getItem('auth_access_token');
 
   const response = await fetch(url, {
     ...options,
