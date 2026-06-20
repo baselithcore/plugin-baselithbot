@@ -8,7 +8,7 @@
  */
 
 import { useState } from 'react';
-import { UserCog, LogOut } from 'lucide-react';
+import { UserCog, LogOut, LayoutGrid } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../index';
 
@@ -39,15 +39,24 @@ const ImpersonationBanner = () => {
         <UserCog size={18} aria-hidden />
         <span>{t('impersonation.banner', { target: targetLabel, admin: adminLabel })}</span>
       </div>
-      <button
-        type="button"
-        className="impersonation-banner-stop"
-        onClick={handleStop}
-        disabled={stopping}
-      >
-        <LogOut size={15} aria-hidden />
-        {stopping ? t('impersonation.stopping') : t('impersonation.stop')}
-      </button>
+      <div className="impersonation-banner-actions">
+        {/* Jump to the control-plane shell carrying the impersonated session
+            (the access token lives in localStorage, so a full navigation keeps
+            acting as the target user). */}
+        <a className="impersonation-banner-link" href="/baselithcontrol/">
+          <LayoutGrid size={15} aria-hidden />
+          {t('impersonation.controlPlane')}
+        </a>
+        <button
+          type="button"
+          className="impersonation-banner-stop"
+          onClick={handleStop}
+          disabled={stopping}
+        >
+          <LogOut size={15} aria-hidden />
+          {stopping ? t('impersonation.stopping') : t('impersonation.stop')}
+        </button>
+      </div>
 
       <style>{`
         .impersonation-banner {
@@ -70,6 +79,28 @@ const ImpersonationBanner = () => {
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
+        }
+        .impersonation-banner-actions {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .impersonation-banner-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.4rem;
+          padding: 0.35rem 0.8rem;
+          font-size: 0.8125rem;
+          font-weight: 600;
+          color: #fff;
+          background: rgba(255, 255, 255, 0.18);
+          border: 1px solid rgba(255, 255, 255, 0.55);
+          border-radius: 6px;
+          text-decoration: none;
+          transition: background 0.15s ease;
+        }
+        .impersonation-banner-link:hover {
+          background: rgba(255, 255, 255, 0.3);
         }
         .impersonation-banner-stop {
           display: inline-flex;

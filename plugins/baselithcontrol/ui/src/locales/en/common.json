@@ -73,6 +73,8 @@
   "sort.latency": "Latency",
   "filter.all": "All Categories",
   "filter.all_status": "All states",
+  "section.system": "System plugins",
+  "section.system_hint": "Framework & infrastructure — not custom features",
   "access.read_only": "Read only",
   "access.admin": "Admin controls",
   "access.logout": "Log out",

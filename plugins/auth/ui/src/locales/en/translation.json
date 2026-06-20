@@ -612,6 +612,7 @@
   },
   "impersonation": {
     "banner": "You are viewing the app as {{target}} (impersonated by {{admin}}).",
+    "controlPlane": "Control Plane",
     "stop": "Stop impersonating",
     "stopping": "Stopping…"
   },

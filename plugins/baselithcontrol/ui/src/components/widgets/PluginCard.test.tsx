@@ -10,6 +10,7 @@ const card: Card = {
   description: 'a demo plugin',
   category: 'demo',
   group: 'Ops',
+  tier: 'application',
   icon: '',
   instance: null,
   state: 'active',

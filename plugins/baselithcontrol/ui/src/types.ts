@@ -2,6 +2,11 @@
 
 export type PluginState = 'discovered' | 'active' | 'disabled' | 'failed' | 'unknown';
 
+// "system" = framework/infrastructure plugin (manifest control.tier: system);
+// "application" = custom feature plugin (default). Drives the Overview's
+// collapsed "system plugins" bucket.
+export type PluginTier = 'system' | 'application';
+
 export interface EmbedSurface {
   tab_id: string;
   label: string;
@@ -18,6 +23,7 @@ export interface PluginCard {
   description: string;
   category: string;
   group: string;
+  tier: PluginTier;
   icon: string;
   instance: string | null;
   state: PluginState;

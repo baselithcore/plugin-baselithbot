@@ -612,6 +612,7 @@
   },
   "impersonation": {
     "banner": "Stai usando l'app come {{target}} (impersonato da {{admin}}).",
+    "controlPlane": "Plancia di Controllo",
     "stop": "Termina impersonificazione",
     "stopping": "Terminazione…"
   },

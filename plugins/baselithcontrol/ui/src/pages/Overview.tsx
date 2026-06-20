@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Search, ArrowUpDown, LayoutGrid, List, Filter } from 'lucide-react';
 import { useInventory } from '@/hooks/useInventory';
+import { useCanAccessPlugin } from '@/hooks/useAccess';
 import { useControlStore } from '@/store/useControlStore';
 import { listVariants, pageVariants } from '@/lib/motion';
 import { PluginCard } from '@/components/widgets/PluginCard';
@@ -11,6 +12,7 @@ import { HeadBand } from '@/components/HeadBand';
 import { ControlInsights } from '@/components/ControlInsights';
 import { ResourcePanel } from '@/components/widgets/ResourcePanel';
 import { StatusFilterBar } from '@/components/StatusFilterBar';
+import { SystemSection } from '@/components/SystemSection';
 import type { PluginCard as Card } from '@/types';
 
 const GRID = 'grid density-grid gap-3';
@@ -59,6 +61,9 @@ export function Overview({ onOpen }: { onOpen: (name: string) => void }) {
   const me = useControlStore((s) => s.me);
   const connected = useControlStore((s) => s.connected);
   const eventsCount = useControlStore((s) => s.events.length);
+  // Hide whole plugins the caller (or impersonated user) may not access, per the
+  // central per-tab policy — not just block "Open". Default-allow for unmanaged.
+  const canAccessPlugin = useCanAccessPlugin();
 
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -84,20 +89,23 @@ export function Overview({ onOpen }: { onOpen: (name: string) => void }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Compute unique categories
+  const allCards = useMemo(
+    () =>
+      order
+        .map((n) => plugins[n])
+        .filter((c): c is Card => Boolean(c))
+        .filter((c) => canAccessPlugin(c.name)),
+    [order, plugins, canAccessPlugin]
+  );
+
+  // Compute unique categories (only from plugins the caller may see)
   const categories = useMemo(() => {
     const cats = new Set<string>();
-    order.forEach((n) => {
-      const p = plugins[n];
-      if (p?.category) cats.add(p.category);
+    allCards.forEach((c) => {
+      if (c.category) cats.add(c.category);
     });
     return ['all', ...Array.from(cats).sort()];
-  }, [order, plugins]);
-
-  const allCards = useMemo(
-    () => order.map((n) => plugins[n]).filter((c): c is Card => Boolean(c)),
-    [order, plugins]
-  );
+  }, [allCards]);
 
   const stateCounts = useMemo<Record<StateFilter, number>>(() => {
     const counts: Record<StateFilter, number> = {
@@ -126,10 +134,22 @@ export function Overview({ onOpen }: { onOpen: (name: string) => void }) {
     return sortCards(result, sortBy);
   }, [allCards, query, selectedCategory, selectedState, sortBy]);
 
-  // Grouped plugins list
+  // Split the tier-2 system/infrastructure plugins out of the primary grid;
+  // they live in a collapsed secondary section so the grid stays focused on
+  // custom feature plugins.
+  const appCards = useMemo(
+    () => filteredAndSorted.filter((c) => c.tier !== 'system'),
+    [filteredAndSorted]
+  );
+  const systemCards = useMemo(
+    () => filteredAndSorted.filter((c) => c.tier === 'system'),
+    [filteredAndSorted]
+  );
+
+  // Grouped plugins list (application tier only — system has its own section)
   const grouped = useMemo(() => {
-    return groupBy(filteredAndSorted);
-  }, [filteredAndSorted]);
+    return groupBy(appCards);
+  }, [appCards]);
 
   if (error)
     return <div className="glass border-rose-500/25 p-6 text-sm text-rose-500">{error}</div>;
@@ -268,7 +288,7 @@ export function Overview({ onOpen }: { onOpen: (name: string) => void }) {
       </div>
 
       {/* Grid / grouped sections */}
-      <div className="pt-1">
+      <div className="space-y-5 pt-1">
         {filteredAndSorted.length === 0 ? (
           <div className="glass p-12 text-center">
             <p className="text-[13px] t-dim">{t('empty.search', { query })}</p>
@@ -276,7 +296,7 @@ export function Overview({ onOpen }: { onOpen: (name: string) => void }) {
         ) : isFlat ? (
           <motion.div variants={listVariants} initial="hidden" animate="show" className={GRID}>
             <AnimatePresence mode="popLayout">
-              {filteredAndSorted.map((card) => (
+              {appCards.map((card) => (
                 <PluginCard key={card.name} card={card} onOpen={onOpen} canControl={!readOnly} />
               ))}
             </AnimatePresence>
@@ -313,6 +333,9 @@ export function Overview({ onOpen }: { onOpen: (name: string) => void }) {
             ))}
           </div>
         )}
+
+        {/* Secondary, collapsed bucket for framework/system plugins */}
+        <SystemSection cards={systemCards} onOpen={onOpen} canControl={!readOnly} />
       </div>
     </motion.div>
   );

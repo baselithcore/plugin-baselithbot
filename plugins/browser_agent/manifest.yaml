@@ -15,3 +15,5 @@ required_resources:
 optional_resources:
 - internet
 integrity_sha256: dee3bc727f60fc7d4cc46d7760ec899e86cbd8eeba10a0d32993f636d10b317a
+control:
+  tier: system

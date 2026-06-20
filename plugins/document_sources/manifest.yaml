@@ -20,3 +20,5 @@ python_dependencies:
 optional_resources:
 - internet
 integrity_sha256: 183988b957d0024d9cd8f61d672eae4a8c9667a963c0b9fd4f9fabde954fb470
+control:
+  tier: system

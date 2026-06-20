@@ -53,3 +53,30 @@ export function useCanAccessTab(): (tabId: string) => boolean {
   const accessibleTabs = useControlStore((s) => s.accessibleTabs);
   return useCallback((tabId: string) => canAccessTab(tabId, accessibleTabs), [accessibleTabs]);
 }
+
+/**
+ * Decide whether a whole plugin (its card in the grid + any of its surfaces)
+ * should be visible to the caller.
+ *
+ * Default-allow, mirroring {@link canAccessTab}: a plugin with no policy entries
+ * is unmanaged and stays visible; a managed plugin is visible only if AT LEAST
+ * ONE of its tabs is allowed (so a multi-tab plugin is hidden only when every
+ * tab is denied). The card name equals the policy `plugin` key (both the
+ * manifest name), so matching is exact. Honors impersonation because the policy
+ * is fetched with the shared Bearer.
+ */
+export function canAccessPlugin(pluginName: string, tabs: AccessibleTab[] | null): boolean {
+  if (tabs === null) return true;
+  const matches = tabs.filter((t) => t.plugin === pluginName);
+  if (matches.length === 0) return true;
+  return matches.some((t) => t.allowed);
+}
+
+/** Reactive selector returning a `(pluginName) => boolean` access predicate. */
+export function useCanAccessPlugin(): (pluginName: string) => boolean {
+  const accessibleTabs = useControlStore((s) => s.accessibleTabs);
+  return useCallback(
+    (pluginName: string) => canAccessPlugin(pluginName, accessibleTabs),
+    [accessibleTabs]
+  );
+}

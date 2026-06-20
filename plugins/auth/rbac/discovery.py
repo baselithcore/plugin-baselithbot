@@ -133,21 +133,30 @@ def _runtime_tabs(registry: Optional[Any]) -> List[Dict[str, str]]:
         return []
     for plugin in plugins:
         name = getattr(getattr(plugin, "metadata", None), "name", None)
-        if not name or not hasattr(plugin, "get_ui_tabs"):
+        if not name:
             continue
-        try:
-            for tab in plugin.get_ui_tabs() or []:
-                tab_id = tab.get("id")
-                if tab_id:
-                    tabs.append(
-                        {
-                            "plugin": name,
-                            "tab_id": tab_id,
-                            "label": tab.get("label", tab_id),
-                        }
-                    )
-        except Exception as exc:  # noqa: BLE001 - never block on one plugin
-            logger.warning("Failed to read tabs for plugin %s: %s", name, exc)
+        found = 0
+        if hasattr(plugin, "get_ui_tabs"):
+            try:
+                for tab in plugin.get_ui_tabs() or []:
+                    tab_id = tab.get("id")
+                    if tab_id:
+                        tabs.append(
+                            {
+                                "plugin": name,
+                                "tab_id": tab_id,
+                                "label": tab.get("label", tab_id),
+                            }
+                        )
+                        found += 1
+            except Exception as exc:  # noqa: BLE001 - never block on one plugin
+                logger.warning("Failed to read tabs for plugin %s: %s", name, exc)
+        # A plugin that declares no UI tab still gets a synthetic plugin-level
+        # entry so admins can restrict it from the Access Control matrix and the
+        # control plane hides its card. Default-allow until explicitly restricted;
+        # ``auth`` is never gated, so it needs no entry.
+        if found == 0 and name != "auth":
+            tabs.append({"plugin": name, "tab_id": name, "label": name})
     return tabs
 
 

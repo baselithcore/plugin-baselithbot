@@ -49,6 +49,13 @@ class PluginAccessMiddleware:
             return
         await self.app(scope, receive, send)
 
+    # Navigation frames — never gate their shell. The auth console must stay
+    # reachable to manage access at all; the control plane is the host shell
+    # impersonated/redirected users land on, and its internal tabs are gated by
+    # the per-tab policy (frontend nav filter + /api/baselithcontrol gating), so
+    # blocking the whole shell would lock users out of navigation.
+    _UNGATED_PLUGINS = frozenset({"auth", "baselithcontrol"})
+
     async def _is_allowed(self, scope: Any, receive: Any) -> bool:
         if scope.get("method") == "OPTIONS":
             return True
@@ -58,10 +65,9 @@ class PluginAccessMiddleware:
         if registry is None:
             return True
 
-        matcher = getattr(registry, "match_plugin_route", None)
-        plugin = matcher(path) if matcher else None
-        # Unknown route or the auth console itself -> never gate here.
-        if not plugin or plugin == "auth":
+        plugin = self._resolve_plugin(path, registry)
+        # Unknown route or a navigation-frame shell -> never gate here.
+        if not plugin or plugin in self._UNGATED_PLUGINS:
             return True
 
         user = await self._authenticate(Request(scope, receive))
@@ -70,6 +76,32 @@ class PluginAccessMiddleware:
         return get_rbac_service().plugin_allowed(
             user.user_id, user.roles, plugin, registry
         )
+
+    @staticmethod
+    def _resolve_plugin(path: str, registry: Any) -> str | None:
+        """Resolve which plugin owns ``path`` — its API router OR its UI surface.
+
+        Covers the backend API (``/api/<plugin>`` via the registry route matcher)
+        AND the plugin UI surfaces the loader mounts: the SPA at ``/<plugin>`` and
+        its assets at ``/plugins/<plugin>/static/...``. Gating the UI closes the
+        gap where a restricted plugin's shell still loaded (its API was already
+        gated). Only names the registry actually serves static for are matched, so
+        core paths (``/static``, ``/docs``, non-plugin API) fall through to
+        default-allow.
+        """
+        matcher = getattr(registry, "match_plugin_route", None)
+        plugin = matcher(path) if matcher else None
+        if plugin:
+            return plugin
+        parts = path.strip("/").split("/")
+        if not parts or not parts[0]:
+            return None
+        name = parts[1] if parts[0] == "plugins" and len(parts) > 1 else parts[0]
+        try:
+            static_paths = registry.get_all_static_paths()
+        except Exception:  # noqa: BLE001 - fail-open on any resolution error
+            return None
+        return name if name in static_paths else None
 
     async def _authenticate(self, request: Request) -> AuthUser:
         """Resolve the caller from header / cookie (mirrors AuthMiddleware)."""

@@ -7,3 +7,5 @@ tags:
 - tracking
 - workflow
 integrity_sha256: 2fa3d3416dced3a08765df0260093f165d1b059688dfab9124c4930325f28641
+control:
+  tier: system

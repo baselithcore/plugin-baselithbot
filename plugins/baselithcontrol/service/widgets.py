@@ -58,13 +58,26 @@ def load_control_meta(plugin_name: str) -> dict[str, Any]:
 
 
 def display_meta(plugin_name: str, *, category: str) -> dict[str, Any]:
-    """Derive display metadata (group/icon/instance) with sensible fallbacks."""
+    """Derive display metadata (group/icon/instance/tier) with sensible fallbacks.
+
+    ``tier`` separates framework/infrastructure plugins (``system``) from custom
+    feature plugins (``application``, the default). A plugin opts into the system
+    bucket by declaring ``control.tier: system`` in its manifest; any other value
+    falls back to ``application`` so the control plane never hides a feature
+    plugin by accident.
+    """
     control = load_control_meta(plugin_name)
     group = control.get("group")
+    tier = (
+        "system"
+        if str(control.get("tier", "")).strip().lower() == "system"
+        else "application"
+    )
     return {
         "group": str(group) if group else (category or "uncategorized"),
         "icon": str(control.get("icon", "")),
         "instance": (str(control["instance"]) if control.get("instance") else None),
+        "tier": tier,
     }
 
 

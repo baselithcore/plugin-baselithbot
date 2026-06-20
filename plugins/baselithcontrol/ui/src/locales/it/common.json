@@ -73,6 +73,8 @@
   "sort.latency": "Latenza",
   "filter.all": "Tutte le categorie",
   "filter.all_status": "Tutti gli stati",
+  "section.system": "Plugin di sistema",
+  "section.system_hint": "Framework e infrastruttura — non funzionalità custom",
   "access.read_only": "Sola lettura",
   "access.admin": "Controlli admin",
   "access.logout": "Esci",
