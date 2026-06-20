@@ -65,12 +65,26 @@ class PluginAccessMiddleware:
         if registry is None:
             return True
 
-        plugin = self._resolve_plugin(path, registry)
+        plugin, is_ui = self._resolve_plugin(path, registry)
         # Unknown route or a navigation-frame shell -> never gate here.
         if not plugin or plugin in self._UNGATED_PLUGINS:
             return True
 
         user = await self._authenticate(Request(scope, receive))
+
+        # A UI-surface load (the SPA document at ``/<plugin>`` and its static
+        # assets) is a browser *navigation*: it carries only the refresh cookie,
+        # never the localStorage access token that is the app's primary identity.
+        # When that cookie is absent (plugin opened on a different host, SameSite,
+        # secure-cookie-over-http) a logged-in admin resolves as *anonymous*
+        # here, and gating the shell would lock them out of a restricted plugin
+        # they may legitimately use. Fail open for unauthenticated UI loads — the
+        # SPA's own ProtectedRoute and the Bearer-gated ``/api/<plugin>`` routes
+        # (which DO see the access token) still enforce. API routes and
+        # positively-authenticated users stay strictly gated.
+        if is_ui and not user.is_authenticated:
+            return True
+
         from plugins.auth.rbac.service import get_rbac_service
 
         return get_rbac_service().plugin_allowed(
@@ -78,30 +92,31 @@ class PluginAccessMiddleware:
         )
 
     @staticmethod
-    def _resolve_plugin(path: str, registry: Any) -> str | None:
-        """Resolve which plugin owns ``path`` — its API router OR its UI surface.
+    def _resolve_plugin(path: str, registry: Any) -> tuple[str | None, bool]:
+        """Resolve which plugin owns ``path`` and whether it is a UI surface.
 
-        Covers the backend API (``/api/<plugin>`` via the registry route matcher)
-        AND the plugin UI surfaces the loader mounts: the SPA at ``/<plugin>`` and
-        its assets at ``/plugins/<plugin>/static/...``. Gating the UI closes the
-        gap where a restricted plugin's shell still loaded (its API was already
-        gated). Only names the registry actually serves static for are matched, so
-        core paths (``/static``, ``/docs``, non-plugin API) fall through to
-        default-allow.
+        Returns ``(plugin_name, is_ui)``. ``is_ui`` is ``True`` for the plugin's
+        UI surfaces (the SPA at ``/<plugin>`` and its assets at
+        ``/plugins/<plugin>/static/...``) and ``False`` for the backend API
+        (``/api/<plugin>`` via the registry route matcher). The distinction lets
+        the caller fail open on anonymous UI-shell loads while keeping API routes
+        strictly gated. Only names the registry actually serves static for are
+        matched, so core paths (``/static``, ``/docs``, non-plugin API) fall
+        through to default-allow.
         """
         matcher = getattr(registry, "match_plugin_route", None)
         plugin = matcher(path) if matcher else None
         if plugin:
-            return plugin
+            return plugin, False  # backend API route
         parts = path.strip("/").split("/")
         if not parts or not parts[0]:
-            return None
+            return None, False
         name = parts[1] if parts[0] == "plugins" and len(parts) > 1 else parts[0]
         try:
             static_paths = registry.get_all_static_paths()
         except Exception:  # noqa: BLE001 - fail-open on any resolution error
-            return None
-        return name if name in static_paths else None
+            return None, False
+        return (name, True) if name in static_paths else (None, False)
 
     async def _authenticate(self, request: Request) -> AuthUser:
         """Resolve the caller from header / cookie (mirrors AuthMiddleware)."""
