@@ -72,16 +72,16 @@ class PluginAccessMiddleware:
 
         user = await self._authenticate(Request(scope, receive))
 
-        # A UI-surface load (the SPA document at ``/<plugin>`` and its static
-        # assets) is a browser *navigation*: it carries only the refresh cookie,
-        # never the localStorage access token that is the app's primary identity.
-        # When that cookie is absent (plugin opened on a different host, SameSite,
-        # secure-cookie-over-http) a logged-in admin resolves as *anonymous*
-        # here, and gating the shell would lock them out of a restricted plugin
-        # they may legitimately use. Fail open for unauthenticated UI loads — the
-        # SPA's own ProtectedRoute and the Bearer-gated ``/api/<plugin>`` routes
-        # (which DO see the access token) still enforce. API routes and
-        # positively-authenticated users stay strictly gated.
+        # A UI-surface load (the SPA document + its JS/CSS/font/img assets) is a
+        # browser navigation: it carries only the refresh cookie, never the
+        # localStorage access token that is the app's primary identity. When that
+        # cookie is absent (different mount, SameSite, secure-over-http) a
+        # logged-in admin resolves as *anonymous* here, so gating the shell would
+        # lock them out. Fail open ONLY for an unauthenticated UI load — the shell
+        # is public client code; the SPA's ProtectedRoute and the Bearer-gated
+        # data API (which DOES carry the access token) still enforce. Evaluated
+        # AFTER authentication: an authenticated caller is ALWAYS run through
+        # ``plugin_allowed`` (no client-supplied header can skip the gate).
         if is_ui and not user.is_authenticated:
             return True
 
@@ -96,17 +96,22 @@ class PluginAccessMiddleware:
         """Resolve which plugin owns ``path`` and whether it is a UI surface.
 
         Returns ``(plugin_name, is_ui)``. ``is_ui`` is ``True`` for the plugin's
-        UI surfaces (the SPA at ``/<plugin>`` and its assets at
-        ``/plugins/<plugin>/static/...``) and ``False`` for the backend API
-        (``/api/<plugin>`` via the registry route matcher). The distinction lets
-        the caller fail open on anonymous UI-shell loads while keeping API routes
-        strictly gated. Only names the registry actually serves static for are
-        matched, so core paths (``/static``, ``/docs``, non-plugin API) fall
-        through to default-allow.
+        UI surfaces: the SPA at ``/<plugin>``, its assets at
+        ``/plugins/<plugin>/static/...``, AND a SPA mounted under the plugin's own
+        API prefix (e.g. red_agent serves its dashboard at ``/red-agent/ui`` even
+        though its API prefix is ``/red-agent``) — resolved from the plugin's
+        declared ``ui_tabs`` urls so the shell is not mistaken for a data route.
+        ``False`` for backend API routes. The distinction lets the caller fail
+        open on anonymous UI-shell loads while keeping API routes strictly gated.
         """
         matcher = getattr(registry, "match_plugin_route", None)
         plugin = matcher(path) if matcher else None
         if plugin:
+            # A path that matched the plugin's API prefix may still be its SPA
+            # mount living under that prefix — treat declared ui_tab urls as UI.
+            for url in PluginAccessMiddleware._ui_mount_urls(registry, plugin):
+                if path == url or path.startswith(f"{url}/"):
+                    return plugin, True
             return plugin, False  # backend API route
         parts = path.strip("/").split("/")
         if not parts or not parts[0]:
@@ -117,6 +122,33 @@ class PluginAccessMiddleware:
         except Exception:  # noqa: BLE001 - fail-open on any resolution error
             return None, False
         return (name, True) if name in static_paths else (None, False)
+
+    @staticmethod
+    def _ui_mount_urls(registry: Any, plugin: str) -> list[str]:
+        """Declared UI-tab mount urls for ``plugin`` (relative, same-origin).
+
+        Sourced from the live frontend manifest so it reflects a plugin's
+        registered ``get_ui_tabs()`` (authoritative for active plugins), letting
+        the gate recognise a SPA mounted under the plugin's API prefix.
+        """
+        getter = getattr(registry, "get_frontend_manifest", None)
+        if getter is None:
+            return []
+        try:
+            entry = (getter().get("plugins") or {}).get(plugin) or {}
+            tabs = entry.get("ui_tabs") or []
+        except Exception:  # noqa: BLE001 - fail-open on any resolution error
+            return []
+        urls: list[str] = []
+        for tab in tabs:
+            url = tab.get("url") if isinstance(tab, dict) else None
+            if (
+                isinstance(url, str)
+                and url.startswith("/")
+                and not url.startswith("//")
+            ):
+                urls.append(url.rstrip("/"))
+        return urls
 
     async def _authenticate(self, request: Request) -> AuthUser:
         """Resolve the caller from header / cookie (mirrors AuthMiddleware)."""
