@@ -11,6 +11,7 @@ import { X, ShieldCheck, ShieldOff, Copy, Check, Download, AlertTriangle } from 
 import { useTranslation } from 'react-i18next';
 import { setupMFA, enableMFA, disableMFA, type MFASetupResponse } from '../../api/auth';
 import { useAuth } from '../../hooks/useAuthContext';
+import QrCode from '../shared/QrCode';
 import './mfa.css';
 
 type Phase = 'status' | 'scan' | 'verify' | 'backup';
@@ -118,9 +119,12 @@ const MfaSecurityModal = ({ onClose }: { onClose: () => void }) => {
               <p className="wz-step-hint" style={{ marginBottom: 0 }}>
                 {t('security.mfa.scanHint')}
               </p>
-              {setup.qr_code && (
-                <img className="mfa-qr" src={setup.qr_code} alt={t('security.mfa.qrAlt')} />
-              )}
+              <QrCode
+                className="mfa-qr"
+                src={setup.qr_code}
+                value={setup.provisioning_uri}
+                alt={t('security.mfa.qrAlt')}
+              />
               <div className="mfa-secret">{setup.secret}</div>
             </div>
           )}

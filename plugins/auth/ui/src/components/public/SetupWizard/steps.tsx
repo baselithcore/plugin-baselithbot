@@ -8,6 +8,7 @@ import { Eye, EyeOff, ShieldCheck, KeyRound, Rocket, Copy, Check } from 'lucide-
 import { useTranslation } from 'react-i18next';
 import { scorePassword, STRENGTH_COLORS } from '../../modals/CreateUserWizard/password';
 import type { MFASetupResponse } from '../../../api/auth';
+import QrCode from '../../shared/QrCode';
 
 export function WelcomeStep({ onNext }: { onNext: () => void }) {
   const { t } = useTranslation();
@@ -168,14 +169,16 @@ export function MfaStep({ data, code, onCodeChange, onVerify, busy, error }: Mfa
       </div>
       <p className="setup-lead">{t('setup.mfa.lead')}</p>
 
-      {data.qr_code ? (
-        <img className="setup-qr" src={data.qr_code} alt={t('setup.mfa.qrAlt')} />
-      ) : (
-        <div className="setup-secret-box">
-          <span className="setup-secret-label">{t('setup.mfa.secret')}</span>
-          <code className="setup-secret">{data.secret}</code>
-        </div>
-      )}
+      <QrCode
+        className="setup-qr"
+        src={data.qr_code}
+        value={data.provisioning_uri}
+        alt={t('setup.mfa.qrAlt')}
+      />
+      <div className="setup-secret-box">
+        <span className="setup-secret-label">{t('setup.mfa.secret')}</span>
+        <code className="setup-secret">{data.secret}</code>
+      </div>
 
       <div className="setup-backup">
         <div className="setup-backup-head">

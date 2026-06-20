@@ -11,6 +11,7 @@ import { loginWithPasskey, isPasskeySupported } from '../api/webauthn';
 import type { MFAEnrollmentRequiredResponse } from '../api/auth';
 import SsoButtons from './SsoButtons';
 import AuthLogo from './ui/AuthLogo';
+import QrCode from './shared/QrCode';
 import '../index.css';
 
 interface LoginPageProps {
@@ -125,9 +126,12 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
               </div>
             )}
 
-            {enrollment.qr_code ? (
-              <img className="auth-enroll-qr" src={enrollment.qr_code} alt="MFA QR" />
-            ) : null}
+            <QrCode
+              className="auth-enroll-qr"
+              src={enrollment.qr_code}
+              value={enrollment.provisioning_uri}
+              alt="MFA QR"
+            />
 
             <div className="auth-field">
               <label className="auth-label">{t('login.enrollSecretLabel')}</label>
