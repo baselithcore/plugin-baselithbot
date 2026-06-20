@@ -22,8 +22,7 @@ export function StatusStrip({ cards, resources, onInspect }: Props) {
   const degraded = cards.filter((c) => c.state === 'active' && c.healthy === false);
   const attention = failed.length + degraded.length;
   const critical = failed.length > 0;
-  const tone =
-    attention === 0 ? 'text-emerald-500' : critical ? 'text-rose-500' : 'text-amber-500';
+  const tone = attention === 0 ? 'text-emerald-500' : critical ? 'text-rose-500' : 'text-amber-500';
   const uptime = resources?.available !== false ? formatUptime(resources?.uptime_seconds) : null;
 
   return (

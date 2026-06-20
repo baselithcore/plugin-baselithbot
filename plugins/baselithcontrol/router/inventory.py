@@ -48,9 +48,18 @@ def build_inventory_router() -> APIRouter:
         }
 
     @router.get("/inventory", response_model=InventoryView)
-    async def inventory(request: Request) -> InventoryView:
-        """Merged catalog of active and lazily-discovered plugins."""
-        return get_aggregator(request.app).inventory()
+    async def inventory(
+        request: Request, user: AuthUser = Depends(current_principal)
+    ) -> InventoryView:
+        """Merged plugin catalog, scoped to the caller.
+
+        Ordinary users only see **active** plugins; admins additionally see
+        disabled/failed/discovered plugins (the operational state they alone
+        can act on via the lifecycle routes).
+        """
+        return get_aggregator(request.app).inventory(
+            include_inactive=user.has_role(AuthRole.ADMIN)
+        )
 
     @router.get("/ui-registry", response_model=list[EmbedSurface])
     async def ui_registry(
@@ -63,7 +72,9 @@ def build_inventory_router() -> APIRouter:
         access (default-allow for unmanaged/unrestricted tabs).
         """
         allow = _tab_access_predicate(user)
-        return get_aggregator(request.app).ui_registry(allow=allow)
+        return get_aggregator(request.app).ui_registry(
+            allow=allow, include_inactive=user.has_role(AuthRole.ADMIN)
+        )
 
     return router
 

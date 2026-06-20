@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 
+from core.auth.types import AuthRole, AuthUser
+
 from ..api_models import OverviewView, PluginStatus, StatusView, WidgetSpec
 from ..service import get_aggregator
 from ..service.probe import StatusProber
 from ..service.widgets import resolve_widgets
-from ._guards import read_guard
+from ._guards import current_principal, read_guard
 
 
 def _system_metrics() -> dict:
@@ -33,9 +35,13 @@ def build_status_router() -> APIRouter:
         return get_aggregator(request.app).status(_system_metrics())
 
     @router.get("/overview", response_model=OverviewView)
-    async def overview(request: Request) -> OverviewView:
-        """Framework-wide head-band summary (counts + tones)."""
-        return get_aggregator(request.app).overview()
+    async def overview(
+        request: Request, user: AuthUser = Depends(current_principal)
+    ) -> OverviewView:
+        """Framework-wide head-band summary (counts + tones), scoped to caller."""
+        return get_aggregator(request.app).overview(
+            include_inactive=user.has_role(AuthRole.ADMIN)
+        )
 
     @router.get("/status/{plugin}", response_model=PluginStatus)
     async def plugin_status(plugin: str, request: Request) -> PluginStatus:
@@ -46,10 +52,14 @@ def build_status_router() -> APIRouter:
         return StatusProber(registry).probe(plugin)
 
     @router.get("/widgets", response_model=list[WidgetSpec])
-    async def widgets(request: Request) -> list[WidgetSpec]:
+    async def widgets(
+        request: Request, user: AuthUser = Depends(current_principal)
+    ) -> list[WidgetSpec]:
         """Declarative status widgets a plugin opts into via its manifest."""
-        names = [c.name for c in get_aggregator(request.app).inventory().plugins]
-        return resolve_widgets(names)
+        inv = get_aggregator(request.app).inventory(
+            include_inactive=user.has_role(AuthRole.ADMIN)
+        )
+        return resolve_widgets([c.name for c in inv.plugins])
 
     return router
 

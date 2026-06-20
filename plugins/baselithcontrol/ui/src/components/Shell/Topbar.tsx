@@ -54,13 +54,15 @@ export function Topbar() {
           type="button"
           onClick={() => go('dashboard')}
           className="flex shrink-0 items-center gap-2.5"
-          title={t('app.title')}
+          title="BaselithControl"
         >
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] accent-ring">
             <BrandMark className="h-4 w-4 t-accent" />
           </span>
+          {/* Brand wordmark — product name (untranslated) with an accent dot
+              echoing the logo mark, in the same display font. */}
           <span className="hidden font-display text-[15px] font-bold tracking-tight t-primary sm:block">
-            {t('app.title')}
+            BaselithControl<span className="t-accent">.</span>
           </span>
         </button>
 

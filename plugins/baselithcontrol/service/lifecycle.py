@@ -52,7 +52,9 @@ class LifecycleBuffer:
             return
         for topic in _TOPICS:
             try:
-                self._unsubscribes.append(bus.subscribe(topic, self._make_handler(topic)))
+                self._unsubscribes.append(
+                    bus.subscribe(topic, self._make_handler(topic))
+                )
             except Exception as exc:  # noqa: BLE001 — never block boot on telemetry
                 logger.debug("lifecycle subscribe to '%s' failed: %s", topic, exc)
 
