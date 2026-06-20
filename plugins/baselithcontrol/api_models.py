@@ -229,6 +229,33 @@ class AuditEntryView(BaseModel):
     timestamp: float
 
 
+class RequestVolumeSample(BaseModel):
+    """One point of the retained aggregate request-rate series.
+
+    ``requests_per_sec`` is the total HTTP throughput across all plugins at
+    ``timestamp`` (epoch seconds), derived server-side from the monotonic meter
+    so the trend survives page reloads and spans the full retained window.
+    """
+
+    timestamp: float
+    requests_per_sec: float
+
+
+class LifecycleEvent(BaseModel):
+    """A retained plugin-lifecycle record for the activity timeline.
+
+    Captures the well-known control-plane topics (``plugin.activated`` /
+    ``deactivated`` / ``reloaded`` / ``failed`` and governed dashboard actions)
+    with their timestamp, so the UI can show recent history even after a reload.
+    """
+
+    type: str
+    timestamp: float
+    plugin: str | None = None
+    state: str | None = None
+    ok: bool | None = None
+
+
 __all__ = [
     "API_VERSION",
     "PluginState",
@@ -249,4 +276,6 @@ __all__ = [
     "ConfigRequest",
     "ActionResult",
     "AuditEntryView",
+    "RequestVolumeSample",
+    "LifecycleEvent",
 ]

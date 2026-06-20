@@ -20,9 +20,11 @@ from .deps import (
     get_registry,
 )
 from .config_store import read_all, read_enabled, set_enabled
+from .lifecycle import LifecycleBuffer, get_lifecycle_buffer
 from .plugin_meter import PluginMeter, PluginMeterMiddleware, get_plugin_meter
 from .probe import StatusProber
 from .resources import ResourceSampler, get_resource_sampler
+from .volume import VolumeSampler, get_volume_sampler
 from .widgets import display_meta, resolve_widget, resolve_widgets
 
 __all__ = [
@@ -50,4 +52,8 @@ __all__ = [
     "get_plugin_meter",
     "ResourceSampler",
     "get_resource_sampler",
+    "LifecycleBuffer",
+    "get_lifecycle_buffer",
+    "VolumeSampler",
+    "get_volume_sampler",
 ]

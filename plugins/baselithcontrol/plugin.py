@@ -103,6 +103,17 @@ class BaselithControlPlugin(RouterPlugin):
         except Exception as exc:  # noqa: BLE001 — telemetry is optional
             logger.warning("BaselithControl meter install failed: %s", exc)
 
+        # Retained lifecycle timeline: construct the buffer now so it subscribes
+        # to the event bus at boot and captures activity from the first event
+        # (the SSE bridge only serves live, per-connection frames). Best-effort.
+        try:
+            from .service.lifecycle import get_lifecycle_buffer
+
+            get_lifecycle_buffer()
+            logger.info("BaselithControl lifecycle timeline attached")
+        except Exception as exc:  # noqa: BLE001 — telemetry is optional
+            logger.warning("BaselithControl lifecycle attach failed: %s", exc)
+
         if not _UI_DIST.exists():
             logger.info(
                 "BaselithControl UI not built; SPA mount skipped (%s)", _UI_DIST

@@ -83,6 +83,23 @@ class ControlConfig(BaseSettings):
         description="Ring-buffer capacity for the in-memory audit trail.",
     )
 
+    # -- Retained telemetry (server-side, survive page reloads) -------------
+    volume_interval_seconds: float = Field(
+        default=5.0,
+        gt=0,
+        description="Sampling cadence for the retained request-volume series.",
+    )
+    volume_capacity: int = Field(
+        default=720,  # 720 × 5s ≈ 1 hour of history
+        ge=1,
+        description="Ring-buffer capacity for the request-volume time-series.",
+    )
+    lifecycle_capacity: int = Field(
+        default=200,
+        ge=1,
+        description="Ring-buffer capacity for the retained lifecycle timeline.",
+    )
+
     @classmethod
     def from_plugin_config(cls, config: dict[str, Any] | None) -> "ControlConfig":
         """Build from the plugin config block, with env overrides applied."""

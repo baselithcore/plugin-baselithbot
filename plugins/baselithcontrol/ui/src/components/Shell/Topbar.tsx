@@ -14,6 +14,7 @@ import { setLanguage } from '@/i18n';
 import { logout } from '@/lib/api';
 import { spring } from '@/lib/motion';
 import { BrandMark } from '@/components/widgets/BrandMark';
+import { Clock } from '@/components/Shell/Clock';
 import { useControlStore } from '@/store/useControlStore';
 import { useCanAccessTab } from '@/hooks/useAccess';
 import { useTheme } from '@/store/useTheme';
@@ -97,6 +98,9 @@ export function Topbar() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          {/* Wall clock — operator-local time + date */}
+          <Clock />
+
           {/* Live status */}
           <span
             className="hidden items-center gap-1.5 rounded-lg border brd bg-[var(--surface-inset)] px-2.5 py-1.5 text-[12px] font-medium t-dim md:inline-flex"

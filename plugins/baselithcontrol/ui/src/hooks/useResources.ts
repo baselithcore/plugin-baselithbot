@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { fetchPluginRuntime, fetchResources } from '@/lib/api';
-import type { PluginRuntime, SystemResources } from '@/types';
+import { fetchPluginRuntime, fetchRequestVolume, fetchResources } from '@/lib/api';
+import type { PluginRuntime, RequestVolumeSample, SystemResources } from '@/types';
 
 const HISTORY = 40; // sparkline points retained per series
 const POLL_MS = 3000;
@@ -14,7 +14,9 @@ export interface ResourcesState {
   cpuHistory: number[];
   memHistory: number[];
   netHistory: number[]; // sent+recv bytes/s
+  volumeHistory: number[]; // retained aggregate req/s (server-side, survives reloads)
   plugins: RuntimeRow[];
+  lastUpdated: number | null; // epoch ms of the last successful poll
   error: string | null;
 }
 
@@ -32,7 +34,9 @@ export function useResources(): ResourcesState {
     cpuHistory: [],
     memHistory: [],
     netHistory: [],
+    volumeHistory: [],
     plugins: [],
+    lastUpdated: null,
     error: null,
   });
   // prev request counts + timestamp, kept across polls to compute rps.
@@ -43,7 +47,13 @@ export function useResources(): ResourcesState {
 
     const poll = async () => {
       try {
-        const [res, runtime] = await Promise.all([fetchResources(), fetchPluginRuntime()]);
+        // Volume history is best-effort: an older backend without /resources/history
+        // just yields an empty trend rather than failing the whole poll.
+        const [res, runtime, volume] = await Promise.all([
+          fetchResources(),
+          fetchPluginRuntime(),
+          fetchRequestVolume().catch(() => [] as RequestVolumeSample[]),
+        ]);
         if (!alive) return;
 
         const now = Date.now();
@@ -62,7 +72,9 @@ export function useResources(): ResourcesState {
           cpuHistory: push(s.cpuHistory, res.cpu_percent ?? 0),
           memHistory: push(s.memHistory, res.rss_percent ?? res.mem_percent ?? 0),
           netHistory: push(s.netHistory, (res.net_sent_bps ?? 0) + (res.net_recv_bps ?? 0)),
+          volumeHistory: volume.map((p) => p.requests_per_sec),
           plugins: rows,
+          lastUpdated: now,
           error: null,
         }));
       } catch (err) {

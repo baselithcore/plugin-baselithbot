@@ -11,6 +11,7 @@ import {
   Radio,
 } from 'lucide-react';
 import { useControlStore, type LoggedEvent } from '@/store/useControlStore';
+import { TimelinePanel } from '@/components/TimelinePanel';
 import { pageVariants } from '@/lib/motion';
 
 function formatTime(ts: number) {
@@ -135,6 +136,10 @@ export function EventFeed() {
           )}
         </div>
       </div>
+
+      {/* Retained recent-activity timeline (survives reloads) — sits above the
+          ephemeral live SSE stream below; both belong to this Events surface. */}
+      <TimelinePanel />
 
       <div className="glass flex min-h-[400px] flex-col overflow-hidden p-5">
         {events.length === 0 ? (

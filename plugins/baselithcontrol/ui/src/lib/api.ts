@@ -10,12 +10,14 @@ import type {
   Inventory,
   InfoReport,
   JobView,
+  LifecycleEvent,
   LifecycleOp,
   Me,
   Overview,
   PluginRuntime,
   PluginStatus,
   QueueStatus,
+  RequestVolumeSample,
   SystemResources,
   VerifyReport,
   WidgetSpec,
@@ -154,6 +156,16 @@ export function fetchResources(): Promise<SystemResources> {
 
 export function fetchPluginRuntime(): Promise<PluginRuntime[]> {
   return getJSON<PluginRuntime[]>('/resources/plugins');
+}
+
+// Server-retained aggregate request-rate trend (survives page reloads).
+export function fetchRequestVolume(): Promise<RequestVolumeSample[]> {
+  return getJSON<RequestVolumeSample[]>('/resources/history');
+}
+
+// Recent plugin-lifecycle events, newest first (retained server-side).
+export function fetchTimeline(limit = 50): Promise<LifecycleEvent[]> {
+  return getJSON<LifecycleEvent[]>(`/timeline?limit=${limit}`);
 }
 
 // Declarative widgets fetch the plugin's own relative endpoint same-origin

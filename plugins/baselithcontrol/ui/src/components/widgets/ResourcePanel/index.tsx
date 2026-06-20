@@ -1,7 +1,16 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Cpu, MemoryStick, Network, Activity, Clock, Layers, ChevronDown } from 'lucide-react';
-import { useResources } from '@/hooks/useResources';
+import {
+  Cpu,
+  MemoryStick,
+  Network,
+  Activity,
+  Clock,
+  Layers,
+  Gauge,
+  ChevronDown,
+} from 'lucide-react';
+import type { ResourcesState } from '@/hooks/useResources';
 import { formatBytes, formatRate, formatUptime } from '@/lib/format';
 import { GaugeCard } from './GaugeCard';
 import { RuntimeTable } from './RuntimeTable';
@@ -11,9 +20,14 @@ import { RuntimeTable } from './RuntimeTable';
 // telemetry — the only signal that can be honestly attributed to one in-process
 // plugin. Collapsed by default so plugin selection stays the focus; a compact
 // summary strip is always visible, full gauges + table reveal on expand.
-export function ResourcePanel({ onOpen }: { onOpen?: (name: string) => void }) {
+interface Props {
+  state: ResourcesState;
+  onOpen?: (name: string) => void;
+}
+
+export function ResourcePanel({ state, onOpen }: Props) {
   const { t } = useTranslation();
-  const { resources, cpuHistory, netHistory, plugins, error } = useResources();
+  const { resources, cpuHistory, netHistory, volumeHistory, plugins, error } = state;
   const [open, setOpen] = useState(false);
 
   if (error && !resources) {
@@ -75,7 +89,7 @@ export function ResourcePanel({ onOpen }: { onOpen?: (name: string) => void }) {
       {open && (
         <div className="space-y-4 border-t brd p-4">
           {available && (
-            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
               <GaugeCard
                 id="cpu"
                 icon={Cpu}
@@ -123,6 +137,16 @@ export function ResourcePanel({ onOpen }: { onOpen?: (name: string) => void }) {
                   fds: r?.open_fds ?? '—',
                   uptime: formatUptime(r?.uptime_seconds),
                 })}
+              />
+              <GaugeCard
+                id="req"
+                icon={Gauge}
+                label={t('resources.throughput')}
+                value={t('resources.rps_val', {
+                  n: plugins.reduce((acc, p) => acc + p.rps, 0).toFixed(1),
+                })}
+                sub={t('resources.window_sub')}
+                spark={volumeHistory}
               />
             </div>
           )}

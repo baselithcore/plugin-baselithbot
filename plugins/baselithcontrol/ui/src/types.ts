@@ -133,6 +133,21 @@ export interface PluginRuntime {
   last_ms: number;
 }
 
+// Retained aggregate request-rate series (server-side; survives reloads).
+export interface RequestVolumeSample {
+  timestamp: number;
+  requests_per_sec: number;
+}
+
+// Retained plugin-lifecycle record for the recent-activity timeline.
+export interface LifecycleEvent {
+  type: string;
+  timestamp: number;
+  plugin: string | null;
+  state: string | null;
+  ok: boolean | null;
+}
+
 export interface Me {
   user_id: string;
   email?: string | null;

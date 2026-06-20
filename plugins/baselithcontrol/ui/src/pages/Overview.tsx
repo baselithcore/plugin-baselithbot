@@ -3,11 +3,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Search, ArrowUpDown, LayoutGrid, List, Filter } from 'lucide-react';
 import { useInventory } from '@/hooks/useInventory';
+import { useResources } from '@/hooks/useResources';
 import { useCanAccessPlugin } from '@/hooks/useAccess';
 import { useControlStore } from '@/store/useControlStore';
 import { listVariants, pageVariants } from '@/lib/motion';
 import { PluginCard } from '@/components/widgets/PluginCard';
 import { CardSkeleton } from '@/components/widgets/CardSkeleton';
+import { StatusStrip } from '@/components/StatusStrip';
 import { HeadBand } from '@/components/HeadBand';
 import { ControlInsights } from '@/components/ControlInsights';
 import { ResourcePanel } from '@/components/widgets/ResourcePanel';
@@ -56,6 +58,9 @@ function sortCards(cards: Card[], sortBy: 'name' | 'status'): Card[] {
 export function Overview({ onOpen }: { onOpen: (name: string) => void }) {
   const { t } = useTranslation();
   const { loading, error } = useInventory();
+  // Single resource poller for the page — shared by the status strip and the
+  // resource panel so we never double-poll the framework gauges.
+  const resourceState = useResources();
   const order = useControlStore((s) => s.order);
   const plugins = useControlStore((s) => s.plugins);
   const me = useControlStore((s) => s.me);
@@ -183,12 +188,19 @@ export function Overview({ onOpen }: { onOpen: (name: string) => void }) {
       exit="exit"
       className="space-y-3"
     >
-      {/* Page heading */}
-      <div className="flex items-baseline gap-3">
+      {/* Page heading — health verdict + uptime fold inline so the grid leads */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <h1 className="font-display text-[1.35rem] font-bold leading-tight tracking-tight t-primary">
           {t('nav.overview')}
         </h1>
-        <p className="truncate text-[13px] t-dim">{t('app.subtitle')}</p>
+        <p className="hidden truncate text-[13px] t-dim sm:block">{t('app.subtitle')}</p>
+        <div className="ml-auto">
+          <StatusStrip
+            cards={allCards}
+            resources={resourceState.resources}
+            onInspect={(critical) => setSelectedState(critical ? 'failed' : 'active')}
+          />
+        </div>
       </div>
 
       {/* Unified metrics band: 8 KPIs (health + ops) on a single hairline grid */}
@@ -204,7 +216,7 @@ export function Overview({ onOpen }: { onOpen: (name: string) => void }) {
         </div>
       </div>
 
-      <ResourcePanel onOpen={onOpen} />
+      <ResourcePanel state={resourceState} onOpen={onOpen} />
 
       {/* Plugin toolbar: search + status filter + view + sort — the control deck */}
       <div className="glass flex flex-col gap-3 p-3 lg:flex-row lg:items-center">
