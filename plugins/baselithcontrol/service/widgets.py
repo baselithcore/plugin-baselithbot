@@ -40,12 +40,38 @@ logger = get_logger(__name__)
 _PLUGINS_ROOT = Path(__file__).resolve().parents[2]
 
 
+def _manifest_dir(plugin_name: str) -> Path | None:
+    """Resolve a plugin's on-disk directory from its (possibly registry) name.
+
+    Most plugins use the same string for their manifest ``name`` and their
+    directory, but a few legacy plugins declare a hyphenated ``name``
+    (``coding-agent``) while living in an underscored directory
+    (``coding_agent``). The registry serves the manifest ``name``, so resolve
+    by trying the literal name first, then the hyphen/underscore variants.
+    Returns the first directory that actually holds a ``manifest.yaml``.
+    """
+    candidates = (
+        plugin_name,
+        plugin_name.replace("-", "_"),
+        plugin_name.replace("_", "-"),
+    )
+    seen: set[str] = set()
+    for cand in candidates:
+        if cand in seen:
+            continue
+        seen.add(cand)
+        if (_PLUGINS_ROOT / cand / "manifest.yaml").is_file():
+            return _PLUGINS_ROOT / cand
+    return None
+
+
 @lru_cache(maxsize=256)
 def load_control_meta(plugin_name: str) -> dict[str, Any]:
     """Return the ``control`` block of a plugin's manifest (empty if absent)."""
-    manifest = _PLUGINS_ROOT / plugin_name / "manifest.yaml"
-    if not manifest.is_file():
+    plugin_dir = _manifest_dir(plugin_name)
+    if plugin_dir is None:
         return {}
+    manifest = plugin_dir / "manifest.yaml"
     try:
         import yaml
 
