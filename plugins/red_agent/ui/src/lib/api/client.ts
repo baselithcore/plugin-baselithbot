@@ -1,4 +1,9 @@
-const TOKEN_KEY = 'red_agent.token';
+// Central auth (single-source SSO) persists the access token under this key via
+// the shared `@auth` AuthProvider. Reading the SAME key here makes every
+// red_agent API/WS call carry the logged-in user's Bearer token, so the gateway
+// RBAC gate authorises them — instead of falling back to the (often absent)
+// refresh cookie and 403-ing on restricted/non-admin sessions.
+const TOKEN_KEY = 'auth_access_token';
 export const getToken = () => localStorage.getItem(TOKEN_KEY) ?? '';
 export const setToken = (t: string) => localStorage.setItem(TOKEN_KEY, t);
 

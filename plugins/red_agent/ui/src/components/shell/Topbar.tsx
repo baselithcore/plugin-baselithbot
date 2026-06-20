@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Icon } from '../ui/Icon';
 import { Button } from '../ui/Button';
 import { MenuDivider, MenuHeader, MenuItem, Popover } from '../ui/Popover';
+import { useAuth } from '@auth';
 import { api, type ScanRow } from '../../lib/api';
 
 const ENVIRONMENTS = ['production', 'staging', 'development'];
@@ -22,6 +23,12 @@ const MOBILE_NAV = [
 
 export function Topbar() {
   const nav = useNavigate();
+  const { logout, user } = useAuth();
+  // Identity sourced from the central `@auth` session (single source of truth),
+  // mirroring every other plugin's top bar.
+  const displayName = user?.username || user?.email?.split('@')[0] || 'Operator';
+  const subtitle = user?.email || 'red-agent';
+  const initials = displayName.slice(0, 2).toUpperCase();
   const [q, setQ] = useState('');
   const [env, setEnv] = useState<string>(
     () => localStorage.getItem('red_agent.env') ?? 'production'
@@ -359,21 +366,21 @@ export function Topbar() {
             <button
               type="button"
               className="ml-2 flex items-center gap-2 border-l border-bg-line pl-3"
-              title="Account"
+              title={displayName}
             >
               <div className="grid h-7 w-7 place-items-center rounded-full bg-gradient-brand text-xs font-display font-semibold text-text-primary ring-1 ring-bg-line">
-                OP
+                {initials}
               </div>
               <div className="hidden text-xs leading-tight md:block">
-                <div className="font-medium text-text-primary">Operator</div>
-                <div className="font-mono text-text-muted">red-agent</div>
+                <div className="font-medium text-text-primary">{displayName}</div>
+                <div className="max-w-[160px] truncate font-mono text-text-muted">{subtitle}</div>
               </div>
             </button>
           }
         >
           {(close) => (
             <div className="py-1">
-              <MenuHeader>Account</MenuHeader>
+              <MenuHeader>{displayName}</MenuHeader>
               <MenuItem
                 icon={<Icon.Settings size={12} />}
                 label="Scope & policy"
@@ -396,8 +403,7 @@ export function Topbar() {
                 label="Sign out"
                 danger
                 onSelect={() => {
-                  localStorage.removeItem('red_agent.token');
-                  window.location.reload();
+                  void logout();
                 }}
               />
             </div>

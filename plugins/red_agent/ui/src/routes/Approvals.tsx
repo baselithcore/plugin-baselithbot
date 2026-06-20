@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { api } from '../lib/api';
+import { api, getToken } from '../lib/api';
 import { Button, Card, EmptyState, Icon, PageHeader } from '../components/ui';
 
 interface PendingApproval {
@@ -13,7 +13,7 @@ interface PendingApproval {
 async function fetchPending(): Promise<PendingApproval[]> {
   const res = await fetch('/red-agent/scans/pending-approvals', {
     headers: {
-      Authorization: `Bearer ${localStorage.getItem('red_agent.token') ?? ''}`,
+      Authorization: `Bearer ${getToken()}`,
     },
   });
   if (!res.ok) throw new Error(`${res.status}`);

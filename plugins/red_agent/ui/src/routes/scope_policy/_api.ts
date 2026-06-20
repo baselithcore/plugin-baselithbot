@@ -1,3 +1,5 @@
+import { getToken } from '../../lib/api';
+
 export type ReachabilitySeverity = 'info' | 'low' | 'medium' | 'high';
 export type WebhookMinSeverity = 'info' | 'low' | 'medium' | 'high' | 'critical';
 
@@ -57,7 +59,7 @@ export type Update = Partial<
 
 const authHeaders = (): HeadersInit => ({
   'Content-Type': 'application/json',
-  Authorization: `Bearer ${localStorage.getItem('red_agent.token') ?? ''}`,
+  Authorization: `Bearer ${getToken()}`,
 });
 
 export async function fetchScope(): Promise<ScopeResp> {
