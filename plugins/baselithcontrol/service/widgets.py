@@ -66,8 +66,8 @@ def _manifest_dir(plugin_name: str) -> Path | None:
 
 
 @lru_cache(maxsize=256)
-def load_control_meta(plugin_name: str) -> dict[str, Any]:
-    """Return the ``control`` block of a plugin's manifest (empty if absent)."""
+def _load_manifest(plugin_name: str) -> dict[str, Any]:
+    """Return a plugin's full parsed manifest (empty dict on any failure)."""
     plugin_dir = _manifest_dir(plugin_name)
     if plugin_dir is None:
         return {}
@@ -77,28 +77,43 @@ def load_control_meta(plugin_name: str) -> dict[str, Any]:
 
         data = yaml.safe_load(manifest.read_text(encoding="utf-8")) or {}
     except Exception as exc:  # noqa: BLE001 — a bad manifest must not break the grid
-        logger.debug("control meta load failed for %s: %s", plugin_name, exc)
+        logger.debug("manifest load failed for %s: %s", plugin_name, exc)
         return {}
-    control = data.get("control")
+    return data if isinstance(data, dict) else {}
+
+
+def load_control_meta(plugin_name: str) -> dict[str, Any]:
+    """Return the ``control`` block of a plugin's manifest (empty if absent)."""
+    control = _load_manifest(plugin_name).get("control")
     return control if isinstance(control, dict) else {}
+
+
+def is_system_plugin(plugin_name: str) -> bool:
+    """True if the plugin is platform infrastructure.
+
+    Canonical signal is the manifest's top-level ``system: true`` flag (the same
+    one the central auth plugin uses to hide a plugin's tabs from the
+    user-facing nav). ``control.tier: system`` is honoured as a back-compatible
+    alias so existing manifests keep working.
+    """
+    if bool(_load_manifest(plugin_name).get("system")):
+        return True
+    control = load_control_meta(plugin_name)
+    return str(control.get("tier", "")).strip().lower() == "system"
 
 
 def display_meta(plugin_name: str, *, category: str) -> dict[str, Any]:
     """Derive display metadata (group/icon/instance/tier) with sensible fallbacks.
 
     ``tier`` separates framework/infrastructure plugins (``system``) from custom
-    feature plugins (``application``, the default). A plugin opts into the system
-    bucket by declaring ``control.tier: system`` in its manifest; any other value
-    falls back to ``application`` so the control plane never hides a feature
-    plugin by accident.
+    feature plugins (``application``, the default). A plugin lands in the system
+    bucket when its manifest declares top-level ``system: true`` (canonical) or
+    the legacy ``control.tier: system``; any other value falls back to
+    ``application`` so the control plane never hides a feature plugin by accident.
     """
     control = load_control_meta(plugin_name)
     group = control.get("group")
-    tier = (
-        "system"
-        if str(control.get("tier", "")).strip().lower() == "system"
-        else "application"
-    )
+    tier = "system" if is_system_plugin(plugin_name) else "application"
     return {
         "group": str(group) if group else (category or "uncategorized"),
         "icon": str(control.get("icon", "")),

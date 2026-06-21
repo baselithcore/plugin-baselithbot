@@ -1,4 +1,7 @@
 name: goals
+# Platform infrastructure: hidden from the user-facing nav (admin-only tabs) and
+# segregated into the control plane's "system" bucket.
+system: true
 description: Goal tracking and monitoring for agent workflows
 version: 0.1.0
 author: Baselith

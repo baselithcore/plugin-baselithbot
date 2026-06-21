@@ -42,8 +42,6 @@ export function LanguageSwitcher({ className }: { className?: string }) {
 function cnLang(activeState: boolean): string {
   return [
     'rounded-md px-2 py-1 text-xs font-semibold transition-colors',
-    activeState
-      ? 'bg-accent/15 text-accent'
-      : 'text-ink-soft hover:text-ink hover:bg-surface-2',
+    activeState ? 'bg-accent/15 text-accent' : 'text-ink-soft hover:text-ink hover:bg-surface-2',
   ].join(' ');
 }

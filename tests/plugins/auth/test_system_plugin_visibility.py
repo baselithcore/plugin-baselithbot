@@ -39,7 +39,10 @@ def _service() -> RBACService:
             "restricted": False,
             "label": "Users",
         },
-        {"plugin": "baselithcontrol", "tab_id": "overview", "restricted": False},
+        # A genuine feature plugin (not in system_plugin_names) — stays
+        # default-allow. Uses a synthetic name so it is unaffected by which real
+        # plugins are tagged ``system: true``.
+        {"plugin": "feature_demo", "tab_id": "home", "restricted": False},
     ]
     perms = {"admin-1": {WILDCARD}, "user-1": set()}
     return RBACService(store=_FakeStore(policies, perms))
@@ -67,9 +70,9 @@ def test_admin_can_see_auth_tab():
 def test_non_system_plugin_stays_default_allow_for_users():
     svc = _service()
     tabs = {t["tab_id"]: t for t in svc.accessible_tabs("user-1", {AuthRole.USER})}
-    overview = tabs["overview"]
-    assert overview["system"] is False
-    assert overview["allowed"] is True  # ordinary plugins remain visible
+    home = tabs["home"]
+    assert home["system"] is False
+    assert home["allowed"] is True  # ordinary plugins remain visible
 
 
 def test_plugin_allowed_hides_auth_from_non_admin():
@@ -85,7 +88,4 @@ def test_can_access_tab_enforces_system_for_single_tab():
         svc.can_access_tab("admin-1", {AuthRole.ADMIN}, "auth", "admin-users") is True
     )
     # Non-system plugin still delegates to the store's default-allow.
-    assert (
-        svc.can_access_tab("user-1", {AuthRole.USER}, "baselithcontrol", "overview")
-        is True
-    )
+    assert svc.can_access_tab("user-1", {AuthRole.USER}, "feature_demo", "home") is True

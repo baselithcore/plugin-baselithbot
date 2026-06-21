@@ -85,7 +85,9 @@ def test_decode_rejects_garbage_and_wrong_secret(
     )
     assert decode_core_token(None) is None
     assert decode_core_token("not-a-jwt") is None
-    forged = jwt.encode({"sub": "x", "exp": 9_999_999_999}, "other-secret", algorithm="HS256")
+    forged = jwt.encode(
+        {"sub": "x", "exp": 9_999_999_999}, "other-secret", algorithm="HS256"
+    )
     assert decode_core_token(forged) is None
 
 
@@ -103,4 +105,6 @@ def test_decode_requires_exp(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_ensure_mirror_rows_is_best_effort_without_db() -> None:
     # No Postgres configured → get_connection raises → swallowed, never crashes
     # the request path.
-    ensure_mirror_rows({"id": "u-x", "email": "u-x@core.local", "display_name": "x", "role": "user"})
+    ensure_mirror_rows(
+        {"id": "u-x", "email": "u-x@core.local", "display_name": "x", "role": "user"}
+    )

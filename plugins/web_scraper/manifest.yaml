@@ -1,4 +1,7 @@
 name: web-scraper
+# Platform infrastructure: hidden from the user-facing nav (admin-only tabs) and
+# segregated into the control plane's "system" bucket.
+system: true
 version: 0.1.0
 description: Web scraping, crawling, extractors, middleware and storage backends
 author: Baselith

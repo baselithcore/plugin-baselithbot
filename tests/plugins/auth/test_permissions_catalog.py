@@ -53,7 +53,11 @@ def test_has_all_semantics() -> None:
 def test_helpers_match_legacy_any_all_logic() -> None:
     """has_any/has_all must equal the list-comprehension logic they replaced."""
     perms = {Permission.RBAC_READ}
-    for slugs in ([], [Permission.RBAC_READ], [Permission.RBAC_READ, Permission.AUDIT_READ]):
+    for slugs in (
+        [],
+        [Permission.RBAC_READ],
+        [Permission.RBAC_READ, Permission.AUDIT_READ],
+    ):
         checks = [has_permission(perms, s) for s in slugs]
         assert has_any(perms, slugs) == (any(checks))
         assert has_all(perms, slugs) == (all(checks))
