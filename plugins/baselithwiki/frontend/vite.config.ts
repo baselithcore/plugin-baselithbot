@@ -18,6 +18,13 @@ export default defineConfig({
   base: process.env.VITE_BASE_PATH || '/',
   plugins: [react(), tailwindcss()],
   resolve: {
+    // Single React instance. ``@auth`` is path-aliased to the auth plugin's
+    // SOURCE, which carries its own React 18 in ``auth/ui/node_modules`` while
+    // this UI ships React 19 — without dedupe both get bundled and the auth
+    // components hit a null hook dispatcher ("Cannot read properties of null
+    // (reading 'useState')"). Force every ``react``/``react-dom`` import to
+    // resolve to this UI's copy so the whole bundle shares one React.
+    dedupe: ['react', 'react-dom'],
     // Shared central-auth UI. ``@auth/login`` MUST precede ``@auth`` — the
     // resolver stops at the first match (same pattern as baselithbot/red_agent).
     // Path-aliased to the auth plugin's SOURCE; its transitive deps (lucide,
