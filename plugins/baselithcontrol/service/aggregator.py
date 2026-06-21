@@ -36,17 +36,18 @@ class ControlAggregator:
         self._registry = registry
 
     # -- public surface ------------------------------------------------------
-    def inventory(self, *, include_inactive: bool = True) -> InventoryView:
+    def inventory(self, *, include_disabled: bool = True) -> InventoryView:
         """Project known plugins into cards.
 
-        ``include_inactive`` is an authorization scope, not a display toggle.
-        When ``False`` the catalog is restricted to **active** plugins — the
-        only ones a non-privileged user can actually use. Disabled, failed and
-        not-yet-activated plugins are operational state that only an admin (the
-        sole role allowed to act on them via the lifecycle routes) may see, so
-        their existence is never disclosed to ordinary users. Admins call with
-        ``True`` and get the full catalog, including re-enableable plugins
-        synthesized from on-disk manifests.
+        ``include_disabled`` is an authorization scope, not a display toggle.
+        When ``False`` the catalog hides **disabled** (explicitly turned-off)
+        plugins — those are an admin concern: only an admin can re-enable them
+        via the lifecycle routes, so their existence is not disclosed to
+        ordinary users. Everything else stays visible: active, not-yet-activated
+        (``discovered``) and ``failed`` plugins remain so the system-status
+        section and status widgets stay populated for every user. Admins call
+        with ``True`` and additionally get re-enableable plugins synthesized
+        from on-disk manifests.
         """
         active = {self._name(p): p for p in self._safe(self._registry.get_all, [])}
         health = self._safe(self._registry.health_check, {}).get("plugins", {})
@@ -70,13 +71,15 @@ class ControlAggregator:
                 card.state = PluginState.disabled
             cards.append(card)
 
-        if include_inactive:
+        if include_disabled:
             self._append_offline_cards(cards, config_enabled)
         else:
-            # Non-privileged scope: disclose only active plugins. Skip the
-            # offline-card synthesis entirely (it only ever yields 'disabled'
-            # cards) and drop any non-active card the registry produced.
-            cards = [c for c in cards if c.state == PluginState.active]
+            # Non-privileged scope: hide only explicitly disabled (turned-off)
+            # plugins. Skip the offline-card synthesis (it only ever yields
+            # 'disabled' cards) and drop any disabled card the registry
+            # produced — but keep active/discovered/failed so the system-status
+            # section and status widgets stay populated.
+            cards = [c for c in cards if c.state != PluginState.disabled]
 
         cards.sort(key=lambda c: c.name)
         return InventoryView(total=len(cards), plugins=cards)
@@ -141,18 +144,18 @@ class ControlAggregator:
         )
 
     def ui_registry(
-        self, allow: Any | None = None, *, include_inactive: bool = True
+        self, allow: Any | None = None, *, include_disabled: bool = True
     ) -> list[EmbedSurface]:
         """Only the embeddable surfaces, for the shell's embed tabs.
 
         ``allow`` is an optional ``(plugin_name, tab_id) -> bool`` predicate used
         to filter surfaces the caller may not access (central tab policy). When
         ``None`` every embeddable surface is returned (no filtering).
-        ``include_inactive`` mirrors :meth:`inventory`: non-admins never get
-        embed surfaces for non-active plugins.
+        ``include_disabled`` mirrors :meth:`inventory`: non-admins never get
+        embed surfaces for disabled plugins.
         """
         surfaces: list[EmbedSurface] = []
-        for card in self.inventory(include_inactive=include_inactive).plugins:
+        for card in self.inventory(include_disabled=include_disabled).plugins:
             for s in card.surfaces:
                 if not s.embeddable:
                     continue
@@ -170,13 +173,13 @@ class ControlAggregator:
             metrics=system_metrics or {},
         )
 
-    def overview(self, *, include_inactive: bool = True) -> OverviewView:
+    def overview(self, *, include_disabled: bool = True) -> OverviewView:
         """Framework-wide head-band summary derived from the inventory.
 
-        Scoped to the caller: a non-admin's counts only cover the active
-        plugins they can see (``include_inactive=False``).
+        Scoped to the caller: a non-admin's counts exclude disabled plugins
+        (``include_disabled=False``) but still cover active/discovered/failed.
         """
-        cards = self.inventory(include_inactive=include_inactive).plugins
+        cards = self.inventory(include_disabled=include_disabled).plugins
         healthy = sum(1 for c in cards if c.healthy is True)
         degraded = sum(1 for c in cards if c.healthy is False)
         down = sum(1 for c in cards if c.state == PluginState.failed)

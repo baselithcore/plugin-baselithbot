@@ -1,9 +1,11 @@
 """Authorization scope of the control-plane inventory projection.
 
-Ordinary users must only ever be shown **active** plugins; disabled, failed and
-not-yet-activated plugins are operational state reserved for admins (the only
-role allowed to act on them). These tests pin that boundary at the aggregator —
-the pure projection layer — without standing up the FastAPI app.
+Ordinary users must not be shown **disabled** (explicitly turned-off) plugins —
+those are an admin concern (only an admin can re-enable them). Everything else
+stays visible to everyone: active, not-yet-activated (``discovered``) and
+``failed`` plugins remain so the system-status section and status widgets keep
+working for all users. These tests pin that boundary at the aggregator — the
+pure projection layer — without standing up the FastAPI app.
 """
 
 from __future__ import annotations
@@ -75,7 +77,7 @@ def aggregator(monkeypatch) -> ControlAggregator:
 
 
 def test_admin_scope_sees_all_states(aggregator: ControlAggregator) -> None:
-    cards = aggregator.inventory(include_inactive=True).plugins
+    cards = aggregator.inventory(include_disabled=True).plugins
     by_name = {c.name: c.state for c in cards}
     assert by_name == {
         "alpha": PluginState.active,
@@ -85,10 +87,12 @@ def test_admin_scope_sees_all_states(aggregator: ControlAggregator) -> None:
     }
 
 
-def test_user_scope_sees_only_active(aggregator: ControlAggregator) -> None:
-    cards = aggregator.inventory(include_inactive=False).plugins
-    assert [c.name for c in cards] == ["alpha"]
-    assert all(c.state == PluginState.active for c in cards)
+def test_user_scope_hides_only_disabled(aggregator: ControlAggregator) -> None:
+    cards = aggregator.inventory(include_disabled=False).plugins
+    # Disabled is gone; active/discovered/failed stay so system status + widgets
+    # keep working for ordinary users.
+    assert [c.name for c in cards] == ["alpha", "beta", "gamma"]
+    assert all(c.state != PluginState.disabled for c in cards)
 
 
 def test_default_scope_is_full(aggregator: ControlAggregator) -> None:
@@ -97,13 +101,15 @@ def test_default_scope_is_full(aggregator: ControlAggregator) -> None:
 
 
 def test_overview_counts_follow_scope(aggregator: ControlAggregator) -> None:
-    admin = aggregator.overview(include_inactive=True)
-    user = aggregator.overview(include_inactive=False)
+    admin = aggregator.overview(include_disabled=True)
+    user = aggregator.overview(include_disabled=False)
+    # Both still surface the failed plugin (system status must reach everyone);
+    # only the disabled card drops out of the user's totals.
     assert admin.total == 4 and admin.down == 1
-    assert user.total == 1 and user.down == 0
+    assert user.total == 3 and user.down == 1
 
 
-def test_ui_registry_hides_inactive_surfaces(aggregator: ControlAggregator) -> None:
+def test_ui_registry_excludes_disabled_surfaces(aggregator: ControlAggregator) -> None:
     # No static paths in the double → no surfaces either way, but the call must
-    # honour the scope flag without error and never leak a non-active surface.
-    assert aggregator.ui_registry(include_inactive=False) == []
+    # honour the scope flag without error and never leak a disabled surface.
+    assert aggregator.ui_registry(include_disabled=False) == []

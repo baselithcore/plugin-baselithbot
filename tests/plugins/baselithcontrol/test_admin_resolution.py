@@ -23,9 +23,7 @@ class _FakeRBAC:
 
 
 def _patch_rbac(monkeypatch, service) -> None:
-    monkeypatch.setattr(
-        "plugins.auth.rbac.service.get_rbac_service", lambda: service
-    )
+    monkeypatch.setattr("plugins.auth.rbac.service.get_rbac_service", lambda: service)
 
 
 def test_literal_admin_role_is_admin(monkeypatch) -> None:

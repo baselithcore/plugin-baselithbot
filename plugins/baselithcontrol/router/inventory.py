@@ -57,9 +57,7 @@ def build_inventory_router() -> APIRouter:
         disabled/failed/discovered plugins (the operational state they alone
         can act on via the lifecycle routes).
         """
-        return get_aggregator(request.app).inventory(
-            include_inactive=is_admin(user)
-        )
+        return get_aggregator(request.app).inventory(include_disabled=is_admin(user))
 
     @router.get("/ui-registry", response_model=list[EmbedSurface])
     async def ui_registry(
@@ -73,7 +71,7 @@ def build_inventory_router() -> APIRouter:
         """
         allow = _tab_access_predicate(user)
         return get_aggregator(request.app).ui_registry(
-            allow=allow, include_inactive=is_admin(user)
+            allow=allow, include_disabled=is_admin(user)
         )
 
     return router
