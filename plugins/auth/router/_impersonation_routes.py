@@ -81,7 +81,7 @@ async def stop_impersonation(
     admin_token = await auth_manager.create_token(
         admin_user.id,
         admin_user.roles,
-        tenant_id=resolve_user_tenant(admin_user.id, config),
+        tenant_id=resolve_user_tenant(admin_user.id, config, persistence),
     )
 
     audit.log(

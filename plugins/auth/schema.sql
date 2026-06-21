@@ -336,3 +336,37 @@ CREATE TABLE IF NOT EXISTS auth_security_policy (
 );
 INSERT INTO auth_security_policy (id, mfa_required_all)
 VALUES (1, FALSE) ON CONFLICT (id) DO NOTHING;
+
+-- =============================================================================
+-- MULTI-TENANCY: tenants + user→tenant membership (additive; safe to re-run)
+-- Identity-derived tenancy: a user's access-token `tenant_id` claim is resolved
+-- from their membership (see plugins/auth/tenancy.py). With NO membership a user
+-- falls back to a personal tenant (tenant_id == user_id) — so existing installs
+-- are unchanged until an admin provisions tenants and assigns members.
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS auth_tenants (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    slug VARCHAR(80) UNIQUE NOT NULL,
+    name VARCHAR(160) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'active',  -- active | suspended
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Membership: which users belong to which tenants, with a per-tenant role and a
+-- single default tenant per user (the one their token lands on at login).
+CREATE TABLE IF NOT EXISTS auth_user_tenants (
+    user_id UUID NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+    tenant_id UUID NOT NULL REFERENCES auth_tenants(id) ON DELETE CASCADE,
+    role VARCHAR(40) NOT NULL DEFAULT 'member',  -- member | admin (tenant-scoped)
+    is_default BOOLEAN NOT NULL DEFAULT FALSE,
+    added_at TIMESTAMPTZ DEFAULT NOW(),
+    added_by UUID,
+    PRIMARY KEY (user_id, tenant_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_user_tenants_user ON auth_user_tenants(user_id);
+CREATE INDEX IF NOT EXISTS idx_auth_user_tenants_tenant ON auth_user_tenants(tenant_id);
+-- At most one default tenant per user.
+CREATE UNIQUE INDEX IF NOT EXISTS uq_auth_user_tenants_default
+    ON auth_user_tenants(user_id) WHERE is_default;

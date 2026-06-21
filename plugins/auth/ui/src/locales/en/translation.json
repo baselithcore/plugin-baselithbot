@@ -99,7 +99,8 @@
     "logout": "Logout",
     "version": "Admin Panel v1.0",
     "myAccount": "My account",
-    "sso": "SSO"
+    "sso": "SSO",
+    "tenants": "Tenants"
   },
   "groups": {
     "title": "Groups",
@@ -656,5 +657,24 @@
       "generic": "Something went wrong. Please try again.",
       "invalidCode": "Invalid verification code. Please try again."
     }
+  },
+  "tenants": {
+    "title": "Tenants",
+    "addTenant": "New Tenant",
+    "description": "Provision tenants and assign users. A member's access is scoped to their tenant; their first tenant becomes the default.",
+    "slug": "Slug",
+    "name": "Name",
+    "empty": "No tenants defined",
+    "deleteConfirm": "Delete tenant \"{{name}}\"? Membership is removed; this cannot be undone.",
+    "memberCount": "{{count}} members",
+    "members": "Members",
+    "noMembers": "No members yet",
+    "addMember": "Add a member…",
+    "removeMember": "Remove from tenant",
+    "suspend": "Suspend",
+    "activate": "Activate",
+    "suspended": "Suspended",
+    "default": "Default",
+    "switcherTitle": "Switch tenant"
   }
 }

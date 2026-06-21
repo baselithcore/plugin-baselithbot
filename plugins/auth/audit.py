@@ -50,6 +50,13 @@ class AuditAction:
 
     MFA_POLICY_CHANGED = "security.mfa_policy_changed"
 
+    TENANT_CREATED = "tenant.created"
+    TENANT_DELETED = "tenant.deleted"
+    TENANT_PURGED = "tenant.purged"
+    TENANT_STATUS_CHANGED = "tenant.status_changed"
+    TENANT_MEMBER_ADDED = "tenant.member_added"
+    TENANT_MEMBER_REMOVED = "tenant.member_removed"
+
 
 @dataclass
 class AuditEntry:

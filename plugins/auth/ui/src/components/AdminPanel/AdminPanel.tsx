@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   UserCog,
   Globe,
+  Building2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuthContext';
@@ -28,7 +29,9 @@ import RolesTab from '../tabs/RolesTab';
 import GroupsTab from '../tabs/GroupsTab';
 import AccessTab from '../tabs/AccessTab';
 import SsoTab from '../tabs/SsoTab';
+import TenantsTab from '../tabs/TenantsTab';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
+import TenantSwitcher from '../ui/TenantSwitcher';
 import AuthLogo from '../ui/AuthLogo';
 import './AdminPanel.css';
 
@@ -111,10 +114,18 @@ const AdminPanel = () => {
               <Globe size={16} />
               <span>{t('nav.sso')}</span>
             </button>
+            <button
+              className={`admin-tab ${activeTab === 'tenants' ? 'active' : ''}`}
+              onClick={() => setActiveTab('tenants')}
+            >
+              <Building2 size={16} />
+              <span>{t('nav.tenants')}</span>
+            </button>
           </nav>
         </div>
 
         <div className="admin-header-right">
+          <TenantSwitcher />
           <LanguageSwitcher />
           {user && <span className="admin-user-email">{user.email}</span>}
           <a
@@ -151,6 +162,7 @@ const AdminPanel = () => {
         {activeTab === 'sessions' && <SessionsTab />}
         {activeTab === 'audit' && <AuditTab />}
         {activeTab === 'sso' && <SsoTab />}
+        {activeTab === 'tenants' && <TenantsTab />}
       </main>
 
       {/* Footer */}

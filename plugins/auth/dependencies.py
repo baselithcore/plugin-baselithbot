@@ -209,7 +209,7 @@ async def get_current_user(
                     user_id=db_user.id,
                     email=db_user.email,
                     roles=db_user.roles,
-                    tenant_id=resolve_user_tenant(db_user.id, config),
+                    tenant_id=resolve_user_tenant(db_user.id, config, persistence),
                     metadata={"allowed_tabs": db_user.allowed_tabs},
                 )
                 request.state.user = user

@@ -193,5 +193,6 @@
   "console.admin_only_hint": "Dev tools run code on the server, so they are restricted to administrators.",
   "impersonation.banner": "Viewing as {{target}} — impersonated by {{admin}}",
   "impersonation.stop": "Stop impersonation",
-  "impersonation.stopping": "Stopping…"
+  "impersonation.stopping": "Stopping…",
+  "tenant.switch": "Switch tenant"
 }

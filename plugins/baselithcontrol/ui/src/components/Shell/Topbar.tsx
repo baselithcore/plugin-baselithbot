@@ -15,6 +15,7 @@ import { logout } from '@/lib/api';
 import { spring } from '@/lib/motion';
 import { BrandMark } from '@/components/widgets/BrandMark';
 import { Clock } from '@/components/Shell/Clock';
+import { TenantSwitcher } from '@/components/Shell/TenantSwitcher';
 import { useControlStore } from '@/store/useControlStore';
 import { useCanAccessTab } from '@/hooks/useAccess';
 import { useTheme } from '@/store/useTheme';
@@ -100,6 +101,9 @@ export function Topbar() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
+          {/* Tenant switcher — only shown when the user belongs to >1 tenant */}
+          <TenantSwitcher />
+
           {/* Wall clock — operator-local time + date */}
           <Clock />
 

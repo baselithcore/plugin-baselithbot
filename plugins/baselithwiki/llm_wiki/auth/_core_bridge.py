@@ -135,7 +135,15 @@ def _effective_central_perms(user_id: str, roles: list[str]) -> set[str]:
             get_rbac_service().effective_permissions(user_id, _role_enums(roles))
         )
     except Exception as exc:  # noqa: BLE001 — RBAC optional; degrade gracefully
-        logger.debug("[wiki-auth] central perms lookup failed: %s", exc)
+        # WARNING, not DEBUG: a failure here silently strips elevation (an
+        # effective-admin degrades to "user"), so it must be visible in prod
+        # rather than masquerading as a legitimate non-admin result.
+        logger.warning(
+            "[wiki-auth] central RBAC perms lookup failed for %s — "
+            "degrading closed (no elevation): %s",
+            user_id,
+            exc,
+        )
         return set()
 
 

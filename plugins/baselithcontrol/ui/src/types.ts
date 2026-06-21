@@ -168,6 +168,17 @@ export interface AccessibleTab {
   allowed: boolean;
 }
 
+// A tenant the current user belongs to (from /api/auth/tenants), for the
+// app-wide tenant switcher.
+export interface MyTenant {
+  id: string;
+  slug: string;
+  name: string;
+  status: string;
+  role: string;
+  is_default: boolean;
+}
+
 export interface ControlEvent {
   type: string;
   data: Record<string, unknown>;

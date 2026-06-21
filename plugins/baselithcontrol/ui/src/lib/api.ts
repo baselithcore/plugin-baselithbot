@@ -13,6 +13,7 @@ import type {
   LifecycleEvent,
   LifecycleOp,
   Me,
+  MyTenant,
   Overview,
   PluginRuntime,
   PluginStatus,
@@ -78,6 +79,40 @@ export async function fetchAccessibleTabs(): Promise<AccessibleTab[]> {
   } catch {
     return [];
   }
+}
+
+/**
+ * Tenants the current user belongs to (from /api/auth/tenants). Lives under
+ * /api/auth, not the control router. Fails open ([]) so the switcher simply
+ * hides when auth is absent or the user has no membership.
+ */
+export async function fetchMyTenants(): Promise<MyTenant[]> {
+  try {
+    const res = await fetch('/api/auth/tenants', {
+      credentials: 'include',
+      headers: authHeaders(),
+    });
+    if (!res.ok) return [];
+    return (await res.json()) as MyTenant[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Switch the active tenant: mints a fresh access token scoped to it (membership
+ * verified server-side) and returns it for the caller to store.
+ */
+export async function switchTenant(tenantId: string): Promise<string> {
+  const res = await fetch('/api/auth/tenants/switch', {
+    method: 'POST',
+    credentials: 'include',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ tenant_id: tenantId }),
+  });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  const data = (await res.json()) as { access_token: string };
+  return data.access_token;
 }
 
 export function fetchStatus(): Promise<{

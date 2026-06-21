@@ -83,11 +83,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [core.isAuthenticated]);
 
-  // (Re)load the wiki permission map whenever the central identity changes.
+  // (Re)load the wiki permission map whenever the central identity OR its token
+  // changes. Keying only on ``user.id`` left perms stale after a role change:
+  // when an admin grant lands and the access token refreshes (same user id, new
+  // token with the updated roles/claims), the effect never re-ran, so the SPA
+  // kept showing the pre-promotion role ("user") until a hard reload. Depending
+  // on ``core.accessToken`` re-resolves the effective permission set on every
+  // login / refresh / impersonation, mirroring how the central gates re-read it.
   useEffect(() => {
     setPermsReady(false);
     void loadPerms();
-  }, [loadPerms, core.user?.id]);
+  }, [loadPerms, core.user?.id, core.accessToken]);
 
   // A 401 from the wiki API means the central session lapsed → hand back to the
   // central login wall.

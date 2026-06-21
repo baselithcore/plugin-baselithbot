@@ -76,7 +76,7 @@ async def start_impersonation(
         target,
         actor_claim,
         config.impersonation_lifetime,
-        tenant_id=resolve_user_tenant(target.id, config),
+        tenant_id=resolve_user_tenant(target.id, config, persistence),
     )
 
     audit.log(

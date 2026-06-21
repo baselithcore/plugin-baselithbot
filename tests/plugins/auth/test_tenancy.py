@@ -50,6 +50,46 @@ def test_blank_pin_falls_back_to_per_user():
     assert resolve_user_tenant("alice", _config(tenant_id="   ")) == "alice"
 
 
+# --- resolver: membership (enterprise org model) ----------------------------
+
+
+class _FakeTenantPersistence:
+    """Stub exposing only resolve_default_tenant (used by resolve_user_tenant)."""
+
+    def __init__(self, mapping: Dict[str, Any], raises: bool = False):
+        self._mapping = mapping
+        self._raises = raises
+
+    def resolve_default_tenant(self, user_id: str):
+        if self._raises:
+            raise RuntimeError("db down")
+        return self._mapping.get(user_id)
+
+
+def test_membership_default_tenant_wins_over_personal():
+    """A user assigned to an org tenant lands on it, not their personal tenant."""
+    p = _FakeTenantPersistence({"alice": "org-acme"})
+    assert resolve_user_tenant("alice", _config(tenant_id=None), p) == "org-acme"
+
+
+def test_no_membership_falls_back_to_personal_tenant():
+    """Backward compatible: a user with no membership keeps tenant == user_id."""
+    p = _FakeTenantPersistence({"alice": "org-acme"})
+    assert resolve_user_tenant("bob", _config(tenant_id=None), p) == "bob"
+
+
+def test_deployment_pin_overrides_membership():
+    """AUTH_TENANT_ID is the hard override and beats any membership."""
+    p = _FakeTenantPersistence({"alice": "org-acme"})
+    assert resolve_user_tenant("alice", _config(tenant_id="global"), p) == "global"
+
+
+def test_membership_read_failure_degrades_to_personal():
+    """A tenancy-store error never blocks login — fall back to personal tenant."""
+    p = _FakeTenantPersistence({"alice": "org-acme"}, raises=True)
+    assert resolve_user_tenant("alice", _config(tenant_id=None), p) == "alice"
+
+
 # --- context binding --------------------------------------------------------
 
 
@@ -85,6 +125,9 @@ class _StubPersistence:
 
     def store_refresh_token(self, user_id, token, expires_at):
         pass
+
+    def resolve_default_tenant(self, user_id):
+        return None  # no membership → personal tenant fallback
 
 
 class _StubResponse:

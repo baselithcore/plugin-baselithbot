@@ -193,5 +193,6 @@
   "console.admin_only_hint": "Gli strumenti di sviluppo eseguono codice sul server, quindi sono riservati agli amministratori.",
   "impersonation.banner": "Stai agendo come {{target}} — impersonificato da {{admin}}",
   "impersonation.stop": "Termina impersonificazione",
-  "impersonation.stopping": "Arresto…"
+  "impersonation.stopping": "Arresto…",
+  "tenant.switch": "Cambia tenant"
 }

@@ -89,7 +89,47 @@ export interface MessageResponse {
   message: string;
 }
 
-export type TabType = 'users' | 'sessions' | 'audit' | 'roles' | 'groups' | 'access' | 'sso';
+export interface TokenResponse {
+  access_token: string;
+  expires_in: number;
+}
+
+// ----- multi-tenancy ---------------------------------------------------------
+
+export interface Tenant {
+  id: string;
+  slug: string;
+  name: string;
+  status: string;
+  member_count: number;
+}
+
+export interface TenantMember {
+  user_id: string;
+  email: string | null;
+  username: string | null;
+  role: string;
+  is_default: boolean;
+}
+
+export interface MyTenant {
+  id: string;
+  slug: string;
+  name: string;
+  status: string;
+  role: string;
+  is_default: boolean;
+}
+
+export type TabType =
+  | 'users'
+  | 'sessions'
+  | 'audit'
+  | 'roles'
+  | 'groups'
+  | 'access'
+  | 'sso'
+  | 'tenants';
 
 export const ROLES = ['admin', 'user', 'guest'] as const;
 export type Role = (typeof ROLES)[number];

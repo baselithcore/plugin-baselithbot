@@ -157,7 +157,9 @@ async def issue_tokens(
 
     # Create access token, scoped to the user's tenant (identity-derived: the
     # tenant comes from who is logged in, never a client-supplied header).
-    tenant_id = resolve_user_tenant(user_id, config)
+    # Membership (auth_user_tenants) is consulted via persistence; a user with
+    # no membership falls back to their personal tenant (tenant_id == user_id).
+    tenant_id = resolve_user_tenant(user_id, config, persistence)
     access_token = await auth_manager.create_token(user_id, roles, tenant_id=tenant_id)
 
     # Create refresh token using secure generation

@@ -7,10 +7,30 @@ from typing import Dict, Iterable, List, Optional, Set
 from core.auth.types import AuthRole
 from core.observability.logging import get_logger
 from plugins.auth.rbac.discovery import discover_plugin_tabs, system_plugin_names
-from plugins.auth.rbac.permissions import has_permission, tab_permission
+from plugins.auth.rbac.permissions import WILDCARD, has_permission, tab_permission
 from plugins.auth.rbac.store import RBACStore, get_rbac_store
 
 logger = get_logger(__name__)
+
+
+def is_effective_admin(user_id: str, roles: Iterable[AuthRole]) -> bool:
+    """Whether the identity has full (platform) admin power.
+
+    Admin is an **effective** privilege, not a literal role (per the project
+    conventions): a custom RBAC role granted the wildcard (``*``) is admin even
+    when :class:`AuthRole.ADMIN` is absent. The literal role is checked first as
+    a cheap, DB-free fast path; the wildcard lookup degrades **closed** (returns
+    ``False``) if the RBAC store is unavailable, so a transient outage never
+    silently elevates a non-admin.
+    """
+    roles = list(roles)
+    if AuthRole.ADMIN in roles:
+        return True
+    try:
+        perms = get_rbac_service().effective_permissions(user_id, roles)
+        return has_permission(perms, WILDCARD)
+    except Exception:  # noqa: BLE001 — degrade closed for elevation
+        return False
 
 
 class RBACService:

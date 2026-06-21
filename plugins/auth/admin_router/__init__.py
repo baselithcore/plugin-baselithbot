@@ -12,6 +12,7 @@ from plugins.auth.admin_router._impersonation import router as _impersonation_ro
 from plugins.auth.admin_router._lifecycle import router as _lifecycle_router
 from plugins.auth.admin_router._monitoring import router as _monitoring_router
 from plugins.auth.admin_router._security import router as _security_router
+from plugins.auth.admin_router._tenants import router as _tenants_router
 from plugins.auth.admin_router._user_actions import router as _user_actions_router
 from plugins.auth.admin_router._users import router as _users_router
 
@@ -22,5 +23,6 @@ admin_router.include_router(_impersonation_router)
 admin_router.include_router(_lifecycle_router)
 admin_router.include_router(_monitoring_router)
 admin_router.include_router(_security_router)
+admin_router.include_router(_tenants_router)
 
 __all__ = ["admin_router"]

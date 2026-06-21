@@ -18,6 +18,7 @@ from plugins.auth.router._self_routes import router as _self_router
 from plugins.auth.router._setup_routes import router as _setup_router
 from plugins.auth.router._sso_admin_routes import router as _sso_admin_router
 from plugins.auth.router._sso_routes import router as _sso_router
+from plugins.auth.router._tenant_routes import router as _tenant_router
 from plugins.auth.router._webauthn_routes import router as _webauthn_router
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -29,6 +30,7 @@ router.include_router(_account_router)
 router.include_router(_recovery_router)
 router.include_router(_webauthn_router)
 router.include_router(_self_router)
+router.include_router(_tenant_router)
 router.include_router(_apikey_router)
 router.include_router(_sso_admin_router)
 router.include_router(_sso_router)

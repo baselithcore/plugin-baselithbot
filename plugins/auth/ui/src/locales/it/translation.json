@@ -99,7 +99,8 @@
     "logout": "Esci",
     "version": "Pannello Admin v1.0",
     "myAccount": "Il mio account",
-    "sso": "SSO"
+    "sso": "SSO",
+    "tenants": "Tenant"
   },
   "groups": {
     "title": "Gruppi",
@@ -656,5 +657,24 @@
       "generic": "Qualcosa è andato storto. Riprova.",
       "invalidCode": "Codice di verifica non valido. Riprova."
     }
+  },
+  "tenants": {
+    "title": "Tenant",
+    "addTenant": "Nuovo Tenant",
+    "description": "Crea tenant e assegna utenti. L'accesso di un membro è limitato al suo tenant; il primo tenant diventa quello predefinito.",
+    "slug": "Slug",
+    "name": "Nome",
+    "empty": "Nessun tenant definito",
+    "deleteConfirm": "Eliminare il tenant \"{{name}}\"? Le appartenenze verranno rimosse; operazione irreversibile.",
+    "memberCount": "{{count}} membri",
+    "members": "Membri",
+    "noMembers": "Nessun membro",
+    "addMember": "Aggiungi un membro…",
+    "removeMember": "Rimuovi dal tenant",
+    "suspend": "Sospendi",
+    "activate": "Attiva",
+    "suspended": "Sospeso",
+    "default": "Predefinito",
+    "switcherTitle": "Cambia tenant"
   }
 }
