@@ -29,7 +29,7 @@ const QrCode = ({ src, value, alt, className }: Props) => {
     if (src || !value) return;
     let cancelled = false;
     QRCode.toDataURL(value, { errorCorrectionLevel: 'M', margin: 2, width: 220 })
-      .then((url) => {
+      .then((url: string) => {
         if (!cancelled) setGenerated(url);
       })
       .catch(() => {
