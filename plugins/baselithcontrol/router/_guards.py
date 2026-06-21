@@ -46,6 +46,32 @@ def _auth_enforced() -> bool:
     return bool(getattr(cfg, "auth_required", False)) if cfg is not None else False
 
 
+def is_admin(user: AuthUser) -> bool:
+    """Whether the caller has full (admin) privileges.
+
+    The built-in :data:`AuthRole.ADMIN` is not the only way to be an admin: the
+    auth plugin's RBAC hub lets an admin be provisioned via a **custom role**
+    granted the wildcard (``*``) permission, in which case the literal enum is
+    absent from ``user.roles`` (unknown role strings are dropped when the token
+    is decoded). The central gates (``require_permission``,
+    ``PluginAccessMiddleware``) already key off the *effective permission set*,
+    so this mirrors them — otherwise a wildcard-admin would pass every other
+    guard yet be misread as a plain user here and lose sight of disabled/failed
+    plugins (and the lifecycle controls). Falls back to the literal role when
+    the RBAC service is unavailable, so nothing regresses without it.
+    """
+    if user.has_role(AuthRole.ADMIN):
+        return True
+    try:
+        from plugins.auth.rbac.permissions import WILDCARD, has_permission
+        from plugins.auth.rbac.service import get_rbac_service
+
+        perms = get_rbac_service().effective_permissions(user.user_id, user.roles)
+        return has_permission(perms, WILDCARD)
+    except Exception:  # noqa: BLE001 — RBAC optional; degrade to the role check
+        return False
+
+
 async def _resolve_real_user(
     request: Request, creds: HTTPAuthorizationCredentials | None
 ) -> AuthUser | None:
@@ -148,7 +174,7 @@ async def admin_principal(
         # operator policy.
         real = await _resolve_real_user(request, creds)
         if real is not None:
-            if not real.has_role(AuthRole.ADMIN):
+            if not is_admin(real):
                 raise HTTPException(
                     status_code=status.HTTP_403_FORBIDDEN, detail="admin role required"
                 )
@@ -163,11 +189,11 @@ async def admin_principal(
     from plugins.auth.dependencies import get_current_user
 
     user = await get_current_user(request, creds)
-    if not user.has_role(AuthRole.ADMIN):
+    if not is_admin(user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="admin role required"
         )
     return user
 
 
-__all__ = ["read_guard", "current_principal", "admin_principal"]
+__all__ = ["read_guard", "current_principal", "admin_principal", "is_admin"]

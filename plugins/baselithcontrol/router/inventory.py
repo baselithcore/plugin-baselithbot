@@ -6,11 +6,11 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, Request
 
-from core.auth.types import AuthRole, AuthUser
+from core.auth.types import AuthUser
 
 from ..api_models import EmbedSurface, InventoryView
 from ..service import get_aggregator
-from ._guards import current_principal, read_guard
+from ._guards import current_principal, is_admin, read_guard
 
 
 def build_inventory_router() -> APIRouter:
@@ -43,7 +43,7 @@ def build_inventory_router() -> APIRouter:
             "username": username,
             "display_name": username or email or user.user_id,
             "roles": [r.value for r in user.roles],
-            "is_admin": user.has_role(AuthRole.ADMIN),
+            "is_admin": is_admin(user),
             "authenticated": user.is_authenticated,
         }
 
@@ -58,7 +58,7 @@ def build_inventory_router() -> APIRouter:
         can act on via the lifecycle routes).
         """
         return get_aggregator(request.app).inventory(
-            include_inactive=user.has_role(AuthRole.ADMIN)
+            include_inactive=is_admin(user)
         )
 
     @router.get("/ui-registry", response_model=list[EmbedSurface])
@@ -73,7 +73,7 @@ def build_inventory_router() -> APIRouter:
         """
         allow = _tab_access_predicate(user)
         return get_aggregator(request.app).ui_registry(
-            allow=allow, include_inactive=user.has_role(AuthRole.ADMIN)
+            allow=allow, include_inactive=is_admin(user)
         )
 
     return router
@@ -85,7 +85,7 @@ def _tab_access_predicate(user: AuthUser):
     Returns ``None`` (no filtering) for admins or whenever the RBAC service is
     unavailable, so a missing/auth-disabled deployment keeps current behaviour.
     """
-    if user.has_role(AuthRole.ADMIN):
+    if is_admin(user):
         return None
     try:
         from plugins.auth.rbac.service import get_rbac_service
