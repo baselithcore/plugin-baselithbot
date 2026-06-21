@@ -110,6 +110,10 @@ test = [
   # Required by `plugins/baselithbot/security/secret_store.py` (Fernet) —
   # imported transitively when monorepo CI collects plugin test modules.
   "cryptography>=42.0.0",
+  # TOTP/MFA: `plugins/auth/mfa.py` hard-imports pyotp and `plugins.auth.__init__`
+  # eagerly re-exports it, so every `plugins.auth.*` import (and the auth/
+  # baselithcontrol test modules) needs it when CI collects the monorepo tests.
+  "pyotp>=2.9.0",
 ]
 dev = [
   "beautifulsoup4>=4.14.2",
