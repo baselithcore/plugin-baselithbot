@@ -140,6 +140,7 @@ async def issue_impersonation_token(
     target: Any,
     actor_claim: Dict[str, Any],
     lifetime: int,
+    tenant_id: Optional[str] = None,
 ) -> str:
     """Mint a short-lived impersonation access token for ``target``.
 
@@ -147,12 +148,17 @@ async def issue_impersonation_token(
     the target's own roles, plus the signed ``act`` actor claim and ``imp``
     marker. ``exp`` is overridden to bound the lifetime independently of the
     handler's default access-token lifetime.
+
+    ``tenant_id`` scopes the token to the target's tenant so the admin sees
+    exactly the data the target would (identity-derived tenancy). When omitted
+    it falls back to the target's per-user tenant.
     """
     now = int(time.time())
     extra_claims: Dict[str, Any] = {
         ACT_CLAIM: actor_claim,
         IMP_CLAIM: True,
         "exp": now + max(60, int(lifetime)),
+        "tenant_id": tenant_id or target.id,
     }
     return await auth_manager.create_token(
         target.id,

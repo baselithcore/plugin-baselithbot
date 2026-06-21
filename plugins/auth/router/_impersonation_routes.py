@@ -27,6 +27,7 @@ from plugins.auth.impersonation import extract_actor
 from plugins.auth.persistence import AuthPersistence
 from plugins.auth.router._helpers import client_ip
 from plugins.auth.router._models import TokenResponse
+from plugins.auth.tenancy import resolve_user_tenant
 
 logger = get_logger(__name__)
 
@@ -77,7 +78,11 @@ async def stop_impersonation(
             detail="Administrator can no longer be restored; please log in again",
         )
 
-    admin_token = await auth_manager.create_token(admin_user.id, admin_user.roles)
+    admin_token = await auth_manager.create_token(
+        admin_user.id,
+        admin_user.roles,
+        tenant_id=resolve_user_tenant(admin_user.id, config),
+    )
 
     audit.log(
         action=AuditAction.IMPERSONATION_ENDED,

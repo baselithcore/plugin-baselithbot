@@ -27,6 +27,7 @@ from plugins.auth.impersonation import (
     issue_impersonation_token,
 )
 from plugins.auth.persistence import AuthPersistence
+from plugins.auth.tenancy import resolve_user_tenant
 from plugins.auth.router._models import (
     ImpersonatedUser,
     ImpersonateRequest,
@@ -71,7 +72,11 @@ async def start_impersonation(
 
     actor_claim = build_actor_claim(admin.user_id, admin_email, reason)
     token = await issue_impersonation_token(
-        auth_manager, target, actor_claim, config.impersonation_lifetime
+        auth_manager,
+        target,
+        actor_claim,
+        config.impersonation_lifetime,
+        tenant_id=resolve_user_tenant(target.id, config),
     )
 
     audit.log(

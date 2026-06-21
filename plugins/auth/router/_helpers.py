@@ -11,6 +11,7 @@ from plugins.auth.config import AuthConfig
 from plugins.auth.persistence import AuthPersistence
 from plugins.auth.router._models import TokenResponse
 from plugins.auth.security import generate_secure_token
+from plugins.auth.tenancy import resolve_user_tenant
 
 logger = get_logger(__name__)
 
@@ -154,8 +155,10 @@ async def issue_tokens(
     if revoked_count > 0:
         logger.info(f"Revoked {revoked_count} previous tokens for user {user_id}")
 
-    # Create access token
-    access_token = await auth_manager.create_token(user_id, roles)
+    # Create access token, scoped to the user's tenant (identity-derived: the
+    # tenant comes from who is logged in, never a client-supplied header).
+    tenant_id = resolve_user_tenant(user_id, config)
+    access_token = await auth_manager.create_token(user_id, roles, tenant_id=tenant_id)
 
     # Create refresh token using secure generation
     refresh_token = generate_secure_token(length=32)

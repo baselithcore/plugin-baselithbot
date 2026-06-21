@@ -10,6 +10,7 @@ from typing import Callable, Optional
 from fastapi import Cookie, Depends, HTTPException, Request, status, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from core.context import set_tenant_context
 from core.di.container import ServiceRegistry, ServiceNotFoundError
 from core.auth import AuthRole, AuthUser, AuthManager
 from plugins.auth.config import AuthConfig
@@ -19,6 +20,25 @@ logger = get_logger(__name__)
 
 # Optional bearer auth (doesn't fail if missing)
 _optional_bearer = HTTPBearer(auto_error=False)
+
+
+def _bind_tenant(user: AuthUser) -> AuthUser:
+    """Bind the tenant context to the authenticated user's tenant.
+
+    Tenancy is identity-derived: the tenant a request works in comes from *who
+    is logged in* (``user.tenant_id``, carried by the JWT), never a
+    client-supplied header. ``get_current_user`` is the single chokepoint for
+    every plugin guard (``require_auth`` / ``require_roles`` /
+    ``require_permission`` / ``require_tab``), so binding here gives every
+    guarded plugin route ``get_current_tenant_id() == user.tenant_id``.
+
+    Mirrors the core SecurityMiddleware: ``TenantMiddleware`` pre-set the
+    context to ``"default"`` before dependencies ran and restores it in its
+    ``finally`` block; this intermediate set is what the route handler and
+    everything downstream observe.
+    """
+    set_tenant_context(user.tenant_id)
+    return user
 
 
 # =============================================================================
@@ -159,7 +179,7 @@ async def get_current_user(
         api_user = maybe_authenticate_api_key(persistence, request.headers)
         if api_user:
             request.state.user = api_user
-            return api_user
+            return _bind_tenant(api_user)
 
     # Try Bearer token from Authorization header
     if credentials:
@@ -167,7 +187,7 @@ async def get_current_user(
         user = await auth_manager.authenticate(auth_header)
         if user.is_authenticated:
             request.state.user = user
-            return user
+            return _bind_tenant(user)
 
     # Try token from query param (for SSE/WebSockets)
     if token:
@@ -175,7 +195,7 @@ async def get_current_user(
         user = await auth_manager.authenticate(auth_header)
         if user.is_authenticated:
             request.state.user = user
-            return user
+            return _bind_tenant(user)
 
     # Fallback to refresh_token cookie (for session-based auth)
     if refresh_token:
@@ -183,14 +203,17 @@ async def get_current_user(
         if user_id:
             db_user = persistence.get_user_by_id(user_id)
             if db_user and db_user.is_active and not db_user.is_locked():
+                from plugins.auth.tenancy import resolve_user_tenant
+
                 user = AuthUser(
                     user_id=db_user.id,
                     email=db_user.email,
                     roles=db_user.roles,
+                    tenant_id=resolve_user_tenant(db_user.id, config),
                     metadata={"allowed_tabs": db_user.allowed_tabs},
                 )
                 request.state.user = user
-                return user
+                return _bind_tenant(user)
 
     # No valid auth found
     return AuthUser(user_id="anonymous", roles={AuthRole.ANONYMOUS})
