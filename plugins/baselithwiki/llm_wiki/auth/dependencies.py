@@ -23,8 +23,12 @@ from typing import Any
 from fastapi import HTTPException, Request, status
 
 from llm_wiki import config
+from llm_wiki.auth._core_bridge import (
+    build_user_dict,
+    decode_core_token,
+    ensure_mirror_rows,
+)
 from llm_wiki.auth.rate_limit import RateLimitExceeded, rate_limiter
-from llm_wiki.auth.tokens import decode_access_token
 
 logger = logging.getLogger(__name__)
 
@@ -50,64 +54,21 @@ def _extract_bearer(request: Request) -> str | None:
 
 
 def _resolve_user(request: Request) -> dict[str, Any] | None:
-    """JWT → user dict. None se token assente/invalido/utente disattivo."""
+    """Central access token → engine user-dict. ``None`` if absent/invalid.
+
+    Identity is delegated entirely to the ecosystem ``auth`` plugin: the SPA
+    sends the central access token as a bearer, we verify it synchronously and
+    map its claims onto the engine's user-dict contract via
+    :mod:`llm_wiki.auth._core_bridge`. The wiki keeps no users of its own; a 1:1
+    ``tenants``/``users`` mirror row is JIT-provisioned for FK + RLS integrity.
+    """
     token = _extract_bearer(request)
-    if not token:
+    claims = decode_core_token(token)
+    if not claims or not (claims.get("sub") or claims.get("uid")):
         return None
-    payload = decode_access_token(token)
-    if not payload:
-        return None
-    user_id = payload.get("sub") or payload.get("uid")
-    if not user_id:
-        return None
-
-    # Lazy import: evita ciclo db ↔ auth in casi sentry/test.
-    try:
-        from llm_wiki.db.users import get_user_by_id
-
-        user = get_user_by_id(str(user_id))
-    except Exception as exc:
-        logger.warning("[auth] user lookup failed: %s", exc)
-        return None
-
-    if not user or not user.get("is_active"):
-        return None
-
-    # Coerenza JWT↔DB già verificata dal TenantMiddleware. Qui ci
-    # fidiamo del payload + lookup user. Aggiungiamo `role_from_jwt`
-    # nel caso il chiamante voglia distinguere "ruolo al login" vs
-    # "ruolo attuale" (escalation rilevabile).
-    user = dict(user)
-    user["_token_role"] = payload.get("role")
-
-    # RBAC: permessi e domain grants risolti al volo dal DB.
-    # Niente claim JWT per evitare bloat e tenere i permessi freschi
-    # quando un admin modifica i ruoli (no attesa expiry token).
-    #
-    # Per-wiki scoping (008+): se ``APP_DOMAIN`` è settato — i.e. il
-    # processo serve una wiki specifica — i permessi effettivi sono
-    # l'unione di global user_roles + user_domain_grants per quel
-    # dominio. Senza APP_DOMAIN (setup mode / admin tools cross-wiki)
-    # restituiamo i soli global perms.
-    try:
-        from llm_wiki.db.roles import (
-            get_user_domain_grants,
-            get_user_permissions,
-            get_user_roles,
-        )
-
-        active_domain = (config.APP_DOMAIN or "").strip() or None
-        user["perms"] = get_user_permissions(str(user["id"]), domain_slug=active_domain)
-        user["roles"] = [r["slug"] for r in get_user_roles(str(user["id"]))]
-        user["domains"] = get_user_domain_grants(str(user["id"]))
-        user["active_domain"] = active_domain
-    except Exception as exc:
-        logger.warning("[auth] RBAC lookup failed (fallback role-only): %s", exc)
-        legacy_role = user.get("role")
-        user["perms"] = []
-        user["roles"] = [legacy_role] if legacy_role else []
-        user["domains"] = []
-        user["active_domain"] = None
+    user = build_user_dict(claims)
+    # FK/RLS mirror — idempotent + cached per process; never breaks the request.
+    ensure_mirror_rows(user)
     return user
 
 

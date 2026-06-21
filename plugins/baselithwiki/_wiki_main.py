@@ -126,18 +126,19 @@ async def lifespan(_: FastAPI):
             "e imposta in .env."
         )
 
-    # DB pool: open + bootstrap admin se Postgres abilitato.
+    # DB pool: open se Postgres abilitato. Niente bootstrap admin — l'identità
+    # (utenti, login, ruoli) è gestita dal plugin centrale ``auth``; la wiki
+    # provisiona lazy una riga ``tenants``/``users`` mirror al primo accesso
+    # (vedi ``llm_wiki.auth._core_bridge.ensure_mirror_rows``).
     if config.POSTGRES_ENABLED:
         try:
-            from llm_wiki.auth.bootstrap import bootstrap_admin_if_empty
             from llm_wiki.db.connection import health_check
 
             if health_check():
-                logger.info("[startup] DB ready")
-                bootstrap_admin_if_empty(vault_root=Path(config.WIKI_ROOT))
+                logger.info("[startup] DB ready (identity via central auth plugin)")
             else:
                 logger.warning(
-                    "[startup] DB health_check fail — auth/conv/memories diranno 503"
+                    "[startup] DB health_check fail — conversations/memories will 503"
                 )
         except Exception as exc:
             logger.error("[startup] DB init failed: %s", exc)
@@ -285,32 +286,31 @@ app.include_router(ingest_router)
 # — keeps the API surface stable for the frontend.
 app.include_router(graph_router)
 
-# Auth + tenant-scoped routers (solo con Postgres). Senza DB
+# Tenant-scoped data routers (solo con Postgres). Senza DB
 # conversations/memories non hanno backing storage — meglio 404 che
 # 503 su ogni request in setup mode.
+#
+# Identity, login, sessioni e RBAC sono di proprietà del plugin centrale
+# ``auth``: la wiki NON monta più il proprio ``/auth`` né ``/api/rbac``.
+# ``/api/me`` espone i permessi-wiki mappati del chiamante allo SPA per il
+# gating UI (il backend ri-verifica ogni permesso lato server).
 if config.POSTGRES_ENABLED:
-    from llm_wiki.api.routers.auth import router as auth_router
     from llm_wiki.api.routers.conversations import router as conversations_router
     from llm_wiki.api.routers.embeds_admin import router as embeds_admin_router
     from llm_wiki.api.routers.feedback_admin import router as feedback_admin_router
     from llm_wiki.api.routers.gdpr import router as gdpr_router
+    from llm_wiki.api.routers.me import router as me_router
     from llm_wiki.api.routers.memories import router as memories_router
-    from llm_wiki.api.routers.rbac import router as rbac_router
-    from llm_wiki.api.routers.rbac_groups import router as rbac_groups_router
-    from llm_wiki.api.routers.rbac_lifecycle import router as rbac_lifecycle_router
 
-    app.include_router(auth_router)
+    app.include_router(me_router)
     app.include_router(conversations_router)
     app.include_router(memories_router)
-    app.include_router(rbac_router)
-    app.include_router(rbac_lifecycle_router)
-    app.include_router(rbac_groups_router)
     app.include_router(gdpr_router)
     app.include_router(embeds_admin_router)
     app.include_router(feedback_admin_router)
     logger.info(
-        "[startup] auth+conversations+memories+rbac+groups+gdpr mounted (public_registration=%s)",
-        config.AUTH_PUBLIC_REGISTRATION,
+        "[startup] me+conversations+memories+gdpr+embeds+feedback mounted "
+        "(identity via central auth plugin)"
     )
 
 

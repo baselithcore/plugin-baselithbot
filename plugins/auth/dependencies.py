@@ -389,7 +389,7 @@ def require_permission(*slugs: str, mode: str = "any") -> Callable:
     """
 
     async def _perm_checker(user: AuthUser = Depends(require_auth)) -> AuthUser:
-        from plugins.auth.rbac.permissions import has_permission
+        from plugins.auth.rbac.permissions import has_all, has_any
         from plugins.auth.rbac.service import get_rbac_service
 
         if not user.is_authenticated or user.user_id == "anonymous":
@@ -399,8 +399,7 @@ def require_permission(*slugs: str, mode: str = "any") -> Callable:
             )
 
         perms = get_rbac_service().effective_permissions(user.user_id, user.roles)
-        checks = [has_permission(perms, slug) for slug in slugs]
-        ok = all(checks) if mode == "all" else any(checks)
+        ok = has_all(perms, slugs) if mode == "all" else has_any(perms, slugs)
         if not ok:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

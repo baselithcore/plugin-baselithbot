@@ -34,46 +34,6 @@ MOUNT_PATH = "/baselithwiki"
 _app: Any | None = None
 
 
-class _CookiePathRewriteMiddleware:
-    """Rewrite the refresh cookie's ``Path`` for the mounted prefix.
-
-    The engine pins the refresh cookie to ``Path=/auth`` (see
-    ``llm_wiki/api/routers/auth/helpers.py``). Mounted under ``/baselithwiki``
-    the browser would never send it back to ``/baselithwiki/auth/refresh`` —
-    silently killing JWT rotation after the first access token expires. We
-    rewrite outgoing ``Set-Cookie`` headers so the cookie is scoped to the
-    real, prefixed path. Pure ASGI (no BaseHTTPMiddleware) to preserve
-    streaming/cancellation per the core middleware convention.
-    """
-
-    def __init__(self, app: Any, mount_path: str = MOUNT_PATH) -> None:
-        self.app = app
-        self._src = b"Path=/auth"
-        self._dst = f"Path={mount_path}/auth".encode()
-
-    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
-        if scope.get("type") != "http":
-            await self.app(scope, receive, send)
-            return
-
-        async def _send(message: Any) -> None:
-            if message.get("type") == "http.response.start":
-                headers = message.get("headers")
-                if headers:
-                    message = {
-                        **message,
-                        "headers": [
-                            (k, v.replace(self._src, self._dst))
-                            if k.lower() == b"set-cookie"
-                            else (k, v)
-                            for k, v in headers
-                        ],
-                    }
-            await send(message)
-
-        await self.app(scope, receive, _send)
-
-
 def _attach_spa(app: Any) -> None:
     """Register the SPA file server + index fallback on the engine app."""
     from fastapi.responses import FileResponse, JSONResponse
@@ -119,9 +79,9 @@ def get_app() -> Any:
     import _wiki_main  # noqa: PLC0415 — deferred until env is isolated
 
     app = _wiki_main.app
-    # Scope the refresh cookie to the mount prefix (added before serving →
-    # the middleware stack is still mutable).
-    app.add_middleware(_CookiePathRewriteMiddleware, mount_path=MOUNT_PATH)
+    # Identity is delegated to the central ``auth`` plugin: login + refresh
+    # happen against the core app's own endpoints (not under ``/baselithwiki``),
+    # so no cookie-path rewrite is needed here anymore.
     _attach_spa(app)
     _app = app
     return _app

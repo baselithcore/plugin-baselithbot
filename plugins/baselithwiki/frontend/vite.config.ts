@@ -18,7 +18,16 @@ export default defineConfig({
   base: process.env.VITE_BASE_PATH || '/',
   plugins: [react(), tailwindcss()],
   resolve: {
-    alias: { '@': path.resolve(__dirname, './src') },
+    // Shared central-auth UI. ``@auth/login`` MUST precede ``@auth`` — the
+    // resolver stops at the first match (same pattern as baselithbot/red_agent).
+    // Path-aliased to the auth plugin's SOURCE; its transitive deps (lucide,
+    // qrcode, react-i18next) resolve from ``plugins/auth/ui/node_modules`` at
+    // build time, so install those before building this UI.
+    alias: [
+      { find: '@auth/login', replacement: path.resolve(__dirname, '../../auth/ui/src/login.ts') },
+      { find: '@auth', replacement: path.resolve(__dirname, '../../auth/ui/src/index.ts') },
+      { find: '@', replacement: path.resolve(__dirname, './src') },
+    ],
   },
   server: {
     port: 5173,

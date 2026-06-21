@@ -6,15 +6,19 @@
  * non integrate nel flusso chat.
  */
 
-import { ArrowLeft, Code2, MessageCircleHeart, ShieldCheck, Users, UsersRound } from 'lucide-react';
+import { ArrowLeft, Code2, MessageCircleHeart } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { useAuth } from '../../contexts/AuthContext';
+import { LanguageSwitcher } from '../LanguageSwitcher';
 import { ThemeToggle } from '../ThemeToggle';
 import { navigate } from '../../hooks/useLocation';
 import { cn } from '../../lib/cn';
 
-type AdminTabId = 'users' | 'groups' | 'roles' | 'embeds' | 'feedback';
+// Users / roles / groups are owned by the central ``auth`` plugin's Access
+// Control — the wiki admin shell only exposes its own surfaces (feedback,
+// embeds).
+type AdminTabId = 'embeds' | 'feedback';
 
 interface Props {
   active: AdminTabId;
@@ -25,26 +29,11 @@ interface TabDef {
   id: AdminTabId;
   label: string;
   path: string;
-  icon: typeof Users;
+  icon: typeof Code2;
   perm: string;
 }
 
 const TABS: TabDef[] = [
-  { id: 'users', label: 'Utenti', path: '/admin/users', icon: Users, perm: 'admin.user.manage' },
-  {
-    id: 'groups',
-    label: 'Gruppi',
-    path: '/admin/groups',
-    icon: UsersRound,
-    perm: 'admin.group.manage',
-  },
-  {
-    id: 'roles',
-    label: 'Ruoli & Permessi',
-    path: '/admin/roles',
-    icon: ShieldCheck,
-    perm: 'admin.user.manage',
-  },
   {
     id: 'feedback',
     label: 'Feedback',
@@ -108,7 +97,8 @@ export function AdminShell({ active, children }: Props) {
             );
           })}
         </nav>
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <LanguageSwitcher />
           <ThemeToggle />
         </div>
       </header>

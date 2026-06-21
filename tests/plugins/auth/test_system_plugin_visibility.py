@@ -33,7 +33,12 @@ class _FakeStore:
 
 def _service() -> RBACService:
     policies = [
-        {"plugin": "auth", "tab_id": "admin-users", "restricted": False, "label": "Users"},
+        {
+            "plugin": "auth",
+            "tab_id": "admin-users",
+            "restricted": False,
+            "label": "Users",
+        },
         {"plugin": "baselithcontrol", "tab_id": "overview", "restricted": False},
     ]
     perms = {"admin-1": {WILDCARD}, "user-1": set()}
@@ -76,6 +81,11 @@ def test_plugin_allowed_hides_auth_from_non_admin():
 def test_can_access_tab_enforces_system_for_single_tab():
     svc = _service()
     assert svc.can_access_tab("user-1", {AuthRole.USER}, "auth", "admin-users") is False
-    assert svc.can_access_tab("admin-1", {AuthRole.ADMIN}, "auth", "admin-users") is True
+    assert (
+        svc.can_access_tab("admin-1", {AuthRole.ADMIN}, "auth", "admin-users") is True
+    )
     # Non-system plugin still delegates to the store's default-allow.
-    assert svc.can_access_tab("user-1", {AuthRole.USER}, "baselithcontrol", "overview") is True
+    assert (
+        svc.can_access_tab("user-1", {AuthRole.USER}, "baselithcontrol", "overview")
+        is True
+    )

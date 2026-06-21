@@ -17,7 +17,11 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
-    "paths": { "@/*": ["./*"] }
+    "paths": {
+      "@/*": ["./*"],
+      "@auth": ["../../auth/ui/src/index.ts"],
+      "@auth/login": ["../../auth/ui/src/login.ts"]
+    }
   },
   "include": [
     "App.tsx",

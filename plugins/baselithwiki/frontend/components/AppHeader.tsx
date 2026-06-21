@@ -4,13 +4,13 @@ import {
   HelpCircle,
   Network,
   PanelTop,
-  ShieldCheck,
   Sliders,
   Sparkles,
   Upload,
 } from 'lucide-react';
 import { Can } from './Can';
 import { EditionSelector, type EditionOption } from './EditionSelector';
+import { LanguageSwitcher } from './LanguageSwitcher';
 import { StatusPill } from './StatusPill';
 import { ThemeToggle } from './ThemeToggle';
 import { UserMenu } from './UserMenu';
@@ -135,16 +135,8 @@ export function AppHeader({
                 <Sparkles size={14} />
               </button>
             </Can>
-            <Can perm="admin.user.manage">
-              <button
-                onClick={() => navigate('/admin/users')}
-                className="btn-icon !size-8 !rounded-md"
-                title="gestione utenti e ruoli"
-                aria-label="gestione utenti e ruoli"
-              >
-                <ShieldCheck size={14} />
-              </button>
-            </Can>
+            {/* User / role / group management lives in the central ``auth``
+                plugin's Access Control — not surfaced from the wiki header. */}
             <span aria-hidden className="mx-0.5 h-5 w-px bg-[var(--color-border)]" />
             <Can perm="view.settings">
               <button
@@ -172,6 +164,7 @@ export function AppHeader({
               <EditionSelector editions={editions} value={editionId} onChange={setEditionId} />
             </Can>
           )}
+          <LanguageSwitcher />
           <ThemeToggle />
           <Can perm="view.status">
             <StatusPill compact />

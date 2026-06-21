@@ -7,7 +7,7 @@ reasoning_agent:
   max_steps: 5
   branching_factor: 3
 baselithwiki:
-  enabled: false
+  enabled: true
 baselithbrain:
   enabled: true
 baselithcore_agents_platform:

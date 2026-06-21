@@ -40,22 +40,40 @@ from starlette.requests import Request
 from starlette.responses import Response
 
 from llm_wiki import config
+from llm_wiki.auth._core_bridge import decode_core_token
 from llm_wiki.auth.tenant_context import (
     TenantInfo,
     reset_tenant,
     set_current_tenant,
 )
-from llm_wiki.auth.tokens import decode_access_token
 
 logger = logging.getLogger(__name__)
 
 
-class TenantMiddleware(BaseHTTPMiddleware):
-    """Estrae tenant dal JWT, verifica anti-tampering, popola contextvar.
+def _bearer_from_headers(headers: list[tuple[bytes, bytes]]) -> str | None:
+    """Extract a ``Bearer`` token from raw ASGI headers (case-insensitive)."""
+    for key, value in headers:
+        if key.lower() == b"authorization":
+            text = value.decode("latin-1")
+            if text.lower().startswith("bearer "):
+                return text[7:].strip() or None
+    return None
 
-    Reset garantito al ``finally`` — anche se l'handler solleva, il
-    contextvar non resta sporco per la prossima request sullo stesso
-    asyncio task / thread.
+
+class TenantMiddleware:
+    """Bind the wiki tenant (== authenticated ``user_id``) from the central
+    access token, so every downstream DB checkout scopes RLS to the caller.
+
+    Pure ASGI (CLAUDE.md mandate — no extra ``BaseHTTPMiddleware`` task that
+    would break streaming/cancellation). Identity comes solely from the central
+    ``auth`` plugin's token: there is no ``X-Tenant-ID`` trust path (a header
+    must never let an authenticated caller choose another tenant). The tenant
+    contextvar is set before the inner app runs and reset in ``finally`` so it
+    never leaks across requests; :mod:`llm_wiki.db.connection` reads it on each
+    pool checkout to set the ``app.current_tenant_id`` RLS GUC.
+
+    Knowledge base (filesystem + Qdrant) is SHARED and not tenant-scoped, so
+    public read-only prefixes skip tenant resolution entirely.
     """
 
     EXEMPT_PREFIXES = (
@@ -64,125 +82,43 @@ class TenantMiddleware(BaseHTTPMiddleware):
         "/redoc",
         "/openapi.json",
         "/static",
-        # Public read-only — wiki è risorsa SHARED.
+        # Public read-only — wiki is a SHARED resource.
         "/api/wiki",
         "/api/groups",
         "/api/status",
         "/api/branding",
-        # Auth endpoints: tenant context popolato DOPO login.
-        "/auth/login",
-        "/auth/register",
-        "/auth/refresh",
-        # Embed pubblico: tenant context settato manualmente dal router
-        # dopo verify_token. JWT non presente → middleware lascerebbe
-        # contextvar a None e i CRUD downstream fallirebbero RLS.
+        # Public embed: the router sets tenant context manually after its own
+        # token verification (no central JWT on the iframe call).
         "/api/embed",
     )
 
-    async def dispatch(self, request: Request, call_next):  # type: ignore[override]
-        path = request.url.path
-        if any(path.startswith(prefix) for prefix in self.EXEMPT_PREFIXES):
-            return await call_next(request)
+    def __init__(self, app: object) -> None:
+        self.app = app
 
-        tenant_id = self._resolve_tenant_id(request)
-        tenant_info = TenantInfo(tenant_id=tenant_id) if tenant_id else None
-        token = set_current_tenant(tenant_info)
+    async def __call__(self, scope: dict, receive: object, send: object) -> None:
+        if scope.get("type") != "http":
+            await self.app(scope, receive, send)  # type: ignore[operator]
+            return
 
-        try:
-            response = await call_next(request)
-            if tenant_id:
-                response.headers["X-Tenant-ID"] = tenant_id
-            return response
-        finally:
-            reset_tenant(token)
-
-    def _resolve_tenant_id(self, request: Request) -> str | None:
-        """Vedi modulo docstring per la priorità completa."""
-        # 1. JWT — sorgente autoritativa.
-        auth_header = request.headers.get("authorization", "")
-        if auth_header.lower().startswith("bearer "):
-            jwt_token = auth_header[7:].strip()
-            payload = decode_access_token(jwt_token)
-            if payload:
-                claim_tenant_id = payload.get("tenant_id")
-                claim_user_id = payload.get("sub") or payload.get("uid")
-                if claim_tenant_id and claim_user_id:
-                    verified = self._verify_jwt_tenant(
-                        str(claim_user_id), str(claim_tenant_id)
-                    )
-                    if verified:
-                        return verified
-                    # JWT tampering — non fallback su header. Fail closed.
-                    return None
-
-        # 2. Header server-to-server — solo se NON c'è JWT (anti-bypass).
-        header_value = request.headers.get("x-tenant-id") or request.headers.get(
-            "X-Tenant-ID"
+        path = scope.get("path", "") or ""
+        token: str | None = None
+        if not any(path.startswith(prefix) for prefix in self.EXEMPT_PREFIXES):
+            token = _bearer_from_headers(scope.get("headers") or [])
+        claims = decode_core_token(token) if token else None
+        tenant_id = (
+            str(claims.get("sub") or claims.get("uid") or "") or None
+            if claims
+            else None
         )
-        if header_value:
-            return header_value.strip() or None
 
-        return None
-
-    def _verify_jwt_tenant(
-        self, claim_user_id: str, claim_tenant_id: str
-    ) -> str | None:
-        """Verifica DB: ``users.tenant_id`` per ``claim.sub`` deve
-        coincidere con ``claim.tenant_id``. Fail-closed su qualsiasi
-        errore (DB down → meglio negare che passare un tampered claim).
-
-        In più — RBAC multi-wiki — se l'utente ha ``user_domain_grants``
-        popolati e ``APP_DOMAIN`` non è tra essi, la request è respinta
-        (no leak cross-wiki). Grants vuoti = back-compat: nessun
-        enforcement, ogni utente vede il dominio del processo.
-        """
+        ctx_token = (
+            set_current_tenant(TenantInfo(tenant_id=tenant_id)) if tenant_id else None
+        )
         try:
-            from llm_wiki.db.users import get_user_by_id
-
-            user = get_user_by_id(claim_user_id)
-            if not user:
-                logger.warning(
-                    "[auth] JWT user_id=%s non presente in DB",
-                    claim_user_id,
-                )
-                return None
-            db_tenant_id = str(user.get("tenant_id") or "")
-            if db_tenant_id != claim_tenant_id:
-                logger.warning(
-                    "[auth] JWT tampering: claim tid=%s, DB tid=%s, user=%s",
-                    claim_tenant_id,
-                    db_tenant_id,
-                    claim_user_id,
-                )
-                return None
-            # Multi-wiki gate. Solo se APP_DOMAIN configurato (engine
-            # in modalità setup → bypass).
-            app_domain = (config.APP_DOMAIN or "").strip()
-            if app_domain:
-                try:
-                    from llm_wiki.db.roles import get_user_domain_grants
-
-                    grants = get_user_domain_grants(claim_user_id)
-                    if grants and app_domain not in grants:
-                        logger.warning(
-                            "[auth] domain access denied: user=%s domain=%s grants=%s",
-                            claim_user_id,
-                            app_domain,
-                            grants,
-                        )
-                        return None
-                except Exception as exc:
-                    # Default fail-closed: se il DB è giù, NON sappiamo
-                    # se l'utente ha grant per il dominio corrente —
-                    # rifiutiamo. Override via env ``DOMAIN_GATE_FAIL_OPEN``
-                    # (sconsigliato in produzione).
-                    logger.warning("[auth] domain grant lookup failed: %s", exc)
-                    if not config.DOMAIN_GATE_FAIL_OPEN:
-                        return None
-            return db_tenant_id
-        except Exception as exc:
-            logger.warning("[auth] JWT/DB verify failed (fail-closed): %s", exc)
-            return None
+            await self.app(scope, receive, send)  # type: ignore[operator]
+        finally:
+            if ctx_token is not None:
+                reset_tenant(ctx_token)
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
