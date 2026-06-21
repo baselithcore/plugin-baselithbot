@@ -87,15 +87,25 @@ class ControlAggregator:
     def _append_offline_cards(
         self, cards: list[PluginCardView], config_enabled: dict[str, bool]
     ) -> None:
-        """Add 'disabled' cards for installed plugins absent from the registry."""
-        # Plugins turned off in config are skipped by the loader and so are
-        # absent from the registry above. Surface them from their manifest as
-        # 'disabled' cards so they stay visible and re-enableable after a restart.
+        """Synthesize cards for installed plugins absent from the registry.
+
+        Two cases are surfaced from on-disk manifests so they never vanish:
+
+        * ``enabled: true`` in config but missing from the registry → the loader
+          tried and could **not** load it (missing deps, import error, bad
+          manifest). Projected as ``failed`` so an admin sees a plugin they
+          turned on yet that is not running, instead of it silently disappearing.
+        * ``enabled: false`` (or absent from config entirely) → an admin concern
+          they can re-enable; projected as ``disabled``.
+        """
         present = {c.name for c in cards}
         for name, enabled in config_enabled.items():
-            if enabled or name in present:
+            if name in present:
                 continue
-            synthesized = self._disabled_card(name, enabled)
+            # Turned on but absent from the registry = failed to load; turned off
+            # = disabled. Either way keep it visible for the admin.
+            state = PluginState.failed if enabled else PluginState.disabled
+            synthesized = self._offline_card(name, enabled=enabled, state=state)
             if synthesized is not None:
                 cards.append(synthesized)
                 present.add(name)
@@ -108,16 +118,23 @@ class ControlAggregator:
         for name in self._safe(list_installed_plugins, []):
             if name in present:
                 continue
-            synthesized = self._disabled_card(name, enabled=None)
+            synthesized = self._offline_card(
+                name, enabled=None, state=PluginState.disabled
+            )
             if synthesized is not None:
                 cards.append(synthesized)
                 present.add(name)
 
-    def _disabled_card(self, name: str, enabled: bool | None) -> PluginCardView | None:
-        """Build a 'disabled' card from the on-disk manifest (None if absent).
+    def _offline_card(
+        self, name: str, enabled: bool | None, state: PluginState
+    ) -> PluginCardView | None:
+        """Build an offline card from the on-disk manifest (None if absent).
 
         ``enabled`` is the persisted config flag, or ``None`` for a plugin that
         is installed on disk but absent from ``configs/plugins.yaml`` entirely.
+        ``state`` is the projected lifecycle state: ``disabled`` for a turned-off
+        or unconfigured plugin, ``failed`` for one enabled in config yet missing
+        from the registry (it did not load).
         """
         manifest = read_manifest(name)
         if not manifest:  # no plugin dir/manifest → not a real plugin, skip
@@ -133,7 +150,7 @@ class ControlAggregator:
             tier=display["tier"],
             icon=display["icon"],
             instance=display["instance"],
-            state=PluginState.disabled,
+            state=state,
             healthy=None,
             initialized=False,
             config_enabled=enabled,

@@ -113,3 +113,35 @@ def test_ui_registry_excludes_disabled_surfaces(aggregator: ControlAggregator) -
     # No static paths in the double → no surfaces either way, but the call must
     # honour the scope flag without error and never leak a disabled surface.
     assert aggregator.ui_registry(include_disabled=False) == []
+
+
+def test_enabled_but_unloaded_surfaces_as_failed(monkeypatch) -> None:
+    """A plugin enabled in config yet absent from the registry = failed to load.
+
+    Regression: such a plugin (e.g. an enabled extra whose deps are missing) was
+    silently dropped — neither active, disabled nor discovered — so an admin lost
+    sight of a plugin they had turned on. It must surface as ``failed`` instead.
+    """
+    reg = FakeRegistry([], active=set(), health={})
+    monkeypatch.setattr(
+        "plugins.baselithcontrol.service.aggregator.read_all",
+        lambda: {"zeta": True},
+    )
+    monkeypatch.setattr(
+        "plugins.baselithcontrol.service.aggregator.list_installed_plugins",
+        lambda: [],
+    )
+    monkeypatch.setattr(
+        "plugins.baselithcontrol.service.aggregator.read_manifest",
+        lambda _name: {
+            "version": "1.0.0",
+            "description": "d",
+            "category": "demo",
+            "tags": [],
+        },
+    )
+    agg = ControlAggregator(reg)
+    cards = agg.inventory(include_disabled=True).plugins
+    assert {c.name: c.state for c in cards} == {"zeta": PluginState.failed}
+    # It must count toward 'down' in the head-band, not vanish from the totals.
+    assert agg.overview(include_disabled=True).down == 1

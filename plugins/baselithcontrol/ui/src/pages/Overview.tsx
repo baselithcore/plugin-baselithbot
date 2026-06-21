@@ -232,7 +232,12 @@ export function Overview({ onOpen }: { onOpen: (name: string) => void }) {
         </div>
 
         <div className="lg:flex-1">
-          <StatusFilterBar counts={stateCounts} value={selectedState} onChange={setSelectedState} />
+          <StatusFilterBar
+            counts={stateCounts}
+            value={selectedState}
+            onChange={setSelectedState}
+            isAdmin={!readOnly}
+          />
         </div>
 
         <div className="flex flex-wrap items-center gap-2 lg:justify-end">

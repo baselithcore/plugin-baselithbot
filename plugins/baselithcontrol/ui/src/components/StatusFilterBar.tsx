@@ -10,12 +10,14 @@ interface Props {
   counts: Record<StateFilter, number>;
   value: StateFilter;
   onChange: (value: StateFilter) => void;
+  isAdmin?: boolean;
 }
 
-// `always` chips render unconditionally; the operational states only appear
-// when something is actually in them — so a user scoped to active-only plugins
-// (the server hides disabled/failed/discovered from non-admins) gets a clean
-// all/active bar instead of three permanently-empty filters.
+// `always` chips render unconditionally. For non-admins the operational states
+// only appear when populated — a user scoped to active-only plugins gets a
+// clean all/active bar instead of permanently-empty filters. Admins always see
+// the full state vocabulary (failed/disabled/discovered) even at zero, since
+// the empty buckets are themselves operational signal they alone can act on.
 const OPTIONS: { value: StateFilter; icon: typeof Activity; always?: boolean }[] = [
   { value: 'all', icon: Activity, always: true },
   { value: 'active', icon: ShieldCheck, always: true },
@@ -24,12 +26,12 @@ const OPTIONS: { value: StateFilter; icon: typeof Activity; always?: boolean }[]
   { value: 'discovered', icon: CircleDashed },
 ];
 
-export function StatusFilterBar({ counts, value, onChange }: Props) {
+export function StatusFilterBar({ counts, value, onChange, isAdmin = false }: Props) {
   const { t } = useTranslation();
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {OPTIONS.filter(({ value: o, always }) => always || counts[o] > 0).map(
+      {OPTIONS.filter(({ value: o, always }) => isAdmin || always || counts[o] > 0).map(
         ({ value: option, icon: Icon }) => {
           const active = value === option;
           const label = option === 'all' ? t('filter.all_status') : t(`state.${option}`);
