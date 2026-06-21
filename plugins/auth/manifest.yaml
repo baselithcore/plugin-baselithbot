@@ -5,6 +5,7 @@ description: "Enterprise authentication \u2014 MFA, passkeys (WebAuthn), SSO (OI
 author: White-Label Team
 category: Security
 readiness: stable
+system: true
 license: Proprietary
 homepage: https://github.com/baselith/baselith-sec
 icon: auth_icon.png
@@ -46,4 +47,4 @@ environment_variables:
 - AUTH_IMPERSONATION_ENABLED
 - AUTH_IMPERSONATION_LIFETIME
 - AUTH_ALLOW_IMPERSONATE_ADMINS
-integrity_sha256: d20d19736983eec39bac6590deacc5d9b29d66f759b1b704376c973e894136f8
+integrity_sha256: 8311ca0d513d3a0c53763a7dbf55bfbc6f71044865a8174b322e53af5dd451ff

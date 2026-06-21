@@ -172,13 +172,17 @@ class AuthPlugin(RouterPlugin):
         return Path(__file__).parent / "static"
 
     def get_ui_tabs(self) -> List[Dict[str, str]]:
-        """Register auth-related sidebar tabs.
+        """Register the auth admin console tab.
+
+        ``auth`` is a system plugin (``manifest.system: true``), so this tab is
+        admin-only by default — hidden from the user-facing nav and surfaced
+        only to effective-admins. ``login`` is deliberately *not* a tab: it is
+        the logged-out entry screen (public route), not a dashboard surface.
 
         Returns:
             List of tab definition dicts with 'id' and 'label'.
         """
         return [
-            {"id": "login", "label": "Login"},
             {"id": "admin-users", "label": "User Management"},
         ]
 

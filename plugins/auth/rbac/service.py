@@ -6,7 +6,7 @@ from typing import Dict, Iterable, List, Optional, Set
 
 from core.auth.types import AuthRole
 from core.observability.logging import get_logger
-from plugins.auth.rbac.discovery import discover_plugin_tabs
+from plugins.auth.rbac.discovery import discover_plugin_tabs, system_plugin_names
 from plugins.auth.rbac.permissions import has_permission, tab_permission
 from plugins.auth.rbac.store import RBACStore, get_rbac_store
 
@@ -87,11 +87,17 @@ class RBACService:
         roles = list(system_roles)
         self._ensure_discovered(registry)
         perms = self.effective_permissions(user_id, roles)
+        system = system_plugin_names()
         out: List[Dict] = []
         for policy in self.store.list_tab_policies():
             plugin = policy["plugin"]
             tab_id = policy["tab_id"]
-            restricted = bool(policy.get("restricted"))
+            is_system = plugin in system
+            # System plugins (auth, …) are admin-only by default: their tabs are
+            # treated as restricted regardless of the stored policy, so they stay
+            # hidden from the user-facing nav and only effective-admins (wildcard)
+            # — or an explicit tab grant — may see them.
+            restricted = bool(policy.get("restricted")) or is_system
             allowed = (not restricted) or has_permission(
                 perms, tab_permission(plugin, tab_id)
             )
@@ -102,6 +108,7 @@ class RBACService:
                     "label": policy.get("label", tab_id),
                     "restricted": restricted,
                     "allowed": allowed,
+                    "system": is_system,
                 }
             )
         return out
@@ -113,7 +120,16 @@ class RBACService:
         plugin: str,
         tab_id: str,
     ) -> bool:
-        """Enforcement check for a single tab."""
+        """Enforcement check for a single tab.
+
+        System-plugin tabs (manifest ``system: true``) are admin-only
+        regardless of the stored policy: access requires the tab permission
+        (effective-admin / wildcard always passes). All other tabs follow the
+        store's default-allow rule.
+        """
+        if plugin in system_plugin_names():
+            perms = self.effective_permissions(user_id, system_roles)
+            return has_permission(perms, tab_permission(plugin, tab_id))
         return self.store.can_access_tab(user_id, system_roles, plugin, tab_id)
 
     def plugin_allowed(

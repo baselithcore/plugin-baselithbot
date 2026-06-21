@@ -58,6 +58,9 @@ class AccessibleTab(BaseModel):
     label: str = ""
     restricted: bool = False
     allowed: bool = True
+    # True when the owning plugin is platform infrastructure (manifest
+    # ``system: true``) — admin-only by default and hidden from user nav.
+    system: bool = False
 
 
 class MePermissions(BaseModel):

@@ -94,6 +94,7 @@ honeypot:
   enable_dynamic_cve_lookup: false
 baselithoptimizeprocess:
   enabled: true
+  auth_enabled: true
 baselithtwin:
   enabled: false
   owner_name: Owner
@@ -103,6 +104,7 @@ baselithcontrol:
   require_admin: false
 baselith_pitwall:
   enabled: true
+  auth_enabled: true
 cve_hunter:
   enabled: false
   enable_discovery: false

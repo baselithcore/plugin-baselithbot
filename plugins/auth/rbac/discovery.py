@@ -51,6 +51,53 @@ def _manifest_name(plugin_dir: Path) -> Optional[str]:
     return None
 
 
+def _manifest_data(plugin_dir: Path) -> Optional[Dict[str, Any]]:
+    """Parsed manifest dict for a plugin dir (or ``None`` if unreadable)."""
+    for fname in _MANIFEST_NAMES:
+        path = plugin_dir / fname
+        if not path.exists():
+            continue
+        try:
+            if path.suffix == ".json":
+                import json
+
+                return json.loads(path.read_text(encoding="utf-8"))
+            return yaml.safe_load(path.read_text(encoding="utf-8"))
+        except Exception:  # noqa: BLE001
+            return None
+    return None
+
+
+# Cache of system-plugin names: the on-disk manifest set is stable for the
+# process lifetime, so we scan once. ``None`` means "not scanned yet".
+_SYSTEM_PLUGINS_CACHE: Optional[frozenset] = None
+
+
+def system_plugin_names() -> frozenset:
+    """Names of plugins whose manifest declares ``system: true`` (cached).
+
+    System plugins are platform infrastructure (e.g. ``auth``): their UI tabs
+    are admin-only by default and they are hidden from the user-facing nav.
+    The RBAC service consults this to flip those tabs from default-allow to
+    default-deny for non-admins.
+    """
+    global _SYSTEM_PLUGINS_CACHE
+    if _SYSTEM_PLUGINS_CACHE is not None:
+        return _SYSTEM_PLUGINS_CACHE
+    names: set = set()
+    if _PLUGINS_DIR.exists():
+        for plugin_dir in _PLUGINS_DIR.iterdir():
+            if not plugin_dir.is_dir() or plugin_dir.name.startswith((".", "_")):
+                continue
+            data = _manifest_data(plugin_dir)
+            if data and bool(data.get("system")):
+                name = data.get("name") or plugin_dir.name
+                if isinstance(name, str) and name:
+                    names.add(name)
+    _SYSTEM_PLUGINS_CACHE = frozenset(names)
+    return _SYSTEM_PLUGINS_CACHE
+
+
 def _tabs_from_source(source: str, plugin: str) -> List[Dict[str, str]]:
     """Leniently extract ``get_ui_tabs`` list-of-dict literals via AST.
 
@@ -169,4 +216,4 @@ def discover_plugin_tabs(registry: Optional[Any] = None) -> List[Dict[str, str]]
     return list(merged.values())
 
 
-__all__ = ["discover_plugin_tabs"]
+__all__ = ["discover_plugin_tabs", "system_plugin_names"]
