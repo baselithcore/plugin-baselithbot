@@ -26,10 +26,13 @@ from .swarm import CVEHunterSwarm
 
 def create_router() -> APIRouter:
     """Create CVE Hunter API router."""
+    # CVE data is deployment-level security-ops intel (the public CVE catalog +
+    # platform vulnerability alerts), not per-tenant customer data — restricted
+    # to admins so non-admin tenant users never read it.
     router = APIRouter(
         prefix="",
         tags=["cve_hunter"],
-        dependencies=[Depends(require_roles(AuthRole.ADMIN, AuthRole.USER))],
+        dependencies=[Depends(require_roles(AuthRole.ADMIN))],
     )
 
     @router.get("/status", response_model=SwarmStatus)

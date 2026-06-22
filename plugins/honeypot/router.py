@@ -52,8 +52,10 @@ __all__ = [
 ]
 
 
-# Authenticating dependencies
-_deps = [Depends(require_roles(AuthRole.ADMIN, AuthRole.USER, AuthRole.GUEST))]
+# Authenticating dependencies. Honeypot data is deployment-level security-ops
+# intel (attacker captures), not per-tenant customer data — restricted to
+# admins so non-admin tenant users never read another deployment's threat data.
+_deps = [Depends(require_roles(AuthRole.ADMIN))]
 
 
 def create_router() -> APIRouter:

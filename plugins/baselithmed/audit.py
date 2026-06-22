@@ -26,6 +26,8 @@ from threading import RLock
 from typing import TYPE_CHECKING, Any, Final
 from uuid import uuid4
 
+from core.context import get_tenant_or_default
+
 if TYPE_CHECKING:
     from .persistence import AuditPersistenceBackend
 
@@ -56,6 +58,10 @@ class AuditEntry:
     summary: dict[str, Any]  # PHI-free metadata
     prev_hash: str
     this_hash: str
+    # Owning tenant. Deliberately NOT part of ``_compute_this_hash`` so existing
+    # chains stay valid and the single deployment-wide integrity chain is
+    # preserved; it is a read-scoping dimension only (see ``entries``).
+    tenant_id: str = "default"
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -68,6 +74,7 @@ class AuditEntry:
             "summary": self.summary,
             "prev_hash": self.prev_hash,
             "this_hash": self.this_hash,
+            "tenant_id": self.tenant_id,
         }
 
 
@@ -163,6 +170,7 @@ class AuditLedger:
                 summary=clean_summary,
                 prev_hash=prev_hash,
                 this_hash=this_hash,
+                tenant_id=get_tenant_or_default(),
             )
             self._entries.append(entry)
             if self._backend is not None:
@@ -174,11 +182,20 @@ class AuditLedger:
             return entry
 
     def entries(self, *, session_id: str | None = None) -> list[AuditEntry]:
-        """Return a snapshot of entries, optionally filtered by session."""
+        """Return a snapshot of the current tenant's entries, optionally by session.
+
+        Scoped to the active tenant so one tenant never reads another's audit
+        trail. The integrity chain (:meth:`verify`) stays deployment-wide and is
+        unaffected — it walks the full in-memory chain regardless of tenant.
+        """
+        tenant = get_tenant_or_default()
         with self._lock:
-            if session_id is None:
-                return list(self._entries)
-            return [e for e in self._entries if e.session_id == session_id]
+            return [
+                e
+                for e in self._entries
+                if e.tenant_id == tenant
+                and (session_id is None or e.session_id == session_id)
+            ]
 
     def verify(self) -> bool:
         """Re-hash the entire chain and assert link integrity."""

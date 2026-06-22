@@ -4,6 +4,7 @@ description: Autonomous AI agent swarm for CVE scanning and discovery
 author: White-Label Team
 category: Security
 readiness: stable
+system: true
 license: Proprietary
 homepage: https://github.com/baselith/baselith-sec
 icon: cve_hunter_icon.png
@@ -25,4 +26,4 @@ environment_variables:
 - CVE_HUNTER_TENANT_ID
 - CVE_HUNTER_ISOLATION_MODE
 - CVE_HUNTER_NAMESPACE
-integrity_sha256: ba655c93670f1b870a6e131997cbbf6ab18e25814deb04fb065d96d168638c4a
+integrity_sha256: 0996107d682fb36a64090e25e9a96bb8dd266b157f810e041cd049f182287b49

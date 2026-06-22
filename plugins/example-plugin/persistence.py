@@ -11,9 +11,11 @@ from typing import AsyncIterator, Optional
 from urllib.parse import quote_plus
 
 from psycopg import AsyncConnection
+from psycopg.types.json import Jsonb
 from psycopg_pool import AsyncConnectionPool
 
 from core.config import get_storage_config
+from core.context import get_tenant_or_default
 
 logger = get_logger(__name__)
 
@@ -95,14 +97,28 @@ async def ensure_schema():
     try:
         async with get_connection() as conn:
             async with conn.cursor() as cur:
+                # ``tenant_id`` scopes every row to the authenticated tenant
+                # (identity-derived; see core.context). DEFAULT 'default' keeps
+                # existing single-tenant rows working; the ALTER upgrades a table
+                # created before tenancy. This is the reference pattern every
+                # data-persisting plugin should follow.
                 await cur.execute("""
                     CREATE TABLE IF NOT EXISTS example_items (
                         id SERIAL PRIMARY KEY,
+                        tenant_id TEXT NOT NULL DEFAULT 'default',
                         name TEXT NOT NULL,
                         created_at TIMESTAMPTZ DEFAULT NOW(),
                         data JSONB
                     );
                 """)
+                await cur.execute(
+                    "ALTER TABLE example_items "
+                    "ADD COLUMN IF NOT EXISTS tenant_id TEXT NOT NULL DEFAULT 'default';"
+                )
+                await cur.execute(
+                    "CREATE INDEX IF NOT EXISTS idx_example_items_tenant "
+                    "ON example_items(tenant_id);"
+                )
         logger.info("Example Plugin: Schema ensured")
     except Exception as e:
         logger.error(f"Example Plugin: Schema initialization failed: {e}")
@@ -117,16 +133,20 @@ class ExampleDAO:
         async with get_connection() as conn:
             async with conn.cursor() as cur:
                 await cur.execute(
-                    "INSERT INTO example_items (name, data) VALUES (%s, %s) RETURNING id",
-                    (name, data),
+                    "INSERT INTO example_items (tenant_id, name, data) "
+                    "VALUES (%s, %s, %s) RETURNING id",
+                    (get_tenant_or_default(), name, Jsonb(data)),
                 )
                 row = await cur.fetchone()
                 return row[0] if row else -1
 
     @staticmethod
     async def get_items() -> list:
-        """Get all items."""
+        """Get all items for the current tenant."""
         async with get_connection() as conn:
             async with conn.cursor() as cur:
-                await cur.execute("SELECT id, name, data FROM example_items")
+                await cur.execute(
+                    "SELECT id, name, data FROM example_items WHERE tenant_id = %s",
+                    (get_tenant_or_default(),),
+                )
                 return await cur.fetchall()

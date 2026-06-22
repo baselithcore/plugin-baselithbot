@@ -4,6 +4,7 @@ description: AI-powered honeypot for attack detection and CVE correlation
 author: White-Label Team
 category: Security
 readiness: stable
+system: true
 license: Proprietary
 homepage: https://github.com/baselith/baselith-sec
 icon: honeypot_icon.png
@@ -27,4 +28,4 @@ environment_variables:
 - HONEYPOT_DEFAULT_TENANT_ID
 - HONEYPOT_ENABLE_DYNAMIC_CVE_LOOKUP
 - HONEYPOT_ENABLE_MEMORY
-integrity_sha256: bfeb9659265e4c072f75c3645ac2b63e0589fad6b8df3516081fce3cf7edae47
+integrity_sha256: 22404c214c719b721b097559232fb1b690940161d85ee8c9a9eb0320bc5f851f
