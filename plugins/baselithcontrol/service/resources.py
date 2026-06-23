@@ -4,7 +4,9 @@ The framework and every plugin run **in one Python process**, so per-plugin
 CPU/RAM cannot be honestly isolated (the OS only accounts the whole process).
 This sampler therefore reports truthful *framework-wide* resource usage via
 ``psutil`` — process CPU/RSS, host CPU/memory, threads, open file descriptors,
-network throughput (rate-derived between samples), and uptime. Per-plugin signal
+network throughput (rate-derived between samples), and host uptime (since the
+machine booted, via ``psutil.boot_time()`` — not since the dashboard opened).
+Per-plugin signal
 is exposed separately as request telemetry (see :mod:`plugin_meter`).
 
 A single long-lived :class:`ResourceSampler` is kept so CPU-percent and network
@@ -75,11 +77,24 @@ class ResourceSampler:
         recv_bps = max(0.0, (io.bytes_recv - prev.recv) / dt)
         return sent_bps, recv_bps, io.bytes_sent, io.bytes_recv
 
+    def _host_uptime_seconds(self) -> float:
+        """Seconds since the **host** booted (not the dashboard/process start).
+
+        Falls back to this process's own uptime when ``psutil.boot_time()`` is
+        unavailable, so the gauge degrades gracefully instead of vanishing.
+        """
+        if psutil is not None:
+            try:
+                return max(0.0, time.time() - float(psutil.boot_time()))
+            except Exception:  # noqa: BLE001 — sandboxed/unsupported platforms
+                pass
+        return time.time() - self._started
+
     def sample(self) -> dict[str, float | int | None]:
         """Take one resource snapshot. All fields are ``None`` when unavailable."""
         out: dict[str, float | int | None] = {
             "available": self.available,
-            "uptime_seconds": round(time.time() - self._started, 1),
+            "uptime_seconds": round(self._host_uptime_seconds(), 1),
         }
         if _PROC is None or psutil is None:
             return out
