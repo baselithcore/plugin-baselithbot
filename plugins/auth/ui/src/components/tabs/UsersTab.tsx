@@ -5,10 +5,11 @@
  */
 
 import { useState } from 'react';
-import { Plus, Search, RefreshCw, Mail } from 'lucide-react';
+import { Plus, Search, RefreshCw, Mail, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../index';
 import { useUsers } from '../../hooks';
+import PageHeader from '../shared/PageHeader';
 import UserTable from '../UserTable';
 import InvitationsPanel from './InvitationsPanel';
 import InviteUserModal from '../modals/InviteUserModal';
@@ -165,6 +166,13 @@ const UsersTab = () => {
 
   return (
     <div className="users-tab">
+      <PageHeader
+        icon={<Users size={22} />}
+        title={t('users.title')}
+        subtitle={t('users.subtitle')}
+        countLabel={t('users.countLabel', { count: total })}
+      />
+
       {/* Toolbar */}
       <div className="users-toolbar">
         <div className="users-search">

@@ -31,8 +31,7 @@ const PermissionMatrix = ({ role, permsByCategory, editor }: Props) => {
     string,
     string
   >;
-  const describe = (p: RbacPermission) =>
-    (descMap && descMap[p.slug]) || p.description || p.slug;
+  const describe = (p: RbacPermission) => (descMap && descMap[p.slug]) || p.description || p.slug;
 
   const toggleCollapse = (cat: string) =>
     setCollapsed((prev) => {

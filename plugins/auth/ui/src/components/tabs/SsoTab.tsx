@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuthContext';
 import { listProviders, deleteProvider, type SsoProvider } from '../../api/sso';
 import SsoProviderForm from './SsoProviderForm';
+import PageHeader from '../shared/PageHeader';
 import './sso.css';
 
 export default function SsoTab() {
@@ -39,19 +40,18 @@ export default function SsoTab() {
 
   return (
     <div className="sso-tab">
-      <div className="sso-head">
-        <div>
-          <h2 className="sso-title">
-            <Globe size={18} /> {t('sso.title')}
-          </h2>
-          <p className="sso-desc">{t('sso.desc')}</p>
-        </div>
-        {!showForm && (
-          <button className="acct-btn acct-btn-primary" onClick={() => setCreating(true)}>
-            <Plus size={14} /> {t('sso.add')}
-          </button>
-        )}
-      </div>
+      <PageHeader
+        icon={<Globe size={22} />}
+        title={t('sso.title')}
+        subtitle={t('sso.desc')}
+        actions={
+          !showForm ? (
+            <button className="admin-btn admin-btn-primary" onClick={() => setCreating(true)}>
+              <Plus size={16} /> {t('sso.add')}
+            </button>
+          ) : undefined
+        }
+      />
 
       {error && <div className="acct-alert acct-alert-error">{error}</div>}
 

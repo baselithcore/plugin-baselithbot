@@ -7,10 +7,11 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Building2, Plus, Trash2, UserPlus, X, Power } from 'lucide-react';
+import { Building2, Plus, Trash2, UserPlus, X, Power, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import * as tenants from '../../api/tenants';
 import { listUsers } from '../../api/users';
+import PageHeader from '../shared/PageHeader';
 import type { Tenant, TenantMember, User } from '../../types';
 
 const TenantsTab = () => {
@@ -22,8 +23,16 @@ const TenantsTab = () => {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ slug: '', name: '' });
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   const selected = list.find((x) => x.id === selectedId) || null;
+  const visible = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return list;
+    return list.filter(
+      (tn) => tn.name.toLowerCase().includes(q) || tn.slug.toLowerCase().includes(q)
+    );
+  }, [list, query]);
 
   const reload = useCallback(async () => {
     try {
@@ -103,16 +112,28 @@ const TenantsTab = () => {
 
   return (
     <div className="tenants-tab">
-      <div className="tenants-header">
-        <div className="tenants-title">
-          <Building2 size={20} />
-          <h2>{t('tenants.title')}</h2>
-        </div>
-        <button className="admin-btn admin-btn-primary" onClick={() => setCreating(true)}>
-          <Plus size={16} /> {t('tenants.addTenant')}
-        </button>
-      </div>
-      <p className="tenants-desc">{t('tenants.description')}</p>
+      <PageHeader
+        icon={<Building2 size={22} />}
+        title={t('tenants.title')}
+        subtitle={t('tenants.description')}
+        countLabel={t('tenants.countLabel', { count: list.length })}
+        actions={
+          <>
+            <div className="admin-search">
+              <Search size={15} />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t('tenants.searchPlaceholder')}
+                aria-label={t('tenants.searchPlaceholder')}
+              />
+            </div>
+            <button className="admin-btn admin-btn-primary" onClick={() => setCreating(true)}>
+              <Plus size={16} /> {t('tenants.addTenant')}
+            </button>
+          </>
+        }
+      />
 
       {error && <div className="admin-alert admin-alert-error">{error}</div>}
 
@@ -141,7 +162,7 @@ const TenantsTab = () => {
 
       <div className="tenants-grid">
         <div className="tenants-list">
-          {list.map((tn) => (
+          {visible.map((tn) => (
             <button
               key={tn.id}
               className={`tenant-item ${selected?.id === tn.id ? 'active' : ''}`}
@@ -158,7 +179,11 @@ const TenantsTab = () => {
               </span>
             </button>
           ))}
-          {list.length === 0 && <p className="admin-empty-text">{t('tenants.empty')}</p>}
+          {visible.length === 0 && (
+            <p className="admin-empty-text">
+              {query ? t('tenants.noMatches') : t('tenants.empty')}
+            </p>
+          )}
         </div>
 
         {selected && (
@@ -241,11 +266,7 @@ const TenantsTab = () => {
       </div>
 
       <style>{`
-        .tenants-tab { display: flex; flex-direction: column; gap: 0.75rem; }
-        .tenants-header { display: flex; align-items: center; justify-content: space-between; }
-        .tenants-title { display: flex; align-items: center; gap: 0.75rem; color: var(--admin-text); }
-        .tenants-title h2 { margin: 0; }
-        .tenants-desc { margin: 0; color: var(--admin-text-muted); font-size: 0.875rem; }
+        .tenants-tab { display: flex; flex-direction: column; gap: 1rem; }
         .tenant-create { display: flex; gap: 0.5rem; flex-wrap: wrap; padding: 1rem; }
         .tenants-grid { display: grid; grid-template-columns: 280px 1fr; gap: 1rem; align-items: start; }
         .tenants-list { display: flex; flex-direction: column; gap: 0.5rem; }

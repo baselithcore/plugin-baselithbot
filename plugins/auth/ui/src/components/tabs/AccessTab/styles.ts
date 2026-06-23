@@ -2,18 +2,6 @@
 
 export const ACCESS_STYLES = `
   .access-tab { display: flex; flex-direction: column; gap: 1rem; }
-  .access-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-  .access-headings { display: flex; flex-direction: column; gap: 0.35rem; }
-  .access-title { display: flex; align-items: center; gap: 0.6rem; color: var(--admin-text); }
-  .access-title h2 { margin: 0; font-size: 1.4rem; }
-  .access-desc { margin: 0; color: var(--admin-text-muted); font-size: 0.875rem; max-width: 60ch; }
-  .access-tools { display: flex; align-items: center; gap: 0.5rem; }
-  .access-search { position: relative; display: flex; align-items: center; }
-  .access-search svg { position: absolute; left: 0.6rem; color: var(--admin-text-muted); pointer-events: none; }
-  .access-search input { padding: 0.5rem 0.7rem 0.5rem 2rem; border-radius: 0.55rem; min-width: 220px;
-    background: var(--admin-surface, hsla(220,25%,15%,0.6)); color: var(--admin-text);
-    border: 1px solid var(--admin-border, hsla(220,25%,40%,0.35)); font-size: 0.85rem; }
-  .access-search input:focus { outline: none; border-color: var(--admin-accent); }
 
   .mfa-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem;
     padding: 0.9rem 1.1rem; border-radius: 0.75rem;

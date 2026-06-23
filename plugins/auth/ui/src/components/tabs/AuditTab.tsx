@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { useAudit } from '../../hooks';
 import { DetailModal } from '../modals';
+import PageHeader from '../shared/PageHeader';
 import { AuditEntry } from '../../types';
 
 const formatDate = (dateStr: string): string => {
@@ -118,40 +119,37 @@ const AuditTab = () => {
 
   return (
     <div className="audit-tab">
-      {/* Header */}
-      <div className="audit-header">
-        <div className="audit-title">
-          <Activity size={20} />
-          <h2>{t('audit.title')}</h2>
-          <span className="audit-count">{t('audit.countEntries', { count: total })}</span>
-        </div>
-
-        <div className="audit-controls">
-          {/* Filter dropdown */}
-          <div className="audit-filter">
-            <Filter size={14} />
-            <select
-              value={filterAction}
-              onChange={(e) => handleFilterChange(e.target.value)}
-              className="audit-filter-select"
+      <PageHeader
+        icon={<Activity size={22} />}
+        title={t('audit.title')}
+        subtitle={t('audit.subtitle')}
+        countLabel={t('audit.countEntries', { count: total })}
+        actions={
+          <>
+            <div className="audit-filter">
+              <Filter size={14} />
+              <select
+                value={filterAction}
+                onChange={(e) => handleFilterChange(e.target.value)}
+                className="audit-filter-select"
+              >
+                {auditActions.map((action) => (
+                  <option key={action.value} value={action.value}>
+                    {action.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <button
+              className="admin-btn admin-btn-ghost admin-btn-icon"
+              onClick={() => refresh()}
+              title={t('common.refresh')}
             >
-              {auditActions.map((action) => (
-                <option key={action.value} value={action.value}>
-                  {action.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button
-            className="admin-btn admin-btn-ghost admin-btn-icon"
-            onClick={() => refresh()}
-            title={t('common.refresh')}
-          >
-            <RefreshCw size={16} />
-          </button>
-        </div>
-      </div>
+              <RefreshCw size={16} />
+            </button>
+          </>
+        }
+      />
 
       {/* Error display */}
       {error && (
@@ -298,38 +296,6 @@ const AuditTab = () => {
           display: flex;
           flex-direction: column;
           gap: 1.25rem;
-        }
-
-        .audit-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .audit-title {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          color: var(--admin-text);
-        }
-
-        .audit-title h2 {
-          margin: 0;
-        }
-
-        .audit-count {
-          padding: 0.25rem 0.625rem;
-          font-size: 0.75rem;
-          font-weight: 500;
-          color: var(--admin-accent);
-          background: hsla(200, 80%, 50%, 0.15);
-          border-radius: 9999px;
-        }
-
-        .audit-controls {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
         }
 
         .audit-filter {

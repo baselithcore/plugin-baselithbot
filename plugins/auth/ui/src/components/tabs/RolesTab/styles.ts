@@ -2,9 +2,6 @@
 
 export const ROLES_STYLES = `
   .roles-tab { display: flex; flex-direction: column; gap: 1.25rem; padding-bottom: 4.5rem; }
-  .roles-header { display: flex; align-items: center; justify-content: space-between; }
-  .roles-title { display: flex; align-items: center; gap: 0.75rem; color: var(--admin-text); }
-  .roles-title h2 { margin: 0; }
   .role-create { display: flex; gap: 0.5rem; flex-wrap: wrap; padding: 1rem; align-items: center; }
   .role-create .admin-select { min-width: 180px; }
   .roles-grid { display: grid; grid-template-columns: 280px 1fr; gap: 1rem; align-items: start; }

@@ -48,8 +48,7 @@ export function useRoleEditor(
   onSaved: () => Promise<void> | void
 ): RoleEditor {
   const original = useMemo(
-    () =>
-      role ? role.permissions.filter((p) => !p.startsWith(TAB_PREFIX)) : ([] as string[]),
+    () => (role ? role.permissions.filter((p) => !p.startsWith(TAB_PREFIX)) : ([] as string[])),
     [role]
   );
   const [staged, setStaged] = useState<Set<string>>(() => new Set(original));

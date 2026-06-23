@@ -12,6 +12,7 @@ import { useRbac } from '../../../hooks/useRbac';
 import { getMfaPolicy, setMfaPolicy } from '../../../api/security';
 import { groupByPlugin, matchesQuery } from './helpers';
 import { ACCESS_STYLES } from './styles';
+import PageHeader from '../../shared/PageHeader';
 import MfaPolicyCard from './parts/MfaPolicyCard';
 import PluginGroup from './parts/PluginGroup';
 
@@ -53,29 +54,27 @@ const AccessTab = () => {
 
   return (
     <div className="access-tab">
-      <div className="access-head">
-        <div className="access-headings">
-          <div className="access-title">
-            <Lock size={22} />
-            <h2>{t('access.title')}</h2>
-          </div>
-          <p className="access-desc">{t('access.description')}</p>
-        </div>
-        <div className="access-tools">
-          <div className="access-search">
-            <Search size={15} />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t('access.searchPlaceholder')}
-              aria-label={t('access.searchPlaceholder')}
-            />
-          </div>
-          <button className="admin-btn admin-btn-ghost" onClick={() => refreshTabs()}>
-            <RefreshCw size={16} /> {t('access.refreshTabs')}
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        icon={<Lock size={22} />}
+        title={t('access.title')}
+        subtitle={t('access.description')}
+        actions={
+          <>
+            <div className="admin-search">
+              <Search size={15} />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t('access.searchPlaceholder')}
+                aria-label={t('access.searchPlaceholder')}
+              />
+            </div>
+            <button className="admin-btn admin-btn-ghost" onClick={() => refreshTabs()}>
+              <RefreshCw size={16} /> {t('access.refreshTabs')}
+            </button>
+          </>
+        }
+      />
 
       {error && <div className="admin-alert admin-alert-error">{error}</div>}
 

@@ -89,7 +89,7 @@
     "limitedTo": "Your access is limited to: {{tabs}}"
   },
   "nav": {
-    "adminPanel": "Admin Panel",
+    "adminPanel": "BaselithAuth",
     "users": "Users",
     "sessions": "Sessions",
     "audit": "Audit Log",
@@ -97,13 +97,16 @@
     "groups": "Groups",
     "access": "Access Control",
     "logout": "Logout",
-    "version": "Admin Panel v1.0",
+    "version": "BaselithAuth v1.0",
     "myAccount": "My account",
     "sso": "SSO",
     "tenants": "Tenants"
   },
   "groups": {
     "title": "Groups",
+    "countLabel": "{{count}} groups",
+    "searchPlaceholder": "Search groups…",
+    "noMatches": "No groups match your search.",
     "addGroup": "New Group",
     "description": "Bundle users and assign roles in bulk. Members inherit every role granted to the group.",
     "slug": "Slug",
@@ -122,6 +125,8 @@
   },
   "users": {
     "title": "User Management",
+    "subtitle": "Create, edit and manage user accounts.",
+    "countLabel": "{{count}} users",
     "searchPlaceholder": "Search by email or username…",
     "searchByEmail": "Search by email...",
     "addUser": "Add User",
@@ -198,6 +203,9 @@
   },
   "sessions": {
     "title": "Active Sessions",
+    "subtitle": "Active login sessions across all users.",
+    "searchPlaceholder": "Search by email…",
+    "noMatches": "No sessions match your search.",
     "empty": "No active sessions",
     "emptyHint": "There are currently no active user sessions.",
     "loading": "Loading sessions...",
@@ -217,6 +225,7 @@
   },
   "audit": {
     "title": "Audit Log",
+    "subtitle": "Security and activity events, most recent first.",
     "empty": "No audit entries",
     "emptyFiltered": "No entries match the selected filter.",
     "emptyHint": "No audit log entries recorded yet.",
@@ -253,6 +262,8 @@
   },
   "roles": {
     "title": "Roles & Permissions",
+    "subtitle": "Define roles and the permissions they grant.",
+    "countLabel": "{{count}} roles",
     "addRole": "New Role",
     "system": "System",
     "custom": "Custom",
@@ -695,6 +706,9 @@
   },
   "tenants": {
     "title": "Tenants",
+    "countLabel": "{{count}} tenants",
+    "searchPlaceholder": "Search tenants…",
+    "noMatches": "No tenants match your search.",
     "addTenant": "New Tenant",
     "description": "Provision tenants and assign users. A member's access is scoped to their tenant; their first tenant becomes the default.",
     "slug": "Slug",

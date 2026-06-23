@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useRbac } from '../../../hooks/useRbac';
 import type { RbacPermission, RbacRole } from '../../../types';
 import * as rbac from '../../../api/rbac';
+import PageHeader from '../../shared/PageHeader';
 import CreateRoleForm, { type NewRole } from './parts/CreateRoleForm';
 import PermissionMatrix from './parts/PermissionMatrix';
 import RoleList from './parts/RoleList';
@@ -60,15 +61,17 @@ const RolesTab = () => {
 
   return (
     <div className="roles-tab">
-      <div className="roles-header">
-        <div className="roles-title">
-          <Shield size={20} />
-          <h2>{t('roles.title')}</h2>
-        </div>
-        <button className="admin-btn admin-btn-primary" onClick={() => setCreating(true)}>
-          <Plus size={16} /> {t('roles.addRole')}
-        </button>
-      </div>
+      <PageHeader
+        icon={<Shield size={22} />}
+        title={t('roles.title')}
+        subtitle={t('roles.subtitle')}
+        countLabel={t('roles.countLabel', { count: roles.length })}
+        actions={
+          <button className="admin-btn admin-btn-primary" onClick={() => setCreating(true)}>
+            <Plus size={16} /> {t('roles.addRole')}
+          </button>
+        }
+      />
 
       {error && <div className="admin-alert admin-alert-error">{error}</div>}
 

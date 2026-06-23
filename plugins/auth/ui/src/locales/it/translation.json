@@ -89,7 +89,7 @@
     "limitedTo": "Il tuo accesso è limitato a: {{tabs}}"
   },
   "nav": {
-    "adminPanel": "Pannello Admin",
+    "adminPanel": "BaselithAuth",
     "users": "Utenti",
     "sessions": "Sessioni",
     "audit": "Registro Audit",
@@ -97,13 +97,16 @@
     "groups": "Gruppi",
     "access": "Controllo Accessi",
     "logout": "Esci",
-    "version": "Pannello Admin v1.0",
+    "version": "BaselithAuth v1.0",
     "myAccount": "Il mio account",
     "sso": "SSO",
     "tenants": "Tenant"
   },
   "groups": {
     "title": "Gruppi",
+    "countLabel": "{{count}} gruppi",
+    "searchPlaceholder": "Cerca gruppi…",
+    "noMatches": "Nessun gruppo corrisponde alla ricerca.",
     "addGroup": "Nuovo Gruppo",
     "description": "Raggruppa utenti e assegna ruoli in blocco. I membri ereditano tutti i ruoli concessi al gruppo.",
     "slug": "Slug",
@@ -122,6 +125,8 @@
   },
   "users": {
     "title": "Gestione Utenti",
+    "subtitle": "Crea, modifica e gestisci gli account utente.",
+    "countLabel": "{{count}} utenti",
     "searchPlaceholder": "Cerca per email o nome utente…",
     "searchByEmail": "Cerca per email...",
     "addUser": "Aggiungi Utente",
@@ -198,6 +203,9 @@
   },
   "sessions": {
     "title": "Sessioni Attive",
+    "subtitle": "Sessioni di accesso attive di tutti gli utenti.",
+    "searchPlaceholder": "Cerca per email…",
+    "noMatches": "Nessuna sessione corrisponde alla ricerca.",
     "empty": "Nessuna sessione attiva",
     "emptyHint": "Al momento non ci sono sessioni utente attive.",
     "loading": "Caricamento sessioni...",
@@ -217,6 +225,7 @@
   },
   "audit": {
     "title": "Registro Audit",
+    "subtitle": "Eventi di sicurezza e attività, più recenti per primi.",
     "empty": "Nessuna voce di audit",
     "emptyFiltered": "Nessuna voce corrisponde al filtro selezionato.",
     "emptyHint": "Nessuna voce di audit ancora registrata.",
@@ -253,6 +262,8 @@
   },
   "roles": {
     "title": "Ruoli e Permessi",
+    "subtitle": "Definisci i ruoli e i permessi che concedono.",
+    "countLabel": "{{count}} ruoli",
     "addRole": "Nuovo Ruolo",
     "system": "Sistema",
     "custom": "Personalizzato",
@@ -695,6 +706,9 @@
   },
   "tenants": {
     "title": "Tenant",
+    "countLabel": "{{count}} tenant",
+    "searchPlaceholder": "Cerca tenant…",
+    "noMatches": "Nessun tenant corrisponde alla ricerca.",
     "addTenant": "Nuovo Tenant",
     "description": "Crea tenant e assegna utenti. L'accesso di un membro è limitato al suo tenant; il primo tenant diventa quello predefinito.",
     "slug": "Slug",

@@ -7,10 +7,11 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Users2, Plus, Trash2, Check, UserPlus, X } from 'lucide-react';
+import { Users2, Plus, Trash2, Check, UserPlus, X, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import * as rbac from '../../api/rbac';
 import { listUsers } from '../../api/users';
+import PageHeader from '../shared/PageHeader';
 import type { RbacGroup, RbacRole, GroupMember, User } from '../../types';
 
 const GroupsTab = () => {
@@ -23,8 +24,16 @@ const GroupsTab = () => {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ slug: '', name: '', description: '', mfa_required: false });
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState('');
 
   const selected = groups.find((g) => g.id === selectedId) || null;
+  const visibleGroups = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return groups;
+    return groups.filter(
+      (g) => g.name.toLowerCase().includes(q) || g.slug.toLowerCase().includes(q)
+    );
+  }, [groups, query]);
 
   const reload = useCallback(async () => {
     try {
@@ -110,16 +119,28 @@ const GroupsTab = () => {
 
   return (
     <div className="groups-tab">
-      <div className="groups-header">
-        <div className="groups-title">
-          <Users2 size={20} />
-          <h2>{t('groups.title')}</h2>
-        </div>
-        <button className="admin-btn admin-btn-primary" onClick={() => setCreating(true)}>
-          <Plus size={16} /> {t('groups.addGroup')}
-        </button>
-      </div>
-      <p className="groups-desc">{t('groups.description')}</p>
+      <PageHeader
+        icon={<Users2 size={22} />}
+        title={t('groups.title')}
+        subtitle={t('groups.description')}
+        countLabel={t('groups.countLabel', { count: groups.length })}
+        actions={
+          <>
+            <div className="admin-search">
+              <Search size={15} />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t('groups.searchPlaceholder')}
+                aria-label={t('groups.searchPlaceholder')}
+              />
+            </div>
+            <button className="admin-btn admin-btn-primary" onClick={() => setCreating(true)}>
+              <Plus size={16} /> {t('groups.addGroup')}
+            </button>
+          </>
+        }
+      />
 
       {error && <div className="admin-alert admin-alert-error">{error}</div>}
 
@@ -162,7 +183,7 @@ const GroupsTab = () => {
 
       <div className="groups-grid">
         <div className="groups-list">
-          {groups.map((g) => (
+          {visibleGroups.map((g) => (
             <button
               key={g.id}
               className={`group-item ${selected?.id === g.id ? 'active' : ''}`}
@@ -175,7 +196,9 @@ const GroupsTab = () => {
               </span>
             </button>
           ))}
-          {groups.length === 0 && <p className="admin-empty-text">{t('groups.empty')}</p>}
+          {visibleGroups.length === 0 && (
+            <p className="admin-empty-text">{query ? t('groups.noMatches') : t('groups.empty')}</p>
+          )}
         </div>
 
         {selected && (
@@ -269,11 +292,7 @@ const GroupsTab = () => {
       </div>
 
       <style>{`
-        .groups-tab { display: flex; flex-direction: column; gap: 0.75rem; }
-        .groups-header { display: flex; align-items: center; justify-content: space-between; }
-        .groups-title { display: flex; align-items: center; gap: 0.75rem; color: var(--admin-text); }
-        .groups-title h2 { margin: 0; }
-        .groups-desc { margin: 0; color: var(--admin-text-muted); font-size: 0.875rem; }
+        .groups-tab { display: flex; flex-direction: column; gap: 1rem; }
         .group-create { display: flex; gap: 0.5rem; flex-wrap: wrap; padding: 1rem; }
         .groups-grid { display: grid; grid-template-columns: 280px 1fr; gap: 1rem; align-items: start; }
         .groups-list { display: flex; flex-direction: column; gap: 0.5rem; }

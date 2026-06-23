@@ -4,13 +4,14 @@
  * Displays active sessions across all users.
  */
 
-import { RefreshCw, Key, User, Clock, Eye } from 'lucide-react';
+import { RefreshCw, Key, User, Clock, Eye, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { useSessions } from '../../hooks';
 import { DetailModal } from '../modals';
+import PageHeader from '../shared/PageHeader';
 import { Session } from '../../types';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 const formatDate = (dateStr: string): string => {
   const date = new Date(dateStr);
@@ -43,25 +44,42 @@ const SessionsTab = () => {
   const { t } = useTranslation();
   const { sessions, total, isLoading, error, refresh } = useSessions();
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [query, setQuery] = useState('');
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return sessions;
+    return sessions.filter((s) => (s.user_email || '').toLowerCase().includes(q));
+  }, [sessions, query]);
 
   return (
     <div className="sessions-tab">
-      {/* Header */}
-      <div className="sessions-header">
-        <div className="sessions-title">
-          <Key size={20} />
-          <h2>{t('sessions.title')}</h2>
-          <span className="sessions-count">{t('sessions.countActive', { count: total })}</span>
-        </div>
-
-        <button
-          className="admin-btn admin-btn-ghost admin-btn-icon"
-          onClick={() => refresh()}
-          title={t('common.refresh')}
-        >
-          <RefreshCw size={16} />
-        </button>
-      </div>
+      <PageHeader
+        icon={<Key size={22} />}
+        title={t('sessions.title')}
+        subtitle={t('sessions.subtitle')}
+        countLabel={t('sessions.countActive', { count: total })}
+        actions={
+          <>
+            <div className="admin-search">
+              <Search size={15} />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t('sessions.searchPlaceholder')}
+                aria-label={t('sessions.searchPlaceholder')}
+              />
+            </div>
+            <button
+              className="admin-btn admin-btn-ghost admin-btn-icon"
+              onClick={() => refresh()}
+              title={t('common.refresh')}
+            >
+              <RefreshCw size={16} />
+            </button>
+          </>
+        }
+      />
 
       {/* Error display */}
       {error && (
@@ -77,13 +95,15 @@ const SessionsTab = () => {
             <div className="admin-spinner admin-spinner-lg" />
             <p className="admin-empty-text">{t('sessions.loading')}</p>
           </div>
-        ) : sessions.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="admin-empty">
             <div className="admin-empty-icon">
               <Key size={48} />
             </div>
-            <p className="admin-empty-title">{t('sessions.empty')}</p>
-            <p className="admin-empty-text">{t('sessions.emptyHint')}</p>
+            <p className="admin-empty-title">
+              {query ? t('sessions.noMatches') : t('sessions.empty')}
+            </p>
+            {!query && <p className="admin-empty-text">{t('sessions.emptyHint')}</p>}
           </div>
         ) : (
           <table className="admin-table">
@@ -98,7 +118,7 @@ const SessionsTab = () => {
               </tr>
             </thead>
             <tbody>
-              {sessions.map((session) => (
+              {filtered.map((session) => (
                 <tr key={session.id}>
                   <td>
                     <div className="session-user">
@@ -160,32 +180,6 @@ const SessionsTab = () => {
           display: flex;
           flex-direction: column;
           gap: 1.25rem;
-        }
-
-        .sessions-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .sessions-title {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          color: var(--admin-text);
-        }
-
-        .sessions-title h2 {
-          margin: 0;
-        }
-
-        .sessions-count {
-          padding: 0.25rem 0.625rem;
-          font-size: 0.75rem;
-          font-weight: 500;
-          color: var(--admin-accent);
-          background: hsla(200, 80%, 50%, 0.15);
-          border-radius: 9999px;
         }
 
         .session-user {
