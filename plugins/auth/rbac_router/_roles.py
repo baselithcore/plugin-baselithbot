@@ -9,15 +9,20 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from core.auth import AuthUser
 from plugins.auth.audit import AuditAction
 from plugins.auth.dependencies import require_permission
-from plugins.auth.rbac.permissions import Permission
+from plugins.auth.rbac.permissions import ROLE_TEMPLATES, Permission
 from plugins.auth.rbac.service import RBACService, get_rbac_service
 from plugins.auth.rbac_router._audit import audit_rbac
+from plugins.auth.rbac_router._escalation import (
+    guard_role_assignment,
+    guard_wildcard_grant,
+)
 from plugins.auth.rbac_router._models import (
     AssignRole,
     PermissionOut,
     RoleCreate,
     RoleOut,
     RolePermissions,
+    RoleTemplateOut,
     RoleUpdate,
 )
 
@@ -34,6 +39,22 @@ async def list_permissions(
 ):
     """List the full permission catalog (built-in + discovered tab perms)."""
     return _service().store.list_permissions()
+
+
+@router.get("/role-templates", response_model=List[RoleTemplateOut])
+async def list_role_templates(
+    user: AuthUser = Depends(require_permission(Permission.RBAC_READ)),
+):
+    """Predefined, non-privileged permission bundles for new custom roles.
+
+    Surfaced as "create from template" in the Roles UI. Templates are not
+    persisted roles — they only pre-fill the permission set of a role the admin
+    then creates, so deleting a role never resurrects it.
+    """
+    return [
+        RoleTemplateOut(slug=slug, name=name, description=desc, permissions=list(perms))
+        for slug, (name, desc, perms) in ROLE_TEMPLATES.items()
+    ]
 
 
 @router.get("/roles", response_model=List[RoleOut])
@@ -103,6 +124,7 @@ async def set_role_permissions(
     store = _service().store
     if not store.get_role(role_id):
         raise HTTPException(status_code=404, detail="Role not found")
+    guard_wildcard_grant(user, body.permissions)
     store.set_role_permissions(role_id, body.permissions)
     audit_rbac(
         request,
@@ -125,6 +147,7 @@ async def grant_role_permission(
     store = _service().store
     if not store.get_role(role_id):
         raise HTTPException(status_code=404, detail="Role not found")
+    guard_wildcard_grant(user, [slug])
     store.grant_permission(role_id, slug)
     audit_rbac(
         request,
@@ -170,7 +193,12 @@ async def assign_user_role(
     user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
 ):
     """Assign a custom role to a user."""
-    _service().store.assign_user_role(user_id, body.role_id, granted_by=user.user_id)
+    store = _service().store
+    role = store.get_role(body.role_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    guard_role_assignment(user, user_id, role)
+    store.assign_user_role(user_id, body.role_id, granted_by=user.user_id)
     audit_rbac(
         request,
         user.user_id,
@@ -188,7 +216,13 @@ async def revoke_user_role(
     user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
 ):
     """Revoke a custom role from a user."""
-    _service().store.revoke_user_role(user_id, role_id)
+    store = _service().store
+    role = store.get_role(role_id)
+    if role:
+        # Symmetric gating: stripping a role needs the same authority as
+        # granting it, so a lower-tier operator cannot revoke an admin role.
+        guard_role_assignment(user, user_id, role)
+    store.revoke_user_role(user_id, role_id)
     audit_rbac(
         request,
         user.user_id,

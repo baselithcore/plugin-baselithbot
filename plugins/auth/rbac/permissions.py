@@ -47,6 +47,17 @@ class Permission:
     AUDIT_READ = "audit.read"
     # Session administration.
     SESSIONS_MANAGE = "sessions.manage"
+    SESSIONS_READ = "sessions.read"
+    # Group administration (additive alternative to RBAC_MANAGE on group routes).
+    GROUPS_MANAGE = "groups.manage"
+    # Role-assignment gating (NIST RBAC2 hierarchy). Granting a role to a user
+    # requires the matching assign permission — this is what closes privilege
+    # escalation: an ``rbac.manage`` operator can no longer mint/assign admin
+    # power without being an effective admin themselves. ``RBAC_ASSIGN_ROLE``
+    # covers ordinary roles; ``RBAC_ASSIGN_ADMIN`` is required for any role that
+    # carries the wildcard (i.e. full platform admin).
+    RBAC_ASSIGN_ROLE = "rbac.assign.role"
+    RBAC_ASSIGN_ADMIN = "rbac.assign.admin"
 
 
 #: Catalogue of built-in permissions -> human description + category. Seeded
@@ -55,9 +66,13 @@ BUILTIN_PERMISSIONS: Dict[str, tuple[str, str]] = {
     WILDCARD: ("Full access to everything", "system"),
     Permission.USERS_MANAGE: ("Create, edit, and delete users", "users"),
     Permission.USERS_READ: ("View users", "users"),
+    Permission.GROUPS_MANAGE: ("Create, edit, and delete groups", "groups"),
     Permission.RBAC_MANAGE: ("Manage roles, permissions and access policy", "rbac"),
     Permission.RBAC_READ: ("View roles and permissions", "rbac"),
+    Permission.RBAC_ASSIGN_ROLE: ("Assign ordinary roles to users", "rbac"),
+    Permission.RBAC_ASSIGN_ADMIN: ("Assign admin (wildcard) roles to users", "rbac"),
     Permission.AUDIT_READ: ("Read the audit log", "audit"),
+    Permission.SESSIONS_READ: ("View active sessions", "sessions"),
     Permission.SESSIONS_MANAGE: ("View and revoke sessions", "sessions"),
 }
 
@@ -90,6 +105,71 @@ PLUMBING_ROLE_SLUGS: Set[str] = {
     AuthRole.SERVICE.value,
     AuthRole.JOB.value,
 }
+
+
+#: Predefined, **non-privileged** role bundles offered as starting points when
+#: an admin creates a custom role ("create from template"). None carries the
+#: wildcard or ``rbac.manage`` — templates can never escalate. Adapted from the
+#: wiki-gen role hierarchy to the platform-admin domain. Each entry is
+#: ``slug -> (display name, description, permission bundle)``. Templates are NOT
+#: seeded as roles (so a deleted one never resurrects); they only pre-fill the
+#: create-role form.
+ROLE_TEMPLATES: Dict[str, tuple[str, str, List[str]]] = {
+    "operator": (
+        "Operator",
+        "Manage users and their sessions; no access-control changes.",
+        [
+            Permission.USERS_READ,
+            Permission.USERS_MANAGE,
+            Permission.SESSIONS_READ,
+            Permission.SESSIONS_MANAGE,
+        ],
+    ),
+    "user-manager": (
+        "User Manager",
+        "Create and edit users and groups.",
+        [
+            Permission.USERS_READ,
+            Permission.USERS_MANAGE,
+            Permission.GROUPS_MANAGE,
+        ],
+    ),
+    "auditor": (
+        "Auditor",
+        "Read-only oversight: users, roles, audit log and sessions.",
+        [
+            Permission.USERS_READ,
+            Permission.RBAC_READ,
+            Permission.AUDIT_READ,
+            Permission.SESSIONS_READ,
+        ],
+    ),
+    "support": (
+        "Support",
+        "Help-desk: view users and revoke their sessions.",
+        [
+            Permission.USERS_READ,
+            Permission.SESSIONS_READ,
+            Permission.SESSIONS_MANAGE,
+        ],
+    ),
+}
+
+
+def required_assign_permission(role: dict) -> str:
+    """Permission an actor must hold to assign/revoke ``role`` to a user.
+
+    A role that grants the wildcard — or the built-in ``admin`` system role —
+    confers full platform admin, so handing it out requires
+    :attr:`Permission.RBAC_ASSIGN_ADMIN`. Every other role only needs
+    :attr:`Permission.RBAC_ASSIGN_ROLE`. The wildcard short-circuit in
+    :func:`has_permission` means an effective admin always satisfies both.
+    """
+    perms = set(role.get("permissions") or [])
+    is_admin_role = bool(role.get("is_system")) and role.get("slug") == "admin"
+    if WILDCARD in perms or is_admin_role:
+        return Permission.RBAC_ASSIGN_ADMIN
+    return Permission.RBAC_ASSIGN_ROLE
 
 
 def tab_permission(plugin: str, tab_id: str) -> str:
@@ -141,6 +221,8 @@ __all__ = [
     "BUILTIN_PERMISSIONS",
     "ALL_PERMISSIONS",
     "SYSTEM_ROLE_DEFAULTS",
+    "ROLE_TEMPLATES",
+    "required_assign_permission",
     "tab_permission",
     "is_tab_permission",
     "has_permission",

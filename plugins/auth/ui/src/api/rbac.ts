@@ -13,6 +13,7 @@ import type {
   RbacPermission,
   RbacRole,
   RoleCreateRequest,
+  RoleTemplate,
   RoleUpdateRequest,
   TabPolicy,
 } from '../types';
@@ -29,6 +30,10 @@ export async function listPermissions(): Promise<RbacPermission[]> {
 
 export async function listRoles(): Promise<RbacRole[]> {
   return handleResponse(await fetchWithAuth(`${ADMIN}/roles`));
+}
+
+export async function listRoleTemplates(): Promise<RoleTemplate[]> {
+  return handleResponse(await fetchWithAuth(`${ADMIN}/role-templates`));
 }
 
 export async function createRole(data: RoleCreateRequest): Promise<RbacRole> {

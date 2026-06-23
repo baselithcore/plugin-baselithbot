@@ -273,12 +273,42 @@
     "permissionCategories": {
       "system": "System",
       "users": "Users",
+      "groups": "Groups",
       "rbac": "Access control",
       "audit": "Audit",
       "sessions": "Sessions",
       "tab": "Plugin tabs",
       "general": "General"
-    }
+    },
+    "categoryDescriptions": {
+      "system": "Platform-wide authority.",
+      "users": "User accounts and profiles.",
+      "groups": "Group definitions and membership.",
+      "rbac": "Roles, permissions and access policy.",
+      "sessions": "Active login sessions.",
+      "audit": "Security and activity log.",
+      "tab": "Per-plugin tab visibility.",
+      "general": "Uncategorized permissions."
+    },
+    "permissionDescriptions": {
+      "users.manage": "Create, edit and delete users",
+      "users.read": "View users",
+      "groups.manage": "Create, edit and delete groups",
+      "rbac.manage": "Manage roles, permissions and access policy",
+      "rbac.read": "View roles and permissions",
+      "rbac.assign.role": "Assign ordinary roles to users",
+      "rbac.assign.admin": "Assign admin (wildcard) roles to users",
+      "audit.read": "Read the audit log",
+      "sessions.read": "View active sessions",
+      "sessions.manage": "View and revoke sessions"
+    },
+    "template": "Start from template",
+    "templateNone": "Blank (no template)",
+    "grantAll": "Grant all",
+    "revokeAll": "Revoke all",
+    "unsavedChanges": "{{count}} unsaved change(s)",
+    "discard": "Discard",
+    "saveChanges": "Save changes"
   },
   "access": {
     "title": "Access Control",
@@ -297,6 +327,11 @@
     "restrictedHint": "Only roles you grant below can access this tab",
     "grantedTo": "Granted to",
     "adminAlways": "Admins always have access",
+    "adminChip": "Admin",
+    "searchPlaceholder": "Search tabs or plugins…",
+    "tabsCount": "{{count}} tabs",
+    "noRoles": "No custom roles yet — create one under Roles.",
+    "noMatches": "No tabs match your search.",
     "security": {
       "mfaAll": "Require MFA for everyone",
       "mfaAllHint": "Every user must set up two-factor authentication at their next login."

@@ -170,6 +170,14 @@ export interface RoleUpdateRequest {
   description?: string;
 }
 
+/** Predefined, non-privileged permission bundle to pre-fill a new custom role. */
+export interface RoleTemplate {
+  slug: string;
+  name: string;
+  description: string;
+  permissions: string[];
+}
+
 export interface TabPolicy {
   plugin: string;
   tab_id: string;

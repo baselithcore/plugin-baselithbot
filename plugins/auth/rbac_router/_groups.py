@@ -12,6 +12,7 @@ from plugins.auth.dependencies import require_permission
 from plugins.auth.rbac.permissions import Permission
 from plugins.auth.rbac.service import RBACService, get_rbac_service
 from plugins.auth.rbac_router._audit import audit_rbac
+from plugins.auth.rbac_router._escalation import guard_role_assignment
 from plugins.auth.rbac_router._models import (
     AddMember,
     AssignGroupRole,
@@ -30,7 +31,9 @@ def _service() -> RBACService:
 
 @router.get("/groups", response_model=List[GroupOut])
 async def list_groups(
-    user: AuthUser = Depends(require_permission(Permission.RBAC_READ)),
+    user: AuthUser = Depends(
+        require_permission(Permission.RBAC_READ, Permission.GROUPS_MANAGE)
+    ),
 ):
     """All groups with member counts and granted roles."""
     return _service().store.list_groups()
@@ -40,7 +43,9 @@ async def list_groups(
 async def create_group(
     body: GroupCreate,
     request: Request,
-    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+    user: AuthUser = Depends(
+        require_permission(Permission.RBAC_MANAGE, Permission.GROUPS_MANAGE)
+    ),
 ):
     """Create a custom group."""
     store = _service().store
@@ -67,7 +72,9 @@ async def create_group(
 async def update_group(
     group_id: str,
     body: GroupUpdate,
-    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+    user: AuthUser = Depends(
+        require_permission(Permission.RBAC_MANAGE, Permission.GROUPS_MANAGE)
+    ),
 ):
     """Update a group's name/description and optional MFA mandate."""
     group = _service().store.update_group(
@@ -82,7 +89,9 @@ async def update_group(
 async def delete_group(
     group_id: str,
     request: Request,
-    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+    user: AuthUser = Depends(
+        require_permission(Permission.RBAC_MANAGE, Permission.GROUPS_MANAGE)
+    ),
 ):
     """Delete a custom group (system groups are protected)."""
     if not _service().store.delete_group(group_id):
@@ -95,7 +104,9 @@ async def delete_group(
 @router.get("/groups/{group_id}/members", response_model=List[GroupMember])
 async def list_members(
     group_id: str,
-    user: AuthUser = Depends(require_permission(Permission.RBAC_READ)),
+    user: AuthUser = Depends(
+        require_permission(Permission.RBAC_READ, Permission.GROUPS_MANAGE)
+    ),
 ):
     """Members of a group."""
     return _service().store.list_members(group_id)
@@ -106,7 +117,9 @@ async def add_member(
     group_id: str,
     body: AddMember,
     request: Request,
-    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+    user: AuthUser = Depends(
+        require_permission(Permission.RBAC_MANAGE, Permission.GROUPS_MANAGE)
+    ),
 ):
     """Add a user to a group."""
     _service().store.add_member(group_id, body.user_id, added_by=user.user_id)
@@ -124,7 +137,9 @@ async def remove_member(
     group_id: str,
     user_id: str,
     request: Request,
-    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+    user: AuthUser = Depends(
+        require_permission(Permission.RBAC_MANAGE, Permission.GROUPS_MANAGE)
+    ),
 ):
     """Remove a user from a group."""
     _service().store.remove_member(group_id, user_id)
@@ -142,10 +157,19 @@ async def assign_group_role(
     group_id: str,
     body: AssignGroupRole,
     request: Request,
-    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+    user: AuthUser = Depends(
+        require_permission(Permission.RBAC_MANAGE, Permission.GROUPS_MANAGE)
+    ),
 ):
     """Grant a role to a group."""
-    _service().store.assign_group_role(group_id, body.role_id)
+    store = _service().store
+    role = store.get_role(body.role_id)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    # A group carrying a wildcard/admin role makes every member an admin — same
+    # escalation vector as a direct user-role grant, so apply the same gate.
+    guard_role_assignment(user, group_id, role)
+    store.assign_group_role(group_id, body.role_id)
     audit_rbac(
         request,
         user.user_id,
@@ -160,10 +184,16 @@ async def revoke_group_role(
     group_id: str,
     role_id: str,
     request: Request,
-    user: AuthUser = Depends(require_permission(Permission.RBAC_MANAGE)),
+    user: AuthUser = Depends(
+        require_permission(Permission.RBAC_MANAGE, Permission.GROUPS_MANAGE)
+    ),
 ):
     """Remove a role grant from a group."""
-    _service().store.revoke_group_role(group_id, role_id)
+    store = _service().store
+    role = store.get_role(role_id)
+    if role:
+        guard_role_assignment(user, group_id, role)
+    store.revoke_group_role(group_id, role_id)
     audit_rbac(
         request,
         user.user_id,

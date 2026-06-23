@@ -273,12 +273,42 @@
     "permissionCategories": {
       "system": "Sistema",
       "users": "Utenti",
+      "groups": "Gruppi",
       "rbac": "Controllo accessi",
       "audit": "Audit",
       "sessions": "Sessioni",
       "tab": "Tab dei plugin",
       "general": "Generale"
-    }
+    },
+    "categoryDescriptions": {
+      "system": "Autorità sull'intera piattaforma.",
+      "users": "Account utente e profili.",
+      "groups": "Definizione dei gruppi e appartenenza.",
+      "rbac": "Ruoli, permessi e politica di accesso.",
+      "sessions": "Sessioni di accesso attive.",
+      "audit": "Registro di sicurezza e attività.",
+      "tab": "Visibilità delle tab per plugin.",
+      "general": "Permessi non categorizzati."
+    },
+    "permissionDescriptions": {
+      "users.manage": "Crea, modifica ed elimina utenti",
+      "users.read": "Visualizza utenti",
+      "groups.manage": "Crea, modifica ed elimina gruppi",
+      "rbac.manage": "Gestisci ruoli, permessi e politica di accesso",
+      "rbac.read": "Visualizza ruoli e permessi",
+      "rbac.assign.role": "Assegna ruoli ordinari agli utenti",
+      "rbac.assign.admin": "Assegna ruoli admin (jolly) agli utenti",
+      "audit.read": "Leggi il registro di audit",
+      "sessions.read": "Visualizza le sessioni attive",
+      "sessions.manage": "Visualizza e revoca le sessioni"
+    },
+    "template": "Parti da un modello",
+    "templateNone": "Vuoto (nessun modello)",
+    "grantAll": "Concedi tutti",
+    "revokeAll": "Revoca tutti",
+    "unsavedChanges": "{{count}} modifiche non salvate",
+    "discard": "Annulla",
+    "saveChanges": "Salva modifiche"
   },
   "access": {
     "title": "Controllo Accessi",
@@ -297,6 +327,11 @@
     "restrictedHint": "Solo i ruoli che autorizzi sotto possono accedere a questo tab",
     "grantedTo": "Concesso a",
     "adminAlways": "Gli admin hanno sempre accesso",
+    "adminChip": "Admin",
+    "searchPlaceholder": "Cerca tab o plugin…",
+    "tabsCount": "{{count}} tab",
+    "noRoles": "Nessun ruolo personalizzato — creane uno in Ruoli.",
+    "noMatches": "Nessun tab corrisponde alla ricerca.",
     "security": {
       "mfaAll": "Richiedi MFA per tutti",
       "mfaAllHint": "Ogni utente dovrà configurare l'autenticazione a due fattori al prossimo accesso."

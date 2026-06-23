@@ -17,8 +17,10 @@ from plugins.auth.dependencies import (
     get_audit_logger_dep,
     get_auth_persistence_dep,
     require_admin,
+    require_permission,
 )
 from plugins.auth.persistence import AuthPersistence
+from plugins.auth.rbac.permissions import Permission
 
 logger = get_logger(__name__)
 
@@ -28,14 +30,16 @@ router = APIRouter()
 @router.get("/sessions", response_model=SessionListResponse)
 async def list_sessions(
     user_id: Optional[str] = Query(default=None),
-    admin: AuthUser = Depends(require_admin()),
+    admin: AuthUser = Depends(
+        require_permission(Permission.SESSIONS_MANAGE, Permission.SESSIONS_READ)
+    ),
     persistence: AuthPersistence = Depends(get_auth_persistence_dep),
 ):
     """
     List active sessions.
 
-    Optionally filter by user_id.
-    Admin only.
+    Optionally filter by user_id. Requires ``sessions.read`` or
+    ``sessions.manage`` (admins always pass via the wildcard).
     """
     sessions = persistence.get_active_sessions(user_id=user_id)
 
@@ -64,13 +68,13 @@ async def get_audit_log(
     target_id: Optional[str] = Query(default=None),
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=50, ge=1, le=100),
-    admin: AuthUser = Depends(require_admin()),
+    admin: AuthUser = Depends(require_permission(Permission.AUDIT_READ)),
     audit=Depends(get_audit_logger_dep),
 ):
     """
     Get audit log entries.
 
-    Admin only.
+    Requires ``audit.read`` (admins always pass via the wildcard).
     """
     entries, total = audit.get_entries(
         action=action,

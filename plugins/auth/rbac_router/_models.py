@@ -41,6 +41,15 @@ class AssignRole(BaseModel):
     role_id: str
 
 
+class RoleTemplateOut(BaseModel):
+    """A predefined, non-privileged permission bundle for new custom roles."""
+
+    slug: str
+    name: str
+    description: str = ""
+    permissions: List[str] = Field(default_factory=list)
+
+
 class TabPolicyOut(BaseModel):
     plugin: str
     tab_id: str
@@ -112,6 +121,7 @@ __all__ = [
     "RoleUpdate",
     "RolePermissions",
     "AssignRole",
+    "RoleTemplateOut",
     "TabPolicyOut",
     "TabRestrict",
     "AccessibleTab",
