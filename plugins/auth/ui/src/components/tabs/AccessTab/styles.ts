@@ -49,6 +49,9 @@ export const ACCESS_STYLES = `
   .seg button:hover { color: var(--admin-text); }
   .seg button.on.open { background: hsla(150,60%,45%,0.2); color: var(--admin-success, #4ade80); }
   .seg button.on.restricted { background: hsla(35,90%,55%,0.2); color: #f5a623; }
+  .seg-system { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; font-size: 0.78rem;
+    flex-shrink: 0; border-radius: 0.6rem; white-space: nowrap; cursor: default;
+    background: hsla(265,80%,62%,0.16); border: 1px solid hsla(265,80%,62%,0.4); color: #c4b1ff; }
 
   .tabrow-roles { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem;
     padding-top: 0.65rem; border-top: 1px dashed var(--admin-border, hsla(220,25%,40%,0.2)); }

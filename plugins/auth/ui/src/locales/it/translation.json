@@ -336,6 +336,8 @@
     "restricted": "Limitato",
     "openHint": "Tutti gli utenti autenticati possono accedere a questo tab",
     "restrictedHint": "Solo i ruoli che autorizzi sotto possono accedere a questo tab",
+    "system": "Sistema",
+    "systemHint": "Plugin di infrastruttura — riservato agli amministratori per impostazione predefinita e nascosto agli utenti. Non può essere aperto a tutti; concedi l'accesso a ruoli specifici qui sotto.",
     "grantedTo": "Concesso a",
     "adminAlways": "Gli admin hanno sempre accesso",
     "adminChip": "Admin",

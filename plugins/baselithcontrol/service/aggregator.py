@@ -8,6 +8,7 @@ happen to be loaded. No plugin is referenced by name.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -36,7 +37,12 @@ class ControlAggregator:
         self._registry = registry
 
     # -- public surface ------------------------------------------------------
-    def inventory(self, *, include_disabled: bool = True) -> InventoryView:
+    def inventory(
+        self,
+        *,
+        include_disabled: bool = True,
+        system_allow: Callable[[str], bool] | None = None,
+    ) -> InventoryView:
         """Project known plugins into cards.
 
         ``include_disabled`` is an authorization scope, not a display toggle.
@@ -48,6 +54,14 @@ class ControlAggregator:
         section and status widgets stay populated for every user. Admins call
         with ``True`` and additionally get re-enableable plugins synthesized
         from on-disk manifests.
+
+        ``system_allow`` gates the **system tier** (framework/infrastructure
+        plugins, manifest ``system: true``). ``None`` discloses every system
+        plugin (the admin scope). Otherwise it is a ``name -> bool`` predicate
+        and a system-tier card is dropped unless the caller is explicitly
+        granted it via the central RBAC policy — system plugins are hidden from
+        ordinary users by default and surface only when permitted (least
+        privilege, enforced server-side; ordinary plugins are unaffected).
         """
         active = {self._name(p): p for p in self._safe(self._registry.get_all, [])}
         health = self._safe(self._registry.health_check, {}).get("plugins", {})
@@ -80,6 +94,13 @@ class ControlAggregator:
             # produced — but keep active/discovered/failed so the system-status
             # section and status widgets stay populated.
             cards = [c for c in cards if c.state != PluginState.disabled]
+
+        if system_allow is not None:
+            # Default-deny the system tier for non-admins: a framework /
+            # infrastructure plugin is disclosed only when the caller is
+            # explicitly granted it centrally. Feature ('application') plugins
+            # are never touched by this filter.
+            cards = [c for c in cards if c.tier != "system" or system_allow(c.name)]
 
         cards.sort(key=lambda c: c.name)
         return InventoryView(total=len(cards), plugins=cards)
@@ -161,7 +182,11 @@ class ControlAggregator:
         )
 
     def ui_registry(
-        self, allow: Any | None = None, *, include_disabled: bool = True
+        self,
+        allow: Any | None = None,
+        *,
+        include_disabled: bool = True,
+        system_allow: Callable[[str], bool] | None = None,
     ) -> list[EmbedSurface]:
         """Only the embeddable surfaces, for the shell's embed tabs.
 
@@ -169,10 +194,14 @@ class ControlAggregator:
         to filter surfaces the caller may not access (central tab policy). When
         ``None`` every embeddable surface is returned (no filtering).
         ``include_disabled`` mirrors :meth:`inventory`: non-admins never get
-        embed surfaces for disabled plugins.
+        embed surfaces for disabled plugins. ``system_allow`` is forwarded to
+        :meth:`inventory` so hidden system plugins yield no embed surfaces either.
         """
         surfaces: list[EmbedSurface] = []
-        for card in self.inventory(include_disabled=include_disabled).plugins:
+        inv = self.inventory(
+            include_disabled=include_disabled, system_allow=system_allow
+        )
+        for card in inv.plugins:
             for s in card.surfaces:
                 if not s.embeddable:
                     continue
@@ -190,13 +219,21 @@ class ControlAggregator:
             metrics=system_metrics or {},
         )
 
-    def overview(self, *, include_disabled: bool = True) -> OverviewView:
+    def overview(
+        self,
+        *,
+        include_disabled: bool = True,
+        system_allow: Callable[[str], bool] | None = None,
+    ) -> OverviewView:
         """Framework-wide head-band summary derived from the inventory.
 
         Scoped to the caller: a non-admin's counts exclude disabled plugins
-        (``include_disabled=False``) but still cover active/discovered/failed.
+        (``include_disabled=False``) and any system plugin they may not see
+        (``system_allow``), so the head-band totals match the visible grid.
         """
-        cards = self.inventory(include_disabled=include_disabled).plugins
+        cards = self.inventory(
+            include_disabled=include_disabled, system_allow=system_allow
+        ).plugins
         healthy = sum(1 for c in cards if c.healthy is True)
         degraded = sum(1 for c in cards if c.healthy is False)
         down = sum(1 for c in cards if c.state == PluginState.failed)

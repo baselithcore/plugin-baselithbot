@@ -183,6 +183,9 @@ export interface TabPolicy {
   tab_id: string;
   label: string;
   restricted: boolean;
+  /** Platform-infrastructure plugin (manifest `system: true`): admin-only by
+   * default, can only be granted per role — never opened to everyone. */
+  system?: boolean;
 }
 
 export interface AccessibleTab extends TabPolicy {

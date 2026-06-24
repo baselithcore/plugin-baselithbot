@@ -10,7 +10,7 @@ from core.auth.types import AuthUser
 
 from ..api_models import EmbedSurface, InventoryView
 from ..service import get_aggregator
-from ._guards import current_principal, is_admin, read_guard
+from ._guards import current_principal, is_admin, read_guard, system_visibility
 
 
 def build_inventory_router() -> APIRouter:
@@ -55,9 +55,12 @@ def build_inventory_router() -> APIRouter:
 
         Ordinary users only see **active** plugins; admins additionally see
         disabled/failed/discovered plugins (the operational state they alone
-        can act on via the lifecycle routes).
+        can act on via the lifecycle routes). System / infrastructure plugins
+        are hidden from non-admins unless centrally granted (``system_visibility``).
         """
-        return get_aggregator(request.app).inventory(include_disabled=is_admin(user))
+        return get_aggregator(request.app).inventory(
+            include_disabled=is_admin(user), system_allow=system_visibility(user)
+        )
 
     @router.get("/ui-registry", response_model=list[EmbedSurface])
     async def ui_registry(
@@ -71,7 +74,9 @@ def build_inventory_router() -> APIRouter:
         """
         allow = _tab_access_predicate(user)
         return get_aggregator(request.app).ui_registry(
-            allow=allow, include_disabled=is_admin(user)
+            allow=allow,
+            include_disabled=is_admin(user),
+            system_allow=system_visibility(user),
         )
 
     return router

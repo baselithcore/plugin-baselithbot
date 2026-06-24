@@ -18,6 +18,7 @@ deployment so the control plane stays usable out of the box.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Any
 
 from fastapi import Depends, HTTPException, Request, status
@@ -70,6 +71,35 @@ def is_admin(user: AuthUser) -> bool:
         return has_permission(perms, WILDCARD)
     except Exception:  # noqa: BLE001 — RBAC optional; degrade to the role check
         return False
+
+
+def system_visibility(user: AuthUser) -> Callable[[str], bool] | None:
+    """Decide which **system-tier** plugins (manifest ``system: true``) a caller sees.
+
+    System plugins are platform infrastructure (auth, the control plane itself,
+    …): privileged surfaces that are hidden from ordinary users by default and
+    surfaced only when an admin explicitly grants them through the central
+    Access Control matrix — least privilege, secure-by-default.
+
+    * Admins get ``None`` — no gating; every system plugin is visible.
+    * Otherwise a ``name -> bool`` predicate: a system plugin is visible only
+      when the central RBAC policy grants the caller at least one of its tabs.
+      It fails **closed** for the system tier — if the policy cannot be read the
+      predicate denies every system plugin — so a degraded RBAC layer never
+      leaks infrastructure. Ordinary ('application') plugins are untouched by
+      this predicate and keep their default-allow visibility.
+    """
+    if is_admin(user):
+        return None
+    allowed: set[str] = set()
+    try:
+        from plugins.auth.rbac.service import get_rbac_service
+
+        tabs = get_rbac_service().accessible_tabs(user.user_id, user.roles)
+        allowed = {t["plugin"] for t in tabs if t.get("system") and t.get("allowed")}
+    except Exception:  # noqa: BLE001 — fail closed for the system tier
+        allowed = set()
+    return lambda name: name in allowed
 
 
 async def _resolve_real_user(
@@ -196,4 +226,10 @@ async def admin_principal(
     return user
 
 
-__all__ = ["read_guard", "current_principal", "admin_principal", "is_admin"]
+__all__ = [
+    "read_guard",
+    "current_principal",
+    "admin_principal",
+    "is_admin",
+    "system_visibility",
+]

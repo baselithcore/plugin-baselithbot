@@ -10,7 +10,7 @@ from ..api_models import OverviewView, PluginStatus, StatusView, WidgetSpec
 from ..service import get_aggregator
 from ..service.probe import StatusProber
 from ..service.widgets import resolve_widgets
-from ._guards import current_principal, is_admin, read_guard
+from ._guards import current_principal, is_admin, read_guard, system_visibility
 
 
 def _system_metrics() -> dict:
@@ -39,7 +39,9 @@ def build_status_router() -> APIRouter:
         request: Request, user: AuthUser = Depends(current_principal)
     ) -> OverviewView:
         """Framework-wide head-band summary (counts + tones), scoped to caller."""
-        return get_aggregator(request.app).overview(include_disabled=is_admin(user))
+        return get_aggregator(request.app).overview(
+            include_disabled=is_admin(user), system_allow=system_visibility(user)
+        )
 
     @router.get("/status/{plugin}", response_model=PluginStatus)
     async def plugin_status(plugin: str, request: Request) -> PluginStatus:
@@ -54,7 +56,9 @@ def build_status_router() -> APIRouter:
         request: Request, user: AuthUser = Depends(current_principal)
     ) -> list[WidgetSpec]:
         """Declarative status widgets a plugin opts into via its manifest."""
-        inv = get_aggregator(request.app).inventory(include_disabled=is_admin(user))
+        inv = get_aggregator(request.app).inventory(
+            include_disabled=is_admin(user), system_allow=system_visibility(user)
+        )
         return resolve_widgets([c.name for c in inv.plugins])
 
     return router

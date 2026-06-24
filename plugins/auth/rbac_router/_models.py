@@ -55,6 +55,10 @@ class TabPolicyOut(BaseModel):
     tab_id: str
     label: str = ""
     restricted: bool = False
+    # True when the owning plugin is platform infrastructure (manifest
+    # ``system: true``). System tabs are admin-only by default and cannot be
+    # opened to everyone — the matrix locks them and only grants per role.
+    system: bool = False
 
 
 class TabRestrict(BaseModel):

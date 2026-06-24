@@ -336,6 +336,8 @@
     "restricted": "Restricted",
     "openHint": "Everyone authenticated can access this tab",
     "restrictedHint": "Only roles you grant below can access this tab",
+    "system": "System",
+    "systemHint": "Infrastructure plugin — admin-only by default and hidden from users. It cannot be opened to everyone; grant access to specific roles below.",
     "grantedTo": "Granted to",
     "adminAlways": "Admins always have access",
     "adminChip": "Admin",

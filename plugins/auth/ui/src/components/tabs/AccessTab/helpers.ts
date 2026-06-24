@@ -17,6 +17,7 @@ export function humanizePlugin(slug: string): string {
 export interface PluginGroupData {
   plugin: string;
   label: string;
+  system: boolean;
   tabs: TabPolicy[];
 }
 
@@ -33,6 +34,7 @@ export function groupByPlugin(tabs: TabPolicy[]): PluginGroupData[] {
     .map(([plugin, list]) => ({
       plugin,
       label: humanizePlugin(plugin),
+      system: list.some((tab) => tab.system),
       tabs: [...list].sort((a, b) => a.label.localeCompare(b.label)),
     }));
 }

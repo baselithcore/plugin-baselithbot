@@ -33,7 +33,10 @@ const PluginGroup = ({
           <Puzzle size={18} />
         </span>
         <span className="pgroup-meta">
-          <span className="pgroup-name">{group.label}</span>
+          <span className="pgroup-name">
+            {group.label}
+            {group.system && <span className="sys-badge">{t('access.system')}</span>}
+          </span>
           <code className="pgroup-slug">{group.plugin}</code>
         </span>
         <span className="pgroup-count">{t('access.tabsCount', { count: group.tabs.length })}</span>
