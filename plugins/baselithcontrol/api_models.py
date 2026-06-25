@@ -67,6 +67,9 @@ class PluginCardView(BaseModel):
     category: str = "uncategorized"
     group: str = ""  # display grouping (manifest control.group → category fallback)
     tier: str = "application"  # "system" (framework/infra) | "application" (custom)
+    tenancy: str = (
+        "shared"  # "shared" (deployment tenant) | "personal" (1 user = 1 tenant)
+    )
     icon: str = ""  # optional lucide icon name from manifest control.icon
     instance: str | None = None  # multi-env/tenant routing label
     state: PluginState = PluginState.unknown

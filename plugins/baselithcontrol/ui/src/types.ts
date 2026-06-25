@@ -7,6 +7,11 @@ export type PluginState = 'discovered' | 'active' | 'disabled' | 'failed' | 'unk
 // collapsed "system plugins" bucket.
 export type PluginTier = 'system' | 'application';
 
+// Per-plugin tenancy model (read-only): "shared" scopes data by the
+// deployment-derived tenant; "personal" forces 1 user = 1 tenant. Declared in
+// the plugin manifest (PluginMetadata.tenancy); shown as an informational badge.
+export type PluginTenancy = 'shared' | 'personal';
+
 export interface EmbedSurface {
   tab_id: string;
   label: string;
@@ -24,6 +29,7 @@ export interface PluginCard {
   category: string;
   group: string;
   tier: PluginTier;
+  tenancy: PluginTenancy;
   icon: string;
   instance: string | null;
   state: PluginState;

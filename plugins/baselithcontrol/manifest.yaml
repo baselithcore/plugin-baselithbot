@@ -1,6 +1,4 @@
 name: baselithcontrol
-# The control plane itself is platform infrastructure, not a user-facing app:
-# admin-only tabs + "system" bucket in its own grid.
 system: true
 version: 0.1.0
 description: "Centralized control-plane dashboard \u2014 dynamically discovers every\
@@ -30,4 +28,4 @@ environment_variables:
 - BASELITHCONTROL_ENABLED
 - BASELITHCONTROL_REQUIRE_ADMIN
 - BASELITHCONTROL_GATE_LEVEL
-integrity_sha256: bc774bbad24a82b8e7d416a4bc8863e8732de2cc0c10101699d679b69c983b03
+integrity_sha256: 4ad99098abcb02c09f5278dd23f7bfe42152d9f371ff1c1397cc13ce6ecc81f6

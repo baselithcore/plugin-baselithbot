@@ -15,6 +15,45 @@ existing single-tenant installs are unchanged.
 
 This layer works regardless of the database role.
 
+### Per-plugin tenancy mode (`shared` vs `personal`)
+
+A session resolves to **one** `tenant_id` (pinned `AUTH_TENANT_ID` → org
+membership → personal). That single value is what every plugin sees by default.
+A plugin can, however, choose its **tenancy model** independently of how the
+deployment resolves tenancy, declared once in its manifest:
+
+```yaml
+# plugins/<name>/manifest.yaml
+tenancy: personal   # default: "shared"
+```
+
+- **`shared`** (default) — scope data by the deployment-derived tenant
+  (`core.context.get_current_tenant_id()`): pinned, org-shared, or personal,
+  whatever the deploy resolves. Use for org/collaborative data.
+- **`personal`** — force **1 user = 1 tenant** *regardless* of the deployment
+  tenant, so a per-user surface (notes, chat history, personal vault) stays
+  isolated even on a shared/org deployment. Use for private per-user data.
+
+The plugin's store resolves its scope key with `self.tenant_key()`
+(= `core.context.resolve_plugin_tenant(self.metadata.tenancy)`) **instead of**
+calling `get_current_tenant_id()` directly. This stays *identity-derived*: the
+per-user key comes from the user context var (`core.context.get_current_user_id`),
+bound at the same chokepoints as the tenant — the security & tenant middleware,
+the auth `_bind_tenant` guard, the task-queue worker, and the event bus — never
+from a client header. It degrades safely to the session/default tenant when no
+user is bound (background tasks, scripts).
+
+`PluginMetadata.tenancy` is surfaced **read-only** in the BaselithControl plugin
+inventory (a "Shared"/"Personal" badge), so an operator can see each plugin's
+isolation model at a glance.
+
+> **It is a manifest-declared, not an admin-toggled, setting.** Unlike the
+> central per-tab access policy (pure visibility, freely reversible), the tenancy
+> mode is the *storage scope key*. Flipping `shared`↔`personal` after a plugin
+> has written data changes which `tenant_id` rows are read/written, **orphaning**
+> the existing rows (they are hidden, not deleted). Treat a mode change as a data
+> migration: backfill the new key, or only set it before the plugin stores data.
+
 ## Layer 2 — Postgres Row-Level Security (opt-in, defense-in-depth)
 
 RLS makes the **database** reject cross-tenant rows even if an application

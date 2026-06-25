@@ -11,6 +11,7 @@ const card: Card = {
   category: 'demo',
   group: 'Ops',
   tier: 'application',
+  tenancy: 'shared',
   icon: '',
   instance: null,
   state: 'active',

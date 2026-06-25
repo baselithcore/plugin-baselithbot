@@ -149,6 +149,12 @@ export function PluginCard({ card, onOpen, canControl }: Props) {
           <span className="rounded-md border brd px-1.5 py-0.5 t-dim">{t('card.embed')}</span>
         )}
         <span className="rounded-md border brd px-1.5 py-0.5 t-faint">{card.category}</span>
+        <span
+          className="rounded-md border brd px-1.5 py-0.5 t-faint"
+          title={t(`card.tenancy_${card.tenancy}_hint`)}
+        >
+          {t(`card.tenancy_${card.tenancy}`)}
+        </span>
         {standalone && (
           <a
             href={standalone}

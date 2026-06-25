@@ -169,6 +169,11 @@ class ControlAggregator:
             category=category,
             group=display["group"],
             tier=display["tier"],
+            tenancy=(
+                "personal"
+                if str(manifest.get("tenancy") or "shared") == "personal"
+                else "shared"
+            ),
             icon=display["icon"],
             instance=display["instance"],
             state=state,
@@ -293,6 +298,7 @@ class ControlAggregator:
             category=category,
             group=display["group"],
             tier=display["tier"],
+            tenancy=str(getattr(meta, "tenancy", "shared") or "shared"),
             icon=display["icon"],
             instance=display["instance"],
             state=self._state(row, hstate),

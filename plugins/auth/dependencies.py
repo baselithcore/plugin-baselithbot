@@ -10,7 +10,7 @@ from typing import Callable, Optional
 from fastapi import Cookie, Depends, HTTPException, Request, status, Query
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from core.context import set_tenant_context
+from core.context import set_tenant_context, set_user_context
 from core.di.container import ServiceRegistry, ServiceNotFoundError
 from core.auth import AuthRole, AuthUser, AuthManager
 from plugins.auth.config import AuthConfig
@@ -38,6 +38,10 @@ def _bind_tenant(user: AuthUser) -> AuthUser:
     everything downstream observe.
     """
     set_tenant_context(user.tenant_id)
+    # Bind the user id alongside the tenant so plugins declaring
+    # ``tenancy: personal`` resolve a per-user tenant via
+    # ``core.context.resolve_plugin_tenant`` regardless of the session tenant.
+    set_user_context(user.user_id)
     return user
 
 

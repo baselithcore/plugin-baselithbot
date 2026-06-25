@@ -143,6 +143,7 @@ class PluginCardView(BaseModel):
     version: str
     description: str = ""
     category: str = "uncategorized"
+    tenancy: str = "shared"        # "shared" | "personal" — read-only tenancy model badge
     state: PluginState = PluginState.unknown
     healthy: bool | None = None
     initialized: bool = False
