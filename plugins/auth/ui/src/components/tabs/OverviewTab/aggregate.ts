@@ -31,7 +31,9 @@ export function bucketByDay(entries: AuditEntry[], days = 14): DaySeries {
   }
   for (const e of entries) {
     if (!e.created_at) continue;
-    const idx = Math.round((startOfDay(new Date(e.created_at)).getTime() - start.getTime()) / DAY_MS);
+    const idx = Math.round(
+      (startOfDay(new Date(e.created_at)).getTime() - start.getTime()) / DAY_MS
+    );
     if (idx >= 0 && idx < days) values[idx] += 1;
   }
   return { labels, values };
@@ -41,7 +43,7 @@ export function bucketByDay(entries: AuditEntry[], days = 14): DaySeries {
 export function eventsToday(entries: AuditEntry[]): number {
   const today = startOfDay(new Date()).getTime();
   return entries.filter(
-    (e) => e.created_at && startOfDay(new Date(e.created_at)).getTime() === today,
+    (e) => e.created_at && startOfDay(new Date(e.created_at)).getTime() === today
   ).length;
 }
 
@@ -74,6 +76,18 @@ export function mfaStats(users: User[]): MfaStats {
   return { enabled, total, pct: total ? Math.round((enabled / total) * 100) : 0 };
 }
 
+const PRIVILEGED_ROLES = new Set(['admin', 'superuser', 'owner']);
+
+/** Accounts holding a privileged role — the privilege-exposure indicator. */
+export function privilegedCount(users: User[]): number {
+  return users.filter((u) => (u.roles ?? []).some((r) => PRIVILEGED_ROLES.has(r))).length;
+}
+
+/** Sum of outstanding failed-login attempts across accounts (brute-force signal). */
+export function failedLoginTotal(users: User[]): number {
+  return users.reduce((s, u) => s + (u.failed_login_attempts || 0), 0);
+}
+
 export interface UsageSummary {
   totalSpend: number;
   totalRequests: number;
@@ -82,11 +96,7 @@ export interface UsageSummary {
 }
 
 /** Summarize per-user LLM spend into a total + top spenders for the bar list. */
-export function usageSummary(
-  rows: UserUsageRow[],
-  currency: string,
-  topN = 5,
-): UsageSummary {
+export function usageSummary(rows: UserUsageRow[], currency: string, topN = 5): UsageSummary {
   const totalSpend = rows.reduce((s, r) => s + (r.spend_usd || 0), 0);
   const totalRequests = rows.reduce((s, r) => s + (r.request_count || 0), 0);
   const top = [...rows]

@@ -100,7 +100,12 @@ const CommandPalette = ({ open, onClose, onSelectTab, actions }: CommandPaletteP
 
   return (
     <div className="cmdk-overlay" onMouseDown={onClose}>
-      <div className="cmdk" role="dialog" aria-modal="true" onMouseDown={(e) => e.stopPropagation()}>
+      <div
+        className="cmdk"
+        role="dialog"
+        aria-modal="true"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <div className="cmdk-input">
           <Search size={17} />
           <input

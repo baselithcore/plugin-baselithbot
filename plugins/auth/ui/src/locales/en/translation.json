@@ -150,7 +150,9 @@
     "kpi": {
       "users": "Total users",
       "usersHint": "{{active}} active",
+      "admins": "Privileged admins",
       "sessions": "Active sessions",
+      "failed": "Failed logins",
       "mfa": "MFA adoption",
       "events": "Events today",
       "spend": "LLM spend"
@@ -163,6 +165,21 @@
       "title": "MFA adoption",
       "caption": "enrolled",
       "detail": "{{enabled}} of {{total}} users have MFA enabled"
+    },
+    "posture": {
+      "title": "Security posture",
+      "mfa": "MFA coverage",
+      "withoutMfa": "Accounts without MFA",
+      "locked": "Locked accounts",
+      "inactive": "Inactive accounts",
+      "failed": "Failed login attempts",
+      "sessions": "Active sessions"
+    },
+    "access": {
+      "title": "Access & onboarding",
+      "sso": "SSO providers",
+      "invites": "Pending invitations",
+      "sessions": "Active sessions"
     },
     "roles": {
       "title": "Accounts by role"

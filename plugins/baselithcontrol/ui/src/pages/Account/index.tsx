@@ -1,7 +1,16 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Shield, User, LogOut, Gauge, ArrowLeft, AtSign, Fingerprint, KeyRound } from 'lucide-react';
+import {
+  Shield,
+  User,
+  LogOut,
+  Gauge,
+  ArrowLeft,
+  AtSign,
+  Fingerprint,
+  KeyRound,
+} from 'lucide-react';
 import { fetchMyLlmUsage, logout } from '@/lib/api';
 import { useControlStore } from '@/store/useControlStore';
 import { pageVariants } from '@/lib/motion';

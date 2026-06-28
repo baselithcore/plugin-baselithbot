@@ -9,6 +9,9 @@ import { listUsers } from '../../../api/users';
 import { listSessions } from '../../../api/sessions';
 import { getAuditLog } from '../../../api/audit';
 import { getUsageOverview } from '../../../api/cost';
+import { listProviders } from '../../../api/sso';
+import { listInvitations } from '../../../api/invitations';
+import { getAccessToken } from '../../../api/client';
 import type { User, AuditEntry } from '../../../types';
 import {
   bucketByDay,
@@ -16,6 +19,8 @@ import {
   roleDistribution,
   mfaStats,
   usageSummary,
+  privilegedCount,
+  failedLoginTotal,
   type DaySeries,
   type RoleCount,
   type MfaStats,
@@ -26,7 +31,12 @@ export interface OverviewData {
   totalUsers: number;
   activeUsers: number;
   lockedUsers: number;
+  withoutMfa: number;
+  admins: number;
+  failedLogins: number;
   activeSessions: number;
+  ssoProviders: number;
+  pendingInvites: number;
   mfa: MfaStats;
   roles: RoleCount[];
   activity: DaySeries;
@@ -53,11 +63,13 @@ export function useOverview(): UseOverview {
     setLoading(true);
     setError(null);
     (async () => {
-      const [usersRes, sessRes, auditRes, usageRes] = await Promise.all([
+      const [usersRes, sessRes, auditRes, usageRes, ssoRes, invRes] = await Promise.all([
         listUsers(1, 200, true).catch(() => null),
         listSessions().catch(() => null),
         getAuditLog(1, 200).catch(() => null),
         getUsageOverview().catch(() => null),
+        listProviders(getAccessToken() ?? '').catch(() => null),
+        listInvitations().catch(() => null),
       ]);
       if (cancelled) return;
       if (!usersRes && !sessRes && !auditRes) {
@@ -67,12 +79,18 @@ export function useOverview(): UseOverview {
       }
       const users: User[] = usersRes?.users ?? [];
       const entries: AuditEntry[] = auditRes?.entries ?? [];
+      const mfa = mfaStats(users);
       setData({
         totalUsers: usersRes?.total ?? users.length,
         activeUsers: users.filter((u) => u.is_active).length,
         lockedUsers: users.filter((u) => u.is_locked).length,
+        withoutMfa: Math.max(0, mfa.total - mfa.enabled),
+        admins: privilegedCount(users),
+        failedLogins: failedLoginTotal(users),
         activeSessions: sessRes?.total ?? 0,
-        mfa: mfaStats(users),
+        ssoProviders: ssoRes?.length ?? 0,
+        pendingInvites: invRes?.length ?? 0,
+        mfa,
         roles: roleDistribution(users),
         activity: bucketByDay(entries, 14),
         eventsToday: eventsToday(entries),

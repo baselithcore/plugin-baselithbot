@@ -71,6 +71,10 @@
   white-space: nowrap;
 }
 
+.sb-brand-dot {
+  color: var(--admin-sidebar-marker);
+}
+
 .sb-nav {
   flex: 1;
   padding: 0.25rem 0.75rem 1rem;

@@ -1,22 +1,14 @@
 /**
- * Overview — the console landing page. A glanceable identity-and-activity
- * dashboard: KPI cards, a 14-day activity spark, MFA adoption, role mix, AI
- * usage, and the latest audit events. All data is aggregated client-side from
- * the existing admin endpoints (see ./hooks), so no new backend is required.
+ * Overview — the console landing page. A restrained operations view: a KPI
+ * strip, a 14-day activity trend, security posture, role mix, AI usage and the
+ * latest audit events. All data is aggregated client-side from the existing
+ * admin endpoints (see ./hooks), so no new backend is required.
  */
 
 import { useTranslation } from 'react-i18next';
-import {
-  LayoutDashboard,
-  Users,
-  KeyRound,
-  ShieldCheck,
-  Activity,
-  Coins,
-  RefreshCw,
-} from 'lucide-react';
+import { LayoutDashboard, RefreshCw } from 'lucide-react';
 import PageHeader from '../../shared/PageHeader';
-import StatCards, { type Stat } from './StatCards';
+import KpiStrip, { type Kpi } from './KpiStrip';
 import OverviewCharts from './OverviewCharts';
 import { useOverview } from './hooks';
 import { OVERVIEW_STYLES } from './styles';
@@ -25,42 +17,43 @@ const OverviewTab = () => {
   const { t } = useTranslation();
   const { data, loading, error, reload } = useOverview();
 
-  const stats: Stat[] = data
+  const kpis: Kpi[] = data
     ? [
         {
           key: 'users',
-          icon: Users,
           label: t('overview.kpi.users'),
-          value: String(data.totalUsers),
-          hint: t('overview.kpi.usersHint', { active: data.activeUsers }),
+          value: data.totalUsers.toLocaleString(),
+          sub: t('overview.kpi.usersHint', { active: data.activeUsers }),
+        },
+        {
+          key: 'admins',
+          label: t('overview.kpi.admins'),
+          value: data.admins.toLocaleString(),
         },
         {
           key: 'sessions',
-          icon: KeyRound,
           label: t('overview.kpi.sessions'),
-          value: String(data.activeSessions),
+          value: data.activeSessions.toLocaleString(),
+        },
+        {
+          key: 'failed',
+          label: t('overview.kpi.failed'),
+          value: data.failedLogins.toLocaleString(),
+          dot: data.failedLogins ? 'warn' : 'ok',
         },
         {
           key: 'mfa',
-          icon: ShieldCheck,
           label: t('overview.kpi.mfa'),
           value: `${data.mfa.pct}%`,
-          tone: data.mfa.pct >= 50 ? 'success' : 'warning',
-        },
-        {
-          key: 'events',
-          icon: Activity,
-          label: t('overview.kpi.events'),
-          value: String(data.eventsToday),
+          dot: data.mfa.pct >= 80 ? 'ok' : data.mfa.pct >= 50 ? 'warn' : 'bad',
         },
         ...(data.usage
           ? [
               {
                 key: 'spend',
-                icon: Coins,
                 label: t('overview.kpi.spend'),
                 value: `$${data.usage.totalSpend.toFixed(2)}`,
-              } as Stat,
+              } as Kpi,
             ]
           : []),
       ]
@@ -93,9 +86,9 @@ const OverviewTab = () => {
 
       {data && (
         <>
-          <StatCards stats={stats} />
+          <KpiStrip items={kpis} />
           <OverviewCharts data={data} />
-          <section className="admin-card ov-card ov-recent">
+          <section className="admin-card ov-card">
             <header className="ov-card-head">
               <h3>{t('overview.recent.title')}</h3>
             </header>

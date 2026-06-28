@@ -15,8 +15,7 @@ export type ResolvedTheme = 'light' | 'dark';
 const STORAGE_KEY = 'auth_theme';
 
 const systemTheme = (): ResolvedTheme =>
-  typeof window !== 'undefined' &&
-  window.matchMedia?.('(prefers-color-scheme: dark)').matches
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches
     ? 'dark'
     : 'light';
 
@@ -36,7 +35,7 @@ export interface ThemeApi {
 export function useTheme(): ThemeApi {
   const [pref, setPref] = useState<ThemePref>(readPref);
   const [resolved, setResolved] = useState<ResolvedTheme>(() =>
-    pref === 'system' ? systemTheme() : pref,
+    pref === 'system' ? systemTheme() : pref
   );
 
   // Persist the preference and recompute the effective theme when it changes.

@@ -46,7 +46,10 @@ const Sidebar = ({
       >
         <div className="sb-brand">
           <AuthLogo size={26} />
-          <span className="sb-brand-text">{t('nav.adminPanel')}</span>
+          <span className="sb-brand-text">
+            {t('nav.adminPanel')}
+            <span className="sb-brand-dot">.</span>
+          </span>
         </div>
 
         <nav className="sb-nav" aria-label={t('nav.adminPanel')}>

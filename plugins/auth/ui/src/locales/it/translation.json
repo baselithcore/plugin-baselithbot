@@ -150,7 +150,9 @@
     "kpi": {
       "users": "Utenti totali",
       "usersHint": "{{active}} attivi",
+      "admins": "Admin privilegiati",
       "sessions": "Sessioni attive",
+      "failed": "Login falliti",
       "mfa": "Adozione MFA",
       "events": "Eventi oggi",
       "spend": "Spesa LLM"
@@ -163,6 +165,21 @@
       "title": "Adozione MFA",
       "caption": "iscritti",
       "detail": "{{enabled}} di {{total}} utenti hanno l'MFA attiva"
+    },
+    "posture": {
+      "title": "Stato sicurezza",
+      "mfa": "Copertura MFA",
+      "withoutMfa": "Account senza MFA",
+      "locked": "Account bloccati",
+      "inactive": "Account inattivi",
+      "failed": "Tentativi di login falliti",
+      "sessions": "Sessioni attive"
+    },
+    "access": {
+      "title": "Accessi & onboarding",
+      "sso": "Provider SSO",
+      "invites": "Inviti in sospeso",
+      "sessions": "Sessioni attive"
     },
     "roles": {
       "title": "Account per ruolo"
