@@ -140,3 +140,28 @@ def test_under_cap_allows_call(monkeypatch) -> None:
         trk.meter(100, "input")  # well under cap → no raise
 
     contextvars.copy_context().run(call)
+
+
+def test_admin_is_never_blocked(monkeypatch) -> None:
+    # Even at/over a cap, an admin is uncapped → no enforcement raise.
+    fake = _FakePersistence(cap_micros=10_000, spend_micros=999_999, enforce=True)
+    _with_fake(monkeypatch, fake)
+    monkeypatch.setattr(
+        "plugins.auth.cost._admin.is_unlimited_user", lambda uid: uid == "root"
+    )
+
+    def admin_call() -> None:
+        set_user_context("root")
+        trk.meter(100, "input")  # admin → must NOT raise despite being over cap
+
+    contextvars.copy_context().run(admin_call)  # no exception = pass
+
+    # a non-admin in the same state is still blocked
+    trk.invalidate_cache()
+
+    def user_call() -> None:
+        set_user_context("dave")
+        trk.meter(100, "input")
+
+    with pytest.raises(trk.BudgetExceededError):
+        contextvars.copy_context().run(user_call)

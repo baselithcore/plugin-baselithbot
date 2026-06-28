@@ -1,14 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
-import {
-  LayoutGrid,
-  ScrollText,
-  TerminalSquare,
-  FileText,
-  BookOpen,
-  Sun,
-  Moon,
-} from 'lucide-react';
+import { LayoutGrid, ScrollText, TerminalSquare, FileText, Sun, Moon } from 'lucide-react';
 import { setLanguage } from '@/i18n';
 import { spring } from '@/lib/motion';
 import { BrandMark } from '@/components/widgets/BrandMark';
@@ -25,9 +17,6 @@ const NAV = [
   { id: 'logs', icon: FileText, label: 'nav.logs' },
   { id: 'system', icon: TerminalSquare, label: 'nav.system' },
 ] as const;
-
-// Official framework documentation — opens in a new, isolated tab.
-const DOCS_URL = 'https://docs.baselithcore.xyz';
 
 export function Topbar() {
   const { t, i18n } = useTranslation();
@@ -147,18 +136,6 @@ export function Topbar() {
               </button>
             ))}
           </div>
-
-          {/* Official docs — external reference, new tab + noopener */}
-          <a
-            href={DOCS_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={t('nav.docs')}
-            title={t('nav.docs')}
-            className="control-icon-button"
-          >
-            <BookOpen className="h-4 w-4" />
-          </a>
 
           {/* Theme */}
           <button

@@ -20,9 +20,11 @@ from .models import (
     micros_to_usd,
     usd_to_micros,
 )
+from ._admin import is_unlimited_user
 from .tracker import install_user_cost_tracking, invalidate_cache
 
 __all__ = [
+    "is_unlimited_user",
     "AdminUsageView",
     "CapUpdate",
     "CostPolicyUpdate",

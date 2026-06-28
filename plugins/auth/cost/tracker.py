@@ -80,6 +80,13 @@ def _persistence() -> object | None:
 
 def _load_budget(user_id: str) -> Optional[_Budget]:
     """Fetch a user's cap + month-to-date spend from the DB (None on failure)."""
+    # Admins are never limited — short-circuit to an uncapped budget so the
+    # enforcement check always passes (their spend is still recorded for
+    # visibility, just never blocked).
+    from ._admin import is_unlimited_user
+
+    if is_unlimited_user(user_id):
+        return _Budget(None, 0, enforce=False, warn_pct=100, fetched_at=time.time())
     p = _persistence()
     if p is None:
         return None

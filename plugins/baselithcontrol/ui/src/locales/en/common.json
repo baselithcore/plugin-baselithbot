@@ -258,6 +258,5 @@
   "detail.llm_cost": "LLM cost",
   "detail.cost_summary": "{{tokens}} tokens · {{calls}} calls",
   "detail.cost_note": "Measured token usage since process start; cost is a list-price estimate.",
-  "a11y.skip": "Skip to main content",
-  "nav.docs": "Documentation"
+  "a11y.skip": "Skip to main content"
 }
