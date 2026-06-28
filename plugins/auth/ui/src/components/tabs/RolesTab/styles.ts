@@ -14,7 +14,7 @@ export const ROLES_STYLES = `
   .role-item-name { font-weight: 600; }
   .role-item-meta { font-size: 0.75rem; color: var(--admin-text-muted); }
   .role-badge { font-size: 0.65rem; padding: 0.1rem 0.4rem; border-radius: 9999px; text-transform: uppercase; }
-  .role-badge.sys { background: hsla(265,80%,60%,0.18); color: #b59bff; }
+  .role-badge.sys { background: var(--admin-violet-soft); color: var(--admin-violet); }
   .role-badge.custom { background: hsla(200,80%,50%,0.18); color: var(--admin-accent); }
   .role-detail { padding: 1.25rem; }
   .role-detail-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
@@ -24,9 +24,9 @@ export const ROLES_STYLES = `
   .perm-groups { display: flex; flex-direction: column; gap: 0.75rem; }
   .perm-group { border: 1px solid var(--admin-border, hsla(220,25%,40%,0.25)); border-radius: 0.6rem; overflow: hidden; }
   .perm-group-head { display: flex; align-items: center; gap: 0.6rem; width: 100%;
-    padding: 0.6rem 0.75rem; background: hsla(220,25%,50%,0.06); cursor: pointer;
+    padding: 0.6rem 0.75rem; background: var(--admin-surface-2); cursor: pointer;
     border: none; color: var(--admin-text); text-align: left; }
-  .perm-group-head:hover { background: hsla(220,25%,50%,0.12); }
+  .perm-group-head:hover { background: var(--admin-border); }
   .perm-group-title { display: flex; flex-direction: column; gap: 0.1rem; flex: 1; }
   .perm-group-title strong { font-size: 0.85rem; }
   .perm-group-title span { font-size: 0.72rem; color: var(--admin-text-muted); }
@@ -43,10 +43,10 @@ export const ROLES_STYLES = `
   .perm-check { width: 20px; height: 20px; border-radius: 0.35rem; border: 1px solid var(--admin-border, hsla(220,25%,40%,0.4));
     background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #fff; }
   .perm-check.on { background: var(--admin-accent); border-color: var(--admin-accent); }
-  .perm-slug { font-family: monospace; font-size: 0.78rem; color: var(--admin-text); }
+  .perm-slug { font-family: var(--admin-font-mono, monospace); font-size: 0.78rem; color: var(--admin-text); }
   .perm-desc { font-size: 0.78rem; color: var(--admin-text-muted); }
   .diff-badge { font-size: 0.62rem; padding: 0.05rem 0.35rem; border-radius: 9999px;
-    background: hsla(45,90%,55%,0.2); color: #f1c40f; }
+    background: hsla(45,90%,55%,0.18); color: var(--admin-warning); }
   .save-bar { position: sticky; bottom: 0; margin-top: 0.5rem; display: flex; align-items: center;
     justify-content: space-between; gap: 1rem; padding: 0.75rem 1rem; border-radius: 0.6rem;
     background: var(--admin-surface, hsla(220,25%,15%,0.96)); border: 1px solid var(--admin-accent);

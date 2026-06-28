@@ -287,7 +287,7 @@ const TenantsTab = () => {
         .tenant-slug { font-size: 0.75rem; color: var(--admin-text-muted); }
         .tenant-members { display: flex; flex-direction: column; gap: 0.35rem; }
         .tenant-member-row { display: flex; align-items: center; justify-content: space-between;
-          padding: 0.35rem 0.5rem; border-radius: 0.4rem; background: hsla(220,25%,18%,0.4); }
+          padding: 0.35rem 0.5rem; border-radius: 0.4rem; background: var(--admin-surface-2); }
         .tenant-member-row span { display: flex; align-items: center; gap: 0.5rem; }
         .tenant-add-member { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; }
         @media (max-width: 820px) { .tenants-grid { grid-template-columns: 1fr; } }

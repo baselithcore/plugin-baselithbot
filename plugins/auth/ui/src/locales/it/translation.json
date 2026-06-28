@@ -90,6 +90,7 @@
   },
   "nav": {
     "adminPanel": "BaselithAuth",
+    "overview": "Panoramica",
     "users": "Utenti",
     "sessions": "Sessioni",
     "audit": "Registro Audit",
@@ -101,7 +102,80 @@
     "myAccount": "Il mio account",
     "sso": "SSO",
     "tenants": "Tenant",
-    "budget": "Budget"
+    "budget": "Budget",
+    "collapse": "Comprimi",
+    "expand": "Espandi",
+    "openMenu": "Apri navigazione",
+    "group": {
+      "general": "Generale",
+      "identity": "Identità",
+      "access": "Accessi",
+      "monitoring": "Monitoraggio",
+      "organization": "Organizzazione"
+    },
+    "desc": {
+      "overview": "Metriche chiave e attività recente in un colpo d'occhio.",
+      "users": "Account, ruoli e accessi di ogni membro.",
+      "roles": "Ruoli personalizzati e i permessi che concedono.",
+      "groups": "Definizione dei gruppi e membership condivisa.",
+      "access": "Chi può accedere a ciascun tab dei plugin.",
+      "sso": "Provider di identità per il single sign-on.",
+      "sessions": "Sessioni attive su tutta la piattaforma.",
+      "audit": "Ogni azione rilevante per la sicurezza, tracciata.",
+      "tenants": "Workspace e relativi membri.",
+      "budget": "Limiti di spesa LLM per utente e consumi."
+    }
+  },
+  "theme": {
+    "toggle": "Cambia tema",
+    "light": "Tema chiaro",
+    "dark": "Tema scuro",
+    "system": "Usa tema di sistema"
+  },
+  "command": {
+    "openLabel": "Cerca o vai a…",
+    "placeholder": "Cerca sezioni e azioni…",
+    "noResults": "Nessun risultato",
+    "section": {
+      "navigate": "Naviga",
+      "actions": "Azioni"
+    }
+  },
+  "overview": {
+    "title": "Panoramica",
+    "subtitle": "Istantanea in tempo reale di identità, accessi e attività.",
+    "refresh": "Aggiorna",
+    "error": "Impossibile caricare la dashboard. Riprova ad aggiornare.",
+    "empty": "Ancora nessun dato.",
+    "kpi": {
+      "users": "Utenti totali",
+      "usersHint": "{{active}} attivi",
+      "sessions": "Sessioni attive",
+      "mfa": "Adozione MFA",
+      "events": "Eventi oggi",
+      "spend": "Spesa LLM"
+    },
+    "activity": {
+      "title": "Attività",
+      "sub": "{{count}} eventi · ultimi 14 giorni"
+    },
+    "mfa": {
+      "title": "Adozione MFA",
+      "caption": "iscritti",
+      "detail": "{{enabled}} di {{total}} utenti hanno l'MFA attiva"
+    },
+    "roles": {
+      "title": "Account per ruolo"
+    },
+    "usage": {
+      "title": "Utilizzo AI",
+      "sub": "{{spend}} · {{reqs}} richieste nel periodo",
+      "empty": "Nessun utilizzo registrato nel periodo."
+    },
+    "recent": {
+      "title": "Attività recente",
+      "empty": "Nessun evento recente."
+    }
   },
   "groups": {
     "title": "Gruppi",

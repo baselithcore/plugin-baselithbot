@@ -172,9 +172,7 @@ class CostStore:
         self._interval = max(2.0, interval)
         if not self._ensure_schema():
             return  # no DB → nothing to flush; route falls back to memory
-        thread = threading.Thread(
-            target=self._loop, name="blc-cost-flush", daemon=True
-        )
+        thread = threading.Thread(target=self._loop, name="blc-cost-flush", daemon=True)
         self._flusher = thread
         thread.start()
         atexit.register(self._final_flush)

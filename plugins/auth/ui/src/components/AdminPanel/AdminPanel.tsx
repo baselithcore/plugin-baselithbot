@@ -1,25 +1,16 @@
 /**
- * Admin Panel - Main Component
+ * Admin Console — shell.
  *
- * Tab-based navigation for user management, sessions, and audit log.
+ * A dark navigation rail + contextual top bar wrap the management surfaces,
+ * styled like a modern identity console (Auth0 / Cloudflare). Visual identity is
+ * token-driven via the `.console` wrapper, which re-themes light/dark without
+ * touching the shared `@auth/login` wall. Tab bodies are unchanged — they adopt
+ * the new look through the shared `.admin-*` classes.
  */
 
-import { useState } from 'react';
-import {
-  Users,
-  Key,
-  Activity,
-  LogOut,
-  Shield,
-  Lock,
-  Users2,
-  ShieldCheck,
-  UserCog,
-  Globe,
-  Building2,
-  CreditCard,
-} from 'lucide-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Sun, Moon, Monitor, UserCog, LogOut } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuthContext';
 import MfaSecurityModal from '../security/MfaSecurityModal';
 import type { TabType } from '../../types';
@@ -32,159 +23,130 @@ import AccessTab from '../tabs/AccessTab';
 import SsoTab from '../tabs/SsoTab';
 import TenantsTab from '../tabs/TenantsTab';
 import BudgetTab from '../tabs/BudgetTab';
-import LanguageSwitcher from '../ui/LanguageSwitcher';
-import TenantSwitcher from '../ui/TenantSwitcher';
-import AuthLogo from '../ui/AuthLogo';
+import OverviewTab from '../tabs/OverviewTab';
 import UsageOverlay from '../account/UsageOverlay';
+import Sidebar from './Sidebar';
+import Topbar from './Topbar';
+import CommandPalette from './CommandPalette';
+import type { PaletteAction } from './CommandPalette';
+import { useTheme } from './useTheme';
 import './AdminPanel.css';
 
-const AdminPanel = () => {
-  const [activeTab, setActiveTab] = useState<TabType>('users');
-  const [showSecurity, setShowSecurity] = useState(false);
-  const { logout, user } = useAuth();
-  const { t } = useTranslation();
+const COLLAPSE_KEY = 'auth_sidebar_collapsed';
 
-  const handleLogout = async () => {
+const TAB_BODIES: Record<TabType, React.ComponentType> = {
+  overview: OverviewTab,
+  users: UsersTab,
+  roles: RolesTab,
+  groups: GroupsTab,
+  access: AccessTab,
+  sessions: SessionsTab,
+  audit: AuditTab,
+  sso: SsoTab,
+  tenants: TenantsTab,
+  budget: BudgetTab,
+};
+
+const AdminPanel = () => {
+  const { t } = useTranslation();
+  const { logout } = useAuth();
+  const { resolved, setTheme, toggle } = useTheme();
+
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [showSecurity, setShowSecurity] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSE_KEY) === '1');
+
+  const toggleCollapse = useCallback(() => {
+    setCollapsed((c) => {
+      const next = !c;
+      localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0');
+      return next;
+    });
+  }, []);
+
+  // Global ⌘K / Ctrl-K opens the command palette.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setPaletteOpen((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, []);
+
+  const handleLogout = useCallback(async () => {
     try {
       await logout();
+    } finally {
       window.location.href = '/auth/login';
-    } catch (err) {
-      console.error('Logout failed:', err);
     }
-  };
+  }, [logout]);
+
+  const paletteActions = useMemo<PaletteAction[]>(
+    () => [
+      {
+        id: 'theme-toggle',
+        label: resolved === 'dark' ? t('theme.light') : t('theme.dark'),
+        icon: resolved === 'dark' ? Sun : Moon,
+        run: toggle,
+      },
+      {
+        id: 'theme-system',
+        label: t('theme.system'),
+        icon: Monitor,
+        run: () => setTheme('system'),
+      },
+      {
+        id: 'account',
+        label: t('nav.myAccount'),
+        icon: UserCog,
+        run: () => {
+          window.location.href = '/auth/account';
+        },
+      },
+      { id: 'logout', label: t('nav.logout'), icon: LogOut, run: handleLogout },
+    ],
+    [resolved, toggle, setTheme, handleLogout, t]
+  );
+
+  const Body = TAB_BODIES[activeTab];
 
   return (
-    <div className="admin-layout">
+    <div className="console" data-theme={resolved}>
       <UsageOverlay />
-      {/* Background glow + drifting aurora */}
-      <div className="admin-bg-glow" />
-      <div className="aurora" aria-hidden="true" />
+      <Sidebar
+        activeTab={activeTab}
+        onSelect={setActiveTab}
+        collapsed={collapsed}
+        onToggleCollapse={toggleCollapse}
+        mobileOpen={mobileNavOpen}
+        onCloseMobile={() => setMobileNavOpen(false)}
+      />
 
-      {/* Header */}
-      <header className="admin-header">
-        <div className="admin-header-left">
-          <div className="admin-logo">
-            <AuthLogo size={28} />
-            <span className="admin-logo-text">{t('nav.adminPanel')}</span>
-          </div>
+      <div className="console-shell">
+        <Topbar
+          activeTab={activeTab}
+          onOpenPalette={() => setPaletteOpen(true)}
+          onOpenMobileNav={() => setMobileNavOpen(true)}
+          onOpenSecurity={() => setShowSecurity(true)}
+          resolved={resolved}
+          onToggleTheme={toggle}
+        />
+        <main className="console-main">
+          <Body />
+        </main>
+      </div>
 
-          <nav className="admin-tabs">
-            <button
-              className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`}
-              onClick={() => setActiveTab('users')}
-            >
-              <Users size={16} />
-              <span>{t('nav.users')}</span>
-            </button>
-            <button
-              className={`admin-tab ${activeTab === 'roles' ? 'active' : ''}`}
-              onClick={() => setActiveTab('roles')}
-            >
-              <Shield size={16} />
-              <span>{t('nav.roles')}</span>
-            </button>
-            <button
-              className={`admin-tab ${activeTab === 'groups' ? 'active' : ''}`}
-              onClick={() => setActiveTab('groups')}
-            >
-              <Users2 size={16} />
-              <span>{t('nav.groups')}</span>
-            </button>
-            <button
-              className={`admin-tab ${activeTab === 'access' ? 'active' : ''}`}
-              onClick={() => setActiveTab('access')}
-            >
-              <Lock size={16} />
-              <span>{t('nav.access')}</span>
-            </button>
-            <button
-              className={`admin-tab ${activeTab === 'sessions' ? 'active' : ''}`}
-              onClick={() => setActiveTab('sessions')}
-            >
-              <Key size={16} />
-              <span>{t('nav.sessions')}</span>
-            </button>
-            <button
-              className={`admin-tab ${activeTab === 'audit' ? 'active' : ''}`}
-              onClick={() => setActiveTab('audit')}
-            >
-              <Activity size={16} />
-              <span>{t('nav.audit')}</span>
-            </button>
-            <button
-              className={`admin-tab ${activeTab === 'sso' ? 'active' : ''}`}
-              onClick={() => setActiveTab('sso')}
-            >
-              <Globe size={16} />
-              <span>{t('nav.sso')}</span>
-            </button>
-            <button
-              className={`admin-tab ${activeTab === 'tenants' ? 'active' : ''}`}
-              onClick={() => setActiveTab('tenants')}
-            >
-              <Building2 size={16} />
-              <span>{t('nav.tenants')}</span>
-            </button>
-            <button
-              className={`admin-tab ${activeTab === 'budget' ? 'active' : ''}`}
-              onClick={() => setActiveTab('budget')}
-            >
-              <CreditCard size={16} />
-              <span>{t('nav.budget')}</span>
-            </button>
-          </nav>
-        </div>
-
-        <div className="admin-header-right">
-          <TenantSwitcher />
-          <LanguageSwitcher />
-          {user && <span className="admin-user-email">{user.email}</span>}
-          <a
-            className="admin-btn admin-btn-ghost admin-btn-icon"
-            href="/auth/account"
-            title={t('nav.myAccount')}
-          >
-            <UserCog size={18} />
-          </a>
-          <button
-            className="admin-btn admin-btn-ghost admin-btn-icon"
-            onClick={() => setShowSecurity(true)}
-            title={t('security.mfa.title')}
-            style={{ color: user?.mfa_enabled ? 'var(--admin-success)' : undefined }}
-          >
-            {user?.mfa_enabled ? <ShieldCheck size={18} /> : <Shield size={18} />}
-          </button>
-          <button
-            className="admin-btn admin-btn-ghost admin-btn-icon"
-            onClick={handleLogout}
-            title={t('nav.logout')}
-          >
-            <LogOut size={18} />
-          </button>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="admin-main">
-        {activeTab === 'users' && <UsersTab />}
-        {activeTab === 'roles' && <RolesTab />}
-        {activeTab === 'groups' && <GroupsTab />}
-        {activeTab === 'access' && <AccessTab />}
-        {activeTab === 'sessions' && <SessionsTab />}
-        {activeTab === 'audit' && <AuditTab />}
-        {activeTab === 'sso' && <SsoTab />}
-        {activeTab === 'tenants' && <TenantsTab />}
-        {activeTab === 'budget' && <BudgetTab />}
-      </main>
-
-      {/* Footer */}
-      <footer className="admin-footer">
-        <AuthLogo size={16} />
-        <h1 className="baselith-brand" style={{ margin: 0 }}>
-          BaselithCore<span className="baselith-brand-dot">.</span>
-        </h1>
-        <span>{t('nav.version')}</span>
-      </footer>
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        onSelectTab={setActiveTab}
+        actions={paletteActions}
+      />
 
       {showSecurity && <MfaSecurityModal onClose={() => setShowSecurity(false)} />}
     </div>

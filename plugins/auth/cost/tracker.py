@@ -134,9 +134,7 @@ def _enforce(user_id: str) -> None:
     if b is None or not b.enforce or not b.cap_micros:
         return
     if b.spend_micros >= b.cap_micros:
-        raise BudgetExceededError(
-            f"Monthly LLM budget exceeded for user {user_id}"
-        )
+        raise BudgetExceededError(f"Monthly LLM budget exceeded for user {user_id}")
 
 
 def _record(user_id: str, model: str, prompt: int, completion: int) -> None:

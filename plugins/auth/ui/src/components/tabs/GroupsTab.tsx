@@ -310,11 +310,11 @@ const GroupsTab = () => {
         .group-roles { display: flex; flex-wrap: wrap; gap: 0.4rem; }
         .group-role-chip { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.3rem 0.65rem;
           border-radius: 9999px; font-size: 0.78rem; cursor: pointer; color: var(--admin-text);
-          background: hsla(220,25%,25%,0.4); border: 1px solid transparent; }
+          background: var(--admin-surface-2); border: 1px solid var(--admin-card-border); }
         .group-role-chip.on { background: var(--admin-accent); border-color: var(--admin-accent); color: #fff; }
         .group-members { display: flex; flex-direction: column; gap: 0.35rem; }
         .group-member-row { display: flex; align-items: center; justify-content: space-between;
-          padding: 0.35rem 0.5rem; border-radius: 0.4rem; background: hsla(220,25%,18%,0.4); }
+          padding: 0.35rem 0.5rem; border-radius: 0.4rem; background: var(--admin-surface-2); }
         .group-add-member { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; }
         @media (max-width: 820px) { .groups-grid { grid-template-columns: 1fr; } }
       `}</style>

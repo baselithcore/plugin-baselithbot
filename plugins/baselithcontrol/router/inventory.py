@@ -39,6 +39,7 @@ def build_inventory_router() -> APIRouter:
             pass
         return {
             "user_id": user.user_id,
+            "tenant_id": user.tenant_id,
             "email": email,
             "username": username,
             "display_name": username or email or user.user_id,

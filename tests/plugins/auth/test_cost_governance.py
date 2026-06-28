@@ -103,7 +103,9 @@ def test_meter_skips_unauthenticated(monkeypatch) -> None:
     fake = _FakePersistence(cap_micros=None)
     _with_fake(monkeypatch, fake)
     # no user bound in this fresh context
-    contextvars.copy_context().run(lambda: (trk.meter(1000, "input"), trk.meter(5, "gpt-5")))
+    contextvars.copy_context().run(
+        lambda: (trk.meter(1000, "input"), trk.meter(5, "gpt-5"))
+    )
     assert fake.records == []
 
 

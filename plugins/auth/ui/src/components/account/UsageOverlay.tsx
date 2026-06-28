@@ -71,9 +71,7 @@ export default function UsageOverlay() {
     >
       {blocked ? <Ban size={18} /> : <AlertTriangle size={18} />}
       <span>
-        {blocked
-          ? t('overlay.blocked', { period: usage.period })
-          : t('overlay.warning', { pct })}
+        {blocked ? t('overlay.blocked', { period: usage.period }) : t('overlay.warning', { pct })}
       </span>
     </div>
   );

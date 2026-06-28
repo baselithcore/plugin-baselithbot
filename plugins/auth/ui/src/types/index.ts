@@ -122,6 +122,7 @@ export interface MyTenant {
 }
 
 export type TabType =
+  | 'overview'
   | 'users'
   | 'sessions'
   | 'audit'

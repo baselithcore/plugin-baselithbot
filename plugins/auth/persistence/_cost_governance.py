@@ -41,11 +41,19 @@ class CostGovernanceMixin:
             )
             row = cur.fetchone()
         if not row:
-            return {"monthly_cap_micros": None, "warn_threshold_pct": 80, "enforce": True}
+            return {
+                "monthly_cap_micros": None,
+                "warn_threshold_pct": 80,
+                "enforce": True,
+            }
         return dict(row)
 
     def set_cost_policy(
-        self, *, monthly_cap_micros: Optional[int], warn_threshold_pct: int, enforce: bool
+        self,
+        *,
+        monthly_cap_micros: Optional[int],
+        warn_threshold_pct: int,
+        enforce: bool,
     ) -> None:
         """Upsert the org-wide cost policy singleton."""
         with get_cursor() as cur:
@@ -139,9 +147,7 @@ class CostGovernanceMixin:
                 ),
             )
 
-    def monthly_spend_micros(
-        self, user_id: str, period: Optional[date] = None
-    ) -> int:
+    def monthly_spend_micros(self, user_id: str, period: Optional[date] = None) -> int:
         """Total spend (micro-USD) for a user in a month."""
         with get_cursor(row_factory=dict_row) as cur:
             cur.execute(

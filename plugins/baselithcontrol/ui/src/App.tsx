@@ -12,6 +12,7 @@ import { PluginDetail } from '@/pages/PluginDetail';
 import { EventFeed } from '@/pages/EventFeed';
 import { Logs } from '@/pages/Logs';
 import { SystemConsole } from '@/pages/SystemConsole';
+import { Account } from '@/pages/Account';
 
 export default function App() {
   useStatusStream();
@@ -21,6 +22,7 @@ export default function App() {
   const selected = useControlStore((s) => s.selected);
   const select = useControlStore((s) => s.select);
   const currentTab = useControlStore((s) => s.currentTab);
+  const me = useControlStore((s) => s.me);
 
   return (
     // reducedMotion="user" honors the OS "reduce motion" setting (accessibility).
@@ -35,6 +37,8 @@ export default function App() {
             <Logs key="logs" />
           ) : currentTab === 'system' ? (
             <SystemConsole key="system" />
+          ) : currentTab === 'account' && me ? (
+            <Account key="account" me={me} />
           ) : (
             <Overview key="overview" onOpen={(name) => select(name)} />
           )}

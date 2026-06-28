@@ -5,8 +5,7 @@ export const ACCESS_STYLES = `
 
   .mfa-card { display: flex; align-items: center; justify-content: space-between; gap: 1rem;
     padding: 0.9rem 1.1rem; border-radius: 0.75rem;
-    background: linear-gradient(180deg, hsla(220,25%,17%,0.55), hsla(220,25%,13%,0.55));
-    border: 1px solid var(--admin-border, hsla(220,25%,40%,0.3)); }
+    background: var(--admin-surface-2); border: 1px solid var(--admin-card-border); }
   .mfa-info { display: flex; align-items: center; gap: 0.75rem; color: var(--admin-text); }
   .mfa-info .mfa-ico { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 0.6rem;
     background: hsla(150,60%,45%,0.14); color: var(--admin-success, #4ade80); flex-shrink: 0; }
@@ -21,37 +20,37 @@ export const ACCESS_STYLES = `
   .switch.on .switch-knob { transform: translateX(20px); }
 
   .access-groups { display: flex; flex-direction: column; gap: 0.85rem; }
-  .pgroup { border: 1px solid var(--admin-border, hsla(220,25%,40%,0.28)); border-radius: 0.8rem; overflow: hidden;
-    background: var(--admin-surface, hsla(220,25%,14%,0.45)); }
+  .pgroup { border: 1px solid var(--admin-card-border); border-radius: 0.8rem; overflow: hidden;
+    background: var(--admin-card-bg); box-shadow: var(--admin-card-shadow); }
   .pgroup-head { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.85rem 1rem;
     background: transparent; border: none; cursor: pointer; color: var(--admin-text); text-align: left; }
-  .pgroup-head:hover { background: hsla(220,25%,50%,0.06); }
+  .pgroup-head:hover { background: var(--admin-surface-2); }
   .pgroup-ico { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 0.55rem;
-    background: hsla(220,80%,62%,0.15); color: var(--admin-accent); flex-shrink: 0; }
+    background: var(--admin-accent-soft); color: var(--admin-accent); flex-shrink: 0; }
   .pgroup-meta { display: flex; flex-direction: column; gap: 0.1rem; flex: 1; min-width: 0; }
   .pgroup-name { font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem; }
-  .pgroup-slug { font-family: monospace; font-size: 0.72rem; color: var(--admin-text-muted); }
+  .pgroup-slug { font-family: var(--admin-font-mono, monospace); font-size: 0.72rem; color: var(--admin-text-muted); }
   .pgroup-count { font-size: 0.72rem; color: var(--admin-text-muted); padding: 0.15rem 0.55rem;
-    border-radius: 9999px; background: hsla(220,25%,50%,0.12); white-space: nowrap; }
+    border-radius: 9999px; background: var(--admin-surface-2); white-space: nowrap; }
   .sys-badge { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.1rem 0.4rem;
-    border-radius: 9999px; background: hsla(265,80%,62%,0.18); color: #b59bff; }
+    border-radius: 9999px; background: var(--admin-violet-soft); color: var(--admin-violet); }
 
   .tabrow { padding: 0.75rem 1rem; border-top: 1px solid var(--admin-border, hsla(220,25%,40%,0.18)); }
   .tabrow-main { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
   .tabrow-id { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
   .tabrow-label { font-weight: 500; font-size: 0.9rem; color: var(--admin-text); }
-  .tabrow-slug { font-family: monospace; font-size: 0.7rem; color: var(--admin-text-muted); }
+  .tabrow-slug { font-family: var(--admin-font-mono, monospace); font-size: 0.7rem; color: var(--admin-text-muted); }
 
   .seg { display: inline-flex; padding: 0.2rem; border-radius: 0.6rem; gap: 0.15rem; flex-shrink: 0;
-    background: hsla(220,25%,50%,0.1); border: 1px solid var(--admin-border, hsla(220,25%,40%,0.25)); }
+    background: var(--admin-surface-2); border: 1px solid var(--admin-card-border); }
   .seg button { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; font-size: 0.78rem;
     border: none; background: transparent; color: var(--admin-text-muted); border-radius: 0.45rem; cursor: pointer; }
   .seg button:hover { color: var(--admin-text); }
-  .seg button.on.open { background: hsla(150,60%,45%,0.2); color: var(--admin-success, #4ade80); }
-  .seg button.on.restricted { background: hsla(35,90%,55%,0.2); color: #f5a623; }
+  .seg button.on.open { background: hsla(150,60%,45%,0.18); color: var(--admin-success); }
+  .seg button.on.restricted { background: hsla(35,90%,55%,0.18); color: var(--admin-warning); }
   .seg-system { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.7rem; font-size: 0.78rem;
     flex-shrink: 0; border-radius: 0.6rem; white-space: nowrap; cursor: default;
-    background: hsla(265,80%,62%,0.16); border: 1px solid hsla(265,80%,62%,0.4); color: #c4b1ff; }
+    background: var(--admin-violet-soft); border: 1px solid var(--admin-violet-soft); color: var(--admin-violet); }
 
   .tabrow-roles { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.65rem;
     padding-top: 0.65rem; border-top: 1px dashed var(--admin-border, hsla(220,25%,40%,0.2)); }
@@ -61,8 +60,8 @@ export const ACCESS_STYLES = `
     background: transparent; color: var(--admin-text-muted); transition: all 0.15s; }
   .role-chip:hover { border-color: var(--admin-accent); color: var(--admin-text); }
   .role-chip.on { background: var(--admin-accent); border-color: var(--admin-accent); color: #fff; }
-  .role-chip.admin { cursor: default; background: hsla(265,80%,62%,0.16); border-color: transparent; color: #c4b1ff; }
-  .role-chip.admin:hover { border-color: transparent; color: #c4b1ff; }
+  .role-chip.admin { cursor: default; background: var(--admin-violet-soft); border-color: transparent; color: var(--admin-violet); }
+  .role-chip.admin:hover { border-color: transparent; color: var(--admin-violet); }
   .tabrow-roles-empty { font-size: 0.74rem; color: var(--admin-text-muted); font-style: italic; }
 
   .access-empty { text-align: center; padding: 2.5rem 1rem; color: var(--admin-text-muted); }

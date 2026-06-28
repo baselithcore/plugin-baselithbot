@@ -33,8 +33,8 @@ interface ControlStore {
   events: LoggedEvent[];
   latencyHistory: Record<string, number[]>;
   costByPlugin: Record<string, PluginCostAgg>;
-  currentTab: 'dashboard' | 'events' | 'logs' | 'system';
-  setTab: (tab: 'dashboard' | 'events' | 'logs' | 'system') => void;
+  currentTab: 'dashboard' | 'events' | 'logs' | 'system' | 'account';
+  setTab: (tab: 'dashboard' | 'events' | 'logs' | 'system' | 'account') => void;
   setAccessibleTabs: (tabs: AccessibleTab[]) => void;
   setCostUsage: (view: CostUsageView) => void;
   setInventory: (cards: PluginCard[]) => void;

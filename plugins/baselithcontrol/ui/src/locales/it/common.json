@@ -258,5 +258,11 @@
   "detail.llm_cost": "Costo LLM",
   "detail.cost_summary": "{{tokens}} token · {{calls}} chiamate",
   "detail.cost_note": "Consumo token misurato dall'avvio del processo; il costo è una stima a prezzo di listino.",
-  "a11y.skip": "Vai al contenuto principale"
+  "a11y.skip": "Vai al contenuto principale",
+  "account.username": "Username",
+  "account.email": "Email",
+  "account.user_id": "ID utente",
+  "account.tenant": "Tenant",
+  "account.roles": "Ruoli",
+  "account.open": "Dettagli account"
 }

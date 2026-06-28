@@ -90,6 +90,7 @@
   },
   "nav": {
     "adminPanel": "BaselithAuth",
+    "overview": "Overview",
     "users": "Users",
     "sessions": "Sessions",
     "audit": "Audit Log",
@@ -101,7 +102,80 @@
     "myAccount": "My account",
     "sso": "SSO",
     "tenants": "Tenants",
-    "budget": "Budget"
+    "budget": "Budget",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "openMenu": "Open navigation",
+    "group": {
+      "general": "General",
+      "identity": "Identity",
+      "access": "Access",
+      "monitoring": "Monitoring",
+      "organization": "Organization"
+    },
+    "desc": {
+      "overview": "Key metrics and recent activity at a glance.",
+      "users": "Accounts, roles and access for every member.",
+      "roles": "Custom roles and the permissions they grant.",
+      "groups": "Group definitions and shared membership.",
+      "access": "Who can reach each plugin tab.",
+      "sso": "Single sign-on identity providers.",
+      "sessions": "Active sessions across the platform.",
+      "audit": "Every security-relevant action, logged.",
+      "tenants": "Workspaces and their members.",
+      "budget": "Per-user LLM spend limits and usage."
+    }
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light theme",
+    "dark": "Dark theme",
+    "system": "Use system theme"
+  },
+  "command": {
+    "openLabel": "Search or jump to…",
+    "placeholder": "Search sections and actions…",
+    "noResults": "No matches",
+    "section": {
+      "navigate": "Navigate",
+      "actions": "Actions"
+    }
+  },
+  "overview": {
+    "title": "Overview",
+    "subtitle": "A live snapshot of identity, access and activity.",
+    "refresh": "Refresh",
+    "error": "Couldn't load the dashboard. Try refreshing.",
+    "empty": "No data yet.",
+    "kpi": {
+      "users": "Total users",
+      "usersHint": "{{active}} active",
+      "sessions": "Active sessions",
+      "mfa": "MFA adoption",
+      "events": "Events today",
+      "spend": "LLM spend"
+    },
+    "activity": {
+      "title": "Activity",
+      "sub": "{{count}} events · last 14 days"
+    },
+    "mfa": {
+      "title": "MFA adoption",
+      "caption": "enrolled",
+      "detail": "{{enabled}} of {{total}} users have MFA enabled"
+    },
+    "roles": {
+      "title": "Accounts by role"
+    },
+    "usage": {
+      "title": "AI usage",
+      "sub": "{{spend}} · {{reqs}} requests this period",
+      "empty": "No recorded usage this period."
+    },
+    "recent": {
+      "title": "Recent activity",
+      "empty": "No recent events."
+    }
   },
   "groups": {
     "title": "Groups",

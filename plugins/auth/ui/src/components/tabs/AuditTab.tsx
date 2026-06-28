@@ -373,7 +373,7 @@ const AuditTab = () => {
           font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
           font-size: 0.75rem;
           color: var(--admin-text-muted);
-          background: hsla(220, 25%, 20%, 0.5);
+          background: var(--admin-surface-2);
           padding: 0.125rem 0.375rem;
           border-radius: 0.25rem;
         }
@@ -428,7 +428,7 @@ const AuditTab = () => {
           align-items: center;
           gap: 0.25rem;
           padding: 0.125rem 0.5rem;
-          background: hsla(220, 25%, 20%, 0.5);
+          background: var(--admin-surface-2);
           border: 1px solid var(--admin-table-border);
           border-radius: 9999px;
           font-size: 0.75rem;
@@ -446,7 +446,7 @@ const AuditTab = () => {
         }
 
         .audit-pill-more {
-          background: hsla(220, 25%, 25%, 0.8);
+          background: var(--admin-border);
           color: var(--admin-text-muted);
           cursor: help;
         }

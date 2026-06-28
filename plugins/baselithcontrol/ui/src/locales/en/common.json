@@ -258,5 +258,11 @@
   "detail.llm_cost": "LLM cost",
   "detail.cost_summary": "{{tokens}} tokens · {{calls}} calls",
   "detail.cost_note": "Measured token usage since process start; cost is a list-price estimate.",
-  "a11y.skip": "Skip to main content"
+  "a11y.skip": "Skip to main content",
+  "account.username": "Username",
+  "account.email": "Email",
+  "account.user_id": "User ID",
+  "account.tenant": "Tenant",
+  "account.roles": "Roles",
+  "account.open": "Account details"
 }

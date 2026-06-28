@@ -190,10 +190,10 @@ const SessionsTab = () => {
         }
 
         .session-id {
-          font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+          font-family: var(--admin-font-mono, 'SF Mono', 'Fira Code', monospace);
           font-size: 0.8125rem;
           color: var(--admin-text-muted);
-          background: hsla(220, 25%, 20%, 0.5);
+          background: var(--admin-surface-2);
           padding: 0.125rem 0.375rem;
           border-radius: 0.25rem;
         }

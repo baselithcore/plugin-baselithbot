@@ -46,7 +46,9 @@ export default function BudgetTab() {
       .catch((e) => setMsg(e.message));
 
   useEffect(() => {
-    getCostPolicy().then(setPolicy).catch((e) => setMsg(e.message));
+    getCostPolicy()
+      .then(setPolicy)
+      .catch((e) => setMsg(e.message));
     reloadUsage();
   }, []);
 
@@ -100,9 +102,7 @@ export default function BudgetTab() {
                 step="0.01"
                 placeholder={t('budget.unlimited')}
                 value={policy.monthly_cap_usd ?? ''}
-                onChange={(e) =>
-                  setPolicy({ ...policy, monthly_cap_usd: num(e.target.value) })
-                }
+                onChange={(e) => setPolicy({ ...policy, monthly_cap_usd: num(e.target.value) })}
                 className="admin-input"
                 style={{ width: 140 }}
               />
@@ -155,9 +155,7 @@ export default function BudgetTab() {
                 <td>{r.email || r.username || r.user_id}</td>
                 <td>
                   {money(r.spend_usd)}
-                  {r.cap_usd != null && (
-                    <span style={{ opacity: 0.6 }}> / {money(r.cap_usd)}</span>
-                  )}
+                  {r.cap_usd != null && <span style={{ opacity: 0.6 }}> / {money(r.cap_usd)}</span>}
                 </td>
                 <td>
                   <span

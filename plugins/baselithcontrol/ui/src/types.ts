@@ -156,6 +156,7 @@ export interface LifecycleEvent {
 
 export interface Me {
   user_id: string;
+  tenant_id?: string | null;
   email?: string | null;
   username?: string | null;
   display_name?: string | null;
