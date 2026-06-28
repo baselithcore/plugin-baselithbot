@@ -91,7 +91,9 @@ def _entry_to_item(node: object, feed: FeedSpec) -> NewsItem | None:
     url = _link(node)
     if not title or not url or not url.lower().startswith(("http://", "https://")):
         return None
-    published = _parse_date(_child_text(node, {"pubdate", "published", "updated", "date"}))
+    published = _parse_date(
+        _child_text(node, {"pubdate", "published", "updated", "date"})
+    )
     return NewsItem(
         title=title[:280],
         url=url,

@@ -20,7 +20,10 @@ import time
 from collections import deque
 from dataclasses import dataclass, field
 
+from starlette.routing import Mount
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+from .llm_cost import current_plugin
 
 _RING = 256  # latency samples retained per plugin for percentile estimation
 
@@ -102,16 +105,53 @@ def get_plugin_meter() -> PluginMeter:
     return _METER
 
 
-def _resolve_plugin(scope: Scope) -> str | None:
-    """Attribute a request path to a plugin via the registry's prefix matcher."""
-    app = scope.get("app")
-    registry = getattr(getattr(app, "state", None), "plugin_registry", None)
-    if registry is None:
-        return None
+def _mounted_plugins(app: object) -> dict[str, str]:
+    """Map mounted sub-app path prefixes → plugin name (cached on ``app.state``).
+
+    Plugins integrated via the sub-app-mount pattern (``app.mount("/name",
+    sub_app, name="name")`` — e.g. baselithbrain, baselithwiki) have no router
+    prefix in the registry, so ``match_plugin_route`` can't see them. We recover
+    them from the app's own ``Mount`` routes: their mount name is the plugin name.
+    Built once (all mounts exist before requests flow) and cached.
+    """
+    state = getattr(app, "state", None)
+    cached = getattr(state, "_blc_mount_map", None)
+    if cached is not None:
+        return cached  # type: ignore[no-any-return]
+    mapping: dict[str, str] = {}
     try:
-        return registry.match_plugin_route(scope.get("path", "") or "")
+        for route in getattr(app, "routes", []):
+            if isinstance(route, Mount) and route.name and route.path:
+                mapping[route.path.rstrip("/")] = route.name
     except Exception:  # noqa: BLE001 — never let metering break a request
-        return None
+        mapping = {}
+    try:
+        if state is not None:
+            state._blc_mount_map = mapping
+    except Exception:  # noqa: BLE001 — caching is best-effort
+        pass
+    return mapping
+
+
+def _resolve_plugin(scope: Scope) -> str | None:
+    """Attribute a request path to a plugin: router prefix first, then sub-app mount."""
+    app = scope.get("app")
+    path = scope.get("path", "") or ""
+    registry = getattr(getattr(app, "state", None), "plugin_registry", None)
+    if registry is not None:
+        try:
+            matched = registry.match_plugin_route(path)
+            if matched:
+                return matched
+        except Exception:  # noqa: BLE001 — never let metering break a request
+            pass
+    # Fallback: longest matching mounted sub-app prefix (e.g. /baselithbrain/...).
+    best: str | None = None
+    best_len = -1
+    for prefix, name in _mounted_plugins(app).items():
+        if (path == prefix or path.startswith(f"{prefix}/")) and len(prefix) > best_len:
+            best, best_len = name, len(prefix)
+    return best
 
 
 class PluginMeterMiddleware:
@@ -133,6 +173,9 @@ class PluginMeterMiddleware:
         self._meter.begin(plugin)
         started = time.perf_counter()
         status_code = 500  # default to error if the response never starts
+        # Bind the active plugin for this request so any LLM call it makes is
+        # attributed to it by the cost ledger (same task → contextvar visible).
+        cv_token = current_plugin.set(plugin)
 
         async def send_wrapper(message: Message) -> None:
             nonlocal status_code
@@ -143,6 +186,7 @@ class PluginMeterMiddleware:
         try:
             await self.app(scope, receive, send_wrapper)
         finally:
+            current_plugin.reset(cv_token)
             elapsed_ms = (time.perf_counter() - started) * 1000.0
             self._meter.end(plugin, elapsed_ms, status_code)
 

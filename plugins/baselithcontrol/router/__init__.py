@@ -19,7 +19,9 @@ from fastapi import APIRouter
 from .actions import build_actions_router
 from .cli import build_cli_router
 from .inventory import build_inventory_router
+from .logs import build_logs_router
 from .news import build_news_router
+from .pricing import build_pricing_router
 from .resources import build_resources_router
 from .status import build_status_router
 from .stream import build_stream_router
@@ -37,6 +39,8 @@ def build_control_router() -> APIRouter:
     router.include_router(build_actions_router())
     router.include_router(build_cli_router())
     router.include_router(build_news_router())
+    router.include_router(build_logs_router())
+    router.include_router(build_pricing_router())
     return router
 
 

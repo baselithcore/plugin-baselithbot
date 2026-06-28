@@ -73,6 +73,7 @@ class BaselithControlPlugin(RouterPlugin):
         return [
             {"id": "dashboard", "label": "Overview", "url": MOUNT_PATH},
             {"id": "events", "label": "Events", "url": MOUNT_PATH},
+            {"id": "logs", "label": "Logs", "url": MOUNT_PATH},
             {"id": "system", "label": "System Console", "url": MOUNT_PATH},
         ]
 
@@ -113,6 +114,27 @@ class BaselithControlPlugin(RouterPlugin):
             logger.info("BaselithControl lifecycle timeline attached")
         except Exception as exc:  # noqa: BLE001 — telemetry is optional
             logger.warning("BaselithControl lifecycle attach failed: %s", exc)
+
+        # Live log viewer: attach the root-logger ring handler now so the buffer
+        # captures records from boot onward (the admin-only Logs tab tails it).
+        try:
+            if ControlConfig().logs_enabled:
+                from .service.logs import get_log_buffer
+
+                get_log_buffer()
+                logger.info("BaselithControl log buffer attached")
+        except Exception as exc:  # noqa: BLE001 — telemetry is optional
+            logger.warning("BaselithControl log buffer attach failed: %s", exc)
+
+        # Per-plugin LLM cost tracking: wrap the core token sink so real usage is
+        # attributed to the serving plugin (the meter above binds the context).
+        # Runtime-only — no core source is modified.
+        try:
+            from .service.llm_cost import install_llm_cost_tracking
+
+            install_llm_cost_tracking()
+        except Exception as exc:  # noqa: BLE001 — observability is optional
+            logger.warning("BaselithControl LLM cost tracking failed: %s", exc)
 
         if not _UI_DIST.exists():
             logger.info(

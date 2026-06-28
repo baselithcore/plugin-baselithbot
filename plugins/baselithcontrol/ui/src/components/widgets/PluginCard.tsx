@@ -16,9 +16,11 @@ import {
   TrendingUp,
   Briefcase,
   Layers,
+  DollarSign,
 } from 'lucide-react';
 import type { LifecycleOp, PluginCard as Card } from '@/types';
 import { runAction, setPluginConfig } from '@/lib/api';
+import { formatTokens, formatUsd } from '@/lib/format';
 import { itemVariants, spring } from '@/lib/motion';
 import { useUiStore } from '@/store/useUiStore';
 import { useControlStore } from '@/store/useControlStore';
@@ -72,6 +74,7 @@ export function PluginCard({ card, onOpen, canControl }: Props) {
   const ask = useUiStore((s) => s.ask);
   const pushToast = useUiStore((s) => s.pushToast);
   const patchPlugin = useControlStore((s) => s.patchPlugin);
+  const cost = useControlStore((s) => s.costByPlugin[card.name]);
 
   const act = async (op: LifecycleOp) => {
     if (!(await ask(t('action.confirm', { op, plugin: card.name })))) return;
@@ -155,6 +158,18 @@ export function PluginCard({ card, onOpen, canControl }: Props) {
         >
           {t(`card.tenancy_${card.tenancy}`)}
         </span>
+        {cost && cost.cost_usd > 0 && (
+          <span
+            className="inline-flex items-center gap-1 rounded-md border border-[var(--accent-border)] bg-[var(--accent-soft)] px-1.5 py-0.5 t-accent"
+            title={t('card.llm_cost_hint', {
+              tokens: formatTokens(cost.total_tokens),
+              calls: cost.calls,
+            })}
+          >
+            <DollarSign className="h-3 w-3" />
+            {formatUsd(cost.cost_usd)}
+          </span>
+        )}
         {standalone && (
           <a
             href={standalone}

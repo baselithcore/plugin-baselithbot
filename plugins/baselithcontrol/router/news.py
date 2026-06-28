@@ -19,7 +19,9 @@ from ._guards import read_guard
 
 def build_news_router() -> APIRouter:
     """Build the news sub-router (authenticated reads, shared snapshot)."""
-    router = APIRouter(tags=["baselithcontrol:news"], dependencies=[Depends(read_guard)])
+    router = APIRouter(
+        tags=["baselithcontrol:news"], dependencies=[Depends(read_guard)]
+    )
 
     @router.get("/news", response_model=NewsResponse)
     async def news(request: Request) -> NewsResponse:

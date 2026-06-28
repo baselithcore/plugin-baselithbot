@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { Activity, Server, Wrench } from 'lucide-react';
+import { Activity, Server, Wrench, DollarSign } from 'lucide-react';
 import { pageVariants } from '@/lib/motion';
 import { DiagnosticsPanel } from './DiagnosticsPanel';
 import { InfraPanel } from './InfraPanel';
 import { DevToolsPanel } from './DevToolsPanel';
+import { CostsPanel } from './CostsPanel';
 
-type Sub = 'diagnostics' | 'infra' | 'devtools';
+type Sub = 'diagnostics' | 'infra' | 'devtools' | 'costs';
 
 const SUBS: { id: Sub; icon: typeof Activity; label: string }[] = [
   { id: 'diagnostics', icon: Activity, label: 'console.tab_diagnostics' },
   { id: 'infra', icon: Server, label: 'console.tab_infra' },
   { id: 'devtools', icon: Wrench, label: 'console.tab_devtools' },
+  { id: 'costs', icon: DollarSign, label: 'console.tab_costs' },
 ];
 
 export function SystemConsole() {
@@ -57,6 +59,7 @@ export function SystemConsole() {
       {sub === 'diagnostics' && <DiagnosticsPanel />}
       {sub === 'infra' && <InfraPanel />}
       {sub === 'devtools' && <DevToolsPanel />}
+      {sub === 'costs' && <CostsPanel />}
     </motion.div>
   );
 }

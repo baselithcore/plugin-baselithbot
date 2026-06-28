@@ -137,6 +137,18 @@ class ControlConfig(BaseSettings):
         ),
     )
 
+    # -- Live log viewer (in-memory tail of application logs) ---------------
+    logs_enabled: bool = Field(
+        default=True,
+        description="Whether the root log handler captures records for the viewer.",
+    )
+    log_buffer_capacity: int = Field(
+        default=2000,
+        ge=1,
+        le=20000,
+        description="Ring-buffer capacity for the retained application-log tail.",
+    )
+
     @classmethod
     def from_plugin_config(cls, config: dict[str, Any] | None) -> "ControlConfig":
         """Build from the plugin config block, with env overrides applied."""

@@ -212,6 +212,67 @@ export interface NewsResponse {
   degraded: boolean; // no items (feeds unreachable or ticker disabled)
 }
 
+// ── Live log viewer (mirrors api_models LogEntry / LogsView) ────────────
+
+export type LogLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
+
+export interface LogEntry {
+  seq: number;
+  timestamp: number;
+  level: LogLevel;
+  logger: string;
+  plugin: string;
+  message: string;
+}
+
+export interface LogsView {
+  api_version: string;
+  enabled: boolean;
+  capacity: number;
+  count: number;
+  plugins: string[];
+  entries: LogEntry[];
+}
+
+// ── LLM pricing reference (mirrors api_models PricingRow / PricingView) ──
+
+export interface PricingRow {
+  model_id: string;
+  provider: string;
+  input_usd_per_million: number;
+  output_usd_per_million: number;
+}
+
+export interface PricingView {
+  api_version: string;
+  currency: string;
+  as_of: string;
+  unknown_input_usd_per_million: number;
+  unknown_output_usd_per_million: number;
+  rows: PricingRow[];
+}
+
+export interface PluginCostRow {
+  plugin: string;
+  model: string;
+  calls: number;
+  prompt_tokens: number;
+  completion_tokens: number;
+  total_tokens: number;
+  cost_usd: number;
+  last_active: number | null;
+}
+
+export interface CostUsageView {
+  api_version: string;
+  currency: string;
+  tracked: boolean;
+  since: number;
+  total_cost_usd: number;
+  total_tokens: number;
+  rows: PluginCostRow[];
+}
+
 // ── CLI bridge (mirrors plugins/baselithcontrol/cli_models.py) ──────────
 
 export interface CliCheck {

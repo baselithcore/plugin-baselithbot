@@ -88,6 +88,22 @@ export function formatUptime(seconds: number | null | undefined): string {
   return `${s}s`;
 }
 
+// Compact USD for LLM spend: keep small amounts legible (4dp) without noise.
+export function formatUsd(value: number | null | undefined): string {
+  if (value == null) return '—';
+  if (value === 0) return '$0';
+  if (value < 0.01) return `$${value.toFixed(4)}`;
+  return `$${value.toFixed(2)}`;
+}
+
+// Compact token counts: 1234 → "1.2k", 2_500_000 → "2.5M".
+export function formatTokens(value: number | null | undefined): string {
+  if (value == null) return '—';
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1000) return `${(value / 1000).toFixed(1)}k`;
+  return String(value);
+}
+
 export function relativeTime(epochSeconds: number | null): string {
   if (epochSeconds == null) return '—';
   const delta = Math.max(0, Date.now() / 1000 - epochSeconds);

@@ -259,6 +259,84 @@ class LifecycleEvent(BaseModel):
     ok: bool | None = None
 
 
+class LogEntry(BaseModel):
+    """One captured application log record for the live log viewer."""
+
+    seq: int  # monotonic id, for stable de-dup/keying on the client
+    timestamp: float
+    level: str  # DEBUG | INFO | WARNING | ERROR | CRITICAL
+    logger: str  # fully-qualified logger name (e.g. plugins.auth.routes)
+    plugin: str  # attribution derived from the logger name (e.g. "auth", "core")
+    message: str
+
+
+class LogsView(BaseModel):
+    """A filtered tail of the in-memory log ring, plus filter facets."""
+
+    api_version: str = API_VERSION
+    enabled: bool = True
+    capacity: int = 0
+    count: int = 0  # entries returned after filtering
+    plugins: list[str] = Field(default_factory=list)  # distinct plugins seen
+    entries: list[LogEntry] = Field(default_factory=list)
+
+
+class PricingRow(BaseModel):
+    """List-price for one model, USD per 1M tokens (reference, not live spend)."""
+
+    model_id: str
+    provider: str
+    input_usd_per_million: float
+    output_usd_per_million: float
+
+
+class PricingView(BaseModel):
+    """The LLM pricing reference table for the cost panel.
+
+    A **pricing reference** (list price per 1M tokens) shown alongside the real
+    measured per-plugin usage — handy for sanity-checking the rate applied.
+    """
+
+    api_version: str = API_VERSION
+    currency: str = "USD"
+    as_of: str = ""  # snapshot date of the pricing table
+    unknown_input_usd_per_million: float = 0.0
+    unknown_output_usd_per_million: float = 0.0
+    rows: list[PricingRow] = Field(default_factory=list)
+
+
+class PluginCostRow(BaseModel):
+    """Measured LLM usage + list-price cost for one (plugin, model) pair."""
+
+    plugin: str
+    model: str
+    calls: int
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+    cost_usd: float
+    last_active: float | None = None
+
+
+class CostUsageView(BaseModel):
+    """Real per-plugin LLM spend since process start (list-price estimate).
+
+    Token counts are the runtime's own measured values, attributed to the plugin
+    that served the originating request; ``unbound`` groups usage from calls not
+    tied to a plugin HTTP request. Cost is a list-price estimate (the core layer
+    does not expose provider-billed cost). ``tracked`` is false if the wrapper
+    could not be installed.
+    """
+
+    api_version: str = API_VERSION
+    currency: str = "USD"
+    tracked: bool = True
+    since: float = 0.0
+    total_cost_usd: float = 0.0
+    total_tokens: int = 0
+    rows: list[PluginCostRow] = Field(default_factory=list)
+
+
 __all__ = [
     "API_VERSION",
     "PluginState",
@@ -281,4 +359,10 @@ __all__ = [
     "AuditEntryView",
     "RequestVolumeSample",
     "LifecycleEvent",
+    "LogEntry",
+    "LogsView",
+    "PricingRow",
+    "PricingView",
+    "PluginCostRow",
+    "CostUsageView",
 ]

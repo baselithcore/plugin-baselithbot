@@ -29,6 +29,7 @@ environment_variables:
 - BASELITHCONTROL_REQUIRE_ADMIN
 - BASELITHCONTROL_GATE_LEVEL
 - BASELITHCONTROL_NEWS_ENABLED
+- BASELITHCONTROL_LOGS_ENABLED
 
 # News ticker sources (dashboard home). Declarative + editable here without
 # touching code — this file is NOT covered by integrity_sha256 (only *.py is),
@@ -76,4 +77,4 @@ news_feeds:
 - {url: 'https://krebsonsecurity.com/feed/', source: 'Krebs on Security', category: cyber, lang: en}
 - {url: 'https://www.cisa.gov/cybersecurity-advisories/all.xml', source: 'CISA', category: cyber, lang: en}
 - {url: 'https://www.schneier.com/feed/atom/', source: 'Schneier on Security', category: cyber, lang: en}
-integrity_sha256: 5737037823f61e63b79a5c271599e68727990a150c76950b733db3c8e2aa823e
+integrity_sha256: 922edde1d880d82108173e57992ac9382553e358e470c759a508e1f5b6e4bb93

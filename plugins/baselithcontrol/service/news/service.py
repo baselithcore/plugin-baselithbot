@@ -111,9 +111,7 @@ class NewsService:
             merged.extend(result)
         return _dedup_sort_cap(merged, self._max_items)
 
-    async def _one(
-        self, client: httpx.AsyncClient, feed: FeedSpec
-    ) -> list[NewsItem]:
+    async def _one(self, client: httpx.AsyncClient, feed: FeedSpec) -> list[NewsItem]:
         """Fetch + parse a single feed, degrading to ``[]`` on any failure."""
         try:
             payload = await self._fetcher(

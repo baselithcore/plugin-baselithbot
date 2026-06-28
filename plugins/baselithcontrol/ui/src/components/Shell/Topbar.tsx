@@ -4,6 +4,7 @@ import {
   LayoutGrid,
   ScrollText,
   TerminalSquare,
+  FileText,
   Sun,
   Moon,
   Shield,
@@ -23,6 +24,7 @@ import { useTheme } from '@/store/useTheme';
 const NAV = [
   { id: 'dashboard', icon: LayoutGrid, label: 'nav.overview' },
   { id: 'events', icon: ScrollText, label: 'nav.events' },
+  { id: 'logs', icon: FileText, label: 'nav.logs' },
   { id: 'system', icon: TerminalSquare, label: 'nav.system' },
 ] as const;
 

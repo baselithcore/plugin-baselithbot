@@ -1,9 +1,25 @@
 import { create } from 'zustand';
-import type { AccessibleTab, ControlEvent, Me, PluginCard, PluginState } from '@/types';
+import type {
+  AccessibleTab,
+  ControlEvent,
+  CostUsageView,
+  Me,
+  PluginCard,
+  PluginCostRow,
+  PluginState,
+} from '@/types';
 
 export interface LoggedEvent extends ControlEvent {
   id: string;
   timestamp: number;
+}
+
+// Per-plugin LLM spend aggregate (summed across the plugin's models).
+export interface PluginCostAgg {
+  cost_usd: number;
+  total_tokens: number;
+  calls: number;
+  rows: PluginCostRow[];
 }
 
 interface ControlStore {
@@ -16,9 +32,11 @@ interface ControlStore {
   accessibleTabs: AccessibleTab[] | null;
   events: LoggedEvent[];
   latencyHistory: Record<string, number[]>;
-  currentTab: 'dashboard' | 'events' | 'system';
-  setTab: (tab: 'dashboard' | 'events' | 'system') => void;
+  costByPlugin: Record<string, PluginCostAgg>;
+  currentTab: 'dashboard' | 'events' | 'logs' | 'system';
+  setTab: (tab: 'dashboard' | 'events' | 'logs' | 'system') => void;
   setAccessibleTabs: (tabs: AccessibleTab[]) => void;
+  setCostUsage: (view: CostUsageView) => void;
   setInventory: (cards: PluginCard[]) => void;
   applyEvent: (event: ControlEvent) => void;
   setConnected: (connected: boolean) => void;
@@ -55,9 +73,25 @@ export const useControlStore = create<ControlStore>((set) => ({
   accessibleTabs: null,
   events: [],
   latencyHistory: {},
+  costByPlugin: {},
   currentTab: 'dashboard',
   setTab: (tab) => set(() => ({ currentTab: tab, selected: null })), // auto-clear selected detail when switching tabs
   setAccessibleTabs: (tabs) => set(() => ({ accessibleTabs: tabs })),
+  // Group the flat per-(plugin,model) usage rows into a per-plugin aggregate so
+  // cards and the detail view can read their slice cheaply.
+  setCostUsage: (view) =>
+    set(() => {
+      const map: Record<string, PluginCostAgg> = {};
+      for (const r of view.rows) {
+        const agg =
+          map[r.plugin] ?? (map[r.plugin] = { cost_usd: 0, total_tokens: 0, calls: 0, rows: [] });
+        agg.cost_usd += r.cost_usd;
+        agg.total_tokens += r.total_tokens;
+        agg.calls += r.calls;
+        agg.rows.push(r);
+      }
+      return { costByPlugin: map };
+    }),
   setInventory: (cards) =>
     set(() => ({
       plugins: Object.fromEntries(cards.map((c) => [c.name, c])),

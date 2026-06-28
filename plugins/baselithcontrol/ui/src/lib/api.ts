@@ -12,10 +12,13 @@ import type {
   JobView,
   LifecycleEvent,
   LifecycleOp,
+  LogsView,
+  CostUsageView,
   Me,
   MyTenant,
   NewsResponse,
   Overview,
+  PricingView,
   PluginRuntime,
   PluginStatus,
   QueueStatus,
@@ -216,6 +219,34 @@ export async function fetchWidgetData(endpoint: string): Promise<unknown> {
 // Merged, cached public RSS/Atom headlines for the dashboard news ticker.
 export function fetchNews(): Promise<NewsResponse> {
   return getJSON<NewsResponse>('/news');
+}
+
+export interface LogQuery {
+  limit?: number;
+  level?: string;
+  plugin?: string;
+  q?: string;
+}
+
+// Filtered tail of captured application logs (admin-only on the backend).
+export function fetchLogs(params: LogQuery = {}): Promise<LogsView> {
+  const qs = new URLSearchParams();
+  if (params.limit) qs.set('limit', String(params.limit));
+  if (params.level) qs.set('level', params.level);
+  if (params.plugin) qs.set('plugin', params.plugin);
+  if (params.q) qs.set('q', params.q);
+  const suffix = qs.toString();
+  return getJSON<LogsView>(`/logs${suffix ? `?${suffix}` : ''}`);
+}
+
+// LLM list-price reference table (USD per 1M tokens) for the cost panel.
+export function fetchPricing(): Promise<PricingView> {
+  return getJSON<PricingView>('/pricing');
+}
+
+// Real measured per-plugin LLM spend since process start (list-price cost).
+export function fetchCostUsage(): Promise<CostUsageView> {
+  return getJSON<CostUsageView>('/cost/usage');
 }
 
 export function streamUrl(): string {

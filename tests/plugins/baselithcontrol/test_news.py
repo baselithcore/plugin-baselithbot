@@ -32,7 +32,9 @@ ATOM = b"""<?xml version='1.0'?><feed xmlns='http://www.w3.org/2005/Atom'>
 <link href='https://example.org/x' rel='alternate'/>
 <updated>2026-06-28T08:00:00Z</updated></entry></feed>"""
 
-AI_FEED = FeedSpec(url="https://example.com/feed", source="Test", category=NewsCategory.ai)
+AI_FEED = FeedSpec(
+    url="https://example.com/feed", source="Test", category=NewsCategory.ai
+)
 TECH_FEED = FeedSpec(
     url="https://example.org/feed", source="AtomSrc", category=NewsCategory.tech
 )
@@ -183,7 +185,9 @@ async def test_service_serves_last_good_as_stale_on_refresh_failure() -> None:
     svc._last_good = NewsResponse(
         generated_at=1.0,
         count=1,
-        items=[NewsItem(title="cached", url="https://x/1", source="s", published_at=1.0)],
+        items=[
+            NewsItem(title="cached", url="https://x/1", source="s", published_at=1.0)
+        ],
     )
     stale = await svc._refresh()
     assert stale.stale and not stale.degraded
