@@ -100,6 +100,43 @@ class ControlConfig(BaseSettings):
         description="Ring-buffer capacity for the retained lifecycle timeline.",
     )
 
+    # -- News ticker (public RSS/Atom headlines on the dashboard home) -------
+    news_enabled: bool = Field(
+        default=True,
+        description="Whether the scrolling news ticker fetches and renders feeds.",
+    )
+    news_feeds: list[dict[str, Any]] | None = Field(
+        default=None,
+        description=(
+            "Override feed list: a list of {url, source, category, lang} dicts. "
+            "When unset, a curated default set (AI/tech/cyber) is used. Every URL "
+            "is SSRF-validated at fetch time regardless of source."
+        ),
+    )
+    news_cache_ttl_seconds: float = Field(
+        default=600.0,
+        gt=0,
+        description="How long a fetched news snapshot is cached before refresh.",
+    )
+    news_max_items: int = Field(
+        default=40,
+        ge=1,
+        le=200,
+        description="Maximum merged headlines kept in the ticker snapshot.",
+    )
+    news_fetch_timeout_seconds: float = Field(
+        default=6.0,
+        gt=0,
+        description="Per-feed HTTP timeout when refreshing the news snapshot.",
+    )
+    news_allow_internal: bool = Field(
+        default=False,
+        description=(
+            "Skip the SSRF private/loopback checks for news feeds (dev only — "
+            "lets you point the ticker at a local fixture feed)."
+        ),
+    )
+
     @classmethod
     def from_plugin_config(cls, config: dict[str, Any] | None) -> "ControlConfig":
         """Build from the plugin config block, with env overrides applied."""

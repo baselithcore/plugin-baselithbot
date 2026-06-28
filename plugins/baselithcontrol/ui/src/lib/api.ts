@@ -14,6 +14,7 @@ import type {
   LifecycleOp,
   Me,
   MyTenant,
+  NewsResponse,
   Overview,
   PluginRuntime,
   PluginStatus,
@@ -210,6 +211,11 @@ export async function fetchWidgetData(endpoint: string): Promise<unknown> {
   const res = await fetch(endpoint, { credentials: 'include', headers: authHeaders() });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json();
+}
+
+// Merged, cached public RSS/Atom headlines for the dashboard news ticker.
+export function fetchNews(): Promise<NewsResponse> {
+  return getJSON<NewsResponse>('/news');
 }
 
 export function streamUrl(): string {

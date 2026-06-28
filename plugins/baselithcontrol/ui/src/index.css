@@ -334,11 +334,129 @@ body {
   scrollbar-width: none;
 }
 
+/* ---- News ticker: scrolling AI/tech/cyber headlines on the home ------ *
+ * A single hairline strip. The track is rendered twice and translated by
+ * -50% so the loop is seamless; it pauses on hover/focus so a reader can
+ * click through. Edges are masked for a clean fade-in/out. */
+@keyframes blc-news-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.blc-news {
+  display: flex;
+  align-items: stretch;
+  height: 2.75rem;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+  overflow: hidden;
+}
+.blc-news-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+  padding: 0 0.85rem;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-fg);
+  background: var(--accent);
+}
+.blc-news-stale {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 9999px;
+  background: #f59e0b;
+}
+.blc-news-viewport {
+  position: relative;
+  flex: 1 1 auto;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 2.5%, #000 97.5%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 2.5%, #000 97.5%, transparent);
+}
+.blc-news-track {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  animation: blc-news-marquee var(--blc-news-duration, 60s) linear infinite;
+  will-change: transform;
+}
+.blc-news-group {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+.blc-news:hover .blc-news-track,
+.blc-news:focus-within .blc-news-track {
+  animation-play-state: paused;
+}
+.blc-news-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 1.25rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  border-right: 1px solid var(--border);
+  transition: color 0.14s ease;
+}
+.blc-news-item:hover,
+.blc-news-item:focus-visible {
+  color: var(--text);
+}
+.blc-news-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 9999px;
+  flex: 0 0 auto;
+}
+.blc-news-source {
+  font-weight: 700;
+  color: var(--text);
+}
+.blc-news-item:hover .blc-news-source {
+  color: var(--accent);
+}
+.blc-news-title {
+  font-weight: 400;
+}
+.blc-news-loading {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 1rem;
+  font-size: 0.78rem;
+  color: var(--text-faint);
+}
+
 /* ---- Reduced motion: silence ambient CSS animation (accessibility) ---- */
 /* Component transitions handled by motion's MotionConfig reducedMotion="user". */
 @media (prefers-reduced-motion: reduce) {
   .status-pulse,
   .shimmer::after {
     animation: none;
+  }
+  /* News ticker stops scrolling and becomes a manually-scrollable row;
+     the duplicate track is hidden so content isn't doubled. */
+  .blc-news-track {
+    animation: none;
+  }
+  .blc-news-group[aria-hidden='true'] {
+    display: none;
+  }
+  .blc-news-viewport {
+    overflow-x: auto;
   }
 }

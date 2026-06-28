@@ -190,6 +190,28 @@ export interface ControlEvent {
   data: Record<string, unknown>;
 }
 
+// ── News ticker (mirrors plugins/baselithcontrol/service/news/models.py) ──
+
+export type NewsCategory = 'ai' | 'society' | 'regulation' | 'repos' | 'tech' | 'cyber' | 'general';
+
+export interface NewsItem {
+  title: string;
+  url: string;
+  source: string;
+  category: NewsCategory;
+  published_at: number | null; // epoch seconds
+  lang: string | null;
+}
+
+export interface NewsResponse {
+  api_version: string;
+  generated_at: number;
+  count: number;
+  items: NewsItem[];
+  stale: boolean; // served from the last good snapshot after a refresh failure
+  degraded: boolean; // no items (feeds unreachable or ticker disabled)
+}
+
 // ── CLI bridge (mirrors plugins/baselithcontrol/cli_models.py) ──────────
 
 export interface CliCheck {

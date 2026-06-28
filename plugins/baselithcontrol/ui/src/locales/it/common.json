@@ -198,5 +198,16 @@
   "impersonation.banner": "Stai agendo come {{target}} — impersonificato da {{admin}}",
   "impersonation.stop": "Termina impersonificazione",
   "impersonation.stopping": "Arresto…",
-  "tenant.switch": "Cambia tenant"
+  "tenant.switch": "Cambia tenant",
+  "news.badge": "Notizie",
+  "news.aria": "Ultime notizie su AI, tecnologia e sicurezza",
+  "news.loading": "Caricamento notizie…",
+  "news.stale": "Mostro le ultime notizie disponibili",
+  "news.cat_ai": "IA",
+  "news.cat_tech": "Tecnologia",
+  "news.cat_cyber": "Cybersecurity",
+  "news.cat_regulation": "Normativa",
+  "news.cat_society": "Società",
+  "news.cat_repos": "Open source",
+  "news.cat_general": "Generale"
 }

@@ -15,6 +15,7 @@ import { ControlInsights } from '@/components/ControlInsights';
 import { ResourcePanel } from '@/components/widgets/ResourcePanel';
 import { StatusFilterBar } from '@/components/StatusFilterBar';
 import { SystemSection } from '@/components/SystemSection';
+import { NewsTicker } from '@/components/widgets/NewsTicker';
 import type { PluginCard as Card } from '@/types';
 
 const GRID = 'grid density-grid gap-3';
@@ -188,6 +189,9 @@ export function Overview({ onOpen }: { onOpen: (name: string) => void }) {
       exit="exit"
       className="space-y-3"
     >
+      {/* Scrolling public AI/tech/cyber headlines — self-hides when empty */}
+      <NewsTicker />
+
       {/* Page heading — health verdict + uptime fold inline so the grid leads */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <h1 className="font-display text-[1.35rem] font-bold leading-tight tracking-tight t-primary">

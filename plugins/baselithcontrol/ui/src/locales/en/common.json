@@ -198,5 +198,16 @@
   "impersonation.banner": "Viewing as {{target}} — impersonated by {{admin}}",
   "impersonation.stop": "Stop impersonation",
   "impersonation.stopping": "Stopping…",
-  "tenant.switch": "Switch tenant"
+  "tenant.switch": "Switch tenant",
+  "news.badge": "News",
+  "news.aria": "Latest AI, technology and security headlines",
+  "news.loading": "Loading headlines…",
+  "news.stale": "Showing the last available headlines",
+  "news.cat_ai": "AI",
+  "news.cat_tech": "Technology",
+  "news.cat_cyber": "Cybersecurity",
+  "news.cat_regulation": "Regulation",
+  "news.cat_society": "Society",
+  "news.cat_repos": "Open source",
+  "news.cat_general": "General"
 }
