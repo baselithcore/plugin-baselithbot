@@ -263,11 +263,31 @@ export interface PluginCostRow {
   last_active: number | null;
 }
 
+// Mirrors plugins/auth MyUsageView — the signed-in user's month-to-date LLM
+// spend vs their effective monthly cap (served by /api/auth/me/llm-usage).
+export type UsageStatus = 'ok' | 'warning' | 'blocked';
+
+export interface MyLlmUsage {
+  period: string; // ISO date of the month start, e.g. 2026-06-01
+  currency: string;
+  spend_usd: number;
+  cap_usd: number | null; // null = unlimited (no monthly cap)
+  percent_used: number | null; // 0–100; null when uncapped
+  status: UsageStatus;
+  warn_threshold_pct: number;
+  enforce: boolean;
+}
+
 export interface CostUsageView {
   api_version: string;
   currency: string;
   tracked: boolean;
   since: number;
+  // 'tenant' → caller's own spend; 'global' → all tenants aggregated (admin).
+  scope: 'tenant' | 'global';
+  tenant_id: string | null;
+  // true → durable Postgres ledger (survives restarts); false → in-memory.
+  persistent: boolean;
   total_cost_usd: number;
   total_tokens: number;
   rows: PluginCostRow[];

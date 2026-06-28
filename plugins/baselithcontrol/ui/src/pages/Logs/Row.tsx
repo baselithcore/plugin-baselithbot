@@ -18,7 +18,10 @@ export function LogRow({ entry }: { entry: LogEntry }) {
   const tone = LEVEL_TONE[entry.level] ?? 't-dim';
   return (
     <div className="flex items-start gap-3 border-b brd px-3 py-1.5 font-mono text-[12px] leading-relaxed hover:bg-[var(--surface-inset)]">
-      <span className="shrink-0 tabular-nums t-faint" title={new Date(entry.timestamp * 1000).toISOString()}>
+      <span
+        className="shrink-0 tabular-nums t-faint"
+        title={new Date(entry.timestamp * 1000).toISOString()}
+      >
         {clock(entry.timestamp)}
       </span>
       <span className={`w-16 shrink-0 font-bold uppercase ${tone}`}>{entry.level}</span>

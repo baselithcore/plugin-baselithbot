@@ -48,10 +48,30 @@ export interface ActivityEntry {
   created_at: string | null;
 }
 
+export type UsageStatus = 'ok' | 'warning' | 'blocked';
+
+export interface MyLlmUsage {
+  period: string;
+  currency: string;
+  spend_usd: number;
+  cap_usd: number | null;
+  percent_used: number | null;
+  status: UsageStatus;
+  warn_threshold_pct: number;
+  enforce: boolean;
+}
+
 export function getAccount(token: string): Promise<Account> {
   return fetch(`${API_BASE}/account`, { headers: authHeaders(token), credentials: 'include' }).then(
     handle<Account>
   );
+}
+
+export function getMyLlmUsage(token: string): Promise<MyLlmUsage> {
+  return fetch(`${API_BASE}/llm-usage`, {
+    headers: authHeaders(token),
+    credentials: 'include',
+  }).then(handle<MyLlmUsage>);
 }
 
 export function updateProfile(token: string, fullName: string, username: string): Promise<Account> {

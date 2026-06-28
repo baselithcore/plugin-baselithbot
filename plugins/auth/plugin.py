@@ -71,6 +71,16 @@ class AuthPlugin(RouterPlugin):
         except Exception as e:
             logger.error(f"Failed to initialize auth database: {e}")
 
+        # Per-user LLM cost metering + monthly-cap enforcement. Wraps the shared
+        # LLM token funnel at runtime (no core edit) and attributes spend to the
+        # authenticated user; degrades open if the DB is unavailable. Idempotent.
+        try:
+            from plugins.auth.cost import install_user_cost_tracking
+
+            install_user_cost_tracking()
+        except Exception as e:  # noqa: BLE001 — cost governance is best-effort
+            logger.warning(f"Auth cost tracking not installed: {e}")
+
         # Register AuthManager in DI
         auth_manager = get_auth_manager()
         ServiceRegistry.register(AuthManager, auth_manager)

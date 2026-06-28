@@ -30,51 +30,113 @@ environment_variables:
 - BASELITHCONTROL_GATE_LEVEL
 - BASELITHCONTROL_NEWS_ENABLED
 - BASELITHCONTROL_LOGS_ENABLED
-
-# News ticker sources (dashboard home). Declarative + editable here without
-# touching code — this file is NOT covered by integrity_sha256 (only *.py is),
-# so curating feeds never invalidates the plugin signature. A reload/restart
-# picks up changes. Each entry: url (http/https, SSRF-validated at fetch),
-# source (short label shown in the ticker), category (ai|society|regulation|
-# repos|tech|cyber|general — drives the accent dot), lang (en|it, optional).
-# A deploy override (news_feeds in configs/plugins.yaml or the
-# BASELITHCONTROL_NEWS_FEEDS env JSON) takes precedence over this list; if both
-# are empty the code-level defaults apply. Malformed rows are dropped, not fatal.
 news_feeds:
-# ── AI: frontier labs, research & agentic AI ──────────────────────────────
-- {url: 'https://openai.com/news/rss.xml', source: 'OpenAI', category: ai, lang: en}
-- {url: 'https://deepmind.google/blog/rss.xml', source: 'Google DeepMind', category: ai, lang: en}
-# Anthropic publishes no official RSS — surface Anthropic/Claude coverage via a
-# Google News topic query (aggregates authoritative outlets, refreshed live).
-- {url: 'https://news.google.com/rss/search?q=%22Anthropic%22+OR+%22Claude+AI%22&hl=en-US&gl=US&ceid=US:en', source: 'Anthropic', category: ai, lang: en}
-- {url: 'https://research.google/blog/rss/', source: 'Google Research', category: ai, lang: en}
-- {url: 'https://blogs.nvidia.com/blog/category/deep-learning/feed/', source: 'NVIDIA AI', category: ai, lang: en}
-- {url: 'https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss', source: 'IEEE Spectrum', category: ai, lang: en}
-- {url: 'https://techcrunch.com/category/artificial-intelligence/feed/', source: 'TechCrunch AI', category: ai, lang: en}
-# agentic AI specifically (autonomous agents, tool-use, agent frameworks)
-- {url: 'https://www.latent.space/feed', source: 'Latent Space', category: ai, lang: en}
-- {url: 'https://simonwillison.net/atom/everything/', source: 'Simon Willison', category: ai, lang: en}
-- {url: 'https://medium.com/feed/llamaindex-blog', source: 'LlamaIndex', category: ai, lang: en}
-# ── Society & work impact — AI-focused (not generic tech) ─────────────────
-- {url: 'https://www.theguardian.com/technology/artificialintelligenceai/rss', source: 'The Guardian AI', category: society, lang: en}
-- {url: 'https://www.wired.com/feed/tag/ai/latest/rss', source: 'Wired AI', category: society, lang: en}
-- {url: 'https://venturebeat.com/category/ai/feed/', source: 'VentureBeat AI', category: society, lang: en}
-- {url: 'https://www.technologyreview.com/topic/artificial-intelligence/feed/', source: 'MIT Tech Review AI', category: society, lang: en}
-# ── Regulation & policy ───────────────────────────────────────────────────
-- {url: 'https://digital-strategy.ec.europa.eu/en/rss.xml', source: 'EU Digital Strategy', category: regulation, lang: en}
-- {url: 'https://www.agendadigitale.eu/feed/', source: 'Agenda Digitale', category: regulation, lang: it}
-# ── Open source & repos ───────────────────────────────────────────────────
-- {url: 'https://huggingface.co/blog/feed.xml', source: 'Hugging Face', category: repos, lang: en}
-- {url: 'https://github.blog/feed/', source: 'GitHub Blog', category: repos, lang: en}
-- {url: 'https://opensource.org/feed', source: 'Open Source Initiative', category: repos, lang: en}
-# ── General technology ────────────────────────────────────────────────────
-- {url: 'https://feeds.arstechnica.com/arstechnica/index', source: 'Ars Technica', category: tech, lang: en}
-- {url: 'https://www.theverge.com/rss/index.xml', source: 'The Verge', category: tech, lang: en}
-- {url: 'https://www.wired.com/feed/rss', source: 'Wired', category: tech, lang: en}
-# ── Cybersecurity ─────────────────────────────────────────────────────────
-- {url: 'https://feeds.feedburner.com/TheHackersNews', source: 'The Hacker News', category: cyber, lang: en}
-- {url: 'https://www.bleepingcomputer.com/feed/', source: 'BleepingComputer', category: cyber, lang: en}
-- {url: 'https://krebsonsecurity.com/feed/', source: 'Krebs on Security', category: cyber, lang: en}
-- {url: 'https://www.cisa.gov/cybersecurity-advisories/all.xml', source: 'CISA', category: cyber, lang: en}
-- {url: 'https://www.schneier.com/feed/atom/', source: 'Schneier on Security', category: cyber, lang: en}
-integrity_sha256: 922edde1d880d82108173e57992ac9382553e358e470c759a508e1f5b6e4bb93
+- url: https://openai.com/news/rss.xml
+  source: OpenAI
+  category: ai
+  lang: en
+- url: https://deepmind.google/blog/rss.xml
+  source: Google DeepMind
+  category: ai
+  lang: en
+- url: https://news.google.com/rss/search?q=%22Anthropic%22+OR+%22Claude+AI%22&hl=en-US&gl=US&ceid=US:en
+  source: Anthropic
+  category: ai
+  lang: en
+- url: https://research.google/blog/rss/
+  source: Google Research
+  category: ai
+  lang: en
+- url: https://blogs.nvidia.com/blog/category/deep-learning/feed/
+  source: NVIDIA AI
+  category: ai
+  lang: en
+- url: https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss
+  source: IEEE Spectrum
+  category: ai
+  lang: en
+- url: https://techcrunch.com/category/artificial-intelligence/feed/
+  source: TechCrunch AI
+  category: ai
+  lang: en
+- url: https://www.latent.space/feed
+  source: Latent Space
+  category: ai
+  lang: en
+- url: https://simonwillison.net/atom/everything/
+  source: Simon Willison
+  category: ai
+  lang: en
+- url: https://medium.com/feed/llamaindex-blog
+  source: LlamaIndex
+  category: ai
+  lang: en
+- url: https://www.theguardian.com/technology/artificialintelligenceai/rss
+  source: The Guardian AI
+  category: society
+  lang: en
+- url: https://www.wired.com/feed/tag/ai/latest/rss
+  source: Wired AI
+  category: society
+  lang: en
+- url: https://venturebeat.com/category/ai/feed/
+  source: VentureBeat AI
+  category: society
+  lang: en
+- url: https://www.technologyreview.com/topic/artificial-intelligence/feed/
+  source: MIT Tech Review AI
+  category: society
+  lang: en
+- url: https://digital-strategy.ec.europa.eu/en/rss.xml
+  source: EU Digital Strategy
+  category: regulation
+  lang: en
+- url: https://www.agendadigitale.eu/feed/
+  source: Agenda Digitale
+  category: regulation
+  lang: it
+- url: https://huggingface.co/blog/feed.xml
+  source: Hugging Face
+  category: repos
+  lang: en
+- url: https://github.blog/feed/
+  source: GitHub Blog
+  category: repos
+  lang: en
+- url: https://opensource.org/feed
+  source: Open Source Initiative
+  category: repos
+  lang: en
+- url: https://feeds.arstechnica.com/arstechnica/index
+  source: Ars Technica
+  category: tech
+  lang: en
+- url: https://www.theverge.com/rss/index.xml
+  source: The Verge
+  category: tech
+  lang: en
+- url: https://www.wired.com/feed/rss
+  source: Wired
+  category: tech
+  lang: en
+- url: https://feeds.feedburner.com/TheHackersNews
+  source: The Hacker News
+  category: cyber
+  lang: en
+- url: https://www.bleepingcomputer.com/feed/
+  source: BleepingComputer
+  category: cyber
+  lang: en
+- url: https://krebsonsecurity.com/feed/
+  source: Krebs on Security
+  category: cyber
+  lang: en
+- url: https://www.cisa.gov/cybersecurity-advisories/all.xml
+  source: CISA
+  category: cyber
+  lang: en
+- url: https://www.schneier.com/feed/atom/
+  source: Schneier on Security
+  category: cyber
+  lang: en
+integrity_sha256: a4727033d2df580709bbd97d9f6c9ade62d247468b4e2fe8f5daadb96797959e

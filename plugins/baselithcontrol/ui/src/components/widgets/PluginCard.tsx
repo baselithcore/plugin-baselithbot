@@ -137,7 +137,25 @@ export function PluginCard({ card, onOpen, canControl }: Props) {
             </div>
           </div>
         </div>
-        <HealthBadge state={card.state} />
+        {/* Status + cost stack into the header's right column. The left column
+            (icon + name + version) is taller than a lone status pill, so the
+            cost KPI fills existing slack — it never adds a row to the card,
+            keeping every card in a grid row the same height. */}
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <HealthBadge state={card.state} />
+          {cost && cost.cost_usd > 0 && (
+            <span
+              className="inline-flex items-center gap-1 rounded-md border border-[var(--accent-border)] bg-[var(--accent-soft)] px-1.5 py-0.5 text-[10px] font-medium tabular-nums t-accent"
+              title={t('card.llm_cost_hint', {
+                tokens: formatTokens(cost.total_tokens),
+                calls: cost.calls,
+              })}
+            >
+              <DollarSign className="h-3 w-3" />
+              {formatUsd(cost.cost_usd)}
+            </span>
+          )}
+        </div>
       </button>
 
       <p className="line-clamp-2 min-h-[2.5rem] text-[12px] leading-relaxed t-dim">
@@ -158,18 +176,6 @@ export function PluginCard({ card, onOpen, canControl }: Props) {
         >
           {t(`card.tenancy_${card.tenancy}`)}
         </span>
-        {cost && cost.cost_usd > 0 && (
-          <span
-            className="inline-flex items-center gap-1 rounded-md border border-[var(--accent-border)] bg-[var(--accent-soft)] px-1.5 py-0.5 t-accent"
-            title={t('card.llm_cost_hint', {
-              tokens: formatTokens(cost.total_tokens),
-              calls: cost.calls,
-            })}
-          >
-            <DollarSign className="h-3 w-3" />
-            {formatUsd(cost.cost_usd)}
-          </span>
-        )}
         {standalone && (
           <a
             href={standalone}

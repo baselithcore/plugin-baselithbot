@@ -236,6 +236,14 @@
   "cost.col_output": "Output / 1M",
   "cost.unknown_note": "Unknown models fall back to {{input}} input / {{output}} output per 1M tokens, so missing entries stay visible.",
   "cost.usage_disclaimer": "Real measured LLM usage since process start, attributed to the plugin that served each request. Cost is a list-price estimate (the runtime does not expose provider-billed cost); 'unbound' groups calls not tied to a plugin request.",
+  "cost.scope_global": "All users · platform-wide",
+  "cost.scope_tenant": "Your usage",
+  "usage.title": "LLM usage this month",
+  "usage.untracked": "Usage tracking unavailable.",
+  "usage.unlimited": "No monthly cap",
+  "usage.status_ok": "Within budget",
+  "usage.status_warning": "Approaching limit",
+  "usage.status_blocked": "Limit reached",
   "cost.total_spend": "Total spend",
   "cost.total_tokens": "Total tokens",
   "cost.tracked_plugins": "Plugins",
@@ -249,5 +257,7 @@
   "card.llm_cost_hint": "LLM spend: {{tokens}} tokens across {{calls}} calls (list-price estimate)",
   "detail.llm_cost": "LLM cost",
   "detail.cost_summary": "{{tokens}} tokens · {{calls}} calls",
-  "detail.cost_note": "Measured token usage since process start; cost is a list-price estimate."
+  "detail.cost_note": "Measured token usage since process start; cost is a list-price estimate.",
+  "a11y.skip": "Skip to main content",
+  "nav.docs": "Documentation"
 }

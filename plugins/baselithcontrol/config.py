@@ -149,6 +149,21 @@ class ControlConfig(BaseSettings):
         description="Ring-buffer capacity for the retained application-log tail.",
     )
 
+    # -- LLM cost persistence (durable per-(tenant,plugin,model) spend) ------
+    persist_costs: bool = Field(
+        default=True,
+        description=(
+            "Persist measured per-plugin LLM spend to Postgres so it survives "
+            "restarts and sums correctly across workers. Degrades to an "
+            "in-memory ledger (resets on restart) when no database is reachable."
+        ),
+    )
+    cost_flush_seconds: float = Field(
+        default=15.0,
+        ge=2.0,
+        description="How often the in-memory cost buffer is flushed to Postgres.",
+    )
+
     @classmethod
     def from_plugin_config(cls, config: dict[str, Any] | None) -> "ControlConfig":
         """Build from the plugin config block, with env overrides applied."""

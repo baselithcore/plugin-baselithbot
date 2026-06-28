@@ -326,12 +326,24 @@ class CostUsageView(BaseModel):
     tied to a plugin HTTP request. Cost is a list-price estimate (the core layer
     does not expose provider-billed cost). ``tracked`` is false if the wrapper
     could not be installed.
+
+    Usage is tenant-scoped: ``scope="tenant"`` returns only the caller's own
+    spend, while ``scope="global"`` (admins only) aggregates every tenant's
+    spend — the platform-wide total shown in the System Console cost menu.
     """
 
     api_version: str = API_VERSION
     currency: str = "USD"
     tracked: bool = True
     since: float = 0.0
+    # ``tenant`` → caller's own usage; ``global`` → every tenant aggregated
+    # (admin platform-wide view). ``tenant_id`` is the scoped tenant, or ``None``
+    # for the global view.
+    scope: str = "tenant"
+    tenant_id: str | None = None
+    # True when figures come from the durable Postgres ledger (survive restarts
+    # and sum across workers); False when from the in-memory fallback.
+    persistent: bool = False
     total_cost_usd: float = 0.0
     total_tokens: int = 0
     rows: list[PluginCostRow] = Field(default_factory=list)

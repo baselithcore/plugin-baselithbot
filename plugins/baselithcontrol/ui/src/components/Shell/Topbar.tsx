@@ -5,18 +5,16 @@ import {
   ScrollText,
   TerminalSquare,
   FileText,
+  BookOpen,
   Sun,
   Moon,
-  Shield,
-  User,
-  LogOut,
 } from 'lucide-react';
 import { setLanguage } from '@/i18n';
-import { logout } from '@/lib/api';
 import { spring } from '@/lib/motion';
 import { BrandMark } from '@/components/widgets/BrandMark';
 import { Clock } from '@/components/Shell/Clock';
 import { TenantSwitcher } from '@/components/Shell/TenantSwitcher';
+import { UserMenu } from '@/components/Shell/UserMenu';
 import { useControlStore } from '@/store/useControlStore';
 import { useCanAccessTab } from '@/hooks/useAccess';
 import { useTheme } from '@/store/useTheme';
@@ -27,6 +25,9 @@ const NAV = [
   { id: 'logs', icon: FileText, label: 'nav.logs' },
   { id: 'system', icon: TerminalSquare, label: 'nav.system' },
 ] as const;
+
+// Official framework documentation — opens in a new, isolated tab.
+const DOCS_URL = 'https://docs.baselithcore.xyz';
 
 export function Topbar() {
   const { t, i18n } = useTranslation();
@@ -62,10 +63,19 @@ export function Topbar() {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[var(--accent-soft)] accent-ring">
             <BrandMark className="h-4 w-4 t-accent" />
           </span>
-          {/* Brand wordmark — product name (untranslated) with an accent dot
-              echoing the logo mark, in the same display font. */}
-          <span className="hidden font-display text-[15px] font-bold tracking-tight t-primary sm:block">
-            BaselithControl<span className="t-accent">.</span>
+          {/* Brand lockup — product wordmark (untranslated) with an accent dot
+              echoing the logo mark, stacked over a localized descriptor so the
+              brand says what it is at a glance. */}
+          <span className="hidden flex-col leading-none sm:flex">
+            <span className="font-display text-[15px] font-bold tracking-tight t-primary">
+              BaselithControl<span className="t-accent">.</span>
+            </span>
+            <span
+              aria-hidden
+              className="mt-1 text-left text-[10px] font-medium uppercase tracking-wide t-dim"
+            >
+              {t('app.title')}
+            </span>
           </span>
         </button>
 
@@ -138,6 +148,18 @@ export function Topbar() {
             ))}
           </div>
 
+          {/* Official docs — external reference, new tab + noopener */}
+          <a
+            href={DOCS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t('nav.docs')}
+            title={t('nav.docs')}
+            className="control-icon-button"
+          >
+            <BookOpen className="h-4 w-4" />
+          </a>
+
           {/* Theme */}
           <button
             type="button"
@@ -149,39 +171,8 @@ export function Topbar() {
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </button>
 
-          {/* User */}
-          {me && me.authenticated && (
-            <div className="flex shrink-0 items-center gap-2 rounded-lg border brd bg-[var(--surface-inset)] px-2 py-1.5">
-              <span
-                className={`flex h-6 w-6 items-center justify-center rounded-md ${
-                  me.is_admin ? 'bg-[var(--accent-soft)] t-accent' : 'surf t-dim'
-                }`}
-              >
-                {me.is_admin ? (
-                  <Shield className="h-3.5 w-3.5" />
-                ) : (
-                  <User className="h-3.5 w-3.5" />
-                )}
-              </span>
-              <div className="hidden text-left leading-tight lg:block">
-                <div className="text-[12px] font-semibold t-primary">
-                  {me.display_name || me.username || me.email || me.user_id}
-                </div>
-                <div className="text-[10px] font-medium t-faint">
-                  {me.is_admin ? t('access.admin') : t('access.read_only')}
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => logout()}
-                aria-label={t('access.logout')}
-                title={t('access.logout')}
-                className="control-icon-button ml-0.5"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
-            </div>
-          )}
+          {/* User — name opens a popover with monthly LLM usage + logout */}
+          {me && me.authenticated && <UserMenu me={me} />}
         </div>
       </div>
     </header>

@@ -370,3 +370,37 @@ CREATE INDEX IF NOT EXISTS idx_auth_user_tenants_tenant ON auth_user_tenants(ten
 -- At most one default tenant per user.
 CREATE UNIQUE INDEX IF NOT EXISTS uq_auth_user_tenants_default
     ON auth_user_tenants(user_id) WHERE is_default;
+
+-- =============================================================================
+-- LLM COST GOVERNANCE (additive; safe to run repeatedly)
+-- A monthly per-user spend cap, resolvable globally, per group, or per user.
+-- The effective cap is the MOST SPECIFIC that is set: user > group > global
+-- (NULL inherits the level below). Spend is metered per user per calendar month.
+-- All money is stored as integer MICRO-USD (1 USD = 1_000_000) for exact maths.
+-- =============================================================================
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS monthly_cap_micros BIGINT;
+ALTER TABLE auth_groups ADD COLUMN IF NOT EXISTS monthly_cap_micros BIGINT;
+
+-- Singleton row: global default cap + the warn threshold + enforcement toggle.
+CREATE TABLE IF NOT EXISTS auth_cost_policy (
+    id SMALLINT PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+    monthly_cap_micros BIGINT,                 -- NULL = unlimited by default
+    warn_threshold_pct SMALLINT NOT NULL DEFAULT 80
+        CHECK (warn_threshold_pct BETWEEN 1 AND 100),
+    enforce BOOLEAN NOT NULL DEFAULT TRUE,     -- hard-block at 100% when true
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+INSERT INTO auth_cost_policy (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+
+-- Per-user, per-month usage aggregate. `period` is the first day of the month.
+CREATE TABLE IF NOT EXISTS auth_llm_usage (
+    user_id UUID NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+    period DATE NOT NULL,                       -- e.g. 2026-06-01
+    spend_micros BIGINT NOT NULL DEFAULT 0,
+    prompt_tokens BIGINT NOT NULL DEFAULT 0,
+    completion_tokens BIGINT NOT NULL DEFAULT 0,
+    request_count INTEGER NOT NULL DEFAULT 0,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    PRIMARY KEY (user_id, period)
+);
+CREATE INDEX IF NOT EXISTS idx_auth_llm_usage_period ON auth_llm_usage(period);

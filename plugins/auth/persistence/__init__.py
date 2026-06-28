@@ -14,6 +14,7 @@ from core.di.container import ServiceRegistry
 from core.observability.logging import get_logger
 from plugins.auth.config import AuthConfig
 from plugins.auth.persistence._apikeys import ApiKeyPersistenceMixin
+from plugins.auth.persistence._cost_governance import CostGovernanceMixin
 from plugins.auth.persistence._history import HistoryPersistenceMixin
 from plugins.auth.persistence._recovery import RecoveryPersistenceMixin
 from plugins.auth.persistence._security_policy import SecurityPolicyMixin
@@ -35,6 +36,7 @@ class AuthPersistence(
     ApiKeyPersistenceMixin,
     SsoPersistenceMixin,
     SecurityPolicyMixin,
+    CostGovernanceMixin,
     TenancyPersistenceMixin,
 ):
     """PostgreSQL persistence for authentication data."""

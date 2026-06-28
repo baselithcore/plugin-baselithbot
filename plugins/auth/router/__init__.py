@@ -11,6 +11,7 @@ from fastapi import APIRouter
 from plugins.auth.router._account_routes import router as _account_router
 from plugins.auth.router._apikey_routes import router as _apikey_router
 from plugins.auth.router._auth_routes import router as _auth_router
+from plugins.auth.router._cost_routes import router as _cost_self_router
 from plugins.auth.router._impersonation_routes import router as _impersonation_router
 from plugins.auth.router._mfa_enroll_routes import router as _mfa_enroll_router
 from plugins.auth.router._recovery_routes import router as _recovery_router
@@ -30,6 +31,7 @@ router.include_router(_account_router)
 router.include_router(_recovery_router)
 router.include_router(_webauthn_router)
 router.include_router(_self_router)
+router.include_router(_cost_self_router)
 router.include_router(_tenant_router)
 router.include_router(_apikey_router)
 router.include_router(_sso_admin_router)

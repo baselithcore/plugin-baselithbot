@@ -17,6 +17,7 @@ import {
   UserCog,
   Globe,
   Building2,
+  CreditCard,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuthContext';
@@ -30,9 +31,11 @@ import GroupsTab from '../tabs/GroupsTab';
 import AccessTab from '../tabs/AccessTab';
 import SsoTab from '../tabs/SsoTab';
 import TenantsTab from '../tabs/TenantsTab';
+import BudgetTab from '../tabs/BudgetTab';
 import LanguageSwitcher from '../ui/LanguageSwitcher';
 import TenantSwitcher from '../ui/TenantSwitcher';
 import AuthLogo from '../ui/AuthLogo';
+import UsageOverlay from '../account/UsageOverlay';
 import './AdminPanel.css';
 
 const AdminPanel = () => {
@@ -52,6 +55,7 @@ const AdminPanel = () => {
 
   return (
     <div className="admin-layout">
+      <UsageOverlay />
       {/* Background glow + drifting aurora */}
       <div className="admin-bg-glow" />
       <div className="aurora" aria-hidden="true" />
@@ -121,6 +125,13 @@ const AdminPanel = () => {
               <Building2 size={16} />
               <span>{t('nav.tenants')}</span>
             </button>
+            <button
+              className={`admin-tab ${activeTab === 'budget' ? 'active' : ''}`}
+              onClick={() => setActiveTab('budget')}
+            >
+              <CreditCard size={16} />
+              <span>{t('nav.budget')}</span>
+            </button>
           </nav>
         </div>
 
@@ -163,6 +174,7 @@ const AdminPanel = () => {
         {activeTab === 'audit' && <AuditTab />}
         {activeTab === 'sso' && <SsoTab />}
         {activeTab === 'tenants' && <TenantsTab />}
+        {activeTab === 'budget' && <BudgetTab />}
       </main>
 
       {/* Footer */}

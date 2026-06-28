@@ -15,6 +15,7 @@ import type {
   LogsView,
   CostUsageView,
   Me,
+  MyLlmUsage,
   MyTenant,
   NewsResponse,
   Overview,
@@ -100,6 +101,25 @@ export async function fetchMyTenants(): Promise<MyTenant[]> {
     return (await res.json()) as MyTenant[];
   } catch {
     return [];
+  }
+}
+
+/**
+ * The signed-in user's month-to-date LLM spend vs their effective monthly cap
+ * (from /api/auth/me/llm-usage — the auth plugin owns cost governance). Lives
+ * under /api/auth, not the control router. Fails open (null) so the user menu
+ * simply omits the usage gauge when auth is absent or cost tracking is off.
+ */
+export async function fetchMyLlmUsage(): Promise<MyLlmUsage | null> {
+  try {
+    const res = await fetch('/api/auth/me/llm-usage', {
+      credentials: 'include',
+      headers: authHeaders(),
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as MyLlmUsage;
+  } catch {
+    return null;
   }
 }
 

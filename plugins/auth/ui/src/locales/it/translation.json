@@ -100,7 +100,8 @@
     "version": "BaselithAuth v1.0",
     "myAccount": "Il mio account",
     "sso": "SSO",
-    "tenants": "Tenant"
+    "tenants": "Tenant",
+    "budget": "Budget"
   },
   "groups": {
     "title": "Gruppi",
@@ -540,7 +541,8 @@
       "security": "Sicurezza",
       "sessions": "Sessioni e dispositivi",
       "activity": "Attività di sicurezza",
-      "apikeys": "Chiavi API"
+      "apikeys": "Chiavi API",
+      "usage": "Consumo LLM"
     },
     "profile": {
       "saved": "Profilo aggiornato.",
@@ -626,6 +628,18 @@
       "lastUsed": "ultimo uso {{date}}",
       "confirmRevoke": "Revocare questa chiave API? Le applicazioni che la usano smetteranno di funzionare.",
       "revoke": "Revoca chiave"
+    },
+    "usage": {
+      "loading": "Caricamento consumo…",
+      "title": "Consumo LLM",
+      "subtitle": "La tua spesa LLM del mese corrente rispetto al tuo limite mensile.",
+      "blocked": "Hai raggiunto il limite mensile. Le nuove richieste AI sono sospese fino al mese prossimo o finché un admin non alza il tuo tetto.",
+      "over": "Hai superato il limite mensile.",
+      "warning": "Hai usato il {{pct}}% del tuo limite mensile.",
+      "uncapped": "nessun limite",
+      "of_cap": "di {{cap}}",
+      "progress": "{{pct}}% del limite mensile usato",
+      "reset_note": "Si azzera il 1° di ogni mese (periodo corrente: {{period}})."
     }
   },
   "sso": {
@@ -727,5 +741,33 @@
     "suspended": "Sospeso",
     "default": "Predefinito",
     "switcherTitle": "Cambia tenant"
+  },
+  "budget": {
+    "title": "Governance Spesa LLM",
+    "description": "Imposta limiti di spesa LLM mensili globali, per gruppo o per utente, e controlla il consumo di ciascun utente.",
+    "saved": "Policy salvata",
+    "cap_saved": "Tetto aggiornato",
+    "confirm_reset": "Azzerare il consumo di questo utente per il mese corrente?",
+    "global_policy": "Policy predefinita globale",
+    "default_cap": "Tetto mensile predefinito (USD)",
+    "unlimited": "Illimitato",
+    "warn_threshold": "Avvisa al (%)",
+    "enforce": "Blocca al 100%",
+    "save": "Salva",
+    "policy_note": "I tetti per utente e per gruppo sovrascrivono questo default (vince il più specifico). Con l'enforcement attivo, le chiamate sono negate quando un utente raggiunge il 100%.",
+    "col_user": "Utente",
+    "col_spend": "Spesa (mese)",
+    "col_status": "Stato",
+    "col_user_cap": "Tetto utente (USD)",
+    "col_actions": "Azioni",
+    "uncapped": "Nessun tetto",
+    "inherit": "Eredita",
+    "set": "Imposta",
+    "reset": "Azzera consumo",
+    "empty": "Nessun consumo o tetto ancora. La spesa appare qui quando gli utenti effettuano chiamate LLM."
+  },
+  "overlay": {
+    "warning": "{{pct}}% del budget AI mensile utilizzato",
+    "blocked": "Budget AI mensile raggiunto — le richieste AI sono sospese. Si azzera il {{period}}."
   }
 }

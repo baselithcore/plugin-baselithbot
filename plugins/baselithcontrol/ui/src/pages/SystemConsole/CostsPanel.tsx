@@ -45,13 +45,29 @@ export function CostsPanel() {
     };
   }, []);
 
-  if (error) return <div className="glass border-rose-500/25 p-6 text-sm text-rose-500">{error}</div>;
-  if (!usage) return <div className="glass p-12 text-center text-[13px] t-dim">{t('cost.loading')}</div>;
+  if (error)
+    return <div className="glass border-rose-500/25 p-6 text-sm text-rose-500">{error}</div>;
+  if (!usage)
+    return <div className="glass p-12 text-center text-[13px] t-dim">{t('cost.loading')}</div>;
 
   const rows = usage.rows;
 
   return (
     <div className="space-y-5">
+      {/* Scope: whose spend these figures cover (own tenant vs all users) */}
+      <div className="flex items-center justify-between gap-3">
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-semibold uppercase tracking-wide ${
+            usage.scope === 'global'
+              ? 'border-[var(--accent-border)] bg-[var(--accent-soft)] t-accent'
+              : 'brd t-dim'
+          }`}
+        >
+          <DollarSign className="h-3.5 w-3.5" />
+          {usage.scope === 'global' ? t('cost.scope_global') : t('cost.scope_tenant')}
+        </span>
+      </div>
+
       {/* Disclaimer — measured tokens, list-price cost */}
       <div className="flex items-start gap-2.5 rounded-lg border border-[var(--accent-border)] bg-[var(--accent-soft)] p-3 text-[12.5px] t-dim">
         <Info className="mt-0.5 h-4 w-4 shrink-0 t-accent" />
@@ -63,10 +79,15 @@ export function CostsPanel() {
         {[
           { label: t('cost.total_spend'), value: usd(usage.total_cost_usd), accent: true },
           { label: t('cost.total_tokens'), value: tokens(usage.total_tokens) },
-          { label: t('cost.tracked_plugins'), value: String(new Set(rows.map((r) => r.plugin)).size) },
+          {
+            label: t('cost.tracked_plugins'),
+            value: String(new Set(rows.map((r) => r.plugin)).size),
+          },
         ].map((kpi) => (
           <div key={kpi.label} className="bg-[var(--surface-1)] p-4">
-            <div className="text-[11px] font-medium uppercase tracking-wide t-faint">{kpi.label}</div>
+            <div className="text-[11px] font-medium uppercase tracking-wide t-faint">
+              {kpi.label}
+            </div>
             <div
               className={`font-display text-2xl font-bold tabular-nums ${kpi.accent ? 't-accent' : 't-primary'}`}
             >
@@ -96,15 +117,22 @@ export function CostsPanel() {
               key={`${r.plugin}:${r.model}`}
               className="grid grid-cols-[1.4fr_1.4fr_auto_auto_auto] items-center gap-x-3 border-b brd px-4 py-2 text-[13px] last:border-0 hover:bg-[var(--surface-inset)]"
             >
-              <span className={`truncate font-semibold ${r.plugin === 'unbound' ? 't-faint' : 't-primary'}`}>
+              <span
+                className={`truncate font-semibold ${r.plugin === 'unbound' ? 't-faint' : 't-primary'}`}
+              >
                 {r.plugin}
               </span>
               <span className="truncate font-mono text-[12px] t-dim">{r.model}</span>
               <span className="text-right tabular-nums t-dim">{r.calls}</span>
-              <span className="text-right tabular-nums t-dim" title={`${r.prompt_tokens} in / ${r.completion_tokens} out`}>
+              <span
+                className="text-right tabular-nums t-dim"
+                title={`${r.prompt_tokens} in / ${r.completion_tokens} out`}
+              >
                 {tokens(r.total_tokens)}
               </span>
-              <span className="text-right font-semibold tabular-nums t-primary">{usd(r.cost_usd)}</span>
+              <span className="text-right font-semibold tabular-nums t-primary">
+                {usd(r.cost_usd)}
+              </span>
             </div>
           ))
         )}

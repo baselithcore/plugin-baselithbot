@@ -16,7 +16,12 @@ export function Logs() {
   const [paused, setPaused] = useState(false);
 
   const query = useMemo(
-    () => ({ limit: 500, level: level || undefined, plugin: plugin || undefined, q: q || undefined }),
+    () => ({
+      limit: 500,
+      level: level || undefined,
+      plugin: plugin || undefined,
+      q: q || undefined,
+    }),
     [level, plugin, q]
   );
   const { data, loading, error } = useLogs(query, paused);
@@ -25,7 +30,13 @@ export function Logs() {
   const plugins = data?.plugins ?? [];
 
   return (
-    <motion.div variants={pageVariants} initial="hidden" animate="show" exit="exit" className="space-y-4">
+    <motion.div
+      variants={pageVariants}
+      initial="hidden"
+      animate="show"
+      exit="exit"
+      className="space-y-4"
+    >
       <div className="flex flex-col gap-1 border-b brd pb-4">
         <h1 className="font-display text-[1.6rem] font-bold leading-tight tracking-tight t-primary">
           {t('logs.title')}

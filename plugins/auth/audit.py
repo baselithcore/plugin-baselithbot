@@ -50,6 +50,12 @@ class AuditAction:
 
     MFA_POLICY_CHANGED = "security.mfa_policy_changed"
 
+    # LLM cost governance
+    COST_POLICY_CHANGED = "cost.policy_changed"
+    COST_USER_CAP_CHANGED = "cost.user_cap_changed"
+    COST_GROUP_CAP_CHANGED = "cost.group_cap_changed"
+    COST_USAGE_RESET = "cost.usage_reset"
+
     TENANT_CREATED = "tenant.created"
     TENANT_DELETED = "tenant.deleted"
     TENANT_PURGED = "tenant.purged"

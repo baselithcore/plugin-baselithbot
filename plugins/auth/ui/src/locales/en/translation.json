@@ -100,7 +100,8 @@
     "version": "BaselithAuth v1.0",
     "myAccount": "My account",
     "sso": "SSO",
-    "tenants": "Tenants"
+    "tenants": "Tenants",
+    "budget": "Budget"
   },
   "groups": {
     "title": "Groups",
@@ -540,7 +541,8 @@
       "security": "Security",
       "sessions": "Sessions & devices",
       "activity": "Security activity",
-      "apikeys": "API keys"
+      "apikeys": "API keys",
+      "usage": "LLM Usage"
     },
     "profile": {
       "saved": "Profile updated.",
@@ -626,6 +628,18 @@
       "lastUsed": "last used {{date}}",
       "confirmRevoke": "Revoke this API key? Applications using it will stop working.",
       "revoke": "Revoke key"
+    },
+    "usage": {
+      "loading": "Loading usage…",
+      "title": "LLM Usage",
+      "subtitle": "Your month-to-date LLM spend against your monthly limit.",
+      "blocked": "You've reached your monthly limit. New AI requests are paused until next month or an admin raises your cap.",
+      "over": "You've passed your monthly limit.",
+      "warning": "You've used {{pct}}% of your monthly limit.",
+      "uncapped": "no limit",
+      "of_cap": "of {{cap}}",
+      "progress": "{{pct}}% of monthly limit used",
+      "reset_note": "Resets on the 1st of each month (current period: {{period}})."
     }
   },
   "sso": {
@@ -727,5 +741,33 @@
     "suspended": "Suspended",
     "default": "Default",
     "switcherTitle": "Switch tenant"
+  },
+  "budget": {
+    "title": "LLM Spend Governance",
+    "description": "Set monthly LLM spending limits globally, per group, or per user, and review each user's usage.",
+    "saved": "Policy saved",
+    "cap_saved": "Cap updated",
+    "confirm_reset": "Reset this user's usage for the current month?",
+    "global_policy": "Global default policy",
+    "default_cap": "Default monthly cap (USD)",
+    "unlimited": "Unlimited",
+    "warn_threshold": "Warn at (%)",
+    "enforce": "Block at 100%",
+    "save": "Save",
+    "policy_note": "User and group caps override this default (most specific wins). When enforcement is on, calls are denied once a user reaches 100%.",
+    "col_user": "User",
+    "col_spend": "Spend (month)",
+    "col_status": "Status",
+    "col_user_cap": "User cap (USD)",
+    "col_actions": "Actions",
+    "uncapped": "No cap",
+    "inherit": "Inherit",
+    "set": "Set",
+    "reset": "Reset usage",
+    "empty": "No usage or caps yet. Spend appears here as users make LLM calls."
+  },
+  "overlay": {
+    "warning": "{{pct}}% of your monthly AI budget used",
+    "blocked": "Monthly AI budget reached — AI requests are paused. Resets {{period}}."
   }
 }

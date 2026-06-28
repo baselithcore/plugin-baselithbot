@@ -236,6 +236,14 @@
   "cost.col_output": "Output / 1M",
   "cost.unknown_note": "I modelli sconosciuti usano un fallback di {{input}} input / {{output}} output per 1M token, così le voci mancanti restano visibili.",
   "cost.usage_disclaimer": "Consumo LLM reale misurato dall'avvio del processo, attribuito al plugin che ha servito ogni richiesta. Il costo è una stima a prezzo di listino (il runtime non espone il costo fatturato dal provider); 'unbound' raggruppa le chiamate non legate a una richiesta di plugin.",
+  "cost.scope_global": "Tutti gli utenti · intera piattaforma",
+  "cost.scope_tenant": "Il tuo utilizzo",
+  "usage.title": "Consumo LLM questo mese",
+  "usage.untracked": "Tracciamento del consumo non disponibile.",
+  "usage.unlimited": "Nessun limite mensile",
+  "usage.status_ok": "Entro il budget",
+  "usage.status_warning": "Vicino al limite",
+  "usage.status_blocked": "Limite raggiunto",
   "cost.total_spend": "Spesa totale",
   "cost.total_tokens": "Token totali",
   "cost.tracked_plugins": "Plugin",
@@ -249,5 +257,7 @@
   "card.llm_cost_hint": "Spesa LLM: {{tokens}} token su {{calls}} chiamate (stima a listino)",
   "detail.llm_cost": "Costo LLM",
   "detail.cost_summary": "{{tokens}} token · {{calls}} chiamate",
-  "detail.cost_note": "Consumo token misurato dall'avvio del processo; il costo è una stima a prezzo di listino."
+  "detail.cost_note": "Consumo token misurato dall'avvio del processo; il costo è una stima a prezzo di listino.",
+  "a11y.skip": "Vai al contenuto principale",
+  "nav.docs": "Documentazione"
 }

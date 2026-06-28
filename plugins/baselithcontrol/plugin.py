@@ -136,6 +136,18 @@ class BaselithControlPlugin(RouterPlugin):
         except Exception as exc:  # noqa: BLE001 — observability is optional
             logger.warning("BaselithControl LLM cost tracking failed: %s", exc)
 
+        # Durable cost ledger: start the periodic flusher so measured spend
+        # persists to Postgres (survives restarts, sums across workers). No-op
+        # without a database — the dashboard falls back to the in-memory ledger.
+        try:
+            cfg = ControlConfig()
+            if cfg.persist_costs:
+                from .service.cost_store import get_cost_store
+
+                get_cost_store().start(cfg.cost_flush_seconds)
+        except Exception as exc:  # noqa: BLE001 — persistence is optional
+            logger.warning("BaselithControl cost persistence start failed: %s", exc)
+
         if not _UI_DIST.exists():
             logger.info(
                 "BaselithControl UI not built; SPA mount skipped (%s)", _UI_DIST

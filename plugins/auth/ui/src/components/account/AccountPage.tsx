@@ -5,7 +5,15 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { User, ShieldCheck, MonitorSmartphone, Activity, KeyRound, ArrowLeft } from 'lucide-react';
+import {
+  User,
+  ShieldCheck,
+  MonitorSmartphone,
+  Activity,
+  KeyRound,
+  TrendingUp,
+  ArrowLeft,
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuthContext';
 import { getAccount, type Account } from '../../api/account';
@@ -16,9 +24,11 @@ import SecurityPanel from './SecurityPanel';
 import SessionsPanel from './SessionsPanel';
 import ActivityPanel from './ActivityPanel';
 import ApiKeysPanel from './ApiKeysPanel';
+import UsagePanel from './UsagePanel';
+import UsageOverlay from './UsageOverlay';
 import './account.css';
 
-type Tab = 'profile' | 'security' | 'sessions' | 'activity' | 'apikeys';
+type Tab = 'profile' | 'security' | 'sessions' | 'activity' | 'apikeys' | 'usage';
 
 const TABS: { id: Tab; icon: typeof User; key: string }[] = [
   { id: 'profile', icon: User, key: 'account.tabs.profile' },
@@ -26,6 +36,7 @@ const TABS: { id: Tab; icon: typeof User; key: string }[] = [
   { id: 'sessions', icon: MonitorSmartphone, key: 'account.tabs.sessions' },
   { id: 'activity', icon: Activity, key: 'account.tabs.activity' },
   { id: 'apikeys', icon: KeyRound, key: 'account.tabs.apikeys' },
+  { id: 'usage', icon: TrendingUp, key: 'account.tabs.usage' },
 ];
 
 export default function AccountPage() {
@@ -46,6 +57,7 @@ export default function AccountPage() {
 
   return (
     <div className="acct-layout">
+      <UsageOverlay />
       <div className="aurora" aria-hidden="true" />
       <header className="acct-header">
         <a className="acct-brand" href="/auth/">
@@ -96,6 +108,7 @@ export default function AccountPage() {
           {tab === 'sessions' && <SessionsPanel />}
           {tab === 'activity' && <ActivityPanel />}
           {tab === 'apikeys' && <ApiKeysPanel />}
+          {tab === 'usage' && <UsagePanel />}
         </main>
       </div>
     </div>
