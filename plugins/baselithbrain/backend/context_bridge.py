@@ -56,9 +56,7 @@ class TenantContextBridge:
             user = await self._authenticate(auth_header)
             if user is not None:
                 t_token = set_tenant_context(user.tenant_id)
-                u_token = (
-                    set_user_context(user.user_id) if user.user_id else None
-                )
+                u_token = set_user_context(user.user_id) if user.user_id else None
         try:
             await self.app(scope, receive, send)
         finally:
