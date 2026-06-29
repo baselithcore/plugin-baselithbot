@@ -21,7 +21,9 @@ def _register() -> RegisterOfInformation:
 
 
 async def _provider(reg: RegisterOfInformation, name: str = "AcmeCloud") -> ICTProvider:
-    return await reg.register_provider(ICTProvider(name=name, country="IE", lei="X" * 20))
+    return await reg.register_provider(
+        ICTProvider(name=name, country="IE", lei="X" * 20)
+    )
 
 
 async def _critical_function(reg: RegisterOfInformation) -> ICTFunction:
@@ -56,7 +58,9 @@ class TestFunctions:
         reg = _register()
         f = await _critical_function(reg)
         assert f.is_critical_or_important is True
-        important = ICTFunction(name="Reporting", criticality=FunctionCriticality.IMPORTANT)
+        important = ICTFunction(
+            name="Reporting", criticality=FunctionCriticality.IMPORTANT
+        )
         assert important.is_critical_or_important is True
         plain = ICTFunction(name="Blog")
         assert plain.is_critical_or_important is False

@@ -1,0 +1,11 @@
+{
+  "plugin.title": "Conformità",
+  "plugin.subtitle": "Console di Governance, Rischio e Conformità",
+  "domain.incidents": "Notifica Incidenti (NIS2)",
+  "domain.dora": "Incidenti Gravi (DORA)",
+  "domain.dsr": "Richieste degli Interessati (GDPR)",
+  "domain.thirdparty": "Registro Fornitori ICT Terzi (DORA)",
+  "domain.transparency": "Trasparenza IA (AI Act)",
+  "error.not_found": "Risorsa non trovata.",
+  "error.admin_required": "Sono richiesti privilegi di amministratore."
+}

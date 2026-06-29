@@ -1,0 +1,35 @@
+name: compliance
+system: true
+version: 0.1.0
+description: >-
+  Governance, Risk & Compliance console — a single admin surface over the
+  framework's regulatory primitives: NIS2 Art. 23 + DORA Art. 19 incident
+  reporting (core.incidents), GDPR data-subject requests (core.privacy), the
+  DORA Art. 28 Register of Information (core.thirdparty), and EU AI Act Art. 50
+  transparency (core.transparency). Holds no domain data of its own — every tab
+  is a console over a Sacred-Core subsystem. Fully async, React/Vite dashboard,
+  en + it i18n.
+author: BaselithCore Team
+license: Apache-2.0
+category: governance
+readiness: alpha
+tags:
+- compliance
+- governance
+- nis2
+- dora
+- gdpr
+- ai-act
+homepage: https://baselithcore.xyz/plugins/compliance
+min_core_version: 1.0.0
+required_resources: []
+optional_resources: []
+plugin_dependencies:
+  auth: '>=0.1.0'
+python_dependencies: []
+environment_variables:
+- COMPLIANCE_ENABLED
+- COMPLIANCE_REQUIRE_ADMIN
+integrity_sha256: 7c71f2c06359221972680e670ee0f79aecc195c51f55f6010835630ef3942e27
+control:
+  tier: system

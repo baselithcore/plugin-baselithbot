@@ -159,9 +159,7 @@ class RegisterOfInformation:
         )
         return arrangement
 
-    async def _validate_arrangement(
-        self, arrangement: ContractualArrangement
-    ) -> None:
+    async def _validate_arrangement(self, arrangement: ContractualArrangement) -> None:
         if await self._store.get_provider(arrangement.provider_id) is None:
             raise RegisterValidationError(
                 f"unknown provider: {arrangement.provider_id}"

@@ -48,9 +48,7 @@ class TestClassification:
         assert DoraClassification(a, classified_at=T0).is_major is False
 
     def test_not_major_with_critical_but_one_other(self):
-        a = DoraImpactAssessment(
-            critical_services_affected=True, clients_affected=True
-        )
+        a = DoraImpactAssessment(critical_services_affected=True, clients_affected=True)
         assert DoraClassification(a, classified_at=T0).is_major is False
 
     def test_override_forces_major(self):

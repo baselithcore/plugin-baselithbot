@@ -318,6 +318,22 @@ baselithcontrol = [
     "ui/index.html",
     "tests/**",
 ]
+# Compliance (GRC) console: only the compiled SPA (``ui/dist/**``) ships. The
+# React/Vite source + node_modules are excluded; operators rebuild via
+# ``npm run build`` only when they fork the plugin. Backend ``locales/*.json``
+# catalogs DO ship (matched by the global package-data ``locales/*.json`` rule).
+compliance = [
+    "ui/src/**",
+    "ui/node_modules/**",
+    "ui/*.config.ts",
+    "ui/*.config.js",
+    "ui/tsconfig*.json",
+    "ui/tsconfig.tsbuildinfo",
+    "ui/package.json",
+    "ui/package-lock.json",
+    "ui/index.html",
+    "tests/**",
+]
 
 [tool.bandit]
 exclude_dirs = ["tests", "venv", "node_modules", ".git", ".env", "examples"]
