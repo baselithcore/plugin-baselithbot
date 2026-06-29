@@ -46,7 +46,16 @@ class TenantContextBridge:
         self.app = app
 
     async def __call__(self, scope: dict[str, Any], receive: Any, send: Any) -> None:
-        if scope.get("type") != "http" or not scope.get("path", "").startswith("/api"):
+        # When mounted (``app.mount("/baselithbrain", subapp)``) Starlette sets
+        # ``root_path`` but does NOT strip it from ``path`` — the sub-app sees the
+        # FULL ``/baselithbrain/api/...``. Strip ``root_path`` so the ``/api``
+        # gate matches both mounted and standalone (root_path == "") serving.
+        # Getting this wrong silently skips the bridge → no identity bound → every
+        # user collapses to the shared default vault.
+        path = scope.get("path", "") or ""
+        root = scope.get("root_path", "") or ""
+        rel = path[len(root) :] if root and path.startswith(root) else path
+        if scope.get("type") != "http" or not rel.startswith("/api"):
             await self.app(scope, receive, send)
             return
 
