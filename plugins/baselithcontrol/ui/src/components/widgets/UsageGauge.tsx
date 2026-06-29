@@ -28,19 +28,26 @@ const STATUS_TEXT: Record<UsageStatus, string> = {
 };
 
 /**
- * Month-to-date LLM spend as a 0–100% bar (spend vs the effective cap served by
- * the auth plugin), or a plain spend figure when uncapped. Fails open: when cost
- * governance is off or auth is absent, `usage` is null and a quiet note shows.
- * Shared by the compact account dropdown (`sm`) and the full account page (`md`).
+ * Month-to-date LLM consumption as a 0–100% bar (spend vs the effective cap
+ * served by the auth plugin). Fails open: when cost governance is off or auth is
+ * absent, `usage` is null and a quiet note shows. Shared by the compact account
+ * dropdown (`sm`) and the full account page (`md`).
+ *
+ * `moneyless` is the end-user budget view: a quota glance shows only the
+ * percentage of the monthly allowance consumed — never raw billed dollars.
+ * Absolute spend is an operator concern (the admin System Console cost ledger),
+ * so the user-facing surfaces pass `moneyless` and the money figures are hidden.
  */
 export function UsageGauge({
   usage,
   loading,
   size = 'md',
+  moneyless = false,
 }: {
   usage: MyLlmUsage | null;
   loading: boolean;
   size?: 'sm' | 'md';
+  moneyless?: boolean;
 }) {
   const { t, i18n } = useTranslation();
 
@@ -54,12 +61,20 @@ export function UsageGauge({
   const moneyText = size === 'md' ? 'text-2xl' : 'text-xl';
 
   if (!capped) {
+    // No monthly cap → no percentage to show. Money view shows the raw spend;
+    // the user budget view shows only the "no cap" note (no dollars).
     return (
       <div className="flex items-baseline justify-between gap-2">
-        <span className={`font-display ${moneyText} font-bold tabular-nums t-primary`}>
-          {usd(usage.spend_usd)}
-        </span>
-        <span className="text-[12px] font-medium t-dim">{t('usage.unlimited')}</span>
+        {moneyless ? (
+          <span className="text-[13px] font-medium t-dim">{t('usage.unlimited')}</span>
+        ) : (
+          <>
+            <span className={`font-display ${moneyText} font-bold tabular-nums t-primary`}>
+              {usd(usage.spend_usd)}
+            </span>
+            <span className="text-[12px] font-medium t-dim">{t('usage.unlimited')}</span>
+          </>
+        )}
       </div>
     );
   }
@@ -71,7 +86,7 @@ export function UsageGauge({
           {usage.percent_used}%
         </span>
         <span className="text-[12px] font-medium tabular-nums t-dim">
-          {usd(usage.spend_usd)} / {usd(usage.cap_usd!)}
+          {moneyless ? t('usage.of_budget') : `${usd(usage.spend_usd)} / ${usd(usage.cap_usd!)}`}
         </span>
       </div>
       <div

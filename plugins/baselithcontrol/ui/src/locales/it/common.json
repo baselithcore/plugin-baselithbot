@@ -241,6 +241,7 @@
   "usage.title": "Consumo LLM questo mese",
   "usage.untracked": "Tracciamento del consumo non disponibile.",
   "usage.unlimited": "Nessun limite mensile",
+  "usage.of_budget": "del budget mensile",
   "usage.status_ok": "Entro il budget",
   "usage.status_warning": "Vicino al limite",
   "usage.status_blocked": "Limite raggiunto",

@@ -142,7 +142,7 @@ export function Account({ me }: { me: Me }) {
           <Gauge className="h-3.5 w-3.5" />
           {t('usage.title')}
         </div>
-        <UsageGauge usage={usage} loading={loading} size="md" />
+        <UsageGauge usage={usage} loading={loading} size="md" moneyless />
       </div>
 
       {/* Logout */}

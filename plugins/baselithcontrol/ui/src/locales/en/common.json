@@ -241,6 +241,7 @@
   "usage.title": "LLM usage this month",
   "usage.untracked": "Usage tracking unavailable.",
   "usage.unlimited": "No monthly cap",
+  "usage.of_budget": "of monthly budget",
   "usage.status_ok": "Within budget",
   "usage.status_warning": "Approaching limit",
   "usage.status_blocked": "Limit reached",
