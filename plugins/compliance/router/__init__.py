@@ -14,6 +14,7 @@ from ._dora import router as dora_router
 from ._dsr import router as dsr_router
 from ._incidents import router as incidents_router
 from ._meta import router as meta_router
+from ._overview import router as overview_router
 from ._thirdparty import router as thirdparty_router
 from ._transparency import router as transparency_router
 
@@ -22,6 +23,7 @@ def build_compliance_router() -> APIRouter:
     """Assemble the full compliance API from its per-domain sub-routers."""
     router = APIRouter()
     router.include_router(meta_router)
+    router.include_router(overview_router)
     router.include_router(incidents_router)
     router.include_router(dora_router)
     router.include_router(dsr_router)

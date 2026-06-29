@@ -30,6 +30,6 @@ python_dependencies: []
 environment_variables:
 - COMPLIANCE_ENABLED
 - COMPLIANCE_REQUIRE_ADMIN
-integrity_sha256: 7c71f2c06359221972680e670ee0f79aecc195c51f55f6010835630ef3942e27
+integrity_sha256: 13cf50347fc0cc2645eef6bead3912cd896de064e8da3c0c2471722f22e15ba6
 control:
   tier: system

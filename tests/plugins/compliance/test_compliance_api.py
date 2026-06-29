@@ -43,6 +43,16 @@ def client() -> TestClient:
     return TestClient(app)
 
 
+def test_overview_aggregates_domains(client: TestClient) -> None:
+    client.post("/api/compliance/incidents", json={"title": "Breach", "severity": "high"})
+    ov = client.get("/api/compliance/overview").json()
+    assert set(ov.keys()) >= {"nis2", "dora", "dsr", "thirdparty", "transparency", "deadlines"}
+    assert ov["nis2"]["open"] >= 1
+    # A significant incident has three upcoming NIS2 milestones surfaced.
+    assert len(ov["deadlines"]) >= 1
+    assert ov["deadlines"][0]["regime"] in {"nis2", "dora"}
+
+
 def test_info_localized(client: TestClient) -> None:
     en = client.get("/api/compliance/info").json()
     assert en["locale"] == "en"

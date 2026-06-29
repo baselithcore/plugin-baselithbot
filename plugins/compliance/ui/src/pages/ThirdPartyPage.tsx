@@ -3,10 +3,12 @@ import { useTranslation } from 'react-i18next';
 
 import { api } from '../lib/api';
 import { useApi } from '../lib/useApi';
-import { Badge, Button, Card, Empty, ErrorNote, Field } from '../components/ui';
+import { useToast } from '../store/useToast';
+import { Badge, Button, Card, Empty, ErrorNote, Field, Kpi, Skeleton } from '../components/ui';
 
 export function ThirdPartyPage() {
   const { t } = useTranslation();
+  const push = useToast((s) => s.push);
   const providers = useApi(() => api.tpProviders());
   const conc = useApi(() => api.tpConcentration());
   const [name, setName] = useState('');
@@ -22,23 +24,53 @@ export function ThirdPartyPage() {
       setName('');
       setCountry('');
       setCritical(false);
+      push(t('tp.added'));
       providers.reload();
       conc.reload();
+    } catch (e) {
+      push(e instanceof Error ? e.message : 'error', 'err');
     } finally {
       setBusy(false);
     }
   }
 
+  async function exportRegister() {
+    try {
+      const data = await api.tpExport();
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'dora-register-of-information.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      push(t('tp.exported'));
+    } catch (e) {
+      push(e instanceof Error ? e.message : 'error', 'err');
+    }
+  }
+
   return (
     <div className="page">
+      <div className="page-head">
+        <div>
+          <h1>{t('tab.thirdparty')}</h1>
+          <p>{t('tp.lead')}</p>
+        </div>
+        <div className="page-actions">
+          <Button variant="ghost" onClick={exportRegister}>{t('tp.export')}</Button>
+        </div>
+      </div>
+
       <Card title={t('tp.concentration')}>
         {conc.error && <ErrorNote text={conc.error} />}
+        {conc.loading && <Skeleton rows={1} />}
         {conc.data && (
           <div className="kpis">
-            <div className="kpi"><strong>{conc.data.providers}</strong><span>{t('tp.k_providers')}</span></div>
-            <div className="kpi"><strong>{conc.data.arrangements}</strong><span>{t('tp.k_arrangements')}</span></div>
-            <div className="kpi"><strong>{conc.data.critical_or_important_arrangements}</strong><span>{t('tp.k_critical')}</span></div>
-            <div className="kpi"><strong>{conc.data.concentration_flags.length}</strong><span>{t('tp.k_flags')}</span></div>
+            <Kpi icon="🏢" value={conc.data.providers} label={t('tp.k_providers')} />
+            <Kpi icon="📄" value={conc.data.arrangements} label={t('tp.k_arrangements')} />
+            <Kpi icon="★" value={conc.data.critical_or_important_arrangements} label={t('tp.k_critical')} />
+            <Kpi icon="⚑" value={conc.data.concentration_flags.length} label={t('tp.k_flags')} alert={conc.data.concentration_flags.length > 0} />
           </div>
         )}
       </Card>
@@ -61,17 +93,32 @@ export function ThirdPartyPage() {
 
       <Card title={t('tp.providers')}>
         {providers.error && <ErrorNote text={providers.error} />}
-        {providers.loading && <Empty text={t('state.loading')} />}
-        {providers.data && providers.data.providers.length === 0 && <Empty text={t('tp.no_providers')} />}
-        <ul className="rows">
-          {providers.data?.providers.map((p) => (
-            <li key={p.id} className="row">
-              <span className="row-main">{p.name}</span>
-              <span className="muted">{p.country ?? '—'}</span>
-              {p.is_critical_designated && <Badge tone="danger">{t('tp.critical')}</Badge>}
-            </li>
-          ))}
-        </ul>
+        {providers.loading ? (
+          <Skeleton rows={3} />
+        ) : providers.data && providers.data.providers.length === 0 ? (
+          <Empty text={t('tp.no_providers')} />
+        ) : (
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th>{t('field.name')}</th>
+                <th>{t('tp.country')}</th>
+                <th>{t('tp.type')}</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {providers.data?.providers.map((p) => (
+                <tr key={p.id}>
+                  <td className="t-main">{p.name}</td>
+                  <td className="muted">{p.country ?? '—'}</td>
+                  <td className="muted">{p.provider_type}</td>
+                  <td>{p.is_critical_designated && <Badge tone="danger">{t('tp.critical')}</Badge>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </Card>
     </div>
   );

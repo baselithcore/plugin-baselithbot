@@ -7,6 +7,7 @@ import type {
   Concentration,
   ICTFunction,
   IncidentList,
+  Overview,
   Provider,
   SubjectExport,
   ErasureReport,
@@ -48,6 +49,8 @@ const post = <T>(path: string, body?: unknown) =>
   request<T>(path, { method: 'POST', body: body ? JSON.stringify(body) : undefined });
 
 export const api = {
+  // Dashboard
+  overview: () => get<Overview>('/overview'),
   // NIS2 incidents
   listIncidents: () => get<IncidentList>('/incidents'),
   openIncident: (body: Record<string, unknown>) => post('/incidents', body),
@@ -66,6 +69,7 @@ export const api = {
   tpFunctions: () => get<{ functions: ICTFunction[] }>('/thirdparty/functions'),
   tpArrangements: () => get<{ arrangements: Arrangement[] }>('/thirdparty/arrangements'),
   tpConcentration: () => get<Concentration>('/thirdparty/concentration'),
+  tpExport: () => get<Record<string, unknown>>('/thirdparty/export'),
   addProvider: (body: Record<string, unknown>) => post('/thirdparty/providers', body),
   // AI Act transparency
   transparencyStatus: () => get<TransparencyStatus>('/transparency/status'),

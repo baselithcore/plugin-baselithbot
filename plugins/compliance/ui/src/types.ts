@@ -1,11 +1,30 @@
 // Wire types mirroring the compliance backend payloads (subset used by the UI).
 
 export type TabId =
+  | 'overview'
   | 'incidents'
   | 'dora'
   | 'dsr'
   | 'thirdparty'
   | 'transparency';
+
+export interface Deadline {
+  regime: 'nis2' | 'dora';
+  incident_id: string;
+  title: string;
+  kind: string;
+  due_at: string;
+  overdue: boolean;
+}
+
+export interface Overview {
+  nis2: { total: number; open: number; overdue: number };
+  dora: { total: number; open: number; overdue: number; major: number };
+  dsr: { providers: number };
+  thirdparty: { providers: number; arrangements: number; critical: number; flags: number };
+  transparency: { enabled: boolean; should_disclose: boolean };
+  deadlines: Deadline[];
+}
 
 export interface Milestone {
   kind: string;
