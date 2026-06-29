@@ -147,11 +147,14 @@ async def set_plugin_tenancy(
         raise HTTPException(status_code=400, detail="invalid_tenancy_mode")
 
     invalidate_override_cache()
+    # NB: auth_audit_log.target_id is a UUID column (designed for user ids). A
+    # plugin name is not a UUID, so it goes in the jsonb `details`, never
+    # target_id — passing it there raises "invalid input syntax for type uuid".
     audit.log(
         action=AuditAction.PLUGIN_TENANCY_CHANGED,
         actor_id=admin.user_id,
-        target_id=plugin_name,
-        details={"mode": mode},
+        target_id=None,
+        details={"plugin": plugin_name, "mode": mode},
         ip_address=get_client_ip(request),
     )
     return PluginTenancyRow(

@@ -29,6 +29,7 @@ from core.context import (
     TenantContextError,
     get_current_tenant_id,
     reset_tenant_context,
+    resolve_plugin_tenant_key,
     set_tenant_context,
 )
 
@@ -45,7 +46,9 @@ _actor_ctx: contextvars.ContextVar[str] = contextvars.ContextVar(
 def current_tenant() -> str:
     """Return the active tenant id, or ``"default"`` outside a tenant context."""
     try:
-        return get_current_tenant_id()
+        # Honour a runtime per-plugin tenancy override; for the default ``shared``
+        # mode this equals ``get_tenant_or_default()`` → behaviour unchanged.
+        return resolve_plugin_tenant_key("baselith_pitwall")
     except TenantContextError:
         return DEFAULT_TENANT
 

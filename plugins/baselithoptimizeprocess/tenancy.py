@@ -32,6 +32,7 @@ from core.context import (
     TenantContextError,
     get_current_tenant_id,
     reset_tenant_context,
+    resolve_plugin_tenant_key,
     set_tenant_context,
 )
 
@@ -59,7 +60,10 @@ def current_tenant() -> str:
     this fallback only affects out-of-band callers.
     """
     try:
-        return get_current_tenant_id()
+        # Honour a runtime per-plugin tenancy override (shared|personal); for the
+        # default ``shared`` mode this is exactly ``get_tenant_or_default()``, so
+        # behaviour is unchanged unless an admin overrides this plugin.
+        return resolve_plugin_tenant_key("baselithoptimizeprocess")
     except TenantContextError:
         return DEFAULT_TENANT
 

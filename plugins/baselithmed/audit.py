@@ -26,7 +26,7 @@ from threading import RLock
 from typing import TYPE_CHECKING, Any, Final
 from uuid import uuid4
 
-from core.context import get_tenant_or_default
+from core.context import resolve_plugin_tenant_key
 
 if TYPE_CHECKING:
     from .persistence import AuditPersistenceBackend
@@ -170,7 +170,7 @@ class AuditLedger:
                 summary=clean_summary,
                 prev_hash=prev_hash,
                 this_hash=this_hash,
-                tenant_id=get_tenant_or_default(),
+                tenant_id=resolve_plugin_tenant_key("baselithmed"),
             )
             self._entries.append(entry)
             if self._backend is not None:
@@ -188,7 +188,7 @@ class AuditLedger:
         trail. The integrity chain (:meth:`verify`) stays deployment-wide and is
         unaffected — it walks the full in-memory chain regardless of tenant.
         """
-        tenant = get_tenant_or_default()
+        tenant = resolve_plugin_tenant_key("baselithmed")
         with self._lock:
             return [
                 e

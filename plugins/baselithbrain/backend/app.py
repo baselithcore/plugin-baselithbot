@@ -16,6 +16,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+from .context_bridge import TenantContextBridge
 from .index_state import get_index
 from .routers import (
     ai_router,
@@ -41,6 +42,9 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="BaselithBrain API", version="0.1.0", lifespan=lifespan)
+# Bind per-request identity (from the central access token) so the vault scopes
+# per user under `personal` tenancy. Additive: tokenless requests stay anonymous.
+app.add_middleware(TenantContextBridge)
 app.include_router(health_router)
 app.include_router(notes_router)
 app.include_router(search_router)

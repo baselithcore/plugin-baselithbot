@@ -862,6 +862,7 @@
   "plugins": {
     "title": "Plugin Tenancy",
     "description": "Override how each plugin scopes its data per tenant.",
+    "countLabel": "{{count}} plugins",
     "migration_warning": "Tenancy controls which tenant a plugin's reads and writes are scoped to. Switching a plugin that already stores data does not move existing rows — they stay under their previous tenant key and may become invisible under the new mode. Change with care, ideally before a plugin holds data.",
     "saved": "Tenancy override saved",
     "confirm_switch": "Change this plugin's tenancy mode? Existing data stays under its current tenant key and may not be visible under the new mode.",

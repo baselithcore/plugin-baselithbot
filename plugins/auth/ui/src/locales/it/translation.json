@@ -862,6 +862,7 @@
   "plugins": {
     "title": "Tenancy dei plugin",
     "description": "Definisci come ogni plugin isola i propri dati per tenant.",
+    "countLabel": "{{count}} plugin",
     "migration_warning": "La tenancy determina a quale tenant sono associate letture e scritture di un plugin. Cambiare un plugin che contiene già dati non sposta le righe esistenti: restano sotto la chiave tenant precedente e potrebbero diventare invisibili nella nuova modalità. Modifica con cautela, preferibilmente prima che il plugin contenga dati.",
     "saved": "Override di tenancy salvato",
     "confirm_switch": "Cambiare la modalità di tenancy di questo plugin? I dati esistenti restano sotto la chiave tenant attuale e potrebbero non essere visibili nella nuova modalità.",

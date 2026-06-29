@@ -5,6 +5,10 @@ description: Autonomous Red Team agent for proactive security scanning (recon, D
 author: BaselithCore Security
 category: Security
 readiness: alpha
+# Offensive security tooling — platform/operator infrastructure, not a per-user
+# app. Like honeypot/cve_hunter it is admin-only (hidden from user nav) and
+# exempt from per-tenant scoping / runtime tenancy overrides.
+system: true
 license: Proprietary
 homepage: https://github.com/baselithcore/baselithcore-prod
 icon: red_agent_icon.png

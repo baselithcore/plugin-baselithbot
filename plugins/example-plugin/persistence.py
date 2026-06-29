@@ -15,7 +15,7 @@ from psycopg.types.json import Jsonb
 from psycopg_pool import AsyncConnectionPool
 
 from core.config import get_storage_config
-from core.context import get_tenant_or_default
+from core.context import resolve_plugin_tenant_key
 
 logger = get_logger(__name__)
 
@@ -135,7 +135,7 @@ class ExampleDAO:
                 await cur.execute(
                     "INSERT INTO example_items (tenant_id, name, data) "
                     "VALUES (%s, %s, %s) RETURNING id",
-                    (get_tenant_or_default(), name, Jsonb(data)),
+                    (resolve_plugin_tenant_key("example-plugin"), name, Jsonb(data)),
                 )
                 row = await cur.fetchone()
                 return row[0] if row else -1
@@ -147,6 +147,6 @@ class ExampleDAO:
             async with conn.cursor() as cur:
                 await cur.execute(
                     "SELECT id, name, data FROM example_items WHERE tenant_id = %s",
-                    (get_tenant_or_default(),),
+                    (resolve_plugin_tenant_key("example-plugin"),),
                 )
                 return await cur.fetchall()

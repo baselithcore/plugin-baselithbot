@@ -17,17 +17,19 @@ import {
   type PluginTenancyRow,
   type TenancyMode,
 } from '../../api/plugins';
+import PageHeader from '../shared/PageHeader';
 
 export default function PluginsTab() {
   const { t } = useTranslation();
   const [rows, setRows] = useState<PluginTenancyRow[]>([]);
   const [msg, setMsg] = useState('');
+  const [error, setError] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   const reload = () =>
     getPluginTenancy()
       .then((d) => setRows(d.plugins))
-      .catch((e) => setMsg(e instanceof Error ? e.message : 'Error'))
+      .catch((e) => setError(e instanceof Error ? e.message : 'error'))
       .finally(() => setLoaded(true));
 
   useEffect(() => {
@@ -38,31 +40,36 @@ export default function PluginsTab() {
     const mode: TenancyMode | null = value === '' ? null : (value as TenancyMode);
     // A switch re-scopes future reads/writes — confirm the migration caveat.
     if (mode !== row.override && !window.confirm(t('plugins.confirm_switch'))) return;
+    setError(null);
     try {
       await setPluginTenancy(row.plugin_name, mode);
       await reload();
       setMsg(t('plugins.saved'));
     } catch (e) {
-      setMsg(e instanceof Error ? e.message : 'Error');
+      setError(e instanceof Error ? e.message : 'error');
     }
   };
 
   return (
     <div className="admin-tab-content">
-      <div className="admin-section-header">
-        <h2>
-          <Puzzle size={20} /> {t('plugins.title')}
-        </h2>
-        <p>{t('plugins.description')}</p>
-      </div>
+      <PageHeader
+        icon={<Puzzle size={22} />}
+        title={t('plugins.title')}
+        subtitle={t('plugins.description')}
+        countLabel={t('plugins.countLabel', { count: rows.length })}
+      />
 
-      {msg && <div className="admin-alert">{msg}</div>}
+      {error && <div className="admin-alert admin-alert-error">{error}</div>}
+      {msg && !error && <div className="admin-alert">{msg}</div>}
 
       <div
         className="admin-card"
         style={{ padding: 14, marginBottom: 18, display: 'flex', gap: 10 }}
       >
-        <AlertTriangle size={18} style={{ flexShrink: 0, color: 'var(--admin-warning, #b45309)' }} />
+        <AlertTriangle
+          size={18}
+          style={{ flexShrink: 0, color: 'var(--admin-warning, #b45309)' }}
+        />
         <p style={{ margin: 0, fontSize: 13, opacity: 0.85 }}>{t('plugins.migration_warning')}</p>
       </div>
 

@@ -30,4 +30,4 @@ environment_variables:
 - BASELITHMED_MODEL_ID
 - BASELITHMED_RETENTION_DAYS
 homepage: https://baselithcore.xyz/plugins/baselithmed
-integrity_sha256: 94831e0316db122c5b59ec15f8df4211cd96e2ee4d966823564391c5f4f9b80f
+integrity_sha256: 1d797942cdf5fc45e7d209d81ea24b448239557fe9b920f35a319adfae4ed543

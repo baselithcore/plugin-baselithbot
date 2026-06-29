@@ -17,6 +17,20 @@ This is enforced by [scripts/check_architecture_boundaries.py](scripts/check_arc
 
 When making changes, prefer extending via a plugin under `plugins/<name>/` rather than touching `core/`.
 
+## Companion open-core repo — keep `core/` aligned
+
+This repo (`baselithcore-enterprise`) is the **superset**: it carries the full plugin ecosystem (`auth`, etc.). The sibling checkout [`baselithcore-prod`](../baselithcore-prod) (remote `github.com/baselithcore/baselithcore`, the public/general project) ships the **same `core/`** but **none of the enterprise plugins** (no `auth`, etc.).
+
+> **Whenever a change is a *general/framework* implementation — i.e. it touches `core/` (or any shared, domain-agnostic machinery) — evaluate mirroring it into `baselithcore-prod`, *both the code AND its documentation*, to keep the general project aligned.** This is the default for core changes; skip it only when the change is enterprise-specific. Code and docs are mirrored together, not as separate optional steps.
+
+How to apply it:
+
+- **Scope = `core/` only.** Sync the `core/` (and other shared, non-plugin) edits; do **not** port `plugins/<enterprise-only>/` changes — those plugins don't exist in `baselithcore-prod`. A new core symbol/seam (e.g. a `core.context` helper) is exactly what should be mirrored, even if prod has no consumer yet, so the two `core/` trees never drift.
+- **Diff before porting.** `diff <prod>/core/<file> <ent>/core/<file>` first. A clean diff (only your additions, no other divergence) ⇒ safe 1:1 port. If prod's `core/` has diverged independently, reconcile rather than overwrite.
+- **Verify in prod after porting**: the two `core/` files end byte-identical, prod `py_compile`s, and `python scripts/check_architecture_boundaries.py` stays green in the prod checkout.
+- **Docs are part of the mirror — mandatory when the change needs it, not optional.** When a synced core/framework change adds or alters behaviour that the prod `mkdocs-site` documents (or *should* document), update the relevant page(s) in the same pass — find them under `baselithcore-prod/mkdocs-site/docs/` (e.g. `advanced/multi-tenancy.md`, `core-modules/*`, `plugins/*`). Document only the **framework** mechanism (prod has no enterprise plugins, so never reference enterprise-plugin UIs/routes like the `auth` console — describe the seam/API, not the auth-admin surface). If prod's docs have diverged or already cover the area, extend them in place rather than overwriting.
+- Commit/push to prod only when the user asks; otherwise leave the prod working tree staged for review.
+
 ## Common commands
 
 ```bash

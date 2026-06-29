@@ -28,4 +28,4 @@ optional_resources:
 - storage
 python_dependencies: []
 plugin_dependencies: {}
-integrity_sha256: 9ddb3b03481007b27fe415ad601c6e03ca8e3906082dbd031ef6c8b65600aa09
+integrity_sha256: 933f63b99c020f77e3557ab23ab7b578033c66b181384f3c27ca241447baa3e1
