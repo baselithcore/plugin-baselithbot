@@ -19,6 +19,7 @@ from plugins.auth.password import verify_password
 from plugins.auth.persistence import AuthPersistence
 from plugins.auth.rate_limiting import RateLimit as RateLimiter
 from plugins.auth.router._helpers import (
+    client_ip,
     issue_tokens,
     log_login_failure,
     log_login_success,
@@ -132,6 +133,14 @@ async def login(
                 f"Failed login for {safe_identifier}. Remaining attempts: {remaining}"
             )
             log_login_failure(request, persistence, user.id, "bad_password")
+            # Record the lockout in the NIS2 incident-handling trail when this
+            # failure crossed the lockout threshold. Opt-in + best-effort.
+            if attempts >= config.max_login_attempts:
+                from plugins.auth.security_incidents import report_account_lockout
+
+                await report_account_lockout(
+                    user.id, attempts, source_ip=client_ip(request)
+                )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid credentials",

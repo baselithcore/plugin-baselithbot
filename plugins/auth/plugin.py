@@ -91,6 +91,19 @@ class AuthPlugin(RouterPlugin):
         except Exception as e:  # noqa: BLE001 — overrides are best-effort
             logger.warning(f"Auth plugin tenancy overrides not installed: {e}")
 
+        # GDPR DSR: register the identity store with the central privacy service
+        # so subject-access / erasure requests also cover auth-held personal data
+        # (profile + login history). Export+erase only — no time-based purge of
+        # accounts. Best-effort; the DSR surface is opt-in elsewhere.
+        try:
+            from core.privacy import register_data_provider
+            from plugins.auth.privacy_provider import AuthDataProvider
+
+            register_data_provider(AuthDataProvider())
+            logger.info("Auth registered as GDPR data-subject provider")
+        except Exception as e:  # noqa: BLE001 — DSR registration is best-effort
+            logger.warning(f"Auth DSR provider not registered: {e}")
+
         # Register AuthManager in DI
         auth_manager = get_auth_manager()
         ServiceRegistry.register(AuthManager, auth_manager)

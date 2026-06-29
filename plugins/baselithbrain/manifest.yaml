@@ -8,8 +8,6 @@ author: BaselithCore Team
 license: Apache-2.0
 category: knowledge
 readiness: alpha
-# Private per-user vault by default (1 user = 1 tenant). An admin can override
-# this to ``shared`` at runtime from the auth console (Plugins → Tenancy).
 tenancy: personal
 tags:
 - pkm
@@ -36,4 +34,4 @@ environment_variables:
 - BASELITHBRAIN_VAULT_ROOT
 - BASELITHBRAIN_SEMANTIC_ENABLED
 - BASELITHBRAIN_WATCH_ENABLED
-integrity_sha256: 66df852e4f8846b99bf5a9b8c68787a0d88d22ea2a7a435b734c12b460ea87c5
+integrity_sha256: 169c4976fb4b9243e6110784b2523dca754f74a2087cd84040743d7474689222
