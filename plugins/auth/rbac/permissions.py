@@ -58,6 +58,10 @@ class Permission:
     # carries the wildcard (i.e. full platform admin).
     RBAC_ASSIGN_ROLE = "rbac.assign.role"
     RBAC_ASSIGN_ADMIN = "rbac.assign.admin"
+    # Platform settings: override a plugin's manifest-declared tenancy mode at
+    # runtime (shared vs. personal data scoping). Sensitive — changes data
+    # visibility — so it is its own grantable permission (wildcard satisfies it).
+    PLUGINS_TENANCY_MANAGE = "plugins.tenancy.manage"
 
 
 #: Catalogue of built-in permissions -> human description + category. Seeded
@@ -74,6 +78,10 @@ BUILTIN_PERMISSIONS: Dict[str, tuple[str, str]] = {
     Permission.AUDIT_READ: ("Read the audit log", "audit"),
     Permission.SESSIONS_READ: ("View active sessions", "sessions"),
     Permission.SESSIONS_MANAGE: ("View and revoke sessions", "sessions"),
+    Permission.PLUGINS_TENANCY_MANAGE: (
+        "Override per-plugin tenancy mode (data scoping)",
+        "system",
+    ),
 }
 
 

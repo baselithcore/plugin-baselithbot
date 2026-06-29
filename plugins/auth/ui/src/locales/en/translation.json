@@ -103,6 +103,7 @@
     "sso": "SSO",
     "tenants": "Tenants",
     "budget": "Budget",
+    "plugins": "Plugins",
     "collapse": "Collapse",
     "expand": "Expand",
     "openMenu": "Open navigation",
@@ -123,7 +124,8 @@
       "sessions": "Active sessions across the platform.",
       "audit": "Every security-relevant action, logged.",
       "tenants": "Workspaces and their members.",
-      "budget": "Per-user LLM spend limits and usage."
+      "budget": "Per-user LLM spend limits and usage.",
+      "plugins": "Per-plugin tenancy and data scoping."
     }
   },
   "theme": {
@@ -856,6 +858,25 @@
     "set": "Set",
     "reset": "Reset usage",
     "empty": "No usage or caps yet. Spend appears here as users make LLM calls."
+  },
+  "plugins": {
+    "title": "Plugin Tenancy",
+    "description": "Override how each plugin scopes its data per tenant.",
+    "migration_warning": "Tenancy controls which tenant a plugin's reads and writes are scoped to. Switching a plugin that already stores data does not move existing rows — they stay under their previous tenant key and may become invisible under the new mode. Change with care, ideally before a plugin holds data.",
+    "saved": "Tenancy override saved",
+    "confirm_switch": "Change this plugin's tenancy mode? Existing data stays under its current tenant key and may not be visible under the new mode.",
+    "col_plugin": "Plugin",
+    "col_declared": "Declared",
+    "col_override": "Override",
+    "col_effective": "Effective",
+    "inherit": "Inherit (manifest)",
+    "overridden": "(overridden)",
+    "locked": "Locked",
+    "locked_reason": "System plugin — its tenancy is fixed because changing it would break tenant isolation across the platform.",
+    "system": "system",
+    "empty": "No plugins loaded.",
+    "mode_shared": "shared · 1 tenant, N users",
+    "mode_personal": "personal · 1 user, 1 tenant"
   },
   "overlay": {
     "warning": "{{pct}}% of your monthly AI budget used",

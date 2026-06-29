@@ -23,6 +23,7 @@ import AccessTab from '../tabs/AccessTab';
 import SsoTab from '../tabs/SsoTab';
 import TenantsTab from '../tabs/TenantsTab';
 import BudgetTab from '../tabs/BudgetTab';
+import PluginsTab from '../tabs/PluginsTab';
 import OverviewTab from '../tabs/OverviewTab';
 import UsageOverlay from '../account/UsageOverlay';
 import Sidebar from './Sidebar';
@@ -45,6 +46,7 @@ const TAB_BODIES: Record<TabType, React.ComponentType> = {
   sso: SsoTab,
   tenants: TenantsTab,
   budget: BudgetTab,
+  plugins: PluginsTab,
 };
 
 const AdminPanel = () => {

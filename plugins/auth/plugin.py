@@ -81,6 +81,16 @@ class AuthPlugin(RouterPlugin):
         except Exception as e:  # noqa: BLE001 — cost governance is best-effort
             logger.warning(f"Auth cost tracking not installed: {e}")
 
+        # Per-plugin tenancy-mode overrides: register the resolver into core so
+        # every plugin's ``tenant_key()`` honours admin overrides of its declared
+        # manifest tenancy. Degrades to the manifest if the DB is unavailable.
+        try:
+            from plugins.auth.tenancy_overrides import install_plugin_tenancy_overrides
+
+            install_plugin_tenancy_overrides()
+        except Exception as e:  # noqa: BLE001 — overrides are best-effort
+            logger.warning(f"Auth plugin tenancy overrides not installed: {e}")
+
         # Register AuthManager in DI
         auth_manager = get_auth_manager()
         ServiceRegistry.register(AuthManager, auth_manager)

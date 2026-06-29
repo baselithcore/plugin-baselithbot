@@ -13,7 +13,8 @@ const MFA_TARGET = 80;
 const Posture = ({ data }: { data: OverviewData }) => {
   const { t } = useTranslation();
   const inactive = Math.max(0, data.totalUsers - data.activeUsers);
-  const mfaTone = data.mfa.pct >= MFA_TARGET ? 'success' : data.mfa.pct >= 50 ? 'accent' : 'warning';
+  const mfaTone =
+    data.mfa.pct >= MFA_TARGET ? 'success' : data.mfa.pct >= 50 ? 'accent' : 'warning';
 
   return (
     <section className="admin-card ov-card">

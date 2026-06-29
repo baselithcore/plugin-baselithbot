@@ -103,6 +103,7 @@
     "sso": "SSO",
     "tenants": "Tenant",
     "budget": "Budget",
+    "plugins": "Plugin",
     "collapse": "Comprimi",
     "expand": "Espandi",
     "openMenu": "Apri navigazione",
@@ -123,7 +124,8 @@
       "sessions": "Sessioni attive su tutta la piattaforma.",
       "audit": "Ogni azione rilevante per la sicurezza, tracciata.",
       "tenants": "Workspace e relativi membri.",
-      "budget": "Limiti di spesa LLM per utente e consumi."
+      "budget": "Limiti di spesa LLM per utente e consumi.",
+      "plugins": "Tenancy e isolamento dati per plugin."
     }
   },
   "theme": {
@@ -856,6 +858,25 @@
     "set": "Imposta",
     "reset": "Azzera consumo",
     "empty": "Nessun consumo o tetto ancora. La spesa appare qui quando gli utenti effettuano chiamate LLM."
+  },
+  "plugins": {
+    "title": "Tenancy dei plugin",
+    "description": "Definisci come ogni plugin isola i propri dati per tenant.",
+    "migration_warning": "La tenancy determina a quale tenant sono associate letture e scritture di un plugin. Cambiare un plugin che contiene già dati non sposta le righe esistenti: restano sotto la chiave tenant precedente e potrebbero diventare invisibili nella nuova modalità. Modifica con cautela, preferibilmente prima che il plugin contenga dati.",
+    "saved": "Override di tenancy salvato",
+    "confirm_switch": "Cambiare la modalità di tenancy di questo plugin? I dati esistenti restano sotto la chiave tenant attuale e potrebbero non essere visibili nella nuova modalità.",
+    "col_plugin": "Plugin",
+    "col_declared": "Dichiarata",
+    "col_override": "Override",
+    "col_effective": "Effettiva",
+    "inherit": "Eredita (manifest)",
+    "overridden": "(override)",
+    "locked": "Bloccato",
+    "locked_reason": "Plugin di sistema — la sua tenancy è fissa: modificarla romperebbe l'isolamento dei tenant su tutta la piattaforma.",
+    "system": "sistema",
+    "empty": "Nessun plugin caricato.",
+    "mode_shared": "shared · 1 tenant, N utenti",
+    "mode_personal": "personal · 1 utente, 1 tenant"
   },
   "overlay": {
     "warning": "{{pct}}% del budget AI mensile utilizzato",

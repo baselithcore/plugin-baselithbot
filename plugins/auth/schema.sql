@@ -404,3 +404,18 @@ CREATE TABLE IF NOT EXISTS auth_llm_usage (
     PRIMARY KEY (user_id, period)
 );
 CREATE INDEX IF NOT EXISTS idx_auth_llm_usage_period ON auth_llm_usage(period);
+
+-- =============================================================================
+-- PER-PLUGIN TENANCY OVERRIDE (additive; safe to run repeatedly)
+-- An operator may override a plugin's manifest-declared `tenancy` at runtime
+-- (`shared` = 1 tenant/N users, deployment-derived; `personal` = 1 user/1
+-- tenant). A present row overrides the manifest; absent = inherit the manifest.
+-- `updated_by` is stored as free text (not an FK) so a non-UUID actor — an API
+-- key, an impersonation token — never fails the write or breaks on user delete.
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS auth_plugin_tenancy_override (
+    plugin_name TEXT PRIMARY KEY,
+    mode TEXT NOT NULL CHECK (mode IN ('shared', 'personal')),
+    updated_by TEXT,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);

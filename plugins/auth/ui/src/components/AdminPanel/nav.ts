@@ -18,6 +18,7 @@ import {
   Activity,
   Building2,
   CreditCard,
+  Puzzle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { TabType } from '../../types';
@@ -79,6 +80,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { id: 'tenants', icon: Building2, labelKey: 'nav.tenants', descKey: 'nav.desc.tenants' },
       { id: 'budget', icon: CreditCard, labelKey: 'nav.budget', descKey: 'nav.desc.budget' },
+      { id: 'plugins', icon: Puzzle, labelKey: 'nav.plugins', descKey: 'nav.desc.plugins' },
     ],
   },
 ];

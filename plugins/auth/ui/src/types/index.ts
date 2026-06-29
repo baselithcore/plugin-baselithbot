@@ -131,7 +131,8 @@ export type TabType =
   | 'access'
   | 'sso'
   | 'tenants'
-  | 'budget';
+  | 'budget'
+  | 'plugins';
 
 export const ROLES = ['admin', 'user', 'guest'] as const;
 export type Role = (typeof ROLES)[number];

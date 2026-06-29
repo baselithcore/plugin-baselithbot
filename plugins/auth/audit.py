@@ -56,6 +56,9 @@ class AuditAction:
     COST_GROUP_CAP_CHANGED = "cost.group_cap_changed"
     COST_USAGE_RESET = "cost.usage_reset"
 
+    # Per-plugin tenancy-mode override (manifest tenancy overridden at runtime)
+    PLUGIN_TENANCY_CHANGED = "plugin.tenancy_changed"
+
     TENANT_CREATED = "tenant.created"
     TENANT_DELETED = "tenant.deleted"
     TENANT_PURGED = "tenant.purged"
