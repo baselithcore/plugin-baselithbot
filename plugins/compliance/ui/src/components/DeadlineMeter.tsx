@@ -9,7 +9,15 @@ const WINDOWS: Record<string, number> = {
   final_report: 30 * 86400,
 };
 
-export function DeadlineMeter({ kind, dueAt, label }: { kind: string; dueAt: string; label: string }) {
+export function DeadlineMeter({
+  kind,
+  dueAt,
+  label,
+}: {
+  kind: string;
+  dueAt: string;
+  label: string;
+}) {
   const secs = secondsTo(dueAt);
   const band = urgency(secs);
   const windowS = WINDOWS[kind] ?? 72 * 3600;

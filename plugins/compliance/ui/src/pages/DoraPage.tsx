@@ -24,7 +24,7 @@ export function DoraPage() {
 
   const rows = useMemo(
     () => (data?.incidents ?? []).filter((i) => filter === 'all' || i.status === filter),
-    [data, filter],
+    [data, filter]
   );
   const sel = data?.incidents.find((i) => i.id === openId) ?? null;
 
@@ -81,18 +81,33 @@ export function DoraPage() {
           <h1>{t('tab.dora')}</h1>
           <p>{t('dora.lead')}</p>
         </div>
-        {data && <Badge tone={data.overdue_count ? 'danger' : 'ok'}>{t('incidents.overdue', { count: data.overdue_count })}</Badge>}
+        {data && (
+          <Badge tone={data.overdue_count ? 'danger' : 'ok'}>
+            {t('incidents.overdue', { count: data.overdue_count })}
+          </Badge>
+        )}
       </div>
 
       <Card title={t('dora.open')}>
         <div className="form-row">
           <Field label={t('field.title')}>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('dora.title_ph')} />
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t('dora.title_ph')}
+            />
           </Field>
           <Field label={t('dora.clients')}>
-            <input type="number" min={0} value={clients} onChange={(e) => setClients(Number(e.target.value))} />
+            <input
+              type="number"
+              min={0}
+              value={clients}
+              onChange={(e) => setClients(Number(e.target.value))}
+            />
           </Field>
-          <Button onClick={open} disabled={busy === 'open' || !title.trim()}>{t('action.record')}</Button>
+          <Button onClick={open} disabled={busy === 'open' || !title.trim()}>
+            {t('action.record')}
+          </Button>
         </div>
       </Card>
 
@@ -103,8 +118,17 @@ export function DoraPage() {
           <div className="filter-bar">
             <select value={filter} onChange={(e) => setFilter(e.target.value)}>
               <option value="all">{t('filter.all')}</option>
-              {['detected', 'classified', 'initial_submitted', 'intermediate_submitted', 'final_submitted', 'closed'].map((s) => (
-                <option key={s} value={s}>{t(`status.${s}`)}</option>
+              {[
+                'detected',
+                'classified',
+                'initial_submitted',
+                'intermediate_submitted',
+                'final_submitted',
+                'closed',
+              ].map((s) => (
+                <option key={s} value={s}>
+                  {t(`status.${s}`)}
+                </option>
               ))}
             </select>
           </div>
@@ -128,8 +152,14 @@ export function DoraPage() {
               {rows.map((inc) => (
                 <tr key={inc.id} className="clickable" onClick={() => setOpenId(inc.id)}>
                   <td className="t-main">{inc.title}</td>
-                  <td><Badge tone={inc.is_major ? 'danger' : 'neutral'}>{inc.is_major ? t('dora.major') : t('dora.not_major')}</Badge></td>
-                  <td><Badge>{t(`status.${inc.status}`, inc.status)}</Badge></td>
+                  <td>
+                    <Badge tone={inc.is_major ? 'danger' : 'neutral'}>
+                      {inc.is_major ? t('dora.major') : t('dora.not_major')}
+                    </Badge>
+                  </td>
+                  <td>
+                    <Badge>{t(`status.${inc.status}`, inc.status)}</Badge>
+                  </td>
                   <td className="muted">{dateTime(inc.detected_at)}</td>
                 </tr>
               ))}
@@ -141,23 +171,38 @@ export function DoraPage() {
       {sel && (
         <Drawer title={sel.title} onClose={() => setOpenId(null)}>
           <div className="meta-row">
-            <Badge tone={sel.is_major ? 'danger' : 'neutral'}>{sel.is_major ? t('dora.major') : t('dora.not_major')}</Badge>
+            <Badge tone={sel.is_major ? 'danger' : 'neutral'}>
+              {sel.is_major ? t('dora.major') : t('dora.not_major')}
+            </Badge>
             <Badge>{t(`status.${sel.status}`, sel.status)}</Badge>
           </div>
           {sel.milestones.length === 0 ? (
             <div className="actions">
-              <Button onClick={() => classify(sel)} disabled={busy === sel.id + 'cls'}>{t('dora.classify_major')}</Button>
+              <Button onClick={() => classify(sel)} disabled={busy === sel.id + 'cls'}>
+                {t('dora.classify_major')}
+              </Button>
             </div>
           ) : (
             <>
               <div className="form-col">
                 {sel.milestones.map((m) => (
-                  <DeadlineMeter key={m.kind} kind={m.kind} dueAt={m.due_at} label={t(`milestone.${m.kind}`, m.kind)} />
+                  <DeadlineMeter
+                    key={m.kind}
+                    kind={m.kind}
+                    dueAt={m.due_at}
+                    label={t(`milestone.${m.kind}`, m.kind)}
+                  />
                 ))}
               </div>
               <div className="actions">
                 {STEPS.map((s) => (
-                  <Button key={s} small variant={s === 'close' ? 'danger' : 'ghost'} onClick={() => advance(sel, s)} disabled={busy === sel.id + s}>
+                  <Button
+                    key={s}
+                    small
+                    variant={s === 'close' ? 'danger' : 'ghost'}
+                    onClick={() => advance(sel, s)}
+                    disabled={busy === sel.id + s}
+                  >
                     {t(`step.${s}`)}
                   </Button>
                 ))}

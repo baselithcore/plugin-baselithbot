@@ -34,7 +34,7 @@ export interface ThemeApi {
 export function useTheme(): ThemeApi {
   const [pref, setPref] = useState<ThemePref>(readPref);
   const [resolved, setResolved] = useState<ResolvedTheme>(() =>
-    pref === 'system' ? systemTheme() : pref,
+    pref === 'system' ? systemTheme() : pref
   );
 
   useEffect(() => {

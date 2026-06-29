@@ -29,7 +29,7 @@ export function IncidentsPage() {
 
   const rows = useMemo(
     () => (data?.incidents ?? []).filter((i) => filter === 'all' || i.status === filter),
-    [data, filter],
+    [data, filter]
   );
   const selected = data?.incidents.find((i) => i.id === openId) ?? null;
 
@@ -68,22 +68,34 @@ export function IncidentsPage() {
           <h1>{t('tab.incidents')}</h1>
           <p>{t('incidents.lead')}</p>
         </div>
-        {data && <Badge tone={data.overdue_count ? 'danger' : 'ok'}>{t('incidents.overdue', { count: data.overdue_count })}</Badge>}
+        {data && (
+          <Badge tone={data.overdue_count ? 'danger' : 'ok'}>
+            {t('incidents.overdue', { count: data.overdue_count })}
+          </Badge>
+        )}
       </div>
 
       <Card title={t('incidents.open')}>
         <div className="form-row">
           <Field label={t('field.title')}>
-            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t('incidents.title_ph')} />
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t('incidents.title_ph')}
+            />
           </Field>
           <Field label={t('field.severity')}>
             <select value={severity} onChange={(e) => setSeverity(e.target.value)}>
               {SEVERITIES.map((s) => (
-                <option key={s} value={s}>{t(`severity.${s}`)}</option>
+                <option key={s} value={s}>
+                  {t(`severity.${s}`)}
+                </option>
               ))}
             </select>
           </Field>
-          <Button onClick={open} disabled={busy === 'open' || !title.trim()}>{t('action.record')}</Button>
+          <Button onClick={open} disabled={busy === 'open' || !title.trim()}>
+            {t('action.record')}
+          </Button>
         </div>
       </Card>
 
@@ -94,8 +106,16 @@ export function IncidentsPage() {
           <div className="filter-bar">
             <select value={filter} onChange={(e) => setFilter(e.target.value)}>
               <option value="all">{t('filter.all')}</option>
-              {['detected', 'early_warning_submitted', 'notification_submitted', 'final_submitted', 'closed'].map((s) => (
-                <option key={s} value={s}>{t(`status.${s}`)}</option>
+              {[
+                'detected',
+                'early_warning_submitted',
+                'notification_submitted',
+                'final_submitted',
+                'closed',
+              ].map((s) => (
+                <option key={s} value={s}>
+                  {t(`status.${s}`)}
+                </option>
               ))}
             </select>
           </div>
@@ -119,8 +139,12 @@ export function IncidentsPage() {
               {rows.map((inc) => (
                 <tr key={inc.id} className="clickable" onClick={() => setOpenId(inc.id)}>
                   <td className="t-main">{inc.title}</td>
-                  <td><Badge tone={sevTone(inc.severity)}>{t(`severity.${inc.severity}`)}</Badge></td>
-                  <td><Badge>{t(`status.${inc.status}`, inc.status)}</Badge></td>
+                  <td>
+                    <Badge tone={sevTone(inc.severity)}>{t(`severity.${inc.severity}`)}</Badge>
+                  </td>
+                  <td>
+                    <Badge>{t(`status.${inc.status}`, inc.status)}</Badge>
+                  </td>
                   <td className="muted">{dateTime(inc.detected_at)}</td>
                 </tr>
               ))}
@@ -138,12 +162,23 @@ export function IncidentsPage() {
           {selected.description && <p className="desc">{selected.description}</p>}
           <div className="form-col">
             {selected.milestones.map((m) => (
-              <DeadlineMeter key={m.kind} kind={m.kind} dueAt={m.due_at} label={t(`milestone.${m.kind}`, m.kind)} />
+              <DeadlineMeter
+                key={m.kind}
+                kind={m.kind}
+                dueAt={m.due_at}
+                label={t(`milestone.${m.kind}`, m.kind)}
+              />
             ))}
           </div>
           <div className="actions">
             {STEPS.map((s) => (
-              <Button key={s} small variant={s === 'close' ? 'danger' : 'ghost'} onClick={() => advance(selected, s)} disabled={busy === selected.id + s}>
+              <Button
+                key={s}
+                small
+                variant={s === 'close' ? 'danger' : 'ghost'}
+                onClick={() => advance(selected, s)}
+                disabled={busy === selected.id + s}
+              >
                 {t(`step.${s}`)}
               </Button>
             ))}

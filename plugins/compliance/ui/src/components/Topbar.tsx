@@ -25,12 +25,21 @@ export function Topbar() {
         <span className="here">{current ? t(current.key) : ''}</span>
       </div>
       <div className="topbar-right">
-        <button className="icon-btn" onClick={toggle} aria-label={t('action.theme')} title={t('action.theme')}>
+        <button
+          className="icon-btn"
+          onClick={toggle}
+          aria-label={t('action.theme')}
+          title={t('action.theme')}
+        >
           {resolved === 'dark' ? '☀' : '☾'}
         </button>
         <div className="lang">
           {(['en', 'it'] as const).map((lng) => (
-            <button key={lng} className={i18n.language.startsWith(lng) ? 'on' : ''} onClick={() => setLanguage(lng)}>
+            <button
+              key={lng}
+              className={i18n.language.startsWith(lng) ? 'on' : ''}
+              onClick={() => setLanguage(lng)}
+            >
               {lng.toUpperCase()}
             </button>
           ))}

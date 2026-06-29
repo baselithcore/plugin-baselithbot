@@ -66,23 +66,39 @@ export function DsrPage() {
         {providers.error && <ErrorNote text={providers.error} />}
         {providers.loading && <Skeleton rows={1} />}
         <div className="chips">
-          {providers.data?.providers.map((p) => <Badge key={p} tone="accent">{p}</Badge>)}
-          {providers.data && providers.data.providers.length === 0 && <Empty text={t('dsr.no_providers')} />}
+          {providers.data?.providers.map((p) => (
+            <Badge key={p} tone="accent">
+              {p}
+            </Badge>
+          ))}
+          {providers.data && providers.data.providers.length === 0 && (
+            <Empty text={t('dsr.no_providers')} />
+          )}
         </div>
       </Card>
 
       <Card title={t('dsr.request')}>
         <div className="form-row">
           <Field label={t('dsr.subject')}>
-            <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder={t('dsr.subject_ph')} />
+            <input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder={t('dsr.subject_ph')}
+            />
           </Field>
-          <Button onClick={doExport} disabled={busy !== null || !subject.trim()}>{t('dsr.export')}</Button>
-          <Button variant="danger" onClick={doErase} disabled={busy !== null || !subject.trim()}>{t('dsr.erase')}</Button>
+          <Button onClick={doExport} disabled={busy !== null || !subject.trim()}>
+            {t('dsr.export')}
+          </Button>
+          <Button variant="danger" onClick={doErase} disabled={busy !== null || !subject.trim()}>
+            {t('dsr.erase')}
+          </Button>
         </div>
         {result != null && (
           <>
             <div className="actions">
-              <Button small variant="ghost" onClick={() => download(`dsr-${subject}.json`, result)}>{t('action.download')}</Button>
+              <Button small variant="ghost" onClick={() => download(`dsr-${subject}.json`, result)}>
+                {t('action.download')}
+              </Button>
             </div>
             <pre className="json">{JSON.stringify(result, null, 2)}</pre>
           </>

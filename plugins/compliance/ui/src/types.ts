@@ -1,12 +1,6 @@
 // Wire types mirroring the compliance backend payloads (subset used by the UI).
 
-export type TabId =
-  | 'overview'
-  | 'incidents'
-  | 'dora'
-  | 'dsr'
-  | 'thirdparty'
-  | 'transparency';
+export type TabId = 'overview' | 'incidents' | 'dora' | 'dsr' | 'thirdparty' | 'transparency';
 
 export interface Deadline {
   regime: 'nis2' | 'dora';
@@ -75,7 +69,11 @@ export interface Concentration {
   providers: number;
   arrangements: number;
   critical_or_important_arrangements: number;
-  concentration_flags: { provider_id: string; reference_number: string; substitutability: string }[];
+  concentration_flags: {
+    provider_id: string;
+    reference_number: string;
+    substitutability: string;
+  }[];
 }
 
 export interface TransparencyStatus {

@@ -44,9 +44,18 @@ def client() -> TestClient:
 
 
 def test_overview_aggregates_domains(client: TestClient) -> None:
-    client.post("/api/compliance/incidents", json={"title": "Breach", "severity": "high"})
+    client.post(
+        "/api/compliance/incidents", json={"title": "Breach", "severity": "high"}
+    )
     ov = client.get("/api/compliance/overview").json()
-    assert set(ov.keys()) >= {"nis2", "dora", "dsr", "thirdparty", "transparency", "deadlines"}
+    assert set(ov.keys()) >= {
+        "nis2",
+        "dora",
+        "dsr",
+        "thirdparty",
+        "transparency",
+        "deadlines",
+    }
     assert ov["nis2"]["open"] >= 1
     # A significant incident has three upcoming NIS2 milestones surfaced.
     assert len(ov["deadlines"]) >= 1
@@ -79,9 +88,7 @@ def test_nis2_incident_lifecycle(client: TestClient) -> None:
 
     advanced = client.post(f"/api/compliance/incidents/{incident_id}/early-warning")
     assert advanced.status_code == 200
-    ew = next(
-        m for m in advanced.json()["milestones"] if m["kind"] == "early_warning"
-    )
+    ew = next(m for m in advanced.json()["milestones"] if m["kind"] == "early_warning")
     assert ew["submitted"] is True
 
 

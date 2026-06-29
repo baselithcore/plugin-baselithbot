@@ -46,23 +46,37 @@ export function TransparencyPage() {
               {status.data.enabled ? t('tr.enabled') : t('tr.disabled')}
             </Badge>
             <Badge tone={status.data.should_disclose ? 'warn' : 'neutral'}>
-              {t('tr.should_disclose')}: {status.data.should_disclose ? t('common.yes') : t('common.no')}
+              {t('tr.should_disclose')}:{' '}
+              {status.data.should_disclose ? t('common.yes') : t('common.no')}
             </Badge>
           </div>
         )}
-        {status.data?.notice && <pre className="json">{JSON.stringify(status.data.notice, null, 2)}</pre>}
+        {status.data?.notice && (
+          <pre className="json">{JSON.stringify(status.data.notice, null, 2)}</pre>
+        )}
       </Card>
 
       <Card title={t('tr.mark')}>
         <div className="form-col">
           <Field label={t('tr.content')}>
-            <textarea value={content} onChange={(e) => setContent(e.target.value)} rows={3} placeholder={t('tr.content_ph')} />
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={3}
+              placeholder={t('tr.content_ph')}
+            />
           </Field>
           <div className="form-row">
             <Field label={t('tr.model')}>
-              <input value={model} onChange={(e) => setModel(e.target.value)} placeholder="claude-opus-4-8" />
+              <input
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
+                placeholder="claude-opus-4-8"
+              />
             </Field>
-            <Button onClick={mark} disabled={busy || !content.trim()}>{t('tr.generate')}</Button>
+            <Button onClick={mark} disabled={busy || !content.trim()}>
+              {t('tr.generate')}
+            </Button>
           </div>
         </div>
         {tag != null && <pre className="json">{JSON.stringify(tag, null, 2)}</pre>}

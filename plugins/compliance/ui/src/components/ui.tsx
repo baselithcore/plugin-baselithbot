@@ -2,7 +2,15 @@ import type { ReactNode } from 'react';
 
 export type Tone = 'neutral' | 'ok' | 'warn' | 'danger' | 'accent';
 
-export function Card({ title, action, children }: { title?: string; action?: ReactNode; children: ReactNode }) {
+export function Card({
+  title,
+  action,
+  children,
+}: {
+  title?: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="card">
       {(title || action) && (
@@ -36,7 +44,12 @@ export function Button({
   small?: boolean;
 }) {
   return (
-    <button className={`btn btn-${variant}${small ? ' btn-sm' : ''}`} onClick={onClick} type={type} disabled={disabled}>
+    <button
+      className={`btn btn-${variant}${small ? ' btn-sm' : ''}`}
+      onClick={onClick}
+      type={type}
+      disabled={disabled}
+    >
       {children}
     </button>
   );

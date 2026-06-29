@@ -24,5 +24,5 @@
       "@auth/login": ["../../auth/ui/src/login.ts"]
     }
   },
-  "include": ["src", "vite.config.ts", "../../auth/ui/src"]
+  "include": ["src", "vite.config.ts"]
 }

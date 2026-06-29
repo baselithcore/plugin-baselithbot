@@ -35,7 +35,12 @@ export function OverviewPage() {
             <Kpi icon="⏰" value={overdue} label={t('ov.k_overdue')} alert={overdue > 0} />
             <Kpi icon="⚡" value={data.dora.major} label={t('ov.k_major')} />
             <Kpi icon="⚲" value={data.dsr.providers} label={t('ov.k_providers')} />
-            <Kpi icon="⛓" value={data.thirdparty.flags} label={t('ov.k_flags')} alert={data.thirdparty.flags > 0} />
+            <Kpi
+              icon="⛓"
+              value={data.thirdparty.flags}
+              label={t('ov.k_flags')}
+              alert={data.thirdparty.flags > 0}
+            />
             <Kpi
               icon="✦"
               value={data.transparency.enabled ? t('tr.enabled') : t('tr.disabled')}
@@ -50,9 +55,15 @@ export function OverviewPage() {
               <div className="rows">
                 {data.deadlines.map((d) => (
                   <div className="row" key={`${d.regime}-${d.incident_id}-${d.kind}`}>
-                    <Badge tone={d.regime === 'dora' ? 'accent' : 'neutral'}>{d.regime.toUpperCase()}</Badge>
+                    <Badge tone={d.regime === 'dora' ? 'accent' : 'neutral'}>
+                      {d.regime.toUpperCase()}
+                    </Badge>
                     <span className="row-main">{d.title}</span>
-                    <DeadlineMeter kind={d.kind} dueAt={d.due_at} label={t(`milestone.${d.kind}`, d.kind)} />
+                    <DeadlineMeter
+                      kind={d.kind}
+                      dueAt={d.due_at}
+                      label={t(`milestone.${d.kind}`, d.kind)}
+                    />
                   </div>
                 ))}
               </div>

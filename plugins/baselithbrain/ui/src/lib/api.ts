@@ -19,6 +19,21 @@ function wsParam(workspace?: string | null): string {
 
 const BASE = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
 
+/**
+ * Central-auth bearer header for every API call.
+ *
+ * baselithbrain is mounted same-origin under the host console, so it reads the
+ * access token the auth login persists (localStorage ``auth_access_token`` — the
+ * single key the `@auth` client uses). Without it the backend's context bridge
+ * can't bind the user, so per-user (``personal``) vault scoping silently
+ * collapses to the shared default vault. Empty object when logged out (anonymous
+ * access still works exactly as before).
+ */
+function authHeaders(): Record<string, string> {
+  const token = localStorage.getItem('auth_access_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 /** Absolute URL for a vault asset path (``_assets/<name>`` or ``api/assets/…``). */
 export function assetUrl(pathOrUrl: string): string {
   const clean = pathOrUrl.replace(/^_assets\//, 'api/assets/').replace(/^\//, '');
@@ -27,8 +42,12 @@ export function assetUrl(pathOrUrl: string): string {
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
     ...init,
+    headers: {
+      'Content-Type': 'application/json',
+      ...authHeaders(),
+      ...((init?.headers as Record<string, string> | undefined) ?? {}),
+    },
   });
   if (!res.ok) {
     const detail = await res.text().catch(() => res.statusText);
@@ -74,7 +93,12 @@ export const api = {
   uploadAsset: async (file: File): Promise<{ name: string; path: string; url: string }> => {
     const form = new FormData();
     form.append('file', file);
-    const res = await fetch(`${BASE}/api/assets`, { method: 'POST', body: form });
+    // No Content-Type — the browser sets the multipart boundary; auth only.
+    const res = await fetch(`${BASE}/api/assets`, {
+      method: 'POST',
+      body: form,
+      headers: authHeaders(),
+    });
     if (!res.ok) throw new Error(`${res.status}: ${await res.text().catch(() => res.statusText)}`);
     return res.json();
   },
@@ -144,7 +168,7 @@ export const api = {
   ): Promise<void> => {
     const res = await fetch(`${BASE}/api/ai/chat`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify({
         question,
         conversation_id: opts.conversationId ?? null,

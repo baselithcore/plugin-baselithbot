@@ -72,7 +72,11 @@ class CompliancePlugin(RouterPlugin):
         (the central tab discovery flips system-plugin tabs to effective-admin).
         """
         return [
-            {"id": "incidents", "label": "Incident Reporting (NIS2)", "url": MOUNT_PATH},
+            {
+                "id": "incidents",
+                "label": "Incident Reporting (NIS2)",
+                "url": MOUNT_PATH,
+            },
             {"id": "dora", "label": "Major Incidents (DORA)", "url": MOUNT_PATH},
             {"id": "dsr", "label": "Data Subject Requests (GDPR)", "url": MOUNT_PATH},
             {

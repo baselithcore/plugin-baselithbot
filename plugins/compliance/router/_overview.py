@@ -71,7 +71,9 @@ async def overview() -> Dict[str, Any]:
             if not ms.is_submitted:
                 pending.append((inc, ms, "dora"))
     pending.sort(key=lambda t: t[1].due_at)
-    deadlines = [_deadline_row(regime, inc, ms) for inc, ms, regime in pending[:_DEADLINE_LIMIT]]
+    deadlines = [
+        _deadline_row(regime, inc, ms) for inc, ms, regime in pending[:_DEADLINE_LIMIT]
+    ]
 
     concentration = await register.concentration_summary()
     providers = [p.name for p in get_data_subject_service().registry.all()]

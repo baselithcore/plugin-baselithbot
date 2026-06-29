@@ -21,5 +21,5 @@ createRoot(root).render(
         <App />
       </ProtectedRoute>
     </AuthProvider>
-  </StrictMode>,
+  </StrictMode>
 );

@@ -58,7 +58,9 @@ export function ThirdPartyPage() {
           <p>{t('tp.lead')}</p>
         </div>
         <div className="page-actions">
-          <Button variant="ghost" onClick={exportRegister}>{t('tp.export')}</Button>
+          <Button variant="ghost" onClick={exportRegister}>
+            {t('tp.export')}
+          </Button>
         </div>
       </div>
 
@@ -69,8 +71,17 @@ export function ThirdPartyPage() {
           <div className="kpis">
             <Kpi icon="🏢" value={conc.data.providers} label={t('tp.k_providers')} />
             <Kpi icon="📄" value={conc.data.arrangements} label={t('tp.k_arrangements')} />
-            <Kpi icon="★" value={conc.data.critical_or_important_arrangements} label={t('tp.k_critical')} />
-            <Kpi icon="⚑" value={conc.data.concentration_flags.length} label={t('tp.k_flags')} alert={conc.data.concentration_flags.length > 0} />
+            <Kpi
+              icon="★"
+              value={conc.data.critical_or_important_arrangements}
+              label={t('tp.k_critical')}
+            />
+            <Kpi
+              icon="⚑"
+              value={conc.data.concentration_flags.length}
+              label={t('tp.k_flags')}
+              alert={conc.data.concentration_flags.length > 0}
+            />
           </div>
         )}
       </Card>
@@ -78,16 +89,26 @@ export function ThirdPartyPage() {
       <Card title={t('tp.add_provider')}>
         <div className="form-row">
           <Field label={t('field.name')}>
-            <input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('tp.name_ph')} />
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t('tp.name_ph')}
+            />
           </Field>
           <Field label={t('tp.country')}>
             <input value={country} onChange={(e) => setCountry(e.target.value)} placeholder="IT" />
           </Field>
           <label className="check">
-            <input type="checkbox" checked={critical} onChange={(e) => setCritical(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={critical}
+              onChange={(e) => setCritical(e.target.checked)}
+            />
             {t('tp.critical_designated')}
           </label>
-          <Button onClick={add} disabled={busy || !name.trim()}>{t('action.add')}</Button>
+          <Button onClick={add} disabled={busy || !name.trim()}>
+            {t('action.add')}
+          </Button>
         </div>
       </Card>
 
@@ -113,7 +134,9 @@ export function ThirdPartyPage() {
                   <td className="t-main">{p.name}</td>
                   <td className="muted">{p.country ?? '—'}</td>
                   <td className="muted">{p.provider_type}</td>
-                  <td>{p.is_critical_designated && <Badge tone="danger">{t('tp.critical')}</Badge>}</td>
+                  <td>
+                    {p.is_critical_designated && <Badge tone="danger">{t('tp.critical')}</Badge>}
+                  </td>
                 </tr>
               ))}
             </tbody>
