@@ -17,7 +17,10 @@ export function TrashView({ open, onClose }: { open: boolean; onClose: () => voi
   const [items, setItems] = useState<TrashEntry[]>([]);
 
   const refresh = useCallback(() => {
-    api.trash().then(setItems).catch(() => setItems([]));
+    api
+      .trash()
+      .then(setItems)
+      .catch(() => setItems([]));
   }, []);
 
   useEffect(() => {

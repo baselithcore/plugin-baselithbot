@@ -19,7 +19,10 @@ export function HistoryDrawer({ open, onClose }: { open: boolean; onClose: () =>
   const id = active?.id;
   const refresh = useCallback(() => {
     if (!id) return;
-    api.history(id).then(setEntries).catch(() => setEntries([]));
+    api
+      .history(id)
+      .then(setEntries)
+      .catch(() => setEntries([]));
   }, [id]);
 
   useEffect(() => {

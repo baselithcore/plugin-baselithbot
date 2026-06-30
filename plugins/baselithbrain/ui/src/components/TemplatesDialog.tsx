@@ -32,7 +32,10 @@ export function TemplatesDialog({ open, onClose }: { open: boolean; onClose: () 
   const [body, setBody] = useState('');
 
   const refresh = useCallback(() => {
-    api.listTemplates().then(setItems).catch(() => setItems([]));
+    api
+      .listTemplates()
+      .then(setItems)
+      .catch(() => setItems([]));
   }, []);
 
   useEffect(() => {

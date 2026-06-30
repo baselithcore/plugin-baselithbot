@@ -12,7 +12,9 @@ export function Outline({ body }: { body: string }) {
   const items = useMemo(() => parseOutline(body), [body]);
 
   const scrollTo = (index: number) => {
-    const headings = document.querySelectorAll<HTMLElement>('.bb-prose h1, .bb-prose h2, .bb-prose h3');
+    const headings = document.querySelectorAll<HTMLElement>(
+      '.bb-prose h1, .bb-prose h2, .bb-prose h3'
+    );
     headings[index]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 

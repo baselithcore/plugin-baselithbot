@@ -15,7 +15,10 @@ export function TagBrowser() {
   const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
-    api.tags(activeWorkspace).then(setTags).catch(() => setTags([]));
+    api
+      .tags(activeWorkspace)
+      .then(setTags)
+      .catch(() => setTags([]));
     setSelected(null);
   }, [activeWorkspace, notes.length]);
 
@@ -47,7 +50,9 @@ export function TagBrowser() {
           </button>
         ))}
         {!tagged.length && (
-          <p className="px-2 py-6 text-center text-xs text-[var(--color-faint)]">{t('tags.noNotes')}</p>
+          <p className="px-2 py-6 text-center text-xs text-[var(--color-faint)]">
+            {t('tags.noNotes')}
+          </p>
         )}
       </div>
     );

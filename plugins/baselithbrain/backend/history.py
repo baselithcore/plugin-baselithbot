@@ -81,6 +81,8 @@ class HistoryStore:
 
     def _prune(self, note_id: str) -> None:
         d = self._note_dir(note_id)
-        revisions = sorted((p for p in d.glob("*.md") if p.is_file()), key=lambda p: p.stem)
+        revisions = sorted(
+            (p for p in d.glob("*.md") if p.is_file()), key=lambda p: p.stem
+        )
         for stale in revisions[: max(0, len(revisions) - self._max)]:
             stale.unlink(missing_ok=True)

@@ -28,4 +28,6 @@ async def export_all(
     workspace: str | None = Query(None, description="narrow to one workspace"),
 ) -> Response:
     name, data = export_vault(get_index(), workspace=workspace)
-    return Response(content=data, media_type="application/zip", headers=_attachment(name))
+    return Response(
+        content=data, media_type="application/zip", headers=_attachment(name)
+    )

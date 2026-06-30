@@ -92,7 +92,12 @@ class TemplateStore:
         self._path(template_id).write_text(
             frontmatter.serialize(meta, payload.body), encoding="utf-8"
         )
-        return Template(id=template_id, name=meta["name"], updated=meta["updated"], body=payload.body)
+        return Template(
+            id=template_id,
+            name=meta["name"],
+            updated=meta["updated"],
+            body=payload.body,
+        )
 
     def delete(self, template_id: str) -> bool:
         path = self._path(template_id)

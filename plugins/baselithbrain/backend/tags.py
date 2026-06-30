@@ -22,7 +22,9 @@ def collect_tags(metas: Iterable[NoteMeta]) -> list[TagInfo]:
                 counter[cleaned] += 1
     return [
         TagInfo(tag=tag, count=count)
-        for tag, count in sorted(counter.items(), key=lambda kv: (-kv[1], kv[0].lower()))
+        for tag, count in sorted(
+            counter.items(), key=lambda kv: (-kv[1], kv[0].lower())
+        )
     ]
 
 

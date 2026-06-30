@@ -23,6 +23,12 @@ void i18n
     fallbackLng: 'en',
     supportedLngs: ['en', 'it'],
     interpolation: { escapeValue: false },
+    // Resources are bundled (no async backend), but i18n.init() still resolves
+    // on the next tick — so on the first synchronous render isInitialized is
+    // false. With Suspense on, useTranslation would suspend and, with no
+    // <Suspense> boundary in the tree, blank the whole app. Disable it: the
+    // correct strings are present immediately on the next render.
+    react: { useSuspense: false },
     detection: {
       order: ['localStorage', 'navigator'],
       lookupLocalStorage: 'bb-lang',

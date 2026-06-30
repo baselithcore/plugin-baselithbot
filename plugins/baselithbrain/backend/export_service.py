@@ -22,7 +22,9 @@ def export_note(index: "BrainIndex", note_id: str) -> tuple[str, str]:
     return f"{note_id}.md", raw
 
 
-def export_vault(index: "BrainIndex", workspace: str | None = None) -> tuple[str, bytes]:
+def export_vault(
+    index: "BrainIndex", workspace: str | None = None
+) -> tuple[str, bytes]:
     """Return ``(filename, zip_bytes)`` bundling every note's raw Markdown."""
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
