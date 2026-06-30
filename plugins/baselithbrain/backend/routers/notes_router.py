@@ -60,6 +60,7 @@ async def update_note(note_id: str, patch: NoteUpdate) -> Note:
     idx = get_index()
     if not idx.notes.exists(note_id):
         raise HTTPException(status_code=404, detail="note not found")
+    idx.snapshot(note_id)  # capture the prior text for version history
     idx.notes.update(note_id, patch)
     await idx.rebuild()
     return idx.hydrate(note_id)

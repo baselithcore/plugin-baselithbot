@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
 import { Search, FileText, Plus, Network, Moon, CornerDownLeft } from 'lucide-react';
 import { useBrain } from '@/store';
@@ -18,6 +19,7 @@ interface Row {
 
 /** ⌘K command palette: full-text search + quick actions, keyboard-first. */
 export function CommandPalette() {
+  const { t } = useTranslation();
   const open = useBrain((s) => s.paletteOpen);
   const setPalette = useBrain((s) => s.setPalette);
   const openNote = useBrain((s) => s.openNote);
@@ -57,24 +59,24 @@ export function CommandPalette() {
     () => [
       {
         id: 'new',
-        label: 'Create new note',
+        label: t('palette.newNote'),
         icon: <Plus className="size-4" />,
         run: () => void createNote(),
       },
       {
         id: 'graph',
-        label: 'Open knowledge graph',
+        label: t('palette.openGraph'),
         icon: <Network className="size-4" />,
         run: toggleGraph,
       },
       {
         id: 'theme',
-        label: 'Toggle theme',
+        label: t('palette.toggleTheme'),
         icon: <Moon className="size-4" />,
         run: toggleTheme,
       },
     ],
-    [createNote, toggleGraph, toggleTheme]
+    [createNote, toggleGraph, toggleTheme, t]
   );
 
   const rows: Row[] = useMemo(() => {
@@ -136,7 +138,7 @@ export function CommandPalette() {
                     setPalette(false);
                   }
                 }}
-                placeholder="Search notes or run a command…"
+                placeholder={t('palette.placeholder')}
                 className="flex-1 bg-transparent text-[0.95rem] outline-none placeholder:text-[var(--color-faint)]"
               />
               <Kbd keys="esc" />
@@ -183,7 +185,7 @@ export function CommandPalette() {
               ))}
               {!rows.length && (
                 <p className="px-3 py-8 text-center text-sm text-[var(--color-faint)]">
-                  {q.trim() ? 'No results.' : 'Type to search.'}
+                  {q.trim() ? t('palette.noResults') : t('palette.typeToSearch')}
                 </p>
               )}
             </div>

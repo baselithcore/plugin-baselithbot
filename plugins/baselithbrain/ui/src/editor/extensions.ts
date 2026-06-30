@@ -23,7 +23,7 @@ const lowlight = createLowlight(common);
  * and Markdown round-trip (html:true so wikilink/mark anchors survive).
  * Pure factory so the Editor component stays presentation-only.
  */
-export function buildExtensions(): Extensions {
+export function buildExtensions(placeholder: string): Extensions {
   return [
     StarterKit.configure({
       heading: { levels: [1, 2, 3] },
@@ -47,7 +47,7 @@ export function buildExtensions(): Extensions {
     WikiLink,
     GlobalDragHandle.configure({ dragHandleWidth: 20, scrollTreshold: 100 }),
     Placeholder.configure({
-      placeholder: "Write, or press '/' for blocks · '[[' or '@' to link…",
+      placeholder,
     }),
     Markdown.configure({
       html: true,

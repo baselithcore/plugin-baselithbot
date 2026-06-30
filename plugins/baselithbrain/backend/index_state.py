@@ -17,9 +17,11 @@ from . import links as link_utils
 from .config_proxy import get_settings
 from .conversations import ConversationService
 from .graph_service import GraphService
+from .history import HistoryStore
 from .notes import NoteService
 from .search_service import SearchService
 from .semantic import SemanticIndex
+from .templates import TemplateStore
 from .vault import Vault
 from .workspaces import WorkspaceService
 
@@ -31,11 +33,24 @@ class BrainIndex:
         self.notes = NoteService(Vault(vault_root))
         self.workspaces = WorkspaceService(vault_root)
         self.conversations = ConversationService(vault_root)
+        self.history = HistoryStore(vault_root)
+        self.templates = TemplateStore(vault_root)
         self._semantic = SemanticIndex(vault_root)
         self.search = SearchService(self._semantic)
         self.graph = GraphService(self._semantic)
         self._lock = asyncio.Lock()
         self.ready = False
+
+    def snapshot(self, note_id: str) -> None:
+        """Capture the current on-disk note as a history revision (best-effort).
+
+        Called before an overwriting update so the prior text is recoverable.
+        Never raises into the request path — history is non-critical.
+        """
+        try:
+            self.history.snapshot(note_id, self.notes.vault.read(note_id))
+        except (FileNotFoundError, ValueError, OSError):
+            pass
 
     def note_ids(self, workspace: str | None = None) -> set[str] | None:
         """Set of note ids in ``workspace`` (``None`` ⇒ unscoped → ``None``)."""

@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useBrain } from '@/store';
 import { cn } from '@/lib/cn';
 import { askConfirm } from '../ConfirmDialog';
@@ -10,6 +11,7 @@ import { TreeRow } from './TreeRow';
  * to the root. Self/descendant drops are rejected server-side (cycle guard).
  */
 export function TreeView() {
+  const { t } = useTranslation();
   const tree = useBrain((s) => s.tree);
   const activeId = useBrain((s) => s.activeId);
   const openNote = useBrain((s) => s.openNote);
@@ -38,7 +40,9 @@ export function TreeView() {
   };
 
   if (!tree.length) {
-    return <p className="px-2 py-6 text-center text-xs text-[var(--color-faint)]">No notes yet.</p>;
+    return (
+      <p className="px-2 py-6 text-center text-xs text-[var(--color-faint)]">{t('tree.empty')}</p>
+    );
   }
 
   return (
@@ -63,7 +67,7 @@ export function TreeView() {
           onOpen={(id) => void openNote(id)}
           onAddChild={(parentId) => void createNote('Untitled', parentId)}
           onDelete={(id, title) => {
-            void askConfirm(`Delete “${title}”? Children move up one level.`).then((ok) => {
+            void askConfirm(t('tree.deleteConfirm', { title })).then((ok) => {
               if (ok) void deleteNote(id);
             });
           }}

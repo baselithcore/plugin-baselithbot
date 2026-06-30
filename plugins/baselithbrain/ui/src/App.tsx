@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
 import { Brain } from 'lucide-react';
 import { useAuth } from '@auth';
@@ -9,10 +10,14 @@ import { Aurora } from './components/Aurora';
 import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
 import { RightRail } from './components/RightRail';
+import { StatusBar } from './components/StatusBar';
 import { CommandPalette } from './components/CommandPalette';
 import { GraphPanel } from './components/GraphPanel';
 import { AssistantPanel } from './components/AssistantPanel';
 import { ConfirmHost } from './components/ConfirmDialog';
+import { HistoryDrawer } from './components/HistoryDrawer';
+import { TemplatesDialog } from './components/TemplatesDialog';
+import { TrashView } from './components/TrashView';
 import { Editor } from './editor/Editor';
 
 /** Dashboard tab id — must match plugin.get_ui_tabs()[].id. */
@@ -22,6 +27,10 @@ function Dashboard() {
   const { canAccessTab } = useAuth();
   const init = useBrain((s) => s.init);
   const active = useBrain((s) => s.active);
+  const reloadToken = useBrain((s) => s.reloadToken);
+  const focusMode = useBrain((s) => s.focusMode);
+  const modal = useBrain((s) => s.modal);
+  const setModal = useBrain((s) => s.setModal);
   const setPalette = useBrain((s) => s.setPalette);
   const toggleGraph = useBrain((s) => s.toggleGraph);
   const toggleAssistant = useBrain((s) => s.toggleAssistant);
@@ -60,15 +69,15 @@ function Dashboard() {
   return (
     <div className="relative flex h-full w-full overflow-hidden">
       <Aurora />
-      <div className="relative z-10 flex h-full w-full p-2.5 gap-2.5">
-        <Sidebar />
+      <div className="relative z-10 flex h-full w-full gap-2.5 p-2.5">
+        {!focusMode && <Sidebar />}
         <main className="bb-glass relative flex min-w-0 flex-1 flex-col overflow-hidden rounded-[var(--radius-lg)]">
           <Topbar />
           <div className="flex-1 overflow-y-auto py-10">
             <AnimatePresence mode="wait">
               {active ? (
                 <motion.div
-                  key={active.id}
+                  key={`${active.id}:${reloadToken}`}
                   variants={pageVariants}
                   initial="hidden"
                   animate="show"
@@ -81,12 +90,16 @@ function Dashboard() {
               )}
             </AnimatePresence>
           </div>
+          <StatusBar />
         </main>
-        <RightRail />
+        {!focusMode && <RightRail />}
       </div>
       <CommandPalette />
       <GraphPanel />
       <AssistantPanel />
+      <HistoryDrawer open={modal === 'history'} onClose={() => setModal(null)} />
+      <TemplatesDialog open={modal === 'templates'} onClose={() => setModal(null)} />
+      <TrashView open={modal === 'trash'} onClose={() => setModal(null)} />
       <ConfirmHost />
     </div>
   );
@@ -106,6 +119,7 @@ export default function App() {
 }
 
 function AccessDenied() {
+  const { t } = useTranslation();
   return (
     <div className="relative flex h-full w-full items-center justify-center overflow-hidden">
       <Aurora />
@@ -113,17 +127,15 @@ function AccessDenied() {
         <div className="bb-glass flex size-14 items-center justify-center rounded-2xl text-[var(--color-muted)]">
           <Brain className="size-7" />
         </div>
-        <h2 className="text-xl font-semibold tracking-tight">Access denied</h2>
-        <p className="max-w-sm text-sm text-[var(--color-muted)]">
-          Your account is not permitted to view the Second Brain. Contact an administrator if you
-          believe this is a mistake.
-        </p>
+        <h2 className="text-xl font-semibold tracking-tight">{t('app.accessDeniedTitle')}</h2>
+        <p className="max-w-sm text-sm text-[var(--color-muted)]">{t('app.accessDeniedBody')}</p>
       </div>
     </div>
   );
 }
 
 function Empty() {
+  const { t } = useTranslation();
   const createNote = useBrain((s) => s.createNote);
   return (
     <motion.div
@@ -134,24 +146,22 @@ function Empty() {
       className="flex h-[60vh] flex-col items-center justify-center gap-4 text-center"
     >
       <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.05 }}
-        className="bb-gradient bb-btn-glow flex size-16 items-center justify-center rounded-2xl text-white"
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+        className="bb-glass flex size-14 items-center justify-center rounded-xl text-[var(--color-accent)]"
       >
-        <Brain className="size-8" />
+        <Brain className="size-7" />
       </motion.div>
       <div>
-        <h2 className="text-xl font-semibold tracking-tight">Your second brain awaits</h2>
-        <p className="mt-1 text-sm text-[var(--color-muted)]">
-          Capture a thought, link ideas, and ask anything.
-        </p>
+        <h2 className="text-xl font-semibold tracking-tight">{t('app.emptyTitle')}</h2>
+        <p className="mt-1 text-sm text-[var(--color-muted)]">{t('app.emptyBody')}</p>
       </div>
       <button
         onClick={() => void createNote()}
-        className="bb-gradient bb-btn-glow rounded-xl px-4 py-2 text-sm font-medium text-white"
+        className="bb-gradient bb-btn-glow rounded-lg px-4 py-2 text-sm font-medium text-white"
       >
-        Create your first note
+        {t('app.emptyCta')}
       </button>
     </motion.div>
   );

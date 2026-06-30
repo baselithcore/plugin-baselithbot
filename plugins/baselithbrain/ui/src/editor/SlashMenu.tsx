@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/cn';
 import { Kbd } from '@/components/Kbd';
 import type { SlashCommand } from './menus';
@@ -11,6 +12,7 @@ interface Props {
 
 /** Floating '/' block-insert menu, anchored at the caret, grouped by section. */
 export function SlashMenu({ commands, index, coords, onPick }: Props) {
+  const { t } = useTranslation();
   if (!commands.length) return null;
 
   // Preserve the flat order (and thus the keyboard-nav index) while drawing a
@@ -28,7 +30,7 @@ export function SlashMenu({ commands, index, coords, onPick }: Props) {
           <div key={cmd.id}>
             {header && (
               <div className="px-2.5 pb-0.5 pt-1.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--color-faint)]">
-                {header}
+                {t(`slash.groups.${header}`)}
               </div>
             )}
             <button
@@ -43,7 +45,7 @@ export function SlashMenu({ commands, index, coords, onPick }: Props) {
                   : 'text-[var(--color-muted)] hover:bg-[var(--color-surface)]'
               )}
             >
-              <span>{cmd.label}</span>
+              <span>{t(`slash.commands.${cmd.id}`)}</span>
               <Kbd keys={cmd.hint} />
             </button>
           </div>

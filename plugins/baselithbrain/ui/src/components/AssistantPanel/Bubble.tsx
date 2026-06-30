@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { Check, Copy, FileText, Link2, ShieldCheck, Telescope } from 'lucide-react';
 import { Markdown } from '../Markdown';
@@ -20,12 +21,12 @@ export function Bubble({
   if (msg.role === 'user') {
     return (
       <motion.div
-        initial={{ opacity: 0, y: 8, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
         className="flex justify-end"
       >
-        <div className="bb-gradient max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md px-3.5 py-2 text-sm text-white shadow-[0_6px_18px_-8px_hsl(258_88%_60%_/_0.6)]">
+        <div className="bb-gradient max-w-[85%] whitespace-pre-wrap break-words rounded-2xl rounded-br-md px-3.5 py-2 text-sm text-white">
           {msg.text}
         </div>
       </motion.div>
@@ -35,10 +36,10 @@ export function Bubble({
   const empty = !msg.text;
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 4 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-      className="group rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)]/70 px-3.5 py-3 backdrop-blur-sm"
+      transition={{ duration: 0.14, ease: [0.22, 1, 0.36, 1] }}
+      className="group rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-3.5 py-3"
     >
       {empty && streaming ? (
         <div className="flex items-center py-1">
@@ -96,6 +97,7 @@ export function Bubble({
 
 /** Collapsible Thought/Action/Observation log from a deep-research run. */
 function TraceDisclosure({ trace }: { trace: ResearchTraceStep[] }) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
     <div className="mt-2.5 border-t border-[var(--color-border)] pt-2">
@@ -104,7 +106,8 @@ function TraceDisclosure({ trace }: { trace: ResearchTraceStep[] }) {
         className="flex items-center gap-1 text-[11px] text-[var(--color-muted)] transition hover:text-[var(--color-accent)]"
       >
         <Telescope className="size-3" />
-        {open ? 'Hide' : 'Show'} reasoning ({trace.length} steps)
+        {open ? t('bubble.hideReasoning') : t('bubble.showReasoning')}{' '}
+        {t('bubble.steps', { count: trace.length })}
       </button>
       {open ? (
         <ol className="mt-1.5 space-y-1">
@@ -124,21 +127,23 @@ function TraceDisclosure({ trace }: { trace: ResearchTraceStep[] }) {
 
 /** Tints a faithfulness score: ≥0.75 green, ≥0.5 amber, else red. */
 function GroundingBadge({ g }: { g: Groundedness }) {
+  const { t } = useTranslation();
   const pct = Math.round(g.score * 100);
   const tone =
     g.score >= 0.75 ? 'text-emerald-500' : g.score >= 0.5 ? 'text-amber-500' : 'text-rose-500';
   return (
     <span
-      title={`Grounded in your notes — ${g.level}. ${g.feedback}`}
+      title={t('bubble.groundedTip', { level: g.level, feedback: g.feedback })}
       className={`flex items-center gap-1 text-[11px] ${tone}`}
     >
       <ShieldCheck className="size-3" />
-      {pct}% grounded
+      {t('bubble.grounded', { pct })}
     </span>
   );
 }
 
 function CopyButton({ text }: { text: string }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -147,11 +152,11 @@ function CopyButton({ text }: { text: string }) {
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
-      title="Copy"
+      title={copied ? t('bubble.copied') : t('bubble.copy')}
       className="flex items-center gap-1 text-[11px] text-[var(--color-faint)] opacity-0 transition hover:text-[var(--color-accent)] group-hover:opacity-100"
     >
       {copied ? <Check className="size-3" /> : <Copy className="size-3" />}
-      {copied ? 'Copied' : 'Copy'}
+      {copied ? t('bubble.copied') : t('bubble.copy')}
     </button>
   );
 }

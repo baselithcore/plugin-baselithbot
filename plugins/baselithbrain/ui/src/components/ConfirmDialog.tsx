@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
 import { AlertTriangle } from 'lucide-react';
 import { backdropVariants, popVariants } from '@/lib/motion';
@@ -34,6 +35,7 @@ export function askConfirm(message: string): Promise<boolean> {
 
 /** Singleton host that renders the active confirmation, if any. */
 export function ConfirmHost() {
+  const { t } = useTranslation();
   const [pending, setPending] = useState<Pending | null>(null);
 
   useEffect(() => {
@@ -93,7 +95,7 @@ export function ConfirmHost() {
                 onClick={() => settle(false)}
                 className="rounded-xl px-3.5 py-2 text-sm text-[var(--color-muted)] transition hover:bg-[var(--color-elevated)]"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <motion.button
                 autoFocus
@@ -101,7 +103,7 @@ export function ConfirmHost() {
                 onClick={() => settle(true)}
                 className="rounded-xl bg-[var(--color-danger)] px-3.5 py-2 text-sm font-medium text-white shadow-[0_6px_18px_-6px_hsl(353_74%_54%_/_0.6)] transition hover:brightness-110"
               >
-                Delete
+                {t('common.delete')}
               </motion.button>
             </div>
           </motion.div>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
 import { Check, ChevronsUpDown, Layers, Plus, Trash2 } from 'lucide-react';
 import { useBrain } from '@/store';
@@ -12,6 +13,7 @@ import { askConfirm } from './ConfirmDialog';
  * never lost). Mounted in the sidebar header above the page tree.
  */
 export function WorkspaceSwitcher() {
+  const { t } = useTranslation();
   const workspaces = useBrain((s) => s.workspaces);
   const activeWorkspace = useBrain((s) => s.activeWorkspace);
   const switchWorkspace = useBrain((s) => s.switchWorkspace);
@@ -55,7 +57,7 @@ export function WorkspaceSwitcher() {
         <span className="bb-gradient flex size-5 shrink-0 items-center justify-center rounded-md text-white">
           <Layers className="size-3" />
         </span>
-        <span className="truncate font-medium">{active?.name ?? 'My Brain'}</span>
+        <span className="truncate font-medium">{active?.name ?? t('workspace.default')}</span>
         <span className="ml-auto text-xs text-[var(--color-faint)]">{active?.note_count ?? 0}</span>
         <ChevronsUpDown className="size-3.5 shrink-0 text-[var(--color-faint)]" />
       </button>
@@ -97,11 +99,11 @@ export function WorkspaceSwitcher() {
                     </span>
                     {w.id !== 'default' && (
                       <button
-                        title="Delete workspace"
+                        title={t('workspace.deleteWorkspace')}
                         onClick={(e) => {
                           e.stopPropagation();
                           void askConfirm(
-                            `Delete workspace “${w.name}”? Its ${w.note_count} note(s) move to My Brain.`
+                            t('workspace.deleteConfirm', { name: w.name, count: w.note_count })
                           ).then((ok) => {
                             if (ok) void deleteWorkspace(w.id);
                           });
@@ -130,7 +132,7 @@ export function WorkspaceSwitcher() {
                       setCreating(false);
                     }
                   }}
-                  placeholder="Workspace name…"
+                  placeholder={t('workspace.namePlaceholder')}
                   className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-2 py-1.5 text-sm outline-none focus:border-[var(--color-accent)]"
                 />
               ) : (
@@ -139,7 +141,7 @@ export function WorkspaceSwitcher() {
                   className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-[var(--color-muted)] hover:bg-[var(--color-elevated)] hover:text-[var(--color-text)]"
                 >
                   <Plus className="size-3.5" />
-                  New workspace
+                  {t('workspace.new')}
                 </button>
               )}
             </div>

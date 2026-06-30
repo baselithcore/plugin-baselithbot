@@ -7,6 +7,22 @@ import type { ConversationMeta, Note, NoteMeta, TreeNode, WorkspaceInfo } from '
 type Theme = 'light' | 'dark';
 
 const WS_KEY = 'bb-workspace';
+const PIN_KEY = 'bb-pinned';
+const RECENT_KEY = 'bb-recent';
+const RECENT_MAX = 8;
+
+function loadIds(key: string): string[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(key) || '[]');
+    return Array.isArray(raw) ? raw.filter((x): x is string => typeof x === 'string') : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveIds(key: string, ids: string[]): void {
+  localStorage.setItem(key, JSON.stringify(ids));
+}
 
 function initialTheme(): Theme {
   const saved = localStorage.getItem('bb-theme');
@@ -37,6 +53,15 @@ interface BrainState {
   activeWorkspace: string;
   conversations: ConversationMeta[];
   activeConversationId: string | null;
+  pinned: string[];
+  recent: string[];
+  focusMode: boolean;
+  //: Which secondary modal/drawer is open (mounted once at the app root).
+  modal: 'history' | 'templates' | 'trash' | null;
+  //: Bumped only when the active note's body is replaced *externally* (e.g. a
+  //: history restore), so the editor remounts and reloads — never on a normal
+  //: debounced save, which would otherwise reset the caret on every keystroke.
+  reloadToken: number;
 
   init: () => Promise<void>;
   loadNotes: () => Promise<void>;
@@ -60,7 +85,14 @@ interface BrainState {
   deleteConversation: (id: string) => Promise<void>;
   renameConversation: (id: string, title: string) => Promise<void>;
 
+  openDaily: () => Promise<void>;
+  refreshActive: (id: string) => Promise<void>;
+  togglePin: (id: string) => void;
+  pushRecent: (id: string) => void;
+
+  setModal: (modal: 'history' | 'templates' | 'trash' | null) => void;
   toggleTheme: () => void;
+  toggleFocus: () => void;
   setPalette: (open: boolean) => void;
   toggleGraph: () => void;
   setAssistant: (open: boolean) => void;
@@ -81,6 +113,11 @@ export const useBrain = create<BrainState>((set, get) => ({
   activeWorkspace: initialWorkspace(),
   conversations: [],
   activeConversationId: null,
+  pinned: loadIds(PIN_KEY),
+  recent: loadIds(RECENT_KEY),
+  focusMode: false,
+  modal: null,
+  reloadToken: 0,
 
   init: async () => {
     applyTheme(get().theme);
@@ -105,6 +142,7 @@ export const useBrain = create<BrainState>((set, get) => ({
     try {
       const note = await api.getNote(id);
       set({ active: note });
+      get().pushRecent(id);
     } finally {
       set({ loading: false });
     }
@@ -158,6 +196,11 @@ export const useBrain = create<BrainState>((set, get) => ({
 
   deleteNote: async (id) => {
     await api.deleteNote(id);
+    const pinned = get().pinned.filter((x) => x !== id);
+    const recent = get().recent.filter((x) => x !== id);
+    saveIds(PIN_KEY, pinned);
+    saveIds(RECENT_KEY, recent);
+    set({ pinned, recent });
     await Promise.all([get().loadNotes(), get().loadTree(), get().loadWorkspaces()]);
     if (get().activeId === id) {
       const next = get().notes[0];
@@ -247,11 +290,42 @@ export const useBrain = create<BrainState>((set, get) => ({
     }));
   },
 
+  openDaily: async () => {
+    const note = await api.openDaily();
+    await Promise.all([get().loadNotes(), get().loadTree(), get().loadWorkspaces()]);
+    set({ active: note, activeId: note.id });
+    get().pushRecent(note.id);
+  },
+
+  refreshActive: async (id) => {
+    const note = await api.getNote(id);
+    await get().loadNotes();
+    set((s) => ({ active: note, activeId: id, reloadToken: s.reloadToken + 1 }));
+  },
+
+  togglePin: (id) => {
+    set((s) => {
+      const pinned = s.pinned.includes(id) ? s.pinned.filter((x) => x !== id) : [...s.pinned, id];
+      saveIds(PIN_KEY, pinned);
+      return { pinned };
+    });
+  },
+
+  pushRecent: (id) => {
+    set((s) => {
+      const recent = [id, ...s.recent.filter((x) => x !== id)].slice(0, RECENT_MAX);
+      saveIds(RECENT_KEY, recent);
+      return { recent };
+    });
+  },
+
   toggleTheme: () => {
     const theme = get().theme === 'dark' ? 'light' : 'dark';
     applyTheme(theme);
     set({ theme });
   },
+  toggleFocus: () => set((s) => ({ focusMode: !s.focusMode })),
+  setModal: (modal) => set({ modal }),
   setPalette: (open) => set({ paletteOpen: open }),
   toggleGraph: () => set((s) => ({ graphOpen: !s.graphOpen })),
   setAssistant: (open) => set({ assistantOpen: open }),

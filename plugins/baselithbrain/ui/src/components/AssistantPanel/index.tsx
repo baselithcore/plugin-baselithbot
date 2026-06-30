@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
-import { Sparkles, X, MessageSquarePlus, Link2, ScrollText, Tags, Wand2 } from 'lucide-react';
+import {
+  MessageSquareText,
+  X,
+  MessageSquarePlus,
+  Link2,
+  ScrollText,
+  Tags,
+  Wand2,
+} from 'lucide-react';
 import { useBrain } from '@/store';
 import { api } from '@/lib/api';
 import { drawerVariants } from '@/lib/motion';
@@ -19,6 +28,7 @@ const NOTE_ACTIONS = [
 
 /** Chat-with-your-notes assistant: persisted threads, RAG answers, note actions. */
 export function AssistantPanel() {
+  const { t } = useTranslation();
   const open = useBrain((s) => s.assistantOpen);
   const setOpen = useBrain((s) => s.setAssistant);
   const active = useBrain((s) => s.active);
@@ -63,18 +73,17 @@ export function AssistantPanel() {
         {!open && (
           <motion.button
             key="fab"
-            title="Ask your notes (⌘J)"
-            initial={{ opacity: 0, scale: 0.6, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.6, y: 20 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.94 }}
-            transition={{ type: 'spring', stiffness: 380, damping: 22 }}
+            title={t('assistant.fab')}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
             onClick={() => setOpen(true)}
-            className="bb-gradient bb-btn-glow fixed bottom-6 right-6 z-30 flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold text-white"
+            className="bb-gradient bb-btn-glow fixed bottom-6 right-6 z-30 flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium text-white"
           >
-            <Sparkles className="size-4" />
-            Ask your brain
+            <MessageSquareText className="size-4" />
+            {t('assistant.fab')}
           </motion.button>
         )}
       </AnimatePresence>
@@ -101,12 +110,12 @@ export function AssistantPanel() {
             >
               <header className="flex items-center gap-1.5 border-b border-[var(--color-border)] px-3 py-3">
                 <span className="bb-gradient flex size-6 items-center justify-center rounded-lg text-white">
-                  <Sparkles className="size-3.5" />
+                  <MessageSquareText className="size-3.5" />
                 </span>
                 <ConversationMenu onPick={() => setInput('')} />
                 <div className="ml-auto flex items-center gap-1">
                   <button
-                    title="New chat"
+                    title={t('assistant.newChat')}
                     onClick={() => {
                       newChat();
                       setInput('');
@@ -116,7 +125,7 @@ export function AssistantPanel() {
                     <MessageSquarePlus className="size-4" />
                   </button>
                   <button
-                    title="Close (⌘J)"
+                    title={t('assistant.close')}
                     onClick={() => setOpen(false)}
                     className="rounded-lg p-1.5 text-[var(--color-muted)] hover:bg-[var(--color-elevated)]"
                   >
@@ -127,7 +136,7 @@ export function AssistantPanel() {
 
               {configured === false && (
                 <div className="border-b border-[var(--color-border)] bg-[var(--color-accent-soft)] px-4 py-2 text-xs text-[var(--color-link)]">
-                  No LLM provider configured. Set <code>LLM_PROVIDER</code> / API key to enable AI.
+                  {t('assistant.noLlm')}
                 </div>
               )}
 
@@ -142,7 +151,13 @@ export function AssistantPanel() {
                       className="flex items-center gap-1 rounded-lg border border-[var(--color-border)] px-2 py-1 text-xs text-[var(--color-muted)] transition hover:border-[var(--color-accent)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-text)] disabled:opacity-40"
                     >
                       <a.icon className="size-3" />
-                      {a.label}
+                      {t(
+                        a.id === 'suggest_links'
+                          ? 'actions.suggestLinks'
+                          : a.id === 'autotag'
+                            ? 'actions.autotag'
+                            : `actions.${a.id}`
+                      )}
                     </motion.button>
                   ))}
                 </div>
@@ -151,7 +166,7 @@ export function AssistantPanel() {
               <div ref={scroller} className="flex-1 space-y-4 overflow-y-auto p-4">
                 {loadingThread ? (
                   <p className="py-6 text-center text-xs text-[var(--color-faint)]">
-                    Loading conversation…
+                    {t('assistant.loading')}
                   </p>
                 ) : !msgs.length ? (
                   <Welcome onAsk={(q) => setInput(q)} />

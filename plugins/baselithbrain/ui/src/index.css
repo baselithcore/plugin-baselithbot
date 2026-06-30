@@ -4,80 +4,79 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /*
- * BaselithBrain design system — "Aurora Glass".
- * AI-native, premium feel: frosted-glass chrome floating over a slow animated
- * aurora field, an iris→cyan signature gradient, soft glow rings, and depth via
- * layered shadows. HSL channel triples so opacity modifiers keep working.
+ * BaselithBrain design system — "Slate" (calm, professional, tool-like).
+ * Inspired by Obsidian/Linear: neutral slate surfaces, a single restrained
+ * indigo accent, flat panels with hairline borders, and quiet depth. No
+ * animated background, no signature gradient, no glow — readability and focus
+ * over spectacle. HSL channel triples so opacity modifiers keep working.
  * Components read ONLY tokens / utilities below — never raw colors — so light
- * and dark stay in lockstep.
+ * and dark stay in lockstep, and the whole look lives in this one file.
  */
 @theme {
   --font-sans: 'Inter var', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-serif: 'Newsreader', Georgia, serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
 
-  --radius: 0.75rem;
-  --radius-sm: 0.5rem;
-  --radius-lg: 1.1rem;
+  --radius: 0.6rem;
+  --radius-sm: 0.4rem;
+  --radius-lg: 0.75rem;
 
-  /* Signature gradient stops (iris → cyan). */
-  --grad-1: hsl(263 90% 64%);
-  --grad-2: hsl(228 92% 64%);
-  --grad-3: hsl(190 95% 55%);
-  --gradient: linear-gradient(120deg, var(--grad-1), var(--grad-2) 52%, var(--grad-3));
-  --gradient-soft: linear-gradient(120deg, hsl(263 90% 64% / 0.16), hsl(190 95% 55% / 0.16));
+  /* No gradient — `--gradient` aliases the flat accent so legacy `.bb-gradient`
+     usages render as a solid accent fill instead of an iris→cyan sweep. */
+  --gradient: var(--color-accent);
+  --gradient-soft: var(--color-accent-soft);
 
-  /* Light theme. */
-  --color-bg: hsl(240 30% 99%);
-  --color-bg-deep: hsl(240 28% 97%);
-  --color-surface: hsl(240 24% 99%);
+  /* Light theme — cool neutral slate. */
+  --color-bg: hsl(220 20% 98%);
+  --color-bg-deep: hsl(220 18% 95%);
+  --color-surface: hsl(220 20% 96.5%);
   --color-elevated: hsl(0 0% 100%);
-  --color-glass: hsl(0 0% 100% / 0.62);
-  --color-glass-border: hsl(240 20% 100% / 0.7);
-  --color-border: hsl(240 14% 90%);
-  --color-border-strong: hsl(240 12% 80%);
-  --color-text: hsl(240 18% 11%);
-  --color-muted: hsl(240 8% 42%);
-  --color-faint: hsl(240 7% 60%);
-  --color-accent: hsl(258 88% 60%);
-  --color-accent-2: hsl(190 92% 46%);
-  --color-accent-soft: hsl(258 90% 96%);
-  --color-link: hsl(258 85% 56%);
-  --color-danger: hsl(353 74% 54%);
-  --color-overlay: hsl(258 40% 14% / 0.35);
-  --glow: 0 0 0 1px hsl(258 88% 60% / 0.35), 0 8px 30px -8px hsl(258 88% 60% / 0.45);
-  --shadow-glass: 0 1px 0 0 hsl(0 0% 100% / 0.6) inset, 0 10px 30px -12px hsl(240 30% 30% / 0.25);
+  --color-glass: hsl(0 0% 100%);
+  --color-glass-border: hsl(220 16% 90%);
+  --color-border: hsl(220 16% 89%);
+  --color-border-strong: hsl(220 14% 80%);
+  --color-text: hsl(222 24% 15%);
+  --color-muted: hsl(220 10% 40%);
+  --color-faint: hsl(220 9% 58%);
+  --color-accent: hsl(224 64% 53%);
+  --color-accent-2: hsl(188 52% 42%);
+  --color-accent-soft: hsl(224 64% 53% / 0.1);
+  --color-link: hsl(224 64% 50%);
+  --color-danger: hsl(0 62% 51%);
+  --color-overlay: hsl(222 24% 18% / 0.32);
+  --glow: 0 0 0 1px hsl(224 64% 53% / 0.45);
+  --shadow-glass: 0 1px 2px hsl(222 24% 20% / 0.06), 0 1px 1px hsl(222 24% 20% / 0.04);
 
-  /* Aurora blob colors (light). */
-  --aurora-1: hsl(263 90% 70% / 0.45);
-  --aurora-2: hsl(190 95% 60% / 0.4);
-  --aurora-3: hsl(310 90% 72% / 0.32);
+  /* Static, very faint corner washes (no animation). */
+  --aurora-1: hsl(224 60% 70% / 0.06);
+  --aurora-2: hsl(188 60% 60% / 0.05);
+  --aurora-3: transparent;
 }
 
 .dark {
-  --color-bg: hsl(245 28% 6%);
-  --color-bg-deep: hsl(248 32% 4%);
-  --color-surface: hsl(244 22% 9%);
-  --color-elevated: hsl(243 20% 12%);
-  --color-glass: hsl(244 26% 11% / 0.55);
-  --color-glass-border: hsl(255 40% 70% / 0.12);
-  --color-border: hsl(244 16% 20%);
-  --color-border-strong: hsl(244 14% 30%);
-  --color-text: hsl(240 28% 94%);
-  --color-muted: hsl(244 12% 64%);
-  --color-faint: hsl(244 10% 46%);
-  --color-accent: hsl(258 92% 72%);
-  --color-accent-2: hsl(188 95% 60%);
-  --color-accent-soft: hsl(258 60% 20% / 0.7);
-  --color-link: hsl(258 95% 80%);
-  --color-danger: hsl(353 80% 66%);
-  --color-overlay: hsl(248 40% 2% / 0.62);
-  --glow: 0 0 0 1px hsl(258 92% 72% / 0.4), 0 8px 34px -8px hsl(258 92% 72% / 0.5);
-  --shadow-glass: 0 1px 0 0 hsl(255 40% 80% / 0.07) inset, 0 18px 50px -18px hsl(248 60% 2% / 0.8);
+  --color-bg: hsl(222 16% 11%);
+  --color-bg-deep: hsl(222 16% 8.5%);
+  --color-surface: hsl(222 14% 14%);
+  --color-elevated: hsl(222 13% 16.5%);
+  --color-glass: hsl(222 14% 14%);
+  --color-glass-border: hsl(222 10% 24%);
+  --color-border: hsl(222 11% 22%);
+  --color-border-strong: hsl(222 10% 32%);
+  --color-text: hsl(220 18% 90%);
+  --color-muted: hsl(220 10% 62%);
+  --color-faint: hsl(220 8% 46%);
+  --color-accent: hsl(222 78% 70%);
+  --color-accent-2: hsl(188 60% 56%);
+  --color-accent-soft: hsl(222 70% 66% / 0.16);
+  --color-link: hsl(222 80% 76%);
+  --color-danger: hsl(0 70% 67%);
+  --color-overlay: hsl(222 30% 3% / 0.6);
+  --glow: 0 0 0 1px hsl(222 78% 70% / 0.5);
+  --shadow-glass: 0 1px 2px hsl(222 40% 2% / 0.4), 0 1px 1px hsl(222 40% 2% / 0.3);
 
-  --aurora-1: hsl(263 90% 60% / 0.5);
-  --aurora-2: hsl(190 95% 52% / 0.42);
-  --aurora-3: hsl(305 85% 60% / 0.4);
+  --aurora-1: hsl(224 60% 60% / 0.07);
+  --aurora-2: hsl(188 60% 50% / 0.05);
+  --aurora-3: transparent;
 }
 
 * {
@@ -101,7 +100,7 @@ body {
 }
 
 ::selection {
-  background: hsl(258 88% 60% / 0.22);
+  background: var(--color-accent-soft);
 }
 
 /* Thin, unobtrusive scrollbars. */
@@ -121,162 +120,69 @@ body {
 }
 
 /* ============================================================
- * Aurora background + glass utilities
+ * Background wash + panel utilities
  * ========================================================== */
+/* Static, near-invisible corner wash behind the app chrome. No animation, no
+   blobs — just a faint hint of depth so flat panels read against the canvas. */
 .bb-aurora {
   position: fixed;
   inset: 0;
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  background: var(--color-bg);
-}
-.bb-aurora::before,
-.bb-aurora::after {
-  content: '';
-  position: absolute;
-  width: 60vw;
-  height: 60vw;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.9;
-  will-change: transform;
-}
-.bb-aurora::before {
-  top: -18vw;
-  left: -10vw;
-  background: radial-gradient(circle at 30% 30%, var(--aurora-1), transparent 65%);
-  animation: bb-drift-a 26s ease-in-out infinite;
-}
-.bb-aurora::after {
-  bottom: -22vw;
-  right: -12vw;
-  background: radial-gradient(circle at 60% 60%, var(--aurora-2), transparent 65%);
-  animation: bb-drift-b 32s ease-in-out infinite;
+  background:
+    radial-gradient(60vw 50vh at 0% 0%, var(--aurora-1), transparent 70%),
+    radial-gradient(50vw 45vh at 100% 100%, var(--aurora-2), transparent 70%), var(--color-bg);
 }
 .bb-aurora-blob {
-  position: absolute;
-  top: 30%;
-  left: 45%;
-  width: 38vw;
-  height: 38vw;
-  border-radius: 50%;
-  filter: blur(90px);
-  background: radial-gradient(circle, var(--aurora-3), transparent 65%);
-  animation: bb-drift-c 38s ease-in-out infinite;
-  will-change: transform;
-}
-@keyframes bb-drift-a {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(8vw, 6vw) scale(1.15);
-  }
-}
-@keyframes bb-drift-b {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1.05);
-  }
-  50% {
-    transform: translate(-7vw, -5vw) scale(0.9);
-  }
-}
-@keyframes bb-drift-c {
-  0%,
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-  }
-  33% {
-    transform: translate(-35%, -60%) scale(1.2);
-  }
-  66% {
-    transform: translate(-60%, -40%) scale(0.85);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .bb-aurora::before,
-  .bb-aurora::after,
-  .bb-aurora-blob {
-    animation: none;
-  }
+  display: none;
 }
 
-/* Frosted glass panel. */
+/* Flat panel — solid surface with a hairline border. (Legacy name `bb-glass`
+   kept so components need no edits; the frosted-glass look is gone.) */
 .bb-glass {
   background: var(--color-glass);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid var(--color-glass-border);
-  box-shadow: var(--shadow-glass);
-}
-.bb-glass-faint {
-  background: var(--color-glass);
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
-}
-/* Near-opaque panel — for content surfaces where readability beats see-through
-   (assistant drawer, floating menus). Keeps a touch of blur at the edges. */
-.bb-solid {
-  background: color-mix(in srgb, var(--color-elevated) 95%, transparent);
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
   border: 1px solid var(--color-border);
   box-shadow: var(--shadow-glass);
 }
+.bb-glass-faint {
+  background: transparent;
+}
+/* Elevated panel — for floating surfaces (palette, drawers, menus). */
+.bb-solid {
+  background: var(--color-elevated);
+  border: 1px solid var(--color-border);
+  box-shadow:
+    var(--shadow-glass),
+    0 12px 32px -16px hsl(222 24% 20% / 0.18);
+}
 
-/* Gradient helpers. */
+/* Accent helpers (formerly gradient). Flat fills now. */
 .bb-gradient {
-  background-image: var(--gradient);
+  background-color: var(--color-accent);
 }
 .bb-gradient-text {
-  background-image: var(--gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--color-accent);
 }
+/* Subtle hairline frame (formerly an animated gradient ring). */
 .bb-ring-grad {
   position: relative;
 }
-.bb-ring-grad::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1px;
-  background: var(--gradient);
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0.55;
-  pointer-events: none;
-}
 
-/* Primary gradient button glow. Intentionally sets NO `position` so it can be
-   freely combined with Tailwind position utilities (fixed/absolute) — adding
-   one here would override them (equal specificity, later rule wins). */
+/* Primary button — quiet elevation, no glow. Sets NO `position` so it composes
+   with Tailwind position utilities (fixed/absolute). */
 .bb-btn-glow {
-  box-shadow: 0 6px 20px -6px hsl(258 88% 60% / 0.6);
+  box-shadow: 0 1px 2px hsl(222 24% 20% / 0.12);
   transition:
-    box-shadow 0.25s ease,
-    transform 0.12s ease;
+    background-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
 }
 .bb-btn-glow:hover {
-  box-shadow: 0 10px 28px -6px hsl(258 88% 60% / 0.7);
+  box-shadow: 0 2px 6px hsl(222 24% 20% / 0.16);
 }
 .bb-btn-glow:active {
-  transform: scale(0.97);
-}
-
-/* Animated gradient border (for active/focus emphasis). */
-@keyframes bb-spin {
-  to {
-    transform: rotate(1turn);
-  }
+  transform: translateY(0.5px);
 }
 
 /* ============================================================
@@ -329,10 +235,10 @@ body {
   min-height: 60vh;
 }
 .bb-prose h1 {
-  font-family: var(--font-serif);
-  font-size: 2.1rem;
-  font-weight: 620;
-  letter-spacing: -0.02em;
+  font-family: var(--font-sans);
+  font-size: 1.9rem;
+  font-weight: 680;
+  letter-spacing: -0.021em;
   margin: 1.5rem 0 0.7rem;
 }
 .bb-prose h2 {
@@ -372,8 +278,7 @@ body {
   color: var(--color-accent);
 }
 .bb-prose blockquote {
-  border-left: 3px solid;
-  border-image: var(--gradient) 1;
+  border-left: 3px solid var(--color-border-strong);
   padding-left: 1rem;
   color: var(--color-muted);
   margin: 0.8rem 0;

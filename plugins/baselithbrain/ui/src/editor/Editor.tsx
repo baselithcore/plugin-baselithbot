@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { EditorContent, useEditor } from '@tiptap/react';
 import { buildExtensions } from './extensions';
 import { markdownToEditor, editorToMarkdown, slugify } from './markdownBridge';
@@ -24,13 +25,14 @@ const SAVE_DEBOUNCE = 600;
  * and tags live in the Topbar) — debounced, never on every keystroke.
  */
 export function Editor({ noteId, body, onSaved }: Props) {
+  const { t } = useTranslation();
   const notes = useBrain((s) => s.notes);
   const openWiki = useBrain((s) => s.openWiki);
   const loadingRef = useRef(true);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const editor = useEditor({
-    extensions: buildExtensions(),
+    extensions: buildExtensions(t('editor.placeholder')),
     editorProps: {
       attributes: { class: 'bb-prose focus:outline-none' },
       handleClickOn: (_view, _pos, node) => {

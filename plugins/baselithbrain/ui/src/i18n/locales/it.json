@@ -1,0 +1,192 @@
+{
+  "common": {
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "save": "Salva",
+    "close": "Chiudi",
+    "restore": "Ripristina",
+    "language": "Lingua"
+  },
+  "tree": {
+    "collapse": "Comprimi",
+    "expand": "Espandi",
+    "newChild": "Nuova nota figlia",
+    "empty": "Ancora nessuna nota.",
+    "deleteConfirm": "Eliminare «{{title}}»? Le note figlie salgono di un livello."
+  },
+  "app": {
+    "accessDeniedTitle": "Accesso negato",
+    "accessDeniedBody": "Il tuo account non è autorizzato a visualizzare il Second Brain. Contatta un amministratore se ritieni si tratti di un errore.",
+    "emptyTitle": "Nessuna nota aperta",
+    "emptyBody": "Cattura un pensiero e collega le tue idee.",
+    "emptyCta": "Crea una nota"
+  },
+  "sidebar": {
+    "today": "Nota di oggi",
+    "newNote": "Nuova nota",
+    "filter": "Filtra le note…",
+    "viewNotes": "Note",
+    "viewTags": "Tag",
+    "pinned": "Fissate",
+    "recent": "Recenti",
+    "allNotes": "Tutte le note",
+    "noMatch": "Nessuna nota corrisponde.",
+    "notesCount": "{{count}} note",
+    "searchHint": "cerca",
+    "trash": "Cestino",
+    "deleteConfirm": "Eliminare «{{title}}»?"
+  },
+  "topbar": {
+    "untitled": "Senza titolo",
+    "search": "Cerca",
+    "graph": "Grafo",
+    "theme": "Tema",
+    "logout": "Esci"
+  },
+  "tags": {
+    "count": "{{count}} tag",
+    "add": "Aggiungi tag",
+    "addPlaceholder": "Aggiungi un tag…",
+    "none": "Ancora nessun tag.",
+    "edit": "Modifica tag",
+    "browserEmpty": "Ancora nessun tag. Aggiungi tag alle note per organizzarle.",
+    "noNotes": "Nessuna nota."
+  },
+  "more": {
+    "label": "Altro",
+    "pin": "Fissa la nota",
+    "unpin": "Sblocca la nota",
+    "history": "Cronologia versioni",
+    "exportNote": "Esporta nota (.md)",
+    "templates": "Modelli",
+    "exportVault": "Esporta workspace (.zip)",
+    "focus": "Modalità focus"
+  },
+  "rail": {
+    "outline": "Struttura",
+    "noHeadings": "Ancora nessun titolo.",
+    "localGraph": "Grafo locale",
+    "backlinks": "Collegamenti in entrata",
+    "noBacklinks": "Nessuna nota collega questa pagina.",
+    "suggested": "Collegamenti suggeriti",
+    "noSuggestions": "Nessun suggerimento — ben collegata!",
+    "mention": "menzione",
+    "similar": "simile"
+  },
+  "status": {
+    "words": "{{count}} parole",
+    "read": "{{count}} min di lettura",
+    "saved": "Salvato {{time}}"
+  },
+  "palette": {
+    "placeholder": "Cerca note o esegui un comando…",
+    "newNote": "Crea nuova nota",
+    "openGraph": "Apri il grafo della conoscenza",
+    "toggleTheme": "Cambia tema",
+    "noResults": "Nessun risultato.",
+    "typeToSearch": "Scrivi per cercare."
+  },
+  "graph": {
+    "title": "Grafo della conoscenza",
+    "subtitle": "{{nodes}} nodi · {{edges}} collegamenti — clicca per aprire",
+    "tags": "Tag",
+    "similar": "Simili"
+  },
+  "assistant": {
+    "fab": "Assistente",
+    "newChat": "Nuova chat",
+    "close": "Chiudi",
+    "noLlm": "Nessun provider LLM configurato. Imposta LLM_PROVIDER / chiave API per abilitare l'AI.",
+    "loading": "Caricamento conversazione…",
+    "conversations": "Conversazioni",
+    "noConversations": "Ancora nessuna conversazione.",
+    "rename": "Rinomina"
+  },
+  "actions": {
+    "summarize": "Riassumi",
+    "improve": "Migliora",
+    "autotag": "Tag automatici",
+    "suggestLinks": "Suggerisci collegamenti"
+  },
+  "welcome": {
+    "title": "Chatta con le tue note",
+    "body": "Le risposte si basano sul tuo vault e citano le note utilizzate. Questa conversazione ricorda ciò di cui avete parlato.",
+    "ex1": "Cosa collega le note atomiche e il LYT?",
+    "ex2": "Riassumi le mie note PKM",
+    "ex3": "Su cosa dovrei scrivere ora?"
+  },
+  "composer": {
+    "placeholder": "Interroga la tua base di conoscenza…",
+    "stop": "Ferma",
+    "research": "Ricerca approfondita — ragionamento multi-step tra le tue note",
+    "send": "Invia",
+    "sendHint": "invia",
+    "researchHint": "ricerca",
+    "toggleHint": "mostra/nascondi"
+  },
+  "bubble": {
+    "copy": "Copia",
+    "copied": "Copiato",
+    "showReasoning": "Mostra ragionamento",
+    "hideReasoning": "Nascondi ragionamento",
+    "steps": "({{count}} passaggi)",
+    "grounded": "{{pct}}% fondato",
+    "groundedTip": "Fondato sulle tue note — {{level}}. {{feedback}}"
+  },
+  "trash": {
+    "title": "Cestino",
+    "empty": "Svuota cestino",
+    "isEmpty": "Il cestino è vuoto.",
+    "restore": "Ripristina",
+    "deleteForever": "Elimina definitivamente",
+    "purgeConfirm": "Eliminare definitivamente «{{title}}»? L'operazione è irreversibile.",
+    "emptyConfirm": "Svuotare definitivamente il cestino? L'operazione è irreversibile."
+  },
+  "templates": {
+    "title": "Modelli",
+    "newNote": "Nuova nota",
+    "empty": "Ancora nessun modello. Creane uno qui sotto — usa i segnaposto data e titolo.",
+    "name": "Nome del modello",
+    "save": "Salva modello",
+    "deleteConfirm": "Eliminare il modello «{{title}}»?"
+  },
+  "history": {
+    "title": "Cronologia versioni",
+    "noVersions": "Nessuna versione precedente.",
+    "selectVersion": "Seleziona una versione per l'anteprima.",
+    "restore": "Ripristina questa versione",
+    "empty": "(vuoto)"
+  },
+  "workspace": {
+    "default": "Il mio Brain",
+    "new": "Nuovo workspace",
+    "namePlaceholder": "Nome del workspace…",
+    "deleteWorkspace": "Elimina workspace",
+    "deleteConfirm": "Eliminare il workspace «{{name}}»? Le sue {{count}} nota/e tornano a Il mio Brain."
+  },
+  "editor": {
+    "placeholder": "Scrivi, o premi '/' per i blocchi · '[[' o '@' per collegare…"
+  },
+  "slash": {
+    "groups": {
+      "Basic": "Base",
+      "Lists": "Elenchi",
+      "Blocks": "Blocchi",
+      "Insert": "Inserisci"
+    },
+    "commands": {
+      "h1": "Titolo 1",
+      "h2": "Titolo 2",
+      "h3": "Titolo 3",
+      "todo": "Cosa da fare",
+      "bullet": "Elenco puntato",
+      "ordered": "Elenco numerato",
+      "quote": "Citazione",
+      "callout": "Riquadro",
+      "code": "Blocco di codice",
+      "table": "Tabella",
+      "image": "Immagine",
+      "divider": "Divisore"
+    }
+  }
+}

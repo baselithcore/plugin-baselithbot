@@ -21,12 +21,19 @@ from .index_state import get_index
 from .routers import (
     ai_router,
     assets_router,
+    backlinks_router,
     conversations_router,
+    daily_router,
+    export_router,
     graph_router,
     health_router,
+    history_router,
     mcp_router,
     notes_router,
     search_router,
+    tags_router,
+    templates_router,
+    trash_router,
     workspaces_router,
 )
 from .seed import seed_if_empty
@@ -47,8 +54,15 @@ app = FastAPI(title="BaselithBrain API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(TenantContextBridge)
 app.include_router(health_router)
 app.include_router(notes_router)
+app.include_router(backlinks_router)
+app.include_router(history_router)
 app.include_router(search_router)
 app.include_router(graph_router)
+app.include_router(tags_router)
+app.include_router(daily_router)
+app.include_router(templates_router)
+app.include_router(trash_router)
+app.include_router(export_router)
 app.include_router(mcp_router)
 app.include_router(assets_router)
 app.include_router(ai_router)

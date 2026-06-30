@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Check, ChevronDown, MessageSquarePlus, Pencil, Trash2, X } from 'lucide-react';
 import { useBrain } from '@/store';
 
@@ -8,6 +9,7 @@ import { useBrain } from '@/store';
  * point to the assistant's long-term conversational memory.
  */
 export function ConversationMenu({ onPick }: { onPick: () => void }) {
+  const { t } = useTranslation();
   const conversations = useBrain((s) => s.conversations);
   const activeId = useBrain((s) => s.activeConversationId);
   const setActive = useBrain((s) => s.setActiveConversation);
@@ -29,7 +31,7 @@ export function ConversationMenu({ onPick }: { onPick: () => void }) {
   }, [open]);
 
   const current = conversations.find((c) => c.id === activeId);
-  const label = current?.title ?? 'New chat';
+  const label = current?.title ?? t('assistant.newChat');
 
   const pick = (id: string | null) => {
     setActive(id);
@@ -48,7 +50,7 @@ export function ConversationMenu({ onPick }: { onPick: () => void }) {
     <div ref={wrap} className="relative min-w-0">
       <button
         onClick={() => setOpen((v) => !v)}
-        title="Conversations"
+        title={t('assistant.conversations')}
         className="flex max-w-[12rem] items-center gap-1 rounded-lg px-2 py-1 text-xs font-medium text-[var(--color-muted)] hover:bg-[var(--color-elevated)]"
       >
         <span className="truncate">{label}</span>
@@ -62,13 +64,13 @@ export function ConversationMenu({ onPick }: { onPick: () => void }) {
             className="flex w-full items-center gap-2 border-b border-[var(--color-border)] px-3 py-2 text-left text-xs font-medium text-[var(--color-accent)] hover:bg-[var(--color-surface)]"
           >
             <MessageSquarePlus className="size-3.5" />
-            New chat
+            {t('assistant.newChat')}
           </button>
 
           <div className="max-h-72 overflow-y-auto py-1">
             {conversations.length === 0 ? (
               <p className="px-3 py-3 text-center text-[11px] text-[var(--color-faint)]">
-                No past conversations yet.
+                {t('assistant.noConversations')}
               </p>
             ) : (
               conversations.map((c) => (
@@ -108,7 +110,7 @@ export function ConversationMenu({ onPick }: { onPick: () => void }) {
                     <button
                       onClick={() => setEditing(null)}
                       className="rounded p-1 text-[var(--color-faint)] hover:text-[var(--color-text)]"
-                      title="Cancel"
+                      title={t('common.cancel')}
                     >
                       <X className="size-3" />
                     </button>
@@ -120,14 +122,14 @@ export function ConversationMenu({ onPick }: { onPick: () => void }) {
                           setDraft(c.title);
                         }}
                         className="rounded p-1 text-[var(--color-faint)] hover:text-[var(--color-text)]"
-                        title="Rename"
+                        title={t('assistant.rename')}
                       >
                         <Pencil className="size-3" />
                       </button>
                       <button
                         onClick={() => void remove(c.id)}
                         className="rounded p-1 text-[var(--color-faint)] hover:text-red-500"
-                        title="Delete"
+                        title={t('common.delete')}
                       >
                         <Trash2 className="size-3" />
                       </button>

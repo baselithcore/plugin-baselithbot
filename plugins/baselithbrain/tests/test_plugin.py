@@ -190,6 +190,91 @@ def test_chat_opens_thread_even_without_llm(client: TestClient) -> None:
     assert any(c["id"] == meta["conversation_id"] for c in listed)
 
 
+def test_tags_index(client: TestClient) -> None:
+    client.post("/api/notes", json={"title": "Tagged", "tags": ["alpha", "beta"]})
+    tags = client.get("/api/tags").json()
+    names = {t["tag"]: t["count"] for t in tags}
+    assert names.get("alpha", 0) >= 1 and names.get("beta", 0) >= 1
+
+
+def test_daily_note_is_idempotent(client: TestClient) -> None:
+    first = client.post("/api/daily", json={}).json()
+    assert first["id"].startswith("daily-")
+    before = len(client.get("/api/notes").json())
+    second = client.post("/api/daily", json={}).json()
+    assert second["id"] == first["id"]
+    # Opening the same day twice must not create a second note.
+    assert len(client.get("/api/notes").json()) == before
+
+
+def test_templates_crud_and_daily_seed(client: TestClient) -> None:
+    tpl = client.post(
+        "/api/templates", json={"name": "Journal", "body": "## {{date}}\n\n- "}
+    ).json()
+    assert tpl["id"] == "journal"
+    listed = client.get("/api/templates").json()
+    assert any(t["id"] == "journal" for t in listed)
+
+    note = client.post(
+        "/api/daily", json={"date": "2024-01-02", "template": tpl["id"]}
+    ).json()
+    assert "2024-01-02" in note["body"]  # {{date}} expanded
+    assert client.delete(f"/api/templates/{tpl['id']}").json() == {"deleted": True}
+
+
+def test_version_history_and_restore(client: TestClient) -> None:
+    note = client.post("/api/notes", json={"title": "Versioned", "body": "v1"}).json()
+    client.put(f"/api/notes/{note['id']}", json={"body": "v2"})  # snapshots v1
+    history = client.get(f"/api/notes/{note['id']}/history").json()
+    assert len(history) >= 1
+    version = history[0]["version"]
+    assert (
+        "v1" in client.get(f"/api/notes/{note['id']}/history/{version}").json()["body"]
+    )
+    restored = client.post(f"/api/notes/{note['id']}/history/{version}/restore").json()
+    assert restored["body"].strip() == "v1"
+
+
+def test_trash_restore_and_purge(client: TestClient) -> None:
+    note = client.post("/api/notes", json={"title": "Disposable"}).json()
+    assert client.delete(f"/api/notes/{note['id']}").json()["deleted"] is True
+    # Gone from the live list, present in the trash.
+    assert all(n["id"] != note["id"] for n in client.get("/api/notes").json())
+    trash = client.get("/api/trash").json()
+    assert any(t["id"] == note["id"] for t in trash)
+
+    restored = client.post(f"/api/trash/{note['id']}/restore").json()
+    assert any(n["id"] == restored["id"] for n in client.get("/api/notes").json())
+
+    # Re-delete then purge for good.
+    client.delete(f"/api/notes/{restored['id']}")
+    assert client.delete(f"/api/trash/{restored['id']}").json() == {"purged": True}
+    assert all(t["id"] != restored["id"] for t in client.get("/api/trash").json())
+
+
+def test_export_note_and_vault(client: TestClient) -> None:
+    note = client.post(
+        "/api/notes", json={"title": "Exportable", "body": "hello"}
+    ).json()
+    one = client.get(f"/api/notes/{note['id']}/export")
+    assert one.status_code == 200
+    assert "attachment" in one.headers["content-disposition"]
+    assert "hello" in one.text
+
+    bundle = client.get("/api/export")
+    assert bundle.status_code == 200
+    assert bundle.headers["content-type"].startswith("application/zip")
+    assert bundle.content[:2] == b"PK"  # zip magic
+
+
+def test_backlinks_with_context(client: TestClient) -> None:
+    # The seed "Welcome" note links to Zettelkasten with surrounding prose.
+    ctx = client.get("/api/notes/zettelkasten/backlinks").json()
+    assert any(b["id"] == "welcome-to-baselithbrain" for b in ctx)
+    src = next(b for b in ctx if b["id"] == "welcome-to-baselithbrain")
+    assert isinstance(src["snippet"], str)
+
+
 def test_asset_rejects_svg_xss(client: TestClient) -> None:
     # SVG can carry <script> → rejected by magic-byte sniff even if the client
     # lies about Content-Type (the XSS-via-SVG vector must not be storable).

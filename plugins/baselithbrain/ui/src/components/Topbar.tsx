@@ -1,15 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
-import { Moon, Sun, Network, Search, Hash, ChevronRight, LogOut } from 'lucide-react';
+import { Moon, Sun, Network, Search, ChevronRight, LogOut } from 'lucide-react';
 import { useAuth } from '@auth';
 import { useBrain } from '@/store';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { Kbd, MOD } from './Kbd';
+import { MoreMenu } from './MoreMenu';
+import { LanguageSwitcher } from './LanguageSwitcher';
+import { TagsEditor } from './TagsEditor';
 import type { NoteMeta } from '@/lib/types';
 
 /** Note title + tags editor and global controls (theme, graph, palette). */
 export function Topbar() {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const active = useBrain((s) => s.active);
   const notes = useBrain((s) => s.notes);
@@ -73,34 +78,24 @@ export function Topbar() {
           onChange={(e) => setTitle(e.target.value)}
           onBlur={commitTitle}
           onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-          placeholder="Untitled"
-          className="min-w-0 bg-transparent font-serif text-xl font-semibold tracking-tight outline-none placeholder:text-[var(--color-faint)]"
+          placeholder={t('topbar.untitled')}
+          className="min-w-0 bg-transparent text-xl font-semibold tracking-tight outline-none placeholder:text-[var(--color-faint)]"
         />
       </div>
-      {active?.tags?.length ? (
-        <div className="hidden items-center gap-1 md:flex">
-          {active.tags.slice(0, 4).map((t) => (
-            <span
-              key={t}
-              className="flex items-center gap-0.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-2 py-0.5 text-xs text-[var(--color-muted)]"
-            >
-              <Hash className="size-3 text-[var(--color-accent)]" />
-              {t}
-            </span>
-          ))}
-        </div>
-      ) : null}
+      {active ? <TagsEditor /> : null}
       <div className="flex items-center gap-1">
-        <IconBtn label="Search" onClick={() => setPalette(true)}>
+        <IconBtn label={t('topbar.search')} onClick={() => setPalette(true)}>
           <Search className="size-4" />
           <Kbd keys={`${MOD}K`} className="ml-1 hidden sm:inline-flex" />
         </IconBtn>
-        <IconBtn label="Graph" onClick={toggleGraph}>
+        <IconBtn label={t('topbar.graph')} onClick={toggleGraph}>
           <Network className="size-4" />
         </IconBtn>
-        <IconBtn label="Theme" onClick={toggleTheme}>
+        <IconBtn label={t('topbar.theme')} onClick={toggleTheme}>
           {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
         </IconBtn>
+        <LanguageSwitcher />
+        <MoreMenu />
         {user && (
           <div className="ml-1 flex items-center gap-1 border-l border-[var(--color-border)] pl-2">
             <span
@@ -109,7 +104,7 @@ export function Topbar() {
             >
               {user.username || user.email}
             </span>
-            <IconBtn label="Logout" onClick={() => void logout()}>
+            <IconBtn label={t('topbar.logout')} onClick={() => void logout()}>
               <LogOut className="size-4" />
             </IconBtn>
           </div>

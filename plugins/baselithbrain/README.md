@@ -9,11 +9,24 @@ self-contained sub-app + React/Vite SPA.
   frontmatter in a vault on disk — the single source of truth. No proprietary
   or binary editor state. Portable to Obsidian or any Markdown tool.
 - **Block-based editor** (TipTap/ProseMirror) with Markdown round-trip, a `/`
-  slash menu (≤5 blocks) and `[[` wikilink autocomplete.
-- **Zettelkasten + LYT.** `[[wikilinks]]` drive backlinks, an interactive
-  knowledge graph, MOC (Map-of-Content) suggestions and unlinked-mention hints.
+  slash menu (≤5 blocks), `[[` wikilink autocomplete, an outline/TOC panel and a
+  word-count / reading-time status bar.
+- **Zettelkasten + LYT.** `[[wikilinks]]` drive backlinks (with surrounding
+  context), an interactive knowledge graph (filter by tags / similar edges),
+  MOC suggestions and unlinked-mention hints.
+- **Daily notes, templates, tag browser.** One dated journal entry per day,
+  reusable note templates with `{{date}}`/`{{title}}` placeholders, and a
+  sidebar tag index. Pin & recent notes for fast re-access; focus mode hides the
+  chrome for distraction-free writing.
+- **Data safety.** Every save snapshots a recoverable **version history**;
+  delete is a soft delete to a **trash** (restore or purge). Export a single
+  note (`.md`) or the whole workspace (`.zip`).
 - **Fast, keyboard-first.** `⌘/Ctrl+K` command palette (full-text search +
-  actions), `⌘/Ctrl+G` graph. KBD hints everywhere.
+  actions), `⌘/Ctrl+G` graph, `⌘/Ctrl+J` assistant. KBD hints everywhere.
+- **Calm, professional UI.** Neutral "Slate" design system (Obsidian/Linear-like
+  — flat panels, single accent, minimal motion), light + dark themes.
+- **Internationalized.** English + Italian out of the box (react-i18next), with
+  an in-app language switcher; locale persists across sessions.
 - **Zero infrastructure.** Keyword search (BM25) and the link graph are derived
   in-memory from the vault — no DB required. Semantic search/edges are opt-in.
 

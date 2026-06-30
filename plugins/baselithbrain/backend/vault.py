@@ -77,5 +77,64 @@ class Vault:
         return self._path(note_id).stat().st_mtime
 
     def list_ids(self) -> list[str]:
-        """All note ids in the vault (sorted), one per ``*.md`` file."""
+        """All note ids in the vault (sorted), one per ``*.md`` file.
+
+        Non-recursive, so files kept under ``.brain/`` (trash, history,
+        templates) are never mistaken for live notes.
+        """
         return sorted(p.stem for p in self.root.glob("*.md") if p.is_file())
+
+    # ---- trash (soft delete) --------------------------------------------
+    def _trash_dir(self) -> Path:
+        d = self.root / ".brain" / "trash"
+        d.mkdir(parents=True, exist_ok=True)
+        return d
+
+    def _trash_path(self, note_id: str) -> Path:
+        """Vault-confined path for a trashed note (same id guard as live)."""
+        if not _ID_RE.match(note_id):
+            raise ValueError(f"invalid note id: {note_id!r}")
+        path = (self._trash_dir() / f"{note_id}.md").resolve()
+        if self._trash_dir().resolve() not in path.parents:
+            raise ValueError(f"path escapes trash: {note_id!r}")
+        return path
+
+    def trash(self, note_id: str) -> bool:
+        """Soft-delete: move the live file into ``.brain/trash`` (overwrite)."""
+        src = self._path(note_id)
+        if not src.exists():
+            return False
+        src.replace(self._trash_path(note_id))
+        return True
+
+    def list_trashed(self) -> list[str]:
+        """Ids currently in the trash (sorted)."""
+        return sorted(p.stem for p in self._trash_dir().glob("*.md") if p.is_file())
+
+    def read_trashed(self, note_id: str) -> str:
+        return self._trash_path(note_id).read_text(encoding="utf-8")
+
+    def restore(self, note_id: str, new_id: str | None = None) -> str:
+        """Move a trashed note back to the live vault under a free id."""
+        src = self._trash_path(note_id)
+        target = new_id or note_id
+        if self._path(target).exists():
+            target = self.unique_id(target)
+        src.replace(self._path(target))
+        return target
+
+    def purge(self, note_id: str) -> bool:
+        """Permanently delete a single trashed note."""
+        path = self._trash_path(note_id)
+        if path.exists():
+            path.unlink()
+            return True
+        return False
+
+    def purge_all(self) -> int:
+        """Permanently delete every trashed note; return the count."""
+        count = 0
+        for p in self._trash_dir().glob("*.md"):
+            p.unlink()
+            count += 1
+        return count

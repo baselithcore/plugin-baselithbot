@@ -165,3 +165,67 @@ class LinkSuggestion(BaseModel):
     title: str
     score: float
     reason: str = "semantic"  # semantic | unlinked-mention
+
+
+class TagInfo(BaseModel):
+    """A tag with its usage count across the vault (tag browser)."""
+
+    tag: str
+    count: int = 0
+
+
+class BacklinkContext(BaseModel):
+    """A backlink enriched with the surrounding line of text (context)."""
+
+    id: str
+    title: str
+    snippet: str = ""
+
+
+class TemplateMeta(BaseModel):
+    """Lightweight note-template descriptor."""
+
+    id: str
+    name: str
+    updated: str | None = None
+
+
+class Template(TemplateMeta):
+    """A reusable note template — its body is inserted into new notes.
+
+    The body may contain ``{{date}}``, ``{{time}}``, ``{{datetime}}`` and
+    ``{{title}}`` placeholders, expanded at apply time.
+    """
+
+    body: str = ""
+
+
+class TemplateCreate(BaseModel):
+    """Payload to create / overwrite a template."""
+
+    name: str
+    body: str = ""
+
+
+class DailyRequest(BaseModel):
+    """Get-or-create the daily note for a date (``YYYY-MM-DD``; today if null)."""
+
+    date: str | None = None
+    #: Optional template id whose body seeds a freshly created daily note.
+    template: str | None = None
+
+
+class HistoryEntry(BaseModel):
+    """One saved revision of a note (newest first)."""
+
+    version: str  # opaque timestamp id
+    saved: str  # ISO-8601 capture time
+    size: int = 0
+
+
+class TrashEntry(BaseModel):
+    """A soft-deleted note awaiting restore or purge."""
+
+    id: str
+    title: str
+    deleted: str | None = None

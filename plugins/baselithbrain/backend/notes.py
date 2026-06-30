@@ -94,8 +94,10 @@ class NoteService:
         return self.vault.exists(note_id)
 
     # ---- writes ----------------------------------------------------------
-    def create(self, payload: NoteCreate) -> Note:
-        note_id = self.vault.unique_id(payload.title or "untitled")
+    def create(self, payload: NoteCreate, note_id: str | None = None) -> Note:
+        # An explicit id is used verbatim (stable ids, e.g. daily notes); the
+        # caller guarantees it is free. Otherwise derive a unique slug.
+        note_id = note_id or self.vault.unique_id(payload.title or "untitled")
         ts = _now()
         parent = (
             payload.parent if payload.parent and self.exists(payload.parent) else None
@@ -191,13 +193,44 @@ class NoteService:
         return False
 
     def delete(self, note_id: str) -> bool:
-        """Delete a note; re-parent its children to its parent (no orphans)."""
+        """Soft-delete a note to the trash; re-parent its children (no orphans).
+
+        The file is moved into ``.brain/trash`` rather than erased, so a
+        mistaken delete is recoverable via :meth:`restore`. Children climb to
+        the deleted note's parent first, exactly as before.
+        """
         if not self.exists(note_id):
             return False
         new_parent = self.get_meta(note_id).parent
         for child in self.children_of(note_id):
             self.move(child, NoteMove(parent=new_parent))
-        return self.vault.delete(note_id)
+        return self.vault.trash(note_id)
+
+    def list_trash(self) -> list[NoteMeta]:
+        """Metadata for every soft-deleted note in the trash (newest first)."""
+        out: list[NoteMeta] = []
+        for nid in self.vault.list_trashed():
+            meta, _ = frontmatter.parse(self.vault.read_trashed(nid))
+            out.append(
+                NoteMeta(
+                    id=nid,
+                    title=str(meta.get("title") or nid),
+                    tags=list(meta.get("tags") or []),
+                    created=meta.get("created"),
+                    updated=meta.get("updated"),
+                    path=f"{nid}.md",
+                    parent=self._parent_of(meta),
+                    order=_as_int(meta.get("order")),
+                    workspace=self._workspace_of(meta),
+                )
+            )
+        out.sort(key=lambda m: m.updated or "", reverse=True)
+        return out
+
+    def restore(self, note_id: str) -> Note:
+        """Move a trashed note back into the live vault under a free id."""
+        live_id = self.vault.restore(note_id)
+        return self.get(live_id)
 
     def children_of(self, note_id: str) -> list[str]:
         """Ids whose ``parent`` is ``note_id`` (direct children only)."""

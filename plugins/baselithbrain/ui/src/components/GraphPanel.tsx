@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { AnimatePresence, motion } from 'motion/react';
 import { X, Network } from 'lucide-react';
 import { useBrain } from '@/store';
@@ -15,6 +16,7 @@ function initialMode(): GraphMode {
 
 /** Full-vault graph overlay with 2D/3D view switch. Click a node to open it. */
 export function GraphPanel() {
+  const { t } = useTranslation();
   const open = useBrain((s) => s.graphOpen);
   const toggle = useBrain((s) => s.toggleGraph);
   const activeId = useBrain((s) => s.activeId);
@@ -23,18 +25,20 @@ export function GraphPanel() {
   const [data, setData] = useState<GraphData>(EMPTY);
   const [size, setSize] = useState({ w: 800, h: 600 });
   const [mode, setMode] = useState<GraphMode>(initialMode);
+  const [showTags, setShowTags] = useState(true);
+  const [showDerived, setShowDerived] = useState(false);
 
   useEffect(() => {
     if (!open) return;
     api
-      .graph({ tags: true, workspace: activeWorkspace })
+      .graph({ tags: showTags, derived: showDerived, workspace: activeWorkspace })
       .then(setData)
       .catch(() => setData(EMPTY));
     const measure = () => setSize({ w: window.innerWidth - 80, h: window.innerHeight - 140 });
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
-  }, [open, activeWorkspace]);
+  }, [open, activeWorkspace, showTags, showDerived]);
 
   const pickMode = (m: GraphMode) => {
     setMode(m);
@@ -66,13 +70,19 @@ export function GraphPanel() {
                   <Network className="size-4" />
                 </span>
                 <div>
-                  <h2 className="text-sm font-semibold">Knowledge graph</h2>
+                  <h2 className="text-sm font-semibold">{t('graph.title')}</h2>
                   <p className="text-xs text-[var(--color-faint)]">
-                    {data.nodes.length} nodes · {data.edges.length} links — click to open
+                    {t('graph.subtitle', { nodes: data.nodes.length, edges: data.edges.length })}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                <FilterChip active={showTags} onClick={() => setShowTags((v) => !v)}>
+                  {t('graph.tags')}
+                </FilterChip>
+                <FilterChip active={showDerived} onClick={() => setShowDerived((v) => !v)}>
+                  {t('graph.similar')}
+                </FilterChip>
                 <ModeToggle mode={mode} onPick={pickMode} />
                 <button
                   onClick={toggle}
@@ -101,6 +111,30 @@ export function GraphPanel() {
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={cn(
+        'rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors',
+        active
+          ? 'border-[var(--color-accent)] bg-[var(--color-accent-soft)] text-[var(--color-accent)]'
+          : 'border-[var(--color-border)] text-[var(--color-muted)] hover:text-[var(--color-text)]'
+      )}
+    >
+      {children}
+    </button>
   );
 }
 

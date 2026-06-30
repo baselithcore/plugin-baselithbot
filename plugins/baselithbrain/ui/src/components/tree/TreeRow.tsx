@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { ChevronRight, FileText, Plus, Trash2 } from 'lucide-react';
 import type { TreeNode } from '@/lib/types';
 import { cn } from '@/lib/cn';
@@ -21,6 +22,7 @@ interface Props {
 
 /** One row of the page tree, recursive over its children. */
 export function TreeRow(props: Props) {
+  const { t } = useTranslation();
   const { node, depth, activeId, collapsed, dropId } = props;
   const [hover, setHover] = useState(false);
   const hasKids = node.children.length > 0;
@@ -71,7 +73,7 @@ export function TreeRow(props: Props) {
             if (hasKids) props.onToggle(node.id);
           }}
           className={cn('shrink-0 rounded p-0.5', !hasKids && 'invisible')}
-          title={open ? 'Collapse' : 'Expand'}
+          title={open ? t('tree.collapse') : t('tree.expand')}
         >
           <ChevronRight
             className={cn('size-3.5 transition-transform duration-200', open && 'rotate-90')}
@@ -82,7 +84,7 @@ export function TreeRow(props: Props) {
         {hover && (
           <span className="ml-auto flex items-center gap-0.5">
             <button
-              title="New child note"
+              title={t('tree.newChild')}
               onClick={(e) => {
                 e.stopPropagation();
                 props.onAddChild(node.id);
@@ -92,7 +94,7 @@ export function TreeRow(props: Props) {
               <Plus className="size-3.5" />
             </button>
             <button
-              title="Delete"
+              title={t('common.delete')}
               onClick={(e) => {
                 e.stopPropagation();
                 props.onDelete(node.id, node.title);

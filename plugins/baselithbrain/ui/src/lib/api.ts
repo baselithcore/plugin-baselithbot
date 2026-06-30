@@ -1,12 +1,18 @@
 // Thin typed API client. The base path mirrors VITE_BASE_PATH so the SPA works
 // both standalone (dev, '/') and mounted under '/baselithbrain' in production.
 import type {
+  BacklinkContext,
   GraphData,
+  HistoryEntry,
   LinkSuggestion,
   MocCandidate,
   Note,
   NoteMeta,
+  Revision,
   SearchHit,
+  TagInfo,
+  Template,
+  TemplateMeta,
   TreeNode,
   Workspace,
   WorkspaceInfo,
@@ -38,6 +44,28 @@ function authHeaders(): Record<string, string> {
 export function assetUrl(pathOrUrl: string): string {
   const clean = pathOrUrl.replace(/^_assets\//, 'api/assets/').replace(/^\//, '');
   return `${BASE}/${clean}`;
+}
+
+/**
+ * Fetch a file with the bearer header and trigger a browser download. Used for
+ * exports: a plain ``<a download>`` cannot send the Authorization header, so the
+ * backend context bridge would bind no user and scope to the wrong vault.
+ */
+async function downloadFile(path: string, fallbackName: string): Promise<void> {
+  const res = await fetch(`${BASE}${path}`, { headers: authHeaders() });
+  if (!res.ok) throw new Error(`${res.status}: ${await res.text().catch(() => res.statusText)}`);
+  const disposition = res.headers.get('content-disposition') || '';
+  const match = /filename="?([^"]+)"?/.exec(disposition);
+  const name = match?.[1] || fallbackName;
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }
 
 async function req<T>(path: string, init?: RequestInit): Promise<T> {
@@ -120,7 +148,45 @@ export const api = {
   suggestions: (id: string, topK = 6) =>
     req<LinkSuggestion[]>(`/api/graph/suggestions/${id}?top_k=${topK}`),
 
+  backlinks: (id: string) => req<BacklinkContext[]>(`/api/notes/${id}/backlinks`),
+
   reindex: () => req<{ ready: boolean; notes: number }>('/api/reindex', { method: 'POST' }),
+
+  // ---- tags ----
+  tags: (workspace?: string | null) => req<TagInfo[]>(`/api/tags${wsParam(workspace)}`),
+
+  // ---- daily note (idempotent get-or-create) ----
+  openDaily: (opts?: { date?: string | null; template?: string | null }) =>
+    req<Note>('/api/daily', {
+      method: 'POST',
+      body: JSON.stringify({ date: opts?.date ?? null, template: opts?.template ?? null }),
+    }),
+
+  // ---- templates ----
+  listTemplates: () => req<TemplateMeta[]>('/api/templates'),
+  getTemplate: (id: string) => req<Template>(`/api/templates/${id}`),
+  createTemplate: (data: { name: string; body: string }) =>
+    req<Template>('/api/templates', { method: 'POST', body: JSON.stringify(data) }),
+  deleteTemplate: (id: string) =>
+    req<{ deleted: boolean }>(`/api/templates/${id}`, { method: 'DELETE' }),
+
+  // ---- version history ----
+  history: (id: string) => req<HistoryEntry[]>(`/api/notes/${id}/history`),
+  revision: (id: string, version: string) => req<Revision>(`/api/notes/${id}/history/${version}`),
+  restoreRevision: (id: string, version: string) =>
+    req<Note>(`/api/notes/${id}/history/${version}/restore`, { method: 'POST' }),
+
+  // ---- trash (soft delete) ----
+  trash: () => req<NoteMeta[]>('/api/trash'),
+  restoreTrash: (id: string) => req<Note>(`/api/trash/${id}/restore`, { method: 'POST' }),
+  purgeTrash: (id: string) => req<{ purged: boolean }>(`/api/trash/${id}`, { method: 'DELETE' }),
+  emptyTrash: () => req<{ purged: number }>('/api/trash', { method: 'DELETE' }),
+
+  // ---- export (auth-aware blob download; an <a href> would omit the bearer
+  // token and the backend would scope to the wrong/anonymous vault) ----
+  downloadNote: (id: string) => downloadFile(`/api/notes/${id}/export`, `${id}.md`),
+  downloadVault: (workspace?: string | null) =>
+    downloadFile(`/api/export${wsParam(workspace)}`, `${workspace || 'vault'}.zip`),
 
   aiStatus: () => req<import('./types').AiStatus>('/api/ai/status'),
 

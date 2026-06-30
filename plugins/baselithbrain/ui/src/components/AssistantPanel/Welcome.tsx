@@ -1,30 +1,26 @@
 import { motion } from 'motion/react';
-import { Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { MessageSquareText } from 'lucide-react';
 import { itemVariants, listVariants } from '@/lib/motion';
-
-const EXAMPLES = [
-  'What connects atomic notes and LYT?',
-  'Summarize my PKM notes',
-  'What should I write about next?',
-];
 
 /** Empty-thread hero with a few seed prompts. */
 export function Welcome({ onAsk }: { onAsk: (q: string) => void }) {
+  const { t } = useTranslation();
+  const EXAMPLES = [t('welcome.ex1'), t('welcome.ex2'), t('welcome.ex3')];
   return (
     <div className="space-y-4 py-8 text-center">
       <motion.div
-        initial={{ scale: 0.7, opacity: 0, rotate: -8 }}
-        animate={{ scale: 1, opacity: 1, rotate: 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-        className="bb-gradient bb-btn-glow mx-auto flex size-12 items-center justify-center rounded-2xl text-white"
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+        className="bb-glass mx-auto flex size-11 items-center justify-center rounded-xl text-[var(--color-accent)]"
       >
-        <Sparkles className="size-5" />
+        <MessageSquareText className="size-5" />
       </motion.div>
       <div>
-        <p className="bb-gradient-text text-base font-semibold">Chat with your knowledge</p>
+        <p className="text-base font-semibold text-[var(--color-text)]">{t('welcome.title')}</p>
         <p className="mx-auto mt-1 max-w-xs text-xs text-[var(--color-muted)]">
-          Answers are grounded in your vault and cite the notes they use. This thread remembers what
-          you discussed.
+          {t('welcome.body')}
         </p>
       </div>
       <motion.div

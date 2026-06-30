@@ -150,3 +150,46 @@ export interface TransformResult {
   suggestions?: string[];
   error?: string;
 }
+
+export interface TagInfo {
+  tag: string;
+  count: number;
+}
+
+export interface BacklinkContext {
+  id: string;
+  title: string;
+  snippet: string;
+}
+
+export interface TemplateMeta {
+  id: string;
+  name: string;
+  updated: string | null;
+}
+
+export interface Template extends TemplateMeta {
+  body: string;
+}
+
+export interface HistoryEntry {
+  version: string;
+  saved: string;
+  size: number;
+}
+
+export interface Revision {
+  version: string;
+  raw: string;
+  body: string;
+}
+
+/** A soft-deleted note (shares the NoteMeta shape). */
+export type TrashEntry = NoteMeta;
+
+/** One heading in the active note's outline (table of contents). */
+export interface OutlineItem {
+  level: number;
+  text: string;
+  id: string;
+}
