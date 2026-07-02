@@ -350,6 +350,11 @@ exclude = [
     "**/proto/_generated/",
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# Package __init__ files re-export public symbols; unused-import there is
+# intentional API surface, not dead code. (Matches baselithcore-prod.)
+"__init__.py" = ["F401"]
+
 [tool.mypy]
 python_version = "3.12"
 warn_return_any = false
