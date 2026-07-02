@@ -163,7 +163,7 @@ class JobView(BaseModel):
 
     id: str
     kind: str  # test | lint | docs
-    status: str = "running"  # running | succeeded | failed | error
+    status: str = "running"  # running | succeeded | failed | error | timeout
     running: bool = True
     exit_code: int | None = None
     started_at: float = 0.0

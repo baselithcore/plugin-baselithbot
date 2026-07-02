@@ -13,6 +13,8 @@ output stays inspectable.
 from __future__ import annotations
 
 import asyncio
+import os
+import signal
 import sys
 import time
 import uuid
@@ -21,7 +23,11 @@ from collections import OrderedDict, deque
 from pathlib import Path
 from typing import Any
 
+from core.observability.logging import get_logger
+
 from ...cli_models import JobView
+
+logger = get_logger(__name__)
 
 # Kind → CLI argv (after the ``baselith`` entrypoint).
 _KINDS: dict[str, list[str]] = {
@@ -31,6 +37,18 @@ _KINDS: dict[str, list[str]] = {
 }
 _MAX_LINES = 600
 _MAX_JOBS = 20
+# Hard wall-clock cap: a wedged tool (e.g. a hung pytest) must not run forever
+# nor block its kind indefinitely. Generous — real test suites can be slow.
+_JOB_TIMEOUT_SECONDS = 900.0
+_READ_CHUNK = 65536
+# A single output line this long is flushed as-is rather than buffered further,
+# so a tool spewing one gigantic line can never balloon memory.
+_MAX_LINE_BYTES = 64 * 1024
+
+
+def _decode(raw: bytes) -> str:
+    """Decode one output line, tolerant of invalid UTF-8 and trailing CR/LF."""
+    return raw.decode("utf-8", errors="replace").rstrip("\r\n")
 
 
 def _entrypoint(args: list[str]) -> list[str]:
@@ -117,29 +135,82 @@ class JobManager:
             return job.view()
 
     async def _run(self, job: _Job, argv: list[str]) -> None:
+        proc: aiosp.Process | None = None
         try:
             proc = await asyncio.create_subprocess_exec(
                 *argv,
                 cwd=str(Path.cwd()),
                 stdout=aiosp.PIPE,
                 stderr=aiosp.STDOUT,
+                # Own process group so a timeout can kill the *whole* tree
+                # (pytest spawns children); no-op flag on platforms lacking it.
+                start_new_session=True,
             )
-            stream = proc.stdout
-            if stream is not None:
-                async for raw in stream:
-                    job.lines.append(raw.decode("utf-8", errors="replace").rstrip("\n"))
-            return_code = await proc.wait()
+            # Bound the whole run: a wedged tool must not run forever or block
+            # its kind. On timeout the tree is killed and the job marked so.
+            await asyncio.wait_for(self._pump(proc, job), timeout=_JOB_TIMEOUT_SECONDS)
+            return_code = proc.returncode if proc.returncode is not None else -1
             job.exit_code = return_code
             job.status = "succeeded" if return_code == 0 else "failed"
             if return_code != 0:
                 hint = _missing_tool_hint(job.kind, list(job.lines))
                 if hint:
                     job.lines.append(hint)
+        except asyncio.TimeoutError:
+            job.status = "timeout"
+            job.lines.append(
+                f"[control] aborted: exceeded {_JOB_TIMEOUT_SECONDS:.0f}s time limit"
+            )
+            await self._terminate(proc)
         except Exception as exc:  # noqa: BLE001 — record failure into the job
             job.status = "error"
             job.lines.append(f"[control] failed to run: {exc}")
+            await self._terminate(proc)
         finally:
             job.ended_at = time.time()
+
+    async def _pump(self, proc: aiosp.Process, job: _Job) -> None:
+        """Stream combined output into the ring, then await process exit.
+
+        Reads fixed-size chunks and splits on newlines rather than
+        ``StreamReader.readline`` so a single very long line can never raise
+        ``LimitOverrunError`` (which would abandon a still-running child).
+        """
+        stream = proc.stdout
+        if stream is not None:
+            buf = b""
+            while True:
+                chunk = await stream.read(_READ_CHUNK)
+                if not chunk:
+                    if buf:
+                        job.lines.append(_decode(buf))
+                    break
+                buf += chunk
+                while b"\n" in buf:
+                    line, _, buf = buf.partition(b"\n")
+                    job.lines.append(_decode(line))
+                if len(buf) >= _MAX_LINE_BYTES:  # flush an unbounded single line
+                    job.lines.append(_decode(buf))
+                    buf = b""
+        await proc.wait()
+
+    @staticmethod
+    async def _terminate(proc: aiosp.Process | None) -> None:
+        """Best-effort kill of the subprocess tree (never raises)."""
+        if proc is None or proc.returncode is not None:
+            return
+        try:
+            killpg = getattr(os, "killpg", None)
+            getpgid = getattr(os, "getpgid", None)
+            if killpg is not None and getpgid is not None:
+                killpg(getpgid(proc.pid), signal.SIGKILL)  # whole tree
+            else:  # pragma: no cover — non-POSIX fallback
+                proc.kill()
+            await proc.wait()
+        except (ProcessLookupError, PermissionError):
+            pass
+        except Exception as exc:  # noqa: BLE001 — cleanup must never raise
+            logger.warning("dev-tool job kill failed: %s", exc)
 
     def _trim(self) -> None:
         """Drop the oldest finished jobs once over capacity."""
