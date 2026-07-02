@@ -11,7 +11,12 @@ from ._guards import read_guard
 
 
 def build_stream_router() -> APIRouter:
-    """Build the SSE sub-router (authenticated; EventSource carries the session cookie)."""
+    """Build the SSE sub-router.
+
+    ``EventSource`` cannot set an ``Authorization`` header — under enforced
+    auth the guard accepts the ``?token=`` query credential (mirroring the
+    central ``get_current_user``) or the same-origin refresh cookie.
+    """
     router = APIRouter(
         tags=["baselithcontrol:stream"], dependencies=[Depends(read_guard)]
     )

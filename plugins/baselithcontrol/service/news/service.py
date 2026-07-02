@@ -28,6 +28,7 @@ logger = get_logger(__name__)
 
 _CACHE_KEY = "news"
 _PER_FEED = 20  # cap items pulled from any single source before merge
+_FAILURE_BACKOFF = 60.0  # serve the stale snapshot this long after a failed refresh
 
 
 class FeedFetcher(Protocol):
@@ -68,6 +69,11 @@ class NewsService:
         )
         self._flight: SingleFlight[NewsResponse] = SingleFlight()
         self._last_good: NewsResponse | None = None
+        # Failure cooldown: a failed refresh isn't cached (it must not evict a
+        # future good snapshot's slot), so without this every poll during a feed
+        # outage would refetch all feeds. Serve the last response until then.
+        self._backoff_until = 0.0
+        self._cooldown_resp: NewsResponse | None = None
 
     async def get_news(self) -> NewsResponse:
         """Return the cached snapshot, refreshing once on miss (single-flight)."""
@@ -76,6 +82,8 @@ class NewsService:
         cached = await self._cache.get(_CACHE_KEY)
         if cached is not None:
             return cached
+        if self._cooldown_resp is not None and time.monotonic() < self._backoff_until:
+            return self._cooldown_resp
         return await self._flight.do(_CACHE_KEY, self._refresh)
 
     async def _refresh(self) -> NewsResponse:
@@ -85,16 +93,24 @@ class NewsService:
             return cached
         items = await self._collect()
         now = time.time()
-        if not items and self._last_good is not None:
-            return self._last_good.model_copy(
-                update={"stale": True, "generated_at": now}
-            )
-        resp = NewsResponse(
-            generated_at=now, count=len(items), items=items, degraded=not items
-        )
-        if items:
-            self._last_good = resp
-            await self._cache.set(_CACHE_KEY, resp)
+        if not items:
+            # Failed refresh: back off before retrying so an outage doesn't turn
+            # every ticker poll into a full refetch of all feeds.
+            self._backoff_until = time.monotonic() + _FAILURE_BACKOFF
+            if self._last_good is not None:
+                stale = self._last_good.model_copy(
+                    update={"stale": True, "generated_at": now}
+                )
+                self._cooldown_resp = stale
+                return stale
+            degraded = NewsResponse(generated_at=now, degraded=True)
+            self._cooldown_resp = degraded
+            return degraded
+        resp = NewsResponse(generated_at=now, count=len(items), items=items)
+        self._last_good = resp
+        self._cooldown_resp = None
+        self._backoff_until = 0.0
+        await self._cache.set(_CACHE_KEY, resp)
         return resp
 
     async def _collect(self) -> list[NewsItem]:

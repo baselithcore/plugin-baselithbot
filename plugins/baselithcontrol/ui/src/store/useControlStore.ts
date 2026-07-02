@@ -14,6 +14,13 @@ export interface LoggedEvent extends ControlEvent {
   timestamp: number;
 }
 
+/**
+ * Every dashboard tab, in nav order. The access-policy fallback derives from
+ * this full list so a user whose only allowed tab is e.g. 'logs' lands there.
+ */
+export const TAB_IDS = ['dashboard', 'events', 'logs', 'system', 'account'] as const;
+export type ControlTab = (typeof TAB_IDS)[number];
+
 // Per-plugin LLM spend aggregate (summed across the plugin's models).
 export interface PluginCostAgg {
   cost_usd: number;
@@ -33,8 +40,8 @@ interface ControlStore {
   events: LoggedEvent[];
   latencyHistory: Record<string, number[]>;
   costByPlugin: Record<string, PluginCostAgg>;
-  currentTab: 'dashboard' | 'events' | 'logs' | 'system' | 'account';
-  setTab: (tab: 'dashboard' | 'events' | 'logs' | 'system' | 'account') => void;
+  currentTab: ControlTab;
+  setTab: (tab: ControlTab) => void;
   setAccessibleTabs: (tabs: AccessibleTab[]) => void;
   setCostUsage: (view: CostUsageView) => void;
   setInventory: (cards: PluginCard[]) => void;
@@ -99,7 +106,7 @@ export const useControlStore = create<ControlStore>((set) => ({
     })),
   applyEvent: (event) =>
     set((s) => {
-      const id = Math.random().toString(36).substring(2, 9);
+      const id = crypto.randomUUID();
       const timestamp = Date.now();
       const loggedEvent: LoggedEvent = { ...event, id, timestamp };
       const nextEvents = [loggedEvent, ...s.events].slice(0, 30);

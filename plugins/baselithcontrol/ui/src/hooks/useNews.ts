@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { fetchNews } from '@/lib/api';
+import { usePoll } from '@/hooks/usePoll';
 import type { NewsItem } from '@/types';
 
 // The server caches each snapshot for ~10 min, so polling more often than that
 // just returns the same payload. Refresh a little faster than the TTL to pick
-// changes up promptly, plus on tab refocus so a long-idle dashboard isn't stale.
+// changes up promptly. usePoll stops the loop entirely while the tab is hidden
+// and refetches on refocus, so a long-idle dashboard is never stale.
 const POLL_MS = 5 * 60 * 1000;
 
 export interface NewsState {
@@ -21,41 +23,28 @@ export function useNews(): NewsState {
     error: null,
     stale: false,
   });
-  const alive = useRef(true);
 
-  useEffect(() => {
-    alive.current = true;
-
-    const load = async () => {
+  usePoll(
+    async (alive) => {
       try {
         const res = await fetchNews();
-        if (!alive.current) return;
-        setState({ items: res.items, loading: false, error: null, stale: res.stale });
+        if (alive()) setState({ items: res.items, loading: false, error: null, stale: res.stale });
+        return true;
       } catch (err) {
-        if (!alive.current) return;
         // Keep any previously loaded items on a transient error — the ticker
         // should not blank out just because one refresh failed.
-        setState((s) => ({
-          ...s,
-          loading: false,
-          error: err instanceof Error ? err.message : 'failed',
-        }));
+        if (alive()) {
+          setState((s) => ({
+            ...s,
+            loading: false,
+            error: err instanceof Error ? err.message : 'failed',
+          }));
+        }
+        return false;
       }
-    };
-
-    void load();
-    const id = setInterval(load, POLL_MS);
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') void load();
-    };
-    document.addEventListener('visibilitychange', onVisible);
-
-    return () => {
-      alive.current = false;
-      clearInterval(id);
-      document.removeEventListener('visibilitychange', onVisible);
-    };
-  }, []);
+    },
+    { intervalMs: POLL_MS }
+  );
 
   return state;
 }

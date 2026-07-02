@@ -1,33 +1,25 @@
 import { useCallback, useEffect } from 'react';
+import { useAuth } from '@auth';
 import { fetchAccessibleTabs } from '@/lib/api';
-import { useControlStore } from '@/store/useControlStore';
+import { TAB_IDS, useControlStore } from '@/store/useControlStore';
 import type { AccessibleTab } from '@/types';
 
 const PLUGIN = 'baselithcontrol';
 
 /**
- * Decide whether the caller may see a given dashboard tab.
+ * Keep the active tab legal against the central per-tab access policy.
  *
- * Default-allow: while the policy is still loading (null) or a tab is unmanaged
- * (absent from the policy), access is granted — restriction is strictly opt-in
- * and a transient fetch failure must never hide the whole dashboard.
- */
-export function canAccessTab(tabId: string, tabs: AccessibleTab[] | null): boolean {
-  if (tabs === null) return true;
-  const matches = tabs.filter((t) => t.tab_id === tabId && t.plugin === PLUGIN);
-  if (matches.length === 0) return true;
-  return matches.some((t) => t.allowed);
-}
-
-/**
- * Load the central per-tab access policy once and keep the active tab legal:
- * if the current tab becomes inaccessible, fall back to the first allowed one.
+ * Tab-level checks delegate to the already-mounted `@auth` context
+ * (`useAuth().canAccessTab`) — the single default-allow policy every plugin
+ * shares — instead of re-implementing it locally. The raw policy list is still
+ * fetched once into the store, but only for the plugin-level visibility
+ * aggregation below (the @auth context does not expose the raw list).
  */
 export function useAccess(): void {
   const setAccessibleTabs = useControlStore((s) => s.setAccessibleTabs);
-  const accessibleTabs = useControlStore((s) => s.accessibleTabs);
   const currentTab = useControlStore((s) => s.currentTab);
   const setTab = useControlStore((s) => s.setTab);
+  const { canAccessTab } = useAuth();
 
   useEffect(() => {
     let alive = true;
@@ -40,30 +32,30 @@ export function useAccess(): void {
   }, [setAccessibleTabs]);
 
   useEffect(() => {
-    if (canAccessTab(currentTab, accessibleTabs)) return;
-    const fallback = (['dashboard', 'events', 'system'] as const).find((id) =>
-      canAccessTab(id, accessibleTabs)
-    );
+    if (canAccessTab(currentTab, PLUGIN)) return;
+    // Fall back across the FULL tab list (nav order) so a user whose only
+    // allowed tab is e.g. 'logs' still lands somewhere legal.
+    const fallback = TAB_IDS.find((id) => canAccessTab(id, PLUGIN));
     if (fallback && fallback !== currentTab) setTab(fallback);
-  }, [accessibleTabs, currentTab, setTab]);
+  }, [canAccessTab, currentTab, setTab]);
 }
 
-/** Reactive selector returning a `(tabId) => boolean` access predicate. */
+/** Reactive `(tabId) => boolean` predicate backed by the central @auth policy. */
 export function useCanAccessTab(): (tabId: string) => boolean {
-  const accessibleTabs = useControlStore((s) => s.accessibleTabs);
-  return useCallback((tabId: string) => canAccessTab(tabId, accessibleTabs), [accessibleTabs]);
+  const { canAccessTab } = useAuth();
+  return useCallback((tabId: string) => canAccessTab(tabId, PLUGIN), [canAccessTab]);
 }
 
 /**
  * Decide whether a whole plugin (its card in the grid + any of its surfaces)
  * should be visible to the caller.
  *
- * Default-allow, mirroring {@link canAccessTab}: a plugin with no policy entries
- * is unmanaged and stays visible; a managed plugin is visible only if AT LEAST
- * ONE of its tabs is allowed (so a multi-tab plugin is hidden only when every
- * tab is denied). The card name equals the policy `plugin` key (both the
- * manifest name), so matching is exact. Honors impersonation because the policy
- * is fetched with the shared Bearer.
+ * Default-allow, mirroring the central `canAccessTab`: a plugin with no policy
+ * entries is unmanaged and stays visible; a managed plugin is visible only if
+ * AT LEAST ONE of its tabs is allowed (so a multi-tab plugin is hidden only
+ * when every tab is denied). The card name equals the policy `plugin` key
+ * (both the manifest name), so matching is exact. Honors impersonation because
+ * the policy is fetched with the shared Bearer.
  */
 export function canAccessPlugin(pluginName: string, tabs: AccessibleTab[] | null): boolean {
   if (tabs === null) return true;

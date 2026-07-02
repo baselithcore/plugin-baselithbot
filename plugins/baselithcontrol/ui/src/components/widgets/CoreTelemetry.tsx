@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { Activity } from 'lucide-react';
-import { formatValue, type Tone } from '@/lib/format';
+import { asTone, formatValue } from '@/lib/format';
 import type { MetricView } from '@/types';
 import { MetricChip } from './MetricChip';
 
@@ -24,7 +24,7 @@ export function CoreTelemetry({ metrics }: { metrics: MetricView[] }) {
             key={i}
             label={m.label}
             value={formatValue(m.value, m.format)}
-            tone={(m.tone as Tone) ?? 'neutral'}
+            tone={asTone(m.tone)}
           />
         ))}
       </div>

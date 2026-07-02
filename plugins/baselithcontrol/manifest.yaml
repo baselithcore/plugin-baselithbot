@@ -1,6 +1,6 @@
 name: baselithcontrol
 system: true
-version: 0.1.0
+version: 0.2.0
 description: "Centralized control-plane dashboard \u2014 dynamically discovers every\
   \ loaded plugin, monitors it in real time over SSE, aggregates its UI (sandboxed\
   \ embed + A2UI status widgets), and exposes governed lifecycle control (enable/disable/reload)\
@@ -139,4 +139,4 @@ news_feeds:
   source: Schneier on Security
   category: cyber
   lang: en
-integrity_sha256: 2579f9a0084839fd4484d9111875ff00d36f88724c61597f917f9b8b539b85e3
+integrity_sha256: 2022e657bfed7ff3e2c197c7a64d6460a116f2f4f440bead937715dddb58942f

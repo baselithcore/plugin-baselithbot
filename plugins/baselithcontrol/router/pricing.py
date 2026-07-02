@@ -9,16 +9,18 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from fastapi import APIRouter, Depends
 
 from core.auth.types import AuthUser
 from core.context import get_tenant_or_default
 
 from ..api_models import CostUsageView, PluginCostRow, PricingRow, PricingView
-from ._guards import current_principal, is_admin, read_guard
+from ._guards import current_principal, is_admin_async, read_guard
 
-# Pricing snapshot date — kept in sync with core/models/pricing.py's comment.
-_AS_OF = "2026-05-16"
+if TYPE_CHECKING:
+    from ..service.cost_store import CostStore
 
 _PROVIDER_PREFIXES: tuple[tuple[str, str], ...] = (
     ("claude", "Anthropic"),
@@ -37,7 +39,7 @@ def _provider_of(model_id: str) -> str:
     return "Other"
 
 
-def _flush_pending(store: object) -> bool:
+def _flush_pending(store: CostStore) -> bool:
     """Sync helper (run off the event loop): probe the DB and flush deltas.
 
     Returns whether durable persistence is available, so the route knows to read
@@ -47,9 +49,9 @@ def _flush_pending(store: object) -> bool:
     """
     from ..service.llm_cost import get_llm_ledger
 
-    if not store.available():  # type: ignore[attr-defined]
+    if not store.available():
         return False
-    store.flush(get_llm_ledger().drain_deltas())  # type: ignore[attr-defined]
+    store.flush(get_llm_ledger().drain_deltas())
     return True
 
 
@@ -76,7 +78,7 @@ def build_pricing_router() -> APIRouter:
         from ..service.cost_store import get_cost_store
         from ..service.llm_cost import get_llm_ledger, install_llm_cost_tracking
 
-        admin = is_admin(principal)
+        admin = await is_admin_async(principal)
         # Admin → global (all tenants). Otherwise the caller's own tenant, taken
         # from the JWT-derived claim (or the bound context), never a header.
         tenant = (
@@ -127,7 +129,11 @@ def build_pricing_router() -> APIRouter:
     @router.get("/pricing", response_model=PricingView)
     async def pricing() -> PricingView:
         """The LLM list-price table + unknown-model fallback (USD / 1M tokens)."""
-        from core.models.pricing import DEFAULT_PRICING, UNKNOWN_PRICE
+        from core.models.pricing import (
+            DEFAULT_PRICING,
+            PRICING_AS_OF,
+            UNKNOWN_PRICE,
+        )
 
         rows = [
             PricingRow(
@@ -140,7 +146,7 @@ def build_pricing_router() -> APIRouter:
         ]
         rows.sort(key=lambda r: (r.provider, r.model_id))
         return PricingView(
-            as_of=_AS_OF,
+            as_of=PRICING_AS_OF,
             unknown_input_usd_per_million=UNKNOWN_PRICE.input_usd_per_million,
             unknown_output_usd_per_million=UNKNOWN_PRICE.output_usd_per_million,
             rows=rows,

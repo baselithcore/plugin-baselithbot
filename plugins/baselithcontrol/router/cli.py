@@ -1,10 +1,13 @@
 """CLI bridge routes — surface ``baselith`` CLI capabilities in the dashboard.
 
-Reads (diagnostics + infra status) are open under the same resilient
-:func:`read_guard` as the rest of the dashboard. Destructive infra ops
-(cache flush, db reset) and dev-tool execution (test/lint/docs) require the
-``admin`` role and are routed through the shared audit sink + event bus, so they
-appear live in the dashboard's event feed exactly like lifecycle actions.
+The whole System Console is **admin-only**, reads included: diagnostics and
+infra status disclose deployment topology (datastore hosts/ports, provider and
+model configuration), and the plugin's System Console tab is centrally
+admin-only (``system: true``) — the backend gate must match what the tab policy
+promises. Destructive infra ops (cache flush, db reset) and dev-tool execution
+(test/lint/docs) are additionally routed through the shared audit sink + event
+bus, so they appear live in the dashboard's event feed exactly like lifecycle
+actions.
 """
 
 from __future__ import annotations
@@ -40,7 +43,8 @@ from ..service.cli import (
     queue_status,
     verify,
 )
-from ._guards import admin_principal, read_guard
+from ..i18n import translate
+from ._guards import admin_principal, locale_of
 
 
 async def _record(actor: str, plugin: str, op: str, ok: bool) -> None:
@@ -55,8 +59,10 @@ async def _record(actor: str, plugin: str, op: str, ok: bool) -> None:
 
 
 def build_cli_router() -> APIRouter:
-    """Build the CLI-bridge sub-router (reads open, mutations admin-only)."""
-    router = APIRouter(tags=["baselithcontrol:cli"], dependencies=[Depends(read_guard)])
+    """Build the CLI-bridge sub-router (admin-only, reads included)."""
+    router = APIRouter(
+        tags=["baselithcontrol:cli"], dependencies=[Depends(admin_principal)]
+    )
 
     # ── Diagnostics (read-only) ────────────────────────────────
     @router.get("/cli/doctor", response_model=DoctorReport)
@@ -127,7 +133,9 @@ def build_cli_router() -> APIRouter:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)
             ) from exc
-        await _record(user.user_id, "devtools", kind, True)
+        # ``ok`` records that the *launch* succeeded — the job outcome is
+        # asynchronous and lands in the job view, not this audit record.
+        await _record(user.user_id, "devtools", f"{kind}.start", True)
         return job
 
     @router.get("/cli/devtools/jobs", response_model=list[JobView])
@@ -148,7 +156,8 @@ def build_cli_router() -> APIRouter:
         job = get_job_manager(request.app).get(job_id)
         if job is None:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="job not found"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=translate("error.job_not_found", locale_of(request)),
             )
         return job
 

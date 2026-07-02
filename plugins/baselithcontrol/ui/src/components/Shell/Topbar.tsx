@@ -137,6 +137,17 @@ export function Topbar() {
             ))}
           </div>
 
+          {/* Compact language toggle for narrow screens (full switcher is sm+) */}
+          <button
+            type="button"
+            onClick={() => setLanguage(i18n.language.startsWith('it') ? 'en' : 'it')}
+            aria-label={t('lang.switch')}
+            title={t('lang.switch')}
+            className="control-icon-button text-[11px] font-bold uppercase sm:hidden"
+          >
+            {i18n.language.startsWith('it') ? 'it' : 'en'}
+          </button>
+
           {/* Theme */}
           <button
             type="button"

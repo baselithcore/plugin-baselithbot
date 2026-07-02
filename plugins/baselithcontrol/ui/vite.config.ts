@@ -26,6 +26,18 @@ export default defineConfig({
         target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
+      // Central auth endpoints (tab policy, tenants, usage, refresh) — without
+      // this, dev mode silently 404s them and the RBAC/tenant UI degrades.
+      '/api/auth': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      // General fallback so declarative widgets' arbitrary plugin endpoints
+      // (fetchWidgetData) also reach the backend in dev.
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
     },
   },
 });

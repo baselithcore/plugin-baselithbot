@@ -14,7 +14,7 @@ from fastapi import APIRouter, Depends, Query, Request
 from core.auth.types import AuthUser
 
 from ..api_models import LogEntry, LogsView
-from ..config import ControlConfig
+from ..service.deps import get_config
 from ..service.logs import get_log_buffer
 from ._guards import admin_principal
 
@@ -33,9 +33,7 @@ def build_logs_router() -> APIRouter:
         q: str | None = Query(default=None),
     ) -> LogsView:
         """Filtered tail of captured logs (level = minimum severity, newest first)."""
-        cfg = getattr(request.app.state, "baselithcontrol_config", None)
-        if not isinstance(cfg, ControlConfig):
-            cfg = ControlConfig()
+        cfg = get_config(request.app)
         if not cfg.logs_enabled:
             return LogsView(enabled=False, capacity=0)
         buffer = get_log_buffer()

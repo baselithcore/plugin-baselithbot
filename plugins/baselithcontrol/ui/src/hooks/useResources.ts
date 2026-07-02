@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { fetchPluginRuntime, fetchRequestVolume, fetchResources } from '@/lib/api';
+import { usePoll } from '@/hooks/usePoll';
 import type { PluginRuntime, RequestVolumeSample, SystemResources } from '@/types';
 
 const HISTORY = 40; // sparkline points retained per series
@@ -42,10 +43,8 @@ export function useResources(): ResourcesState {
   // prev request counts + timestamp, kept across polls to compute rps.
   const prev = useRef<{ at: number; counts: Record<string, number> }>({ at: 0, counts: {} });
 
-  useEffect(() => {
-    let alive = true;
-
-    const poll = async () => {
+  usePoll(
+    async (alive) => {
       try {
         // Volume history is best-effort: an older backend without /resources/history
         // just yields an empty trend rather than failing the whole poll.
@@ -54,7 +53,7 @@ export function useResources(): ResourcesState {
           fetchPluginRuntime(),
           fetchRequestVolume().catch(() => [] as RequestVolumeSample[]),
         ]);
-        if (!alive) return;
+        if (!alive()) return true;
 
         const now = Date.now();
         const dt = prev.current.at ? (now - prev.current.at) / 1000 : 0;
@@ -77,20 +76,16 @@ export function useResources(): ResourcesState {
           lastUpdated: now,
           error: null,
         }));
+        return true;
       } catch (err) {
-        if (alive) {
+        if (alive()) {
           setState((s) => ({ ...s, error: err instanceof Error ? err.message : 'failed' }));
         }
+        return false;
       }
-    };
-
-    void poll();
-    const id = setInterval(poll, POLL_MS);
-    return () => {
-      alive = false;
-      clearInterval(id);
-    };
-  }, []);
+    },
+    { intervalMs: POLL_MS }
+  );
 
   return state;
 }

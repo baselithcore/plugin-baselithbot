@@ -23,7 +23,7 @@ from typing import Any
 from core.events.bus import get_event_bus
 from core.observability.logging import get_logger
 
-from ..config import ControlConfig
+from ..config import get_runtime_config
 from .bridge import CONTROL_ACTION
 
 logger = get_logger(__name__)
@@ -95,7 +95,7 @@ def get_lifecycle_buffer() -> LifecycleBuffer:
     if _BUFFER is None:
         with _BUFFER_LOCK:
             if _BUFFER is None:
-                buf = LifecycleBuffer(ControlConfig().lifecycle_capacity)
+                buf = LifecycleBuffer(get_runtime_config().lifecycle_capacity)
                 buf.attach(get_event_bus())
                 _BUFFER = buf
     return _BUFFER

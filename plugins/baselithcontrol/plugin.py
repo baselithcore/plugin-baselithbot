@@ -20,7 +20,7 @@ from typing import Any
 from core.observability.logging import get_logger
 from core.plugins import RouterPlugin
 
-from .config import ControlConfig
+from .config import ControlConfig, get_runtime_config, set_runtime_config
 
 logger = get_logger(__name__)
 MOUNT_PATH = "/baselithcontrol"
@@ -47,6 +47,9 @@ class BaselithControlPlugin(RouterPlugin):
         """Validate config and publish it for request-time service construction."""
         await super().initialize(config)
         self._control_config = ControlConfig.from_plugin_config(config)
+        # Publish for request-time consumers — without this the plugins.yaml
+        # block is dead config and only env overrides would ever apply.
+        set_runtime_config(self._control_config)
         logger.info(
             "BaselithControl initialized (gate=%s, require_admin=%s)",
             self._control_config.gate_level.value,
@@ -81,16 +84,13 @@ class BaselithControlPlugin(RouterPlugin):
     def setup_app_middleware(cls, app: Any) -> None:
         """Mount the built SPA before the middleware stack freezes.
 
-        Runs at app-construction time. The plugin config is also stashed on
-        ``app.state`` here so request-time dependencies can read it without a
-        registry round-trip. Missing build output degrades gracefully — the API
-        still serves; only the bundled UI is unavailable.
+        Runs at app-construction time, before ``initialize`` delivers the
+        plugins.yaml block — boot-time consumers therefore read the cached
+        env-only config via :func:`get_runtime_config`; request-time consumers
+        pick up the full block once ``initialize`` publishes it. Missing build
+        output degrades gracefully — the API still serves; only the bundled UI
+        is unavailable.
         """
-        try:
-            app.state.baselithcontrol_config = ControlConfig()
-        except Exception as exc:  # noqa: BLE001 — config errors must not block boot
-            logger.warning("BaselithControl config load failed: %s", exc)
-
         # Per-plugin request telemetry: a pure-ASGI meter wrapping the whole app.
         # It attributes each request to a plugin via the registry's own route
         # matcher and records count/latency/errors — the honest per-plugin signal
@@ -118,7 +118,7 @@ class BaselithControlPlugin(RouterPlugin):
         # Live log viewer: attach the root-logger ring handler now so the buffer
         # captures records from boot onward (the admin-only Logs tab tails it).
         try:
-            if ControlConfig().logs_enabled:
+            if get_runtime_config().logs_enabled:
                 from .service.logs import get_log_buffer
 
                 get_log_buffer()
@@ -140,7 +140,7 @@ class BaselithControlPlugin(RouterPlugin):
         # persists to Postgres (survives restarts, sums across workers). No-op
         # without a database — the dashboard falls back to the in-memory ledger.
         try:
-            cfg = ControlConfig()
+            cfg = get_runtime_config()
             if cfg.persist_costs:
                 from .service.cost_store import get_cost_store
 

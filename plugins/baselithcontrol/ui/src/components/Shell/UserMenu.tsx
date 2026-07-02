@@ -1,4 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { Shield, User, LogOut, ChevronDown, Gauge, UserCog } from 'lucide-react';
@@ -61,7 +67,11 @@ export function UserMenu({ me }: { me: Me }) {
       if (triggerRef.current?.contains(target) || menuRef.current?.contains(target)) return;
       setOpen(false);
     };
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setOpen(false);
+      triggerRef.current?.focus(); // return focus to the trigger (menu pattern)
+    };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
     return () => {
@@ -69,6 +79,29 @@ export function UserMenu({ me }: { me: Me }) {
       document.removeEventListener('keydown', onKey);
     };
   }, [open]);
+
+  // ARIA menu pattern: focus the first item on open; ArrowUp/ArrowDown cycle.
+  useEffect(() => {
+    if (!open) return;
+    const id = requestAnimationFrame(() =>
+      menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus()
+    );
+    return () => cancelAnimationFrame(id);
+  }, [open]);
+
+  const onMenuKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    const nodes = menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]');
+    if (!nodes || nodes.length === 0) return;
+    const items = Array.from(nodes);
+    const idx = items.indexOf(document.activeElement as HTMLElement);
+    const next =
+      e.key === 'ArrowDown'
+        ? items[(idx + 1) % items.length]
+        : items[(idx - 1 + items.length) % items.length];
+    next.focus();
+  };
 
   const name = me.display_name || me.username || me.email || me.user_id;
   const openAccount = () => {
@@ -115,6 +148,8 @@ export function UserMenu({ me }: { me: Me }) {
           <div
             ref={menuRef}
             role="menu"
+            aria-label={name}
+            onKeyDown={onMenuKey}
             style={{ position: 'fixed', top: pos.top, right: pos.right }}
             className="glass z-50 w-72 origin-top-right overflow-hidden p-0 shadow-xl"
           >
@@ -130,6 +165,7 @@ export function UserMenu({ me }: { me: Me }) {
             {/* Full account page */}
             <button
               type="button"
+              role="menuitem"
               onClick={openAccount}
               className="flex w-full items-center gap-2 border-t brd px-3 py-2.5 text-[12px] font-medium t-dim transition hover:bg-[var(--surface-2)] hover:text-[var(--text)]"
             >
@@ -140,6 +176,7 @@ export function UserMenu({ me }: { me: Me }) {
             {/* Logout */}
             <button
               type="button"
+              role="menuitem"
               onClick={() => logout()}
               className="flex w-full items-center gap-2 border-t brd px-3 py-2.5 text-[12px] font-medium t-dim transition hover:bg-[var(--surface-2)] hover:text-rose-500"
             >

@@ -9,14 +9,14 @@ from __future__ import annotations
 
 from typing import Literal
 
-from fastapi import APIRouter, Body, Depends, Request
+from fastapi import APIRouter, Body, Depends, Query, Request
 
 from core.auth.types import AuthUser
 
 from ..api_models import ActionRequest, ActionResult, AuditEntryView, ConfigRequest
 from ..service import get_control_service
 from ..service.audit import get_audit_sink
-from ._guards import admin_principal
+from ._guards import admin_principal, locale_of
 
 
 def build_actions_router() -> APIRouter:
@@ -35,7 +35,11 @@ def build_actions_router() -> APIRouter:
         """Enable, disable, or reload a plugin (governed + audited)."""
         service = get_control_service(request.app)
         return await service.run(
-            plugin=plugin, op=op, actor=user.user_id, reason=body.reason
+            plugin=plugin,
+            op=op,
+            actor=user.user_id,
+            reason=body.reason,
+            locale=locale_of(request),
         )
 
     @router.post("/config/{plugin}", response_model=ActionResult)
@@ -48,12 +52,16 @@ def build_actions_router() -> APIRouter:
         """Persist a plugin's ``enabled`` flag in plugins.yaml (admin, audited)."""
         service = get_control_service(request.app)
         return await service.set_config_enabled(
-            plugin=plugin, enabled=body.enabled, actor=user.user_id, reason=body.reason
+            plugin=plugin,
+            enabled=body.enabled,
+            actor=user.user_id,
+            reason=body.reason,
+            locale=locale_of(request),
         )
 
     @router.get("/audit", response_model=list[AuditEntryView])
     async def audit_tail(
-        limit: int = 50,
+        limit: int = Query(default=50, ge=1, le=500),
         user: AuthUser = Depends(admin),
     ) -> list[AuditEntryView]:
         """Recent governed-action audit records (admin only)."""

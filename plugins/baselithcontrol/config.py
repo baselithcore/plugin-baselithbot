@@ -170,4 +170,31 @@ class ControlConfig(BaseSettings):
         return cls(**(config or {}))
 
 
-__all__ = ["ControlConfig", "GateLevel"]
+_RUNTIME_CONFIG: ControlConfig | None = None
+
+
+def set_runtime_config(config: ControlConfig) -> None:
+    """Publish the validated runtime config (called at plugin ``initialize``).
+
+    Request-time consumers read through :func:`get_runtime_config`, so the
+    ``configs/plugins.yaml`` block actually governs behaviour — before this
+    seam existed only the env-only copy built at app construction was ever
+    consulted and the yaml block was silently dead.
+    """
+    global _RUNTIME_CONFIG
+    _RUNTIME_CONFIG = config
+
+
+def get_runtime_config() -> ControlConfig:
+    """The published runtime config (or a cached env-only instance pre-init).
+
+    Also serves as the single cached ``ControlConfig`` so request paths never
+    re-read the ``.env`` file per call.
+    """
+    global _RUNTIME_CONFIG
+    if _RUNTIME_CONFIG is None:
+        _RUNTIME_CONFIG = ControlConfig()
+    return _RUNTIME_CONFIG
+
+
+__all__ = ["ControlConfig", "GateLevel", "get_runtime_config", "set_runtime_config"]

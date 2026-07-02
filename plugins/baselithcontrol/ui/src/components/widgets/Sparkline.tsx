@@ -14,7 +14,8 @@ export function Sparkline({ data, width = 120, height = 36, id }: Props) {
       <svg
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="none"
-        className="h-9 w-full"
+        className="w-full"
+        style={{ height }}
         aria-hidden
       >
         <line
@@ -47,7 +48,8 @@ export function Sparkline({ data, width = 120, height = 36, id }: Props) {
     <svg
       viewBox={`0 0 ${width} ${height}`}
       preserveAspectRatio="none"
-      className="h-9 w-full overflow-visible"
+      className="w-full overflow-visible"
+      style={{ height }}
       aria-hidden
     >
       <defs>

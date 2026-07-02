@@ -1,7 +1,24 @@
 // Value formatting + dot-path extraction for declarative widgets (the
 // customapi-style escape hatch). Mirrors Homepage's `format` vocabulary.
 
+import i18n from '@/i18n';
+
 export type Tone = 'neutral' | 'success' | 'warning' | 'danger' | 'info';
+
+// Validated tone lookup — plugin-reported metric tones are free-form strings,
+// so coerce them through a map with a neutral fallback instead of casting.
+const TONE_LOOKUP: Record<string, Tone> = {
+  neutral: 'neutral',
+  success: 'success',
+  warning: 'warning',
+  danger: 'danger',
+  info: 'info',
+};
+
+/** Coerce a free-form tone string to a known {@link Tone} (neutral fallback). */
+export function asTone(value: string | null | undefined): Tone {
+  return TONE_LOOKUP[value ?? ''] ?? 'neutral';
+}
 
 export function getByPath(obj: unknown, path: string): unknown {
   return path.split('.').reduce<unknown>((acc, key) => {
@@ -104,10 +121,11 @@ export function formatTokens(value: number | null | undefined): string {
   return String(value);
 }
 
+// Localized via the active i18n language (catalog keys under `time.*`).
 export function relativeTime(epochSeconds: number | null): string {
   if (epochSeconds == null) return '—';
   const delta = Math.max(0, Date.now() / 1000 - epochSeconds);
-  if (delta < 60) return `${Math.round(delta)}s ago`;
-  if (delta < 3600) return `${Math.round(delta / 60)}m ago`;
-  return `${Math.round(delta / 3600)}h ago`;
+  if (delta < 60) return i18n.t('time.s_ago', { n: Math.round(delta) });
+  if (delta < 3600) return i18n.t('time.m_ago', { n: Math.round(delta / 60) });
+  return i18n.t('time.h_ago', { n: Math.round(delta / 3600) });
 }

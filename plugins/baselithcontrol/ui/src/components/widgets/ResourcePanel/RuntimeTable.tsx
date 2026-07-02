@@ -62,7 +62,24 @@ export function RuntimeTable({ rows, onOpen }: Props) {
                 onOpen ? 'cursor-pointer hover:bg-[var(--surface-2)]' : ''
               }`}
             >
-              <td className="px-4 py-2.5 font-medium t-primary">{r.plugin}</td>
+              <td className="px-4 py-2.5 font-medium t-primary">
+                {onOpen ? (
+                  // Real button so keyboard users can open the detail view too
+                  // (the row onClick stays as a larger pointer target).
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpen(r.plugin);
+                    }}
+                    className="cursor-pointer text-left font-medium t-primary hover:underline"
+                  >
+                    {r.plugin}
+                  </button>
+                ) : (
+                  r.plugin
+                )}
+              </td>
               <td className="px-3 py-2.5 text-right font-mono tabular-nums t-dim">
                 {r.requests.toLocaleString()}
               </td>

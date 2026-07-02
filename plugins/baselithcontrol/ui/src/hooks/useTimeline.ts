@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { fetchTimeline } from '@/lib/api';
+import { usePoll } from '@/hooks/usePoll';
 import type { LifecycleEvent } from '@/types';
 
 const POLL_MS = 10000; // lifecycle events are infrequent; a slow poll suffices
@@ -14,27 +15,21 @@ export interface TimelineState {
 export function useTimeline(limit = 12): TimelineState {
   const [state, setState] = useState<TimelineState>({ events: [], error: null });
 
-  useEffect(() => {
-    let alive = true;
-
-    const poll = async () => {
+  usePoll(
+    async (alive) => {
       try {
         const events = await fetchTimeline(limit);
-        if (alive) setState({ events, error: null });
+        if (alive()) setState({ events, error: null });
+        return true;
       } catch (err) {
-        if (alive) {
+        if (alive()) {
           setState((s) => ({ ...s, error: err instanceof Error ? err.message : 'failed' }));
         }
+        return false;
       }
-    };
-
-    void poll();
-    const id = setInterval(poll, POLL_MS);
-    return () => {
-      alive = false;
-      clearInterval(id);
-    };
-  }, [limit]);
+    },
+    { intervalMs: POLL_MS, key: String(limit) }
+  );
 
   return state;
 }

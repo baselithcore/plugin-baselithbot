@@ -349,6 +349,19 @@ class CostUsageView(BaseModel):
     rows: list[PluginCostRow] = Field(default_factory=list)
 
 
+class WhoamiView(BaseModel):
+    """Identity + capabilities of the caller, used by the UI to gate actions."""
+
+    user_id: str
+    tenant_id: str
+    email: str | None = None
+    username: str | None = None
+    display_name: str
+    roles: list[str] = Field(default_factory=list)
+    is_admin: bool = False
+    authenticated: bool = False
+
+
 __all__ = [
     "API_VERSION",
     "PluginState",
@@ -377,4 +390,5 @@ __all__ = [
     "PricingView",
     "PluginCostRow",
     "CostUsageView",
+    "WhoamiView",
 ]

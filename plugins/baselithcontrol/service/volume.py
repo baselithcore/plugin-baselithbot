@@ -21,7 +21,7 @@ from collections import deque
 
 from core.observability.logging import get_logger
 
-from ..config import ControlConfig
+from ..config import get_runtime_config
 from .plugin_meter import get_plugin_meter
 
 logger = get_logger(__name__)
@@ -88,7 +88,7 @@ def get_volume_sampler() -> VolumeSampler:
     if _SAMPLER is None:
         with _SAMPLER_LOCK:
             if _SAMPLER is None:
-                cfg = ControlConfig()
+                cfg = get_runtime_config()
                 _SAMPLER = VolumeSampler(
                     capacity=cfg.volume_capacity,
                     interval_seconds=cfg.volume_interval_seconds,

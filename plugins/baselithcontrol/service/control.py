@@ -27,6 +27,7 @@ from core.orchestration.autonomy import (
 )
 
 from ..api_models import ActionResult, PluginState
+from ..i18n import DEFAULT_LOCALE, translate
 from .audit import AuditSink
 from .bridge import emit_action
 from .config_store import read_block, set_enabled
@@ -58,16 +59,28 @@ class ControlService:
         self._timeout = approval_timeout
 
     async def run(
-        self, *, plugin: str, op: str, actor: str, reason: str | None
+        self,
+        *,
+        plugin: str,
+        op: str,
+        actor: str,
+        reason: str | None,
+        locale: str = DEFAULT_LOCALE,
     ) -> ActionResult:
-        """Validate, gate, execute, and audit a single lifecycle operation."""
+        """Validate, gate, execute, and audit a single lifecycle operation.
+
+        Note: the runtime state change applies to **this worker process**; with
+        multiple uvicorn workers the other processes converge on restart (or
+        via the durable ``set_config_enabled`` path). ``message`` is localized
+        for the caller (``locale``); machine consumers key off ``ok``/``state``.
+        """
         if op not in _VALID_OPS:
             return ActionResult(
                 plugin=plugin,
                 operation=op,
                 ok=False,
                 state=PluginState.unknown,
-                message="unsupported",
+                message=translate("control.action.unsupported", locale, op=op),
             )
         if plugin not in self._registry:
             return ActionResult(
@@ -75,7 +88,7 @@ class ControlService:
                 operation=op,
                 ok=False,
                 state=PluginState.unknown,
-                message="not_found",
+                message=translate("control.action.not_found", locale, plugin=plugin),
             )
 
         try:
@@ -95,7 +108,13 @@ class ControlService:
                 operation=op,
                 ok=False,
                 state=PluginState.active,
-                message=f"denied: {exc.reason}",
+                message=translate(
+                    "control.action.denied",
+                    locale,
+                    op=op,
+                    plugin=plugin,
+                    reason=exc.reason,
+                ),
             )
 
         ok, state = await self._dispatch(plugin, op)
@@ -108,11 +127,22 @@ class ControlService:
             operation=op,
             ok=ok,
             state=state,
-            message="ok" if ok else "failed",
+            message=translate(
+                "control.action.ok" if ok else "control.action.failed",
+                locale,
+                op=op,
+                plugin=plugin,
+            ),
         )
 
     async def set_config_enabled(
-        self, *, plugin: str, enabled: bool, actor: str, reason: str | None
+        self,
+        *,
+        plugin: str,
+        enabled: bool,
+        actor: str,
+        reason: str | None,
+        locale: str = DEFAULT_LOCALE,
     ) -> ActionResult:
         """Persist the plugin's ``enabled`` flag in plugins.yaml + sync runtime.
 
@@ -132,7 +162,7 @@ class ControlService:
                 operation=op,
                 ok=False,
                 state=PluginState.unknown,
-                message="not_found",
+                message=translate("control.action.not_found", locale, plugin=plugin),
             )
 
         wrote = await asyncio.to_thread(set_enabled, plugin, enabled)
@@ -149,7 +179,9 @@ class ControlService:
                 operation=op,
                 ok=False,
                 state=PluginState.unknown,
-                message="config_write_failed",
+                message=translate(
+                    "control.action.config_write_failed", locale, plugin=plugin
+                ),
             )
 
         # Best-effort runtime sync so the UI updates without a restart.
@@ -159,7 +191,11 @@ class ControlService:
         )
         await emit_action(plugin=plugin, op=op, ok=True, state=state.value)
         return ActionResult(
-            plugin=plugin, operation=op, ok=True, state=state, message="ok"
+            plugin=plugin,
+            operation=op,
+            ok=True,
+            state=state,
+            message=translate("control.action.ok", locale, op=op, plugin=plugin),
         )
 
     @staticmethod

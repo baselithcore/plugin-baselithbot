@@ -12,9 +12,6 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@fontsource/archivo": "^5.2.8",
-    "@fontsource/chakra-petch": "^5.2.7",
-    "@fontsource/hanken-grotesk": "^5.2.8",
     "@fontsource/inter": "^5.2.8",
     "@fontsource/jetbrains-mono": "^5.2.8",
     "i18next": "^24.0.0",

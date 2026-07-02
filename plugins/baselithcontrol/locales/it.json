@@ -4,5 +4,11 @@
   "control.action.failed": "Operazione '{op}' su '{plugin}' fallita.",
   "control.action.denied": "Operazione '{op}' su '{plugin}' negata: {reason}.",
   "control.action.unsupported": "Operazione '{op}' non supportata.",
-  "control.stream.connected": "Stream di controllo connesso."
+  "control.action.config_write_failed": "Salvataggio della configurazione di '{plugin}' non riuscito.",
+  "control.stream.connected": "Stream di controllo connesso.",
+  "error.auth_required": "Autenticazione richiesta.",
+  "error.admin_required": "È richiesto il ruolo admin.",
+  "error.admin_required_no_auth": "È richiesto il ruolo admin (auth non configurata).",
+  "error.auth_unavailable": "Sottosistema di autenticazione non disponibile.",
+  "error.job_not_found": "Job non trovato."
 }

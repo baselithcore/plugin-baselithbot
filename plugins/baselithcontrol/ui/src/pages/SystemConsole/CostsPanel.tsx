@@ -2,21 +2,11 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Info, DollarSign } from 'lucide-react';
 import { fetchCostUsage, fetchPricing } from '@/lib/api';
+import { formatTokens, formatUsd } from '@/lib/format';
+import { usePoll } from '@/hooks/usePoll';
 import type { CostUsageView, PricingView } from '@/types';
 
 const POLL_MS = 5000;
-
-function usd(n: number): string {
-  if (n === 0) return '$0';
-  if (n < 0.01) return `$${n.toFixed(4)}`;
-  return `$${n.toFixed(2)}`;
-}
-
-function tokens(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
-  return String(n);
-}
 
 export function CostsPanel() {
   const { t } = useTranslation();
@@ -24,24 +14,31 @@ export function CostsPanel() {
   const [pricing, setPricing] = useState<PricingView | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let alive = true;
-    const load = async () => {
+  usePoll(
+    async (alive) => {
       try {
         const u = await fetchCostUsage();
-        if (alive) setUsage(u);
+        if (alive()) {
+          setUsage(u);
+          setError(null);
+        }
+        return true;
       } catch (e) {
-        if (alive) setError(e instanceof Error ? e.message : 'failed');
+        if (alive()) setError(e instanceof Error ? e.message : 'failed');
+        return false;
       }
-    };
-    void load();
+    },
+    { intervalMs: POLL_MS }
+  );
+
+  // Pricing reference is a static snapshot — one fetch on mount suffices.
+  useEffect(() => {
+    let alive = true;
     fetchPricing()
       .then((p) => alive && setPricing(p))
       .catch(() => {});
-    const id = setInterval(load, POLL_MS);
     return () => {
       alive = false;
-      clearInterval(id);
     };
   }, []);
 
@@ -77,8 +74,8 @@ export function CostsPanel() {
       {/* Totals */}
       <div className="glass grid grid-cols-2 gap-px overflow-hidden bg-[var(--border)] sm:grid-cols-3">
         {[
-          { label: t('cost.total_spend'), value: usd(usage.total_cost_usd), accent: true },
-          { label: t('cost.total_tokens'), value: tokens(usage.total_tokens) },
+          { label: t('cost.total_spend'), value: formatUsd(usage.total_cost_usd), accent: true },
+          { label: t('cost.total_tokens'), value: formatTokens(usage.total_tokens) },
           {
             label: t('cost.tracked_plugins'),
             value: String(new Set(rows.map((r) => r.plugin)).size),
@@ -128,10 +125,10 @@ export function CostsPanel() {
                 className="text-right tabular-nums t-dim"
                 title={`${r.prompt_tokens} in / ${r.completion_tokens} out`}
               >
-                {tokens(r.total_tokens)}
+                {formatTokens(r.total_tokens)}
               </span>
               <span className="text-right font-semibold tabular-nums t-primary">
-                {usd(r.cost_usd)}
+                {formatUsd(r.cost_usd)}
               </span>
             </div>
           ))
@@ -158,8 +155,12 @@ export function CostsPanel() {
                 <span className="font-mono t-primary">{r.model_id}</span>
                 <span className="ml-2 text-[11px] t-faint">{r.provider}</span>
               </span>
-              <span className="text-right tabular-nums t-dim">{usd(r.input_usd_per_million)}</span>
-              <span className="text-right tabular-nums t-dim">{usd(r.output_usd_per_million)}</span>
+              <span className="text-right tabular-nums t-dim">
+                {formatUsd(r.input_usd_per_million)}
+              </span>
+              <span className="text-right tabular-nums t-dim">
+                {formatUsd(r.output_usd_per_million)}
+              </span>
             </div>
           ))}
         </details>

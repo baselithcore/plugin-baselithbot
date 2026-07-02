@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import atexit
 import threading
+import time
 from typing import Any
 
 from core.observability.logging import get_logger
@@ -27,6 +28,7 @@ from core.observability.logging import get_logger
 logger = get_logger(__name__)
 
 _TABLE = "baselithcontrol_llm_usage"
+_REPROBE_SECONDS = 300.0  # how long a "no DB" verdict holds before re-probing
 
 _DDL = f"""
 CREATE TABLE IF NOT EXISTS {_TABLE} (
@@ -63,6 +65,7 @@ class CostStore:
 
     def __init__(self) -> None:
         self._available: bool | None = None  # tri-state until first probe
+        self._next_probe = 0.0  # monotonic deadline for re-probing a "no DB" verdict
         self._probe_lock = threading.Lock()
         self._flusher: threading.Thread | None = None
         self._stop = threading.Event()
@@ -70,12 +73,21 @@ class CostStore:
 
     # -- availability / schema -------------------------------------------
     def _ensure_schema(self) -> bool:
-        """Probe the DB once and create the table; cache the verdict."""
-        if self._available is not None:
-            return self._available
+        """Probe the DB and create the table, caching the verdict.
+
+        A positive verdict is permanent; a negative one expires after
+        ``_REPROBE_SECONDS`` so persistence recovers automatically once the
+        database comes (back) up — it is never lost until process restart.
+        """
+        if self._available:
+            return True
+        if self._available is False and time.monotonic() < self._next_probe:
+            return False
         with self._probe_lock:
-            if self._available is not None:
-                return self._available
+            if self._available:
+                return True
+            if self._available is False and time.monotonic() < self._next_probe:
+                return False
             try:
                 from core.db.connection import get_cursor
 
@@ -85,8 +97,9 @@ class CostStore:
                 logger.info("BaselithControl cost persistence enabled (%s)", _TABLE)
             except Exception as exc:  # noqa: BLE001 — no DB → degrade to memory
                 self._available = False
+                self._next_probe = time.monotonic() + _REPROBE_SECONDS
                 logger.info("BaselithControl cost persistence off (no DB): %s", exc)
-            return self._available
+            return bool(self._available)
 
     def available(self) -> bool:
         """Whether durable persistence is usable (DB reachable + table ready)."""
@@ -166,12 +179,16 @@ class CostStore:
 
     # -- background flusher ----------------------------------------------
     def start(self, interval: float = 15.0) -> None:
-        """Start the periodic delta flusher (idempotent; no-op without a DB)."""
+        """Start the periodic delta flusher (idempotent).
+
+        The flusher runs even when the first probe finds no database: each
+        cycle re-checks availability (cheap while the negative verdict holds),
+        so persistence kicks in automatically when the DB becomes reachable.
+        """
         if self._flusher is not None:
             return
         self._interval = max(2.0, interval)
-        if not self._ensure_schema():
-            return  # no DB → nothing to flush; route falls back to memory
+        self._ensure_schema()  # eager first probe (logs the effective mode)
         thread = threading.Thread(target=self._loop, name="blc-cost-flush", daemon=True)
         self._flusher = thread
         thread.start()
@@ -185,6 +202,10 @@ class CostStore:
 
         while not self._stop.wait(self._interval):
             try:
+                # Don't drain the ledger unless the deltas can actually be
+                # persisted — a drain without a reachable DB would lose them.
+                if not self._ensure_schema():
+                    continue
                 self.flush(get_llm_ledger().drain_deltas())
             except Exception as exc:  # noqa: BLE001 — keep the loop alive
                 logger.warning("BaselithControl cost flush loop error: %s", exc)

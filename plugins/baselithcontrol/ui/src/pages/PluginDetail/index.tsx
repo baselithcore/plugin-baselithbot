@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { fetchPluginStatus, fetchWidgets } from '@/lib/api';
 import { relativeTime } from '@/lib/format';
+import { usePoll } from '@/hooks/usePoll';
 import { safeInternalUrl } from '@/lib/url';
 import { useControlStore } from '@/store/useControlStore';
 import { pageVariants } from '@/lib/motion';
@@ -32,33 +33,31 @@ export function PluginDetail({ name, onBack }: { name: string; onBack: () => voi
 
   useEffect(() => {
     let alive = true;
-
     void fetchWidgets()
       .then((ws) => alive && setWidget(ws.find((w) => w.plugin === name) ?? null))
       .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [name]);
 
-    const pollStatus = async () => {
+  usePoll(
+    async (alive) => {
       try {
         const s = await fetchPluginStatus(name);
-        if (alive) {
+        if (alive()) {
           setStatus(s);
           if (typeof s.latency_ms === 'number') {
             useControlStore.getState().addLatency(name, s.latency_ms);
           }
         }
+        return true;
       } catch {
-        /* ignore fetch errors */
+        return false; // status is best-effort; backoff covers persistent errors
       }
-    };
-
-    void pollStatus();
-    const interval = setInterval(pollStatus, 4000);
-
-    return () => {
-      alive = false;
-      clearInterval(interval);
-    };
-  }, [name]);
+    },
+    { intervalMs: 4000, key: name }
+  );
 
   if (!card) return null;
 

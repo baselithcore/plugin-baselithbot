@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import { fetchCostUsage } from '@/lib/api';
+import { usePoll } from '@/hooks/usePoll';
 import { useControlStore } from '@/store/useControlStore';
 
 const POLL_MS = 10000;
@@ -10,21 +10,16 @@ const POLL_MS = 10000;
 export function useCostUsage(): void {
   const setCostUsage = useControlStore((s) => s.setCostUsage);
 
-  useEffect(() => {
-    let alive = true;
-    const load = async () => {
+  usePoll(
+    async (alive) => {
       try {
         const view = await fetchCostUsage();
-        if (alive) setCostUsage(view);
+        if (alive()) setCostUsage(view);
+        return true;
       } catch {
-        /* ignore — cost is best-effort */
+        return false; // best-effort — backoff handles persistent failures
       }
-    };
-    void load();
-    const id = setInterval(load, POLL_MS);
-    return () => {
-      alive = false;
-      clearInterval(id);
-    };
-  }, [setCostUsage]);
+    },
+    { intervalMs: POLL_MS }
+  );
 }

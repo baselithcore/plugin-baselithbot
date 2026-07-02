@@ -50,6 +50,7 @@ function getEventStyle(type: string) {
 }
 
 function EventRow({ event }: { event: LoggedEvent }) {
+  const { t } = useTranslation();
   const style = getEventStyle(event.type);
   const Icon = style.icon;
 
@@ -80,9 +81,10 @@ function EventRow({ event }: { event: LoggedEvent }) {
         )}
         {event.type === 'baselithcontrol.action' ? (
           <div>
-            Operation: <span className="font-semibold uppercase t-primary">{op}</span> · Status:{' '}
+            {t('events.operation')}: <span className="font-semibold uppercase t-primary">{op}</span>{' '}
+            · {t('events.status')}:{' '}
             <span className={ok ? 'font-semibold text-emerald-500' : 'font-semibold text-rose-500'}>
-              {ok ? 'SUCCESS' : 'FAILED'}
+              {ok ? t('events.success') : t('events.failed')}
             </span>{' '}
             {message && `(${message})`}
           </div>

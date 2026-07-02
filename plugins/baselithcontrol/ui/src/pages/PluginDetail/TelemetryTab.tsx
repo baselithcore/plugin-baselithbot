@@ -3,7 +3,7 @@ import { Layers } from 'lucide-react';
 import type { PluginStatus, WidgetSpec } from '@/types';
 import { DeclarativeWidget } from '@/components/widgets/DeclarativeWidget';
 import { CoreTelemetry } from '@/components/widgets/CoreTelemetry';
-import { Sparkline } from './parts/Sparkline';
+import { Sparkline } from '@/components/widgets/Sparkline';
 
 interface Props {
   status: PluginStatus | null;
@@ -51,7 +51,7 @@ export function TelemetryTab({ status, widget, latencyHistory }: Props) {
         </div>
         {latencyHistory.length >= 2 ? (
           <div className="rounded-lg border brd bg-[var(--surface-inset)] p-3">
-            <Sparkline data={latencyHistory} height={120} />
+            <Sparkline data={latencyHistory} height={120} id="detail-latency-chart" />
           </div>
         ) : (
           <div className="flex flex-1 items-center justify-center rounded-lg border brd bg-[var(--surface-inset)] p-6 text-center text-[12px] t-faint">

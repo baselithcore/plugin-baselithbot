@@ -16,9 +16,13 @@ export function TenantSwitcher() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    let alive = true;
     fetchMyTenants()
-      .then(setTenants)
-      .catch(() => setTenants([]));
+      .then((list) => alive && setTenants(list))
+      .catch(() => alive && setTenants([]));
+    return () => {
+      alive = false;
+    };
   }, []);
 
   // Personal tenant or single membership → nothing to switch between.

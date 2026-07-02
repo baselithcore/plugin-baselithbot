@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { LogEntry, LogLevel } from '@/types';
 
 // Fixed, theme-independent accent per severity (used for the level chip).
@@ -9,12 +10,15 @@ const LEVEL_TONE: Record<LogLevel, string> = {
   CRITICAL: 'text-rose-600',
 };
 
-function clock(ts: number): string {
+// Format with the active i18n language (same mapping TimelinePanel uses), not
+// the browser locale, so times render consistently across the dashboard.
+function clock(ts: number, locale: string): string {
   const d = new Date(ts * 1000);
-  return d.toLocaleTimeString(undefined, { hour12: false });
+  return d.toLocaleTimeString(locale.startsWith('it') ? 'it-IT' : 'en-US', { hour12: false });
 }
 
 export function LogRow({ entry }: { entry: LogEntry }) {
+  const { i18n } = useTranslation();
   const tone = LEVEL_TONE[entry.level] ?? 't-dim';
   return (
     <div className="flex items-start gap-3 border-b brd px-3 py-1.5 font-mono text-[12px] leading-relaxed hover:bg-[var(--surface-inset)]">
@@ -22,7 +26,7 @@ export function LogRow({ entry }: { entry: LogEntry }) {
         className="shrink-0 tabular-nums t-faint"
         title={new Date(entry.timestamp * 1000).toISOString()}
       >
-        {clock(entry.timestamp)}
+        {clock(entry.timestamp, i18n.language)}
       </span>
       <span className={`w-16 shrink-0 font-bold uppercase ${tone}`}>{entry.level}</span>
       <span

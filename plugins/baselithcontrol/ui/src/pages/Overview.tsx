@@ -250,7 +250,8 @@ export function Overview({ onOpen }: { onOpen: (name: string) => void }) {
             <button
               type="button"
               onClick={() => setIsFlat(false)}
-              title="Grouped view"
+              title={t('view.grouped')}
+              aria-label={t('view.grouped')}
               aria-pressed={!isFlat}
               className={`rounded-md p-1.5 transition ${!isFlat ? 'bg-[var(--accent-soft)] t-accent' : 't-dim hover:text-[var(--text)]'}`}
             >
@@ -259,7 +260,8 @@ export function Overview({ onOpen }: { onOpen: (name: string) => void }) {
             <button
               type="button"
               onClick={() => setIsFlat(true)}
-              title="Flat list view"
+              title={t('view.flat')}
+              aria-label={t('view.flat')}
               aria-pressed={isFlat}
               className={`rounded-md p-1.5 transition ${isFlat ? 'bg-[var(--accent-soft)] t-accent' : 't-dim hover:text-[var(--text)]'}`}
             >

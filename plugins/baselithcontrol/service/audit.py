@@ -13,6 +13,7 @@ from collections import deque
 from typing import Protocol, runtime_checkable
 
 from ..api_models import AuditEntryView
+from ..config import get_runtime_config
 
 
 @runtime_checkable
@@ -37,6 +38,18 @@ class InMemoryAuditSink:
 
     def __init__(self, max_events: int = 500) -> None:
         self._events: deque[AuditEntryView] = deque(maxlen=max(0, max_events) or 1)
+
+    @property
+    def capacity(self) -> int:
+        """The ring-buffer capacity currently in effect."""
+        return self._events.maxlen or 0
+
+    def resize(self, max_events: int) -> None:
+        """Change capacity, preserving the newest events."""
+        capacity = max(0, max_events) or 1
+        if capacity == self.capacity:
+            return
+        self._events = deque(self._events, maxlen=capacity)
 
     async def record(
         self,
@@ -66,11 +79,24 @@ class InMemoryAuditSink:
 _sink: InMemoryAuditSink | None = None
 
 
-def get_audit_sink(max_events: int = 500) -> InMemoryAuditSink:
-    """Return the process-wide in-memory audit sink (lazy singleton)."""
+def get_audit_sink(max_events: int | None = None) -> InMemoryAuditSink:
+    """Return the process-wide in-memory audit sink (lazy singleton).
+
+    With no argument the configured ``audit_max_events`` applies; passing an
+    explicit capacity resizes the live sink (preserving the newest events), so
+    the configured value is honoured no matter which caller constructs the
+    singleton first.
+    """
     global _sink
     if _sink is None:
-        _sink = InMemoryAuditSink(max_events=max_events)
+        capacity = (
+            max_events
+            if max_events is not None
+            else get_runtime_config().audit_max_events
+        )
+        _sink = InMemoryAuditSink(max_events=capacity)
+    elif max_events is not None:
+        _sink.resize(max_events)
     return _sink
 
 

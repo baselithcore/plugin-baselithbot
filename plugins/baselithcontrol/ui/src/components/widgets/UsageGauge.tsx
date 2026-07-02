@@ -1,11 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { formatUsd } from '@/lib/format';
 import type { MyLlmUsage, UsageStatus } from '@/types';
-
-export function usd(n: number): string {
-  if (n === 0) return '$0';
-  if (n < 0.01) return `$${n.toFixed(4)}`;
-  return `$${n.toFixed(2)}`;
-}
 
 // Localized "June 2026" from the ISO month-start the API returns.
 function formatPeriod(iso: string, lang: string): string {
@@ -70,7 +65,7 @@ export function UsageGauge({
         ) : (
           <>
             <span className={`font-display ${moneyText} font-bold tabular-nums t-primary`}>
-              {usd(usage.spend_usd)}
+              {formatUsd(usage.spend_usd)}
             </span>
             <span className="text-[12px] font-medium t-dim">{t('usage.unlimited')}</span>
           </>
@@ -86,7 +81,9 @@ export function UsageGauge({
           {usage.percent_used}%
         </span>
         <span className="text-[12px] font-medium tabular-nums t-dim">
-          {moneyless ? t('usage.of_budget') : `${usd(usage.spend_usd)} / ${usd(usage.cap_usd!)}`}
+          {moneyless
+            ? t('usage.of_budget')
+            : `${formatUsd(usage.spend_usd)} / ${formatUsd(usage.cap_usd!)}`}
         </span>
       </div>
       <div

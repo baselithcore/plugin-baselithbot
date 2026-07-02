@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Request
 
-from ..config import ControlConfig
+from ..service.deps import get_config
 from ..service.news import NewsResponse
 from ..service.news.provider import get_news_service
 from ._guards import read_guard
@@ -26,9 +26,7 @@ def build_news_router() -> APIRouter:
     @router.get("/news", response_model=NewsResponse)
     async def news(request: Request) -> NewsResponse:
         """Newest-first, de-duplicated headlines for the dashboard ticker."""
-        cfg = getattr(request.app.state, "baselithcontrol_config", None)
-        if not isinstance(cfg, ControlConfig):
-            cfg = ControlConfig()
+        cfg = get_config(request.app)
         return await get_news_service(cfg).get_news()
 
     return router

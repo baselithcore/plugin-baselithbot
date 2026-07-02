@@ -19,7 +19,7 @@ import threading
 from collections import deque
 from typing import Any
 
-from ..config import ControlConfig
+from ..config import get_runtime_config
 
 # Numeric order for the "minimum level" filter (include this level and above).
 _LEVEL_ORDER: dict[str, int] = {
@@ -117,7 +117,7 @@ def get_log_buffer() -> LogRingHandler:
     if _HANDLER is None:
         with _LOCK:
             if _HANDLER is None:
-                handler = LogRingHandler(ControlConfig().log_buffer_capacity)
+                handler = LogRingHandler(get_runtime_config().log_buffer_capacity)
                 logging.getLogger().addHandler(handler)
                 _HANDLER = handler
     return _HANDLER

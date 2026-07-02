@@ -12,7 +12,7 @@ from typing import Any
 
 from core.orchestration.autonomy import AutonomyLevel, AutonomyPolicy
 
-from ..config import ControlConfig, GateLevel
+from ..config import ControlConfig, GateLevel, get_runtime_config
 from .aggregator import ControlAggregator
 from .audit import get_audit_sink
 from .control import ControlService
@@ -25,9 +25,14 @@ _GATE_TO_LEVEL = {
 
 
 def get_config(app: Any) -> ControlConfig:
-    """Return the plugin config stashed on app state (or a default instance)."""
+    """Return the runtime plugin config.
+
+    An instance stashed on ``app.state.baselithcontrol_config`` wins (explicit
+    override, used by tests); otherwise the config published at plugin
+    ``initialize`` — the plugins.yaml block with env overrides — is returned.
+    """
     cfg = getattr(app.state, "baselithcontrol_config", None)
-    return cfg if isinstance(cfg, ControlConfig) else ControlConfig()
+    return cfg if isinstance(cfg, ControlConfig) else get_runtime_config()
 
 
 def get_registry(app: Any) -> Any:

@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { Activity, Clock } from 'lucide-react';
-import { formatValue, relativeTime, type Tone } from '@/lib/format';
+import { asTone, formatValue, relativeTime } from '@/lib/format';
+import { Sparkline } from '@/components/widgets/Sparkline';
 import type { PluginStatus } from '@/types';
 import { StatCard } from './parts/StatCard';
-import { Sparkline } from './parts/Sparkline';
 
 interface Props {
   status: PluginStatus | null;
@@ -25,7 +25,7 @@ export function KpiRow({ status, latencyHistory }: Props) {
         unit="ms"
         icon={<Activity className="h-3.5 w-3.5" />}
       >
-        <Sparkline data={latencyHistory} height={28} />
+        <Sparkline data={latencyHistory} height={28} id="detail-latency" />
       </StatCard>
 
       <StatCard
@@ -39,7 +39,7 @@ export function KpiRow({ status, latencyHistory }: Props) {
           key={i}
           label={m.label}
           value={formatValue(m.value, m.format)}
-          tone={(m.tone as Tone) ?? 'neutral'}
+          tone={asTone(m.tone)}
         />
       ))}
     </div>

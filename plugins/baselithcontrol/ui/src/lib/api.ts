@@ -1,3 +1,4 @@
+import { refreshToken } from '@auth';
 import type {
   AccessibleTab,
   ActionOutcome,
@@ -29,15 +30,12 @@ import type {
   WidgetSpec,
 } from '@/types';
 
-// All control endpoints live under the plugin's router prefix. The Vite `base`
-// keeps this correct whether served from /baselithcontrol/ or proxied in dev.
-const BASE = `${import.meta.env.BASE_URL.replace(/\/$/, '')}`;
+// All control endpoints live under the plugin's router prefix. The API is
+// absolute from the site root, so it stays correct whether the SPA is served
+// from /baselithcontrol/ or proxied in dev.
 const API = '/api/baselithcontrol';
 
 function url(path: string): string {
-  // In production the SPA is served from /baselithcontrol/; the API is absolute
-  // from the site root, so we do not prefix it with BASE.
-  void BASE;
   return `${API}${path}`;
 }
 
@@ -50,16 +48,78 @@ function url(path: string): string {
  * the Bearer to reflect the impersonated identity (and its restricted tabs).
  * Falls back to cookie auth when no token is present.
  */
+// Same storage keys the shared @auth context uses — a refresh performed here
+// must be visible to the auth provider (and vice versa).
+const TOKEN_KEY = 'auth_access_token';
+const TOKEN_EXPIRY_KEY = 'auth_token_expiry';
+
 function authHeaders(extra?: Record<string, string>): Record<string, string> {
-  const token = localStorage.getItem('auth_access_token');
+  const token = localStorage.getItem(TOKEN_KEY);
   return {
     ...(extra ?? {}),
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
 
+// ── Session-expiry handling ─────────────────────────────────────────────
+// A single in-flight refresh is shared across every 401 so a burst of failing
+// pollers triggers one /api/auth/refresh round-trip, not N.
+let refreshInFlight: Promise<boolean> | null = null;
+
+function refreshSession(): Promise<boolean> {
+  refreshInFlight ??= refreshToken()
+    .then((res) => {
+      localStorage.setItem(TOKEN_KEY, res.access_token);
+      localStorage.setItem(TOKEN_EXPIRY_KEY, String(Date.now() + res.expires_in * 1000));
+      return true;
+    })
+    .catch(() => false)
+    .finally(() => {
+      refreshInFlight = null;
+    });
+  return refreshInFlight;
+}
+
+/** Drop the dead session and return to the shared login wall, then back here. */
+function redirectToLogin(): void {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(TOKEN_EXPIRY_KEY);
+  // Same login route logout() uses; preserve the current path so re-login
+  // returns here instead of the auth admin console.
+  const target = `${window.location.pathname}${window.location.search}`;
+  window.location.href = `/auth?redirect=${encodeURIComponent(target)}`;
+}
+
+interface RequestOptions extends Omit<RequestInit, 'headers'> {
+  headers?: Record<string, string>;
+  /**
+   * Redirect to the login wall when a 401 survives the refresh+retry. The
+   * fail-open auth helpers (tenants, usage, tab policy) and arbitrary widget
+   * endpoints opt out so their "hide when unavailable" contract holds.
+   */
+  redirectOn401?: boolean;
+}
+
+/**
+ * Shared authenticated fetch: Bearer + cookie credentials, one token refresh
+ * and retry on 401, then a login redirect once the session is truly gone —
+ * session expiry must never silently degrade the dashboard.
+ */
+async function request(input: string, options: RequestOptions = {}): Promise<Response> {
+  const { redirectOn401 = true, headers, ...init } = options;
+  // Headers are rebuilt per attempt so the retry picks up the refreshed token.
+  const doFetch = () =>
+    fetch(input, { credentials: 'include', ...init, headers: authHeaders(headers) });
+  let res = await doFetch();
+  if (res.status === 401) {
+    if (await refreshSession()) res = await doFetch();
+    if (res.status === 401 && redirectOn401) redirectToLogin();
+  }
+  return res;
+}
+
 async function getJSON<T>(path: string): Promise<T> {
-  const res = await fetch(url(path), { credentials: 'include', headers: authHeaders() });
+  const res = await request(url(path));
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return (await res.json()) as T;
 }
@@ -75,10 +135,7 @@ export function fetchInventory(): Promise<Inventory> {
  */
 export async function fetchAccessibleTabs(): Promise<AccessibleTab[]> {
   try {
-    const res = await fetch('/api/auth/access/tabs', {
-      credentials: 'include',
-      headers: authHeaders(),
-    });
+    const res = await request('/api/auth/access/tabs', { redirectOn401: false });
     if (!res.ok) return [];
     return (await res.json()) as AccessibleTab[];
   } catch {
@@ -93,10 +150,7 @@ export async function fetchAccessibleTabs(): Promise<AccessibleTab[]> {
  */
 export async function fetchMyTenants(): Promise<MyTenant[]> {
   try {
-    const res = await fetch('/api/auth/tenants', {
-      credentials: 'include',
-      headers: authHeaders(),
-    });
+    const res = await request('/api/auth/tenants', { redirectOn401: false });
     if (!res.ok) return [];
     return (await res.json()) as MyTenant[];
   } catch {
@@ -112,10 +166,7 @@ export async function fetchMyTenants(): Promise<MyTenant[]> {
  */
 export async function fetchMyLlmUsage(): Promise<MyLlmUsage | null> {
   try {
-    const res = await fetch('/api/auth/me/llm-usage', {
-      credentials: 'include',
-      headers: authHeaders(),
-    });
+    const res = await request('/api/auth/me/llm-usage', { redirectOn401: false });
     if (!res.ok) return null;
     return (await res.json()) as MyLlmUsage;
   } catch {
@@ -128,10 +179,9 @@ export async function fetchMyLlmUsage(): Promise<MyLlmUsage | null> {
  * verified server-side) and returns it for the caller to store.
  */
 export async function switchTenant(tenantId: string): Promise<string> {
-  const res = await fetch('/api/auth/tenants/switch', {
+  const res = await request('/api/auth/tenants/switch', {
     method: 'POST',
-    credentials: 'include',
-    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ tenant_id: tenantId }),
   });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
@@ -152,10 +202,9 @@ export async function runAction(
   op: LifecycleOp,
   reason?: string
 ): Promise<ActionResult> {
-  const res = await fetch(url(`/actions/${plugin}/${op}`), {
+  const res = await request(url(`/actions/${plugin}/${op}`), {
     method: 'POST',
-    credentials: 'include',
-    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ reason: reason ?? null }),
   });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
@@ -167,10 +216,9 @@ export async function setPluginConfig(
   enabled: boolean,
   reason?: string
 ): Promise<ActionResult> {
-  const res = await fetch(url(`/config/${plugin}`), {
+  const res = await request(url(`/config/${plugin}`), {
     method: 'POST',
-    credentials: 'include',
-    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ enabled, reason: reason ?? null }),
   });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
@@ -231,7 +279,9 @@ export function fetchTimeline(limit = 50): Promise<LifecycleEvent[]> {
 // (the browser session already carries auth). The spec's endpoint is
 // server-validated to be a relative path, so this never hits an external host.
 export async function fetchWidgetData(endpoint: string): Promise<unknown> {
-  const res = await fetch(endpoint, { credentials: 'include', headers: authHeaders() });
+  // A plugin endpoint may 401 for its own reasons — refresh+retry, but never
+  // bounce the whole dashboard to login over a single widget.
+  const res = await request(endpoint, { redirectOn401: false });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return res.json();
 }
@@ -276,11 +326,7 @@ export function streamUrl(): string {
 // ── CLI bridge ──────────────────────────────────────────────────────────
 
 async function postJSON<T>(path: string): Promise<T> {
-  const res = await fetch(url(path), {
-    method: 'POST',
-    credentials: 'include',
-    headers: authHeaders(),
-  });
+  const res = await request(url(path), { method: 'POST' });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
   return (await res.json()) as T;
 }

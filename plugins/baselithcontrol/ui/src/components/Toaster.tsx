@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { X } from 'lucide-react';
 import type { Tone } from '@/lib/format';
 import { useUiStore } from '@/store/useUiStore';
@@ -12,6 +13,7 @@ const TONE: Record<Tone, string> = {
 };
 
 export function Toaster() {
+  const { t: tr } = useTranslation();
   const toasts = useUiStore((s) => s.toasts);
   const dismiss = useUiStore((s) => s.dismissToast);
 
@@ -35,7 +37,7 @@ export function Toaster() {
             <span>{t.message}</span>
             <button
               type="button"
-              aria-label="dismiss"
+              aria-label={tr('toast.dismiss')}
               onClick={() => dismiss(t.id)}
               className="opacity-60 hover:opacity-100"
             >

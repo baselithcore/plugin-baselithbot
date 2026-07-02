@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -19,10 +18,9 @@ import {
   DollarSign,
 } from 'lucide-react';
 import type { LifecycleOp, PluginCard as Card } from '@/types';
-import { runAction, setPluginConfig } from '@/lib/api';
 import { formatTokens, formatUsd } from '@/lib/format';
 import { itemVariants, spring } from '@/lib/motion';
-import { useUiStore } from '@/store/useUiStore';
+import { useLifecycleAction } from '@/hooks/useLifecycleAction';
 import { useControlStore } from '@/store/useControlStore';
 import { HealthBadge } from './HealthBadge';
 
@@ -70,38 +68,9 @@ function getPluginIcon(card: Card) {
 
 export function PluginCard({ card, onOpen, canControl }: Props) {
   const { t } = useTranslation();
-  const [busy, setBusy] = useState<LifecycleOp | null>(null);
-  const ask = useUiStore((s) => s.ask);
-  const pushToast = useUiStore((s) => s.pushToast);
-  const patchPlugin = useControlStore((s) => s.patchPlugin);
+  // Shared confirm → run → patch → toast flow (same as the detail header).
+  const { busy, act, disabledFor } = useLifecycleAction(card);
   const cost = useControlStore((s) => s.costByPlugin[card.name]);
-
-  const act = async (op: LifecycleOp) => {
-    if (!(await ask(t('action.confirm', { op, plugin: card.name })))) return;
-    setBusy(op);
-    try {
-      // enable/disable persist to plugins.yaml (durable across restarts) and
-      // sync the runtime; reload is a transient runtime op. All reflect on the
-      // card immediately via the store patch.
-      const res =
-        op === 'reload'
-          ? await runAction(card.name, 'reload')
-          : await setPluginConfig(card.name, op === 'enable');
-      if (res.ok) {
-        patchPlugin(card.name, {
-          state: res.state,
-          ...(op !== 'reload' ? { config_enabled: op === 'enable' } : {}),
-        });
-        pushToast(t('action.ok', { op }), 'success');
-      } else {
-        pushToast(t('action.failed', { op, message: res.message }), 'danger');
-      }
-    } catch (err) {
-      pushToast(t('action.failed', { op, message: String(err) }), 'danger');
-    } finally {
-      setBusy(null);
-    }
-  };
 
   const standalone = card.surfaces.find((s) => s.embeddable && s.mount_url)?.mount_url;
   const embeddable = card.surfaces.some((s) => s.embeddable);
@@ -194,14 +163,9 @@ export function PluginCard({ card, onOpen, canControl }: Props) {
       {canControl && (
         <div className="mt-auto flex gap-1.5 border-t brd pt-3">
           {OPS.map(({ op, icon: Icon }) => {
-            // Inhibit no-op actions: enable when already active, disable when
-            // already disabled, reload when not active. Plus while busy.
-            const inactive = card.state !== 'active';
-            const opDisabled =
-              busy !== null ||
-              (op === 'enable' && card.state === 'active') ||
-              (op === 'disable' && card.state === 'disabled') ||
-              (op === 'reload' && inactive);
+            // Inhibit no-op actions (shared matrix): enable when already
+            // active, disable when already disabled, reload when not active.
+            const opDisabled = disabledFor(op);
             return (
               <button
                 key={op}
