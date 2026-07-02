@@ -141,7 +141,7 @@ export class AuthService implements OnModuleInit {
       const n = this.sessions.revokeFamily(session.familyId, Date.now());
       authEvents.labels({ event: 'token_replay' }).inc();
       this.logger.error(
-        `token_replay user=${session.userId} family=${session.familyId} revoked=${n}`,
+        `token_replay user=${session.userId} family=${session.familyId} revoked=${n}`
       );
       throw new TokenReplayError();
     }
@@ -257,7 +257,7 @@ export class AuthService implements OnModuleInit {
   async updateUser(
     id: string,
     req: UpdateUserRequest,
-    actor: { id: string; role: 'admin' | 'user' },
+    actor: { id: string; role: 'admin' | 'user' }
   ): Promise<UserPublic> {
     const user = this.users.get(id);
     if (!user) throw new ForbiddenError(`User not found: ${id}`);
@@ -285,7 +285,7 @@ export class AuthService implements OnModuleInit {
   async changePassword(
     userId: string,
     currentPassword: string,
-    newPassword: string,
+    newPassword: string
   ): Promise<UserPublic> {
     if (isGatewayMode()) {
       throw new ForbiddenError('Passwords are managed by the central identity provider.');
@@ -321,7 +321,7 @@ export class AuthService implements OnModuleInit {
     user: StoredUser,
     familyId: string,
     ctx: LoginContext,
-    sessionId: string = randomUUID(),
+    sessionId: string = randomUUID()
   ): LoginResult {
     const access = signAccessToken({
       sub: user.id,

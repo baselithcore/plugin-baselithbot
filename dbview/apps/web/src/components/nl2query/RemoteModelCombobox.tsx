@@ -59,7 +59,7 @@ export function RemoteModelCombobox({ provider, value, onChange }: Props) {
 
   const visible = useMemo(
     () => (showAll ? (models.data?.models ?? []) : usable),
-    [showAll, models.data?.models, usable],
+    [showAll, models.data?.models, usable]
   );
   const grouped = useMemo(() => groupByFamily(visible, provider), [visible, provider]);
 
@@ -87,7 +87,7 @@ export function RemoteModelCombobox({ provider, value, onChange }: Props) {
             'group inline-flex items-center gap-1.5 h-7 px-2 rounded-md border text-[12px] font-mono',
             'transition-colors min-w-[160px] max-w-[230px]',
             'bg-surface-2/60 border-border-subtle hover:bg-surface-3/70 hover:border-accent/40',
-            open && 'border-accent/60 ring-1 ring-accent/40',
+            open && 'border-accent/60 ring-1 ring-accent/40'
           )}
           title={value ? `Model: ${value}` : 'Auto-select default model'}
         >
@@ -252,7 +252,7 @@ function ModelRow({
       <span
         className={cn(
           'w-1.5 h-1.5 rounded-full shrink-0',
-          isUnusable ? 'bg-amber-400/70' : 'bg-emerald-400',
+          isUnusable ? 'bg-amber-400/70' : 'bg-emerald-400'
         )}
         title={isUnusable ? 'Not a chat model' : 'Chat model'}
       />
@@ -303,7 +303,7 @@ function EmptyState() {
  */
 function groupByFamily(
   models: RemoteModel[],
-  provider: RemoteLlmProvider,
+  provider: RemoteLlmProvider
 ): [string, RemoteModel[]][] {
   const order = FAMILY_ORDER[provider];
   const buckets: Record<string, RemoteModel[]> = {};

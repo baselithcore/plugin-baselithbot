@@ -151,7 +151,7 @@ export class DuckdbIntrospector implements SchemaIntrospector {
       };
     } catch (err) {
       throw new IntrospectionError(
-        `DuckDB introspection failed: ${(err as Error).message ?? String(err)}`,
+        `DuckDB introspection failed: ${(err as Error).message ?? String(err)}`
       );
     }
   }

@@ -12,7 +12,7 @@ export class SchemaController {
   async get(
     @Param('connectionId', ParseUUIDPipe) connectionId: string,
     @CurrentUser() principal: AuthPrincipal,
-    @Query('refresh') refresh?: string,
+    @Query('refresh') refresh?: string
   ): Promise<UnifiedSchema> {
     return this.svc.getGraph(connectionId, principal, refresh === '1');
   }

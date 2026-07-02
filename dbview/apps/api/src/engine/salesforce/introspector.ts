@@ -49,13 +49,13 @@ export class SalesforceIntrospector {
 
   async introspect(): Promise<SchemaGraph> {
     const list = await this.client.get<SObjectListResponse>(
-      `/services/data/${this.apiVersion}/sobjects`,
+      `/services/data/${this.apiVersion}/sobjects`
     );
     const targets = list.sobjects.filter((s) => isInterestingSObject(s));
     const describes = await runWithConcurrency(targets, 8, (s) =>
       this.client.get<SObjectDescribeResponse>(
-        `/services/data/${this.apiVersion}/sobjects/${encodeURIComponent(s.name)}/describe`,
-      ),
+        `/services/data/${this.apiVersion}/sobjects/${encodeURIComponent(s.name)}/describe`
+      )
     );
 
     const known = new Set(targets.map((s) => s.name));
@@ -94,7 +94,7 @@ export class SalesforceIntrospector {
 
 function describeToTable(d: SObjectDescribeResponse): TableNode {
   const refSet = new Set(
-    d.fields.filter((f) => f.referenceTo && f.referenceTo.length).map((f) => f.name),
+    d.fields.filter((f) => f.referenceTo && f.referenceTo.length).map((f) => f.name)
   );
   const columns: Column[] = d.fields.map((f) => ({
     name: f.name,
@@ -123,7 +123,7 @@ function isInterestingSObject(s: SObjectListItem): boolean {
 async function runWithConcurrency<T, R>(
   items: T[],
   concurrency: number,
-  fn: (item: T) => Promise<R>,
+  fn: (item: T) => Promise<R>
 ): Promise<R[]> {
   const out: R[] = new Array(items.length);
   let next = 0;

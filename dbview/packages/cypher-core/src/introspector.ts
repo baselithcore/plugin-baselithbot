@@ -55,7 +55,7 @@ export class Neo4jIntrospector {
 
   private async attachLabelSamples(
     session: ReturnType<Driver['session']>,
-    label: NodeLabel,
+    label: NodeLabel
   ): Promise<void> {
     const stringProps = label.properties.filter((p) => p.types.some((t) => /string/i.test(t)));
     if (stringProps.length === 0) return;
@@ -66,7 +66,7 @@ export class Neo4jIntrospector {
        WHERE v IS NOT NULL AND toString(v) = v
        WITH k, collect(DISTINCT v) AS vals
        RETURN k, vals`,
-      { props: stringProps.map((p) => p.name) },
+      { props: stringProps.map((p) => p.name) }
     );
     applySamples(res.records, label.properties);
   }
@@ -74,7 +74,7 @@ export class Neo4jIntrospector {
   private async attachRelSamples(
     session: ReturnType<Driver['session']>,
     relType: string,
-    rels: RelationshipType[],
+    rels: RelationshipType[]
   ): Promise<void> {
     const sampleProps = rels.find((r) => r.type === relType)?.properties ?? [];
     const stringProps = sampleProps.filter((p) => p.types.some((t) => /string/i.test(t)));
@@ -86,7 +86,7 @@ export class Neo4jIntrospector {
        WHERE v IS NOT NULL AND toString(v) = v
        WITH k, collect(DISTINCT v) AS vals
        RETURN k, vals`,
-      { props: stringProps.map((p) => p.name) },
+      { props: stringProps.map((p) => p.name) }
     );
     for (const rel of rels.filter((r) => r.type === relType)) {
       applySamples(res.records, rel.properties);
@@ -134,7 +134,7 @@ export class Neo4jIntrospector {
   }
 
   private async collectRelationships(
-    session: ReturnType<Driver['session']>,
+    session: ReturnType<Driver['session']>
   ): Promise<RelationshipType[]> {
     const propsRes = await session.run(`
       CALL db.schema.relTypeProperties()
@@ -161,7 +161,7 @@ export class Neo4jIntrospector {
             name: p.name as string,
             types: p.types ?? ['ANY'],
             nullable: p.mandatory !== true,
-          })),
+          }))
       );
     }
 

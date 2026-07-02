@@ -72,7 +72,7 @@ export class ElasticsearchExecutor {
         ['_id', '_source'],
         [[res._id, src ? JSON.stringify(src) : null]],
         rowLimit,
-        start,
+        start
       );
     }
 
@@ -109,7 +109,7 @@ function finalize(
   columns: string[],
   rows: unknown[][],
   rowLimit: number,
-  start: number,
+  start: number
 ): ExecuteQueryResponse {
   const truncated = rows.length > rowLimit;
   return {

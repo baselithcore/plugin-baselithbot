@@ -122,7 +122,7 @@ function col(
     isForeignKey?: boolean;
     isUnique?: boolean;
     nullable?: boolean;
-  } = {},
+  } = {}
 ) {
   return {
     name,

@@ -58,7 +58,7 @@ Brings up:
 - `api` — built from [apps/api/Dockerfile](../apps/api/Dockerfile). Node 22 slim, multi-stage, non-root `dbview` user, `tini` init, `/data` volume. Healthcheck via `/api/health`.
 - `web` — built from [apps/web/Dockerfile](../apps/web/Dockerfile). Vite production build served by nginx-unprivileged on `:8080` (mapped to `:8088` on the host).
 
-Open **http://localhost:8088**. Log in with the `DBVIEW_ADMIN_*` credentials from your `.env`.
+Open **<http://localhost:8088>**. Log in with the `DBVIEW_ADMIN_*` credentials from your `.env`.
 
 ### Optional profiles
 

@@ -99,7 +99,7 @@ export class SalesforceDataCloudClient {
     }
     const wrapped = await this.request<SdcMetadataListResponse>(
       'GET',
-      `/api/v1/metadata?entityName=${encodeURIComponent(entityName)}`,
+      `/api/v1/metadata?entityName=${encodeURIComponent(entityName)}`
     );
     const first = wrapped.metadata?.[0];
     if (!first) {
@@ -145,7 +145,7 @@ export class SalesforceDataCloudClient {
     if (!res.ok) {
       const text = await safeReadText(res);
       throw new Error(
-        `Salesforce core auth failed (${res.status}): ${truncate(text, 240) || res.statusText}`,
+        `Salesforce core auth failed (${res.status}): ${truncate(text, 240) || res.statusText}`
       );
     }
     const data = (await res.json()) as {
@@ -183,7 +183,7 @@ export class SalesforceDataCloudClient {
     if (!res.ok) {
       const text = await safeReadText(res);
       throw new Error(
-        `Salesforce Data Cloud token exchange failed (${res.status}): ${truncate(text, 240) || res.statusText}`,
+        `Salesforce Data Cloud token exchange failed (${res.status}): ${truncate(text, 240) || res.statusText}`
       );
     }
     const data = (await res.json()) as {
@@ -208,7 +208,7 @@ export class SalesforceDataCloudClient {
     method: 'GET' | 'POST',
     path: string,
     body?: unknown,
-    _retried = false,
+    _retried = false
   ): Promise<T> {
     const session = await this.getSession();
     const url = path.startsWith('http') ? path : `${session.tenantUrl}${path}`;
@@ -229,7 +229,7 @@ export class SalesforceDataCloudClient {
     if (!res.ok) {
       const text = await safeReadText(res);
       throw new Error(
-        `Salesforce Data Cloud ${method} ${path} failed (${res.status}): ${truncate(text, 320) || res.statusText}`,
+        `Salesforce Data Cloud ${method} ${path} failed (${res.status}): ${truncate(text, 320) || res.statusText}`
       );
     }
     return (await res.json()) as T;

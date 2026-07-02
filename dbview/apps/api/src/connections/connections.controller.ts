@@ -23,7 +23,7 @@ export class ConnectionsController {
   @Get(':id')
   get(
     @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): ConnectionSummary {
     return this.svc.get(id, principal);
   }
@@ -32,7 +32,7 @@ export class ConnectionsController {
   @Roles('admin')
   create(
     @Body(new ZodPipe(CreateConnectionSchema)) dto: unknown,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): Promise<ConnectionSummary> {
     return this.svc.create(dto as never, principal);
   }
@@ -42,7 +42,7 @@ export class ConnectionsController {
   updateSharing(
     @Param('id', ParseUUIDPipe) id: string,
     @Body(new ZodPipe(UpdateConnectionSharingSchema)) body: unknown,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): ConnectionSummary {
     return this.svc.updateSharing(id, body as never, principal);
   }
@@ -51,7 +51,7 @@ export class ConnectionsController {
   @Roles('admin')
   test(
     @Body(new ZodPipe(CreateConnectionSchema)) dto: unknown,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): Promise<{ ok: true }> {
     return this.svc.test(dto as never, principal);
   }
@@ -66,7 +66,7 @@ export class ConnectionsController {
   @Roles('admin')
   remove(
     @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() principal: AuthPrincipal,
+    @CurrentUser() principal: AuthPrincipal
   ): { ok: true } {
     this.svc.remove(id, principal);
     return { ok: true };

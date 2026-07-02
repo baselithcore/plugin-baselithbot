@@ -43,7 +43,7 @@ export class ConnectionsService implements OnModuleInit {
 
   constructor(
     private readonly auth: AuthService,
-    private readonly enginePool: EnginePool,
+    private readonly enginePool: EnginePool
   ) {}
 
   onModuleInit(): void {
@@ -99,7 +99,7 @@ export class ConnectionsService implements OnModuleInit {
   updateSharing(
     id: string,
     dto: UpdateConnectionSharingDto,
-    principal: AuthPrincipal,
+    principal: AuthPrincipal
   ): ConnectionSummary {
     if (principal.role !== 'admin') {
       throw new ForbiddenError('Only admins may change connection sharing.');
@@ -167,14 +167,14 @@ export class ConnectionsService implements OnModuleInit {
       throw new DbviewError(
         `Dump import failed: ${(err as Error).message}`,
         'dump_import_failed',
-        400,
+        400
       );
     }
   }
 
   resolvePlain(
     id: string,
-    principal: AuthPrincipal,
+    principal: AuthPrincipal
   ): { dialect: Dialect; connectionString: string } {
     const c = this.requireById(id);
     if (!this.canView(c, principal)) {
@@ -215,11 +215,11 @@ export class ConnectionsService implements OnModuleInit {
   private logCrossAdminMutation(
     c: StoredConnection,
     principal: AuthPrincipal,
-    action: 'delete' | 'updateSharing',
+    action: 'delete' | 'updateSharing'
   ): void {
     if (principal.role !== 'admin' || c.ownerId === principal.id) return;
     this.logger.warn(
-      `connection_cross_admin_${action} id=${c.id} owner=${c.ownerId} actor=${principal.id}`,
+      `connection_cross_admin_${action} id=${c.id} owner=${c.ownerId} actor=${principal.id}`
     );
   }
 
@@ -229,10 +229,7 @@ export class ConnectionsService implements OnModuleInit {
     return c;
   }
 
-  private validateSharing(
-    sharing: ConnectionSharing,
-    principal: AuthPrincipal,
-  ): ConnectionSharing {
+  private validateSharing(sharing: ConnectionSharing, principal: AuthPrincipal): ConnectionSharing {
     if (sharing.mode === 'private' || sharing.mode === 'admins' || sharing.mode === 'all') {
       return { mode: sharing.mode, userIds: [] };
     }
@@ -246,7 +243,7 @@ export class ConnectionsService implements OnModuleInit {
         throw new DbviewError(
           `sharing.userIds references unknown or inactive user: ${uid}`,
           'invalid_sharing_target',
-          400,
+          400
         );
       }
     }
@@ -274,7 +271,7 @@ export class ConnectionsService implements OnModuleInit {
     const admin = this.auth.listUsers().find((u) => u.role === 'admin' && u.isActive);
     if (!admin) {
       this.logger.warn(
-        `legacy_connections_pending count=${legacyPending.length + privatePending.length} no_admin_yet — will retry on first access`,
+        `legacy_connections_pending count=${legacyPending.length + privatePending.length} no_admin_yet — will retry on first access`
       );
       return;
     }
@@ -302,12 +299,12 @@ export class ConnectionsService implements OnModuleInit {
     }
     if (legacyPending.length > 0) {
       this.logger.log(
-        `legacy_connections_migrated count=${legacyPending.length} owner=${admin.id}`,
+        `legacy_connections_migrated count=${legacyPending.length} owner=${admin.id}`
       );
     }
     if (privatePending.length > 0) {
       this.logger.log(
-        `v1_private_upgraded_to_admins count=${privatePending.length} (preserves cross-admin visibility)`,
+        `v1_private_upgraded_to_admins count=${privatePending.length} (preserves cross-admin visibility)`
       );
     }
   }
@@ -318,7 +315,7 @@ export class ConnectionsService implements OnModuleInit {
       throw new DbviewError(
         `Dialect '${dto.dialect}' is not yet available. Coming soon.`,
         'dialect_unavailable',
-        400,
+        400
       );
     }
     if (dto.params) return buildConnectionString(dto.params);
@@ -326,7 +323,7 @@ export class ConnectionsService implements OnModuleInit {
     throw new DbviewError(
       'Either params or connectionString is required.',
       'invalid_connection_payload',
-      400,
+      400
     );
   }
 
@@ -342,7 +339,7 @@ export class ConnectionsService implements OnModuleInit {
       throw new DbviewError(
         `Connection test failed: ${(err as Error).message}`,
         'connection_test_failed',
-        400,
+        400
       );
     } finally {
       await engine.close();

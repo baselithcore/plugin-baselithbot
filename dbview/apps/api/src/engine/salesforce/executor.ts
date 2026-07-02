@@ -57,7 +57,7 @@ function projectRecords(records: SalesforceQueryRow[]): {
         return JSON.stringify(stripped);
       }
       return v ?? null;
-    }),
+    })
   );
   return { columns: colSet, rows };
 }

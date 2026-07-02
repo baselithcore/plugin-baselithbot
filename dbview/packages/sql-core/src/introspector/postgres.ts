@@ -174,7 +174,7 @@ export class PostgresIntrospector implements SchemaIntrospector {
       };
     } catch (err) {
       throw new IntrospectionError(
-        `${this.dialect === 'cockroach' ? 'CockroachDB' : 'Postgres'} introspection failed: ${formatErr(err)}`,
+        `${this.dialect === 'cockroach' ? 'CockroachDB' : 'Postgres'} introspection failed: ${formatErr(err)}`
       );
     } finally {
       client?.release();

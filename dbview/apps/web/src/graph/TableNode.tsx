@@ -53,7 +53,7 @@ function TableNodeImpl({ data, selected }: Props) {
         'transition-[box-shadow,transform] duration-150 ease-[cubic-bezier(0.25,1,0.5,1)]',
         !isActive && !dimmed && 'hover:-translate-y-[1px]',
         schemaColor.bar,
-        dimmed && 'opacity-30 grayscale-[0.4]',
+        dimmed && 'opacity-30 grayscale-[0.4]'
       )}
       style={{
         background: 'rgb(var(--surface-1))',
@@ -72,7 +72,7 @@ function TableNodeImpl({ data, selected }: Props) {
         className={cn(
           'dbview-drag-handle w-full px-3 py-2 flex justify-between items-center',
           'cursor-grab active:cursor-grabbing select-none text-left',
-          'transition-colors',
+          'transition-colors'
         )}
         style={{
           background: isActive ? 'rgb(var(--accent) / 0.10)' : 'rgb(var(--surface-2))',
@@ -87,7 +87,7 @@ function TableNodeImpl({ data, selected }: Props) {
         <span
           className={cn(
             'text-[12px] font-semibold truncate flex items-center gap-1.5',
-            isActive ? 'text-text' : 'text-text',
+            isActive ? 'text-text' : 'text-text'
           )}
         >
           <Database className={cn('w-3.5 h-3.5', schemaColor.accent)} />
@@ -124,7 +124,7 @@ function TableNodeImpl({ data, selected }: Props) {
                 'relative w-full grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 py-1.5',
                 'transition-colors text-left cursor-pointer',
                 'hover:bg-[rgb(var(--surface-2))]',
-                'focus-visible:bg-[rgb(var(--surface-2))]',
+                'focus-visible:bg-[rgb(var(--surface-2))]'
               )}
               style={{
                 borderTop: i > 0 ? '1px solid rgb(var(--border) / 0.45)' : undefined,
@@ -149,7 +149,7 @@ function TableNodeImpl({ data, selected }: Props) {
                   className={cn(
                     'truncate',
                     col.isPrimaryKey && 'font-semibold text-text',
-                    !col.isPrimaryKey && 'text-text-muted',
+                    !col.isPrimaryKey && 'text-text-muted'
                   )}
                 >
                   {col.name}

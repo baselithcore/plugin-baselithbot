@@ -52,9 +52,11 @@ def _user(
 
 
 def test_header_payload_shape_and_base64url_roundtrip():
-    with patch.object(identity, "is_effective_admin_cached", return_value=False), patch.object(
-        identity, "resolve_tenant_key", return_value="tenant-x"
-    ), _no_directory():
+    with (
+        patch.object(identity, "is_effective_admin_cached", return_value=False),
+        patch.object(identity, "resolve_tenant_key", return_value="tenant-x"),
+        _no_directory(),
+    ):
         header = build_gateway_user_header(_user())
     payload = _decode(header)
     assert payload == {
@@ -72,18 +74,22 @@ def test_header_payload_shape_and_base64url_roundtrip():
 
 def test_header_maps_effective_admin_and_display_name():
     user = _user(metadata={"display_name": "Giova"})
-    with patch.object(identity, "is_effective_admin_cached", return_value=True), patch.object(
-        identity, "resolve_tenant_key", return_value="t"
-    ), _no_directory():
+    with (
+        patch.object(identity, "is_effective_admin_cached", return_value=True),
+        patch.object(identity, "resolve_tenant_key", return_value="t"),
+        _no_directory(),
+    ):
         payload = _decode(build_gateway_user_header(user))
     assert payload["role"] == "admin"
     assert payload["displayName"] == "Giova"
 
 
 def test_header_synthesizes_placeholder_email_when_missing():
-    with patch.object(identity, "is_effective_admin_cached", return_value=False), patch.object(
-        identity, "resolve_tenant_key", return_value="t"
-    ), _no_directory():
+    with (
+        patch.object(identity, "is_effective_admin_cached", return_value=False),
+        patch.object(identity, "resolve_tenant_key", return_value="t"),
+        _no_directory(),
+    ):
         payload = _decode(build_gateway_user_header(_user(email=None)))
     assert payload["email"] == "u-1@users.central.local"
 
@@ -103,10 +109,14 @@ def test_effective_admin_uses_rbac_service_and_caches():
 
 
 def test_header_prefers_central_directory_profile():
-    with patch.object(identity, "is_effective_admin_cached", return_value=False), patch.object(
-        identity, "resolve_tenant_key", return_value="t"
-    ), patch.object(
-        identity, "lookup_central_profile", return_value=("real@corp.example", "giova")
+    with (
+        patch.object(identity, "is_effective_admin_cached", return_value=False),
+        patch.object(identity, "resolve_tenant_key", return_value="t"),
+        patch.object(
+            identity,
+            "lookup_central_profile",
+            return_value=("real@corp.example", "giova"),
+        ),
     ):
         payload = _decode(build_gateway_user_header(_user(email=None)))
     assert payload["email"] == "real@corp.example"
@@ -128,7 +138,9 @@ def test_lookup_central_profile_degrades_and_caches(monkeypatch):
 
     import plugins.auth.persistence as auth_persistence
 
-    monkeypatch.setattr(auth_persistence, "get_auth_persistence", lambda: _Persistence())
+    monkeypatch.setattr(
+        auth_persistence, "get_auth_persistence", lambda: _Persistence()
+    )
     assert identity.lookup_central_profile("u-9") == ("dir@example.com", "dir-user")
     assert identity.lookup_central_profile("u-9") == ("dir@example.com", "dir-user")
     assert calls == ["u-9"], "second call must hit the TTL cache"

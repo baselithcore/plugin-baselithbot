@@ -78,7 +78,9 @@ def test_build_supervisor_config_rejects_invalid_mode(tmp_path: Path):
 
 def test_build_supervisor_config_yaml_overrides_beat_env(tmp_path: Path):
     with patch.dict(os.environ, {"DBVIEW_PLUGIN_MODE": "dev"}):
-        cfg = build_supervisor_config(tmp_path, overrides={"mode": "prod", "port": 9001})
+        cfg = build_supervisor_config(
+            tmp_path, overrides={"mode": "prod", "port": 9001}
+        )
     assert cfg.mode == "prod"
     assert cfg.port == 9001
 
@@ -93,14 +95,18 @@ def test_ensure_runtime_available_raises_when_node_missing(tmp_path: Path):
 
 
 def test_ensure_runtime_available_raises_when_pnpm_missing_in_dev(tmp_path: Path):
-    cfg = SupervisorConfig(plugin_dir=tmp_path, dbview_root=tmp_path / "dbview", mode="dev")
+    cfg = SupervisorConfig(
+        plugin_dir=tmp_path, dbview_root=tmp_path / "dbview", mode="dev"
+    )
     sup = NodeSupervisor(cfg)
 
     # ``node`` present, ``pnpm`` absent: dev mode must refuse to start.
     def side_effect(binary: str) -> str | None:
         return "/usr/bin/node" if binary == "node" else None
 
-    with patch("plugins.dbview.supervisor.process.shutil.which", side_effect=side_effect):
+    with patch(
+        "plugins.dbview.supervisor.process.shutil.which", side_effect=side_effect
+    ):
         with pytest.raises(NodeNotAvailableError) as excinfo:
             sup._ensure_runtime_available()
     assert "pnpm" in str(excinfo.value)
@@ -116,7 +122,9 @@ def test_build_command_requires_built_dist_in_prod(tmp_path: Path):
 
 
 def test_build_command_uses_pnpm_dev_in_dev_mode(tmp_path: Path):
-    cfg = SupervisorConfig(plugin_dir=tmp_path, dbview_root=tmp_path / "dbview", mode="dev")
+    cfg = SupervisorConfig(
+        plugin_dir=tmp_path, dbview_root=tmp_path / "dbview", mode="dev"
+    )
     sup = NodeSupervisor(cfg)
     cmd = sup._build_command()
     assert cmd == ["pnpm", "dev"]

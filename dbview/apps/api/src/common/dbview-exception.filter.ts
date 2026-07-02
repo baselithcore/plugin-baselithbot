@@ -12,7 +12,7 @@ export class DbviewExceptionFilter implements ExceptionFilter {
 
     if (exception instanceof DbviewError) {
       this.logger.warn(
-        `[${exception.code}] ${exception.message}${exception.stack ? `\n${exception.stack}` : ''}`,
+        `[${exception.code}] ${exception.message}${exception.stack ? `\n${exception.stack}` : ''}`
       );
       const body: Record<string, unknown> = {
         code: exception.code,

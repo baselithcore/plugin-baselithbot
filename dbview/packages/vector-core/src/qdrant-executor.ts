@@ -63,7 +63,7 @@ export class QdrantExecutor {
       return rowsToResponse(
         ['collection'],
         names.map((n) => [n]),
-        start,
+        start
       );
     }
     const collection = op.collection || this.defaultCollection;
@@ -77,7 +77,7 @@ export class QdrantExecutor {
         limit,
         op.withPayload ?? true,
         op.withVector ?? false,
-        op.filter,
+        op.filter
       );
       return pointsToResponse(points, false, start);
     }
@@ -112,7 +112,7 @@ function parseOp(query: string): QdrantOp {
   const trimmed = query.trim();
   if (!trimmed.startsWith('{')) {
     throw new UnsafeSqlError(
-      'Qdrant queries must be JSON envelopes (e.g. {"op":"scroll","collection":"...","limit":50}).',
+      'Qdrant queries must be JSON envelopes (e.g. {"op":"scroll","collection":"...","limit":50}).'
     );
   }
   let parsed: unknown;
@@ -185,7 +185,7 @@ interface QdrantPointLike {
 function pointsToResponse(
   points: QdrantPointLike[],
   includeVector: boolean,
-  start: number,
+  start: number
 ): ExecuteQueryResponse {
   const payloadCols = collectPayloadColumns(points.map((p) => p.payload ?? {}));
   const columns = ['id', ...payloadCols, ...(includeVector ? ['vector'] : [])];

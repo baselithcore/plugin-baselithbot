@@ -159,7 +159,7 @@ export class SalesforceSafetyValidator {
     if (!opts.knownSObjects.has(sobjectName.toLowerCase())) {
       throw soqlError(
         `Unknown sObject '${sobjectName}'. Use one of the introspected objects.`,
-        'unknown_table',
+        'unknown_table'
       );
     }
 
@@ -170,7 +170,7 @@ export class SalesforceSafetyValidator {
         if (unknown.length > 0) {
           throw soqlError(
             `Field '${unknown[0]}' not in schema for sObject '${sobjectName}'.`,
-            'unknown_column',
+            'unknown_column'
           );
         }
       }
@@ -186,7 +186,7 @@ export class SalesforceSafetyValidator {
 function findUnknownFields(
   outerQuery: string,
   knownFields: Set<string>,
-  sobjectName: string,
+  sobjectName: string
 ): string[] {
   let cleaned = outerQuery.replace(/:[A-Za-z_][A-Za-z0-9_.]*/g, ' ');
   cleaned = cleaned.replace(/[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+/g, ' ');

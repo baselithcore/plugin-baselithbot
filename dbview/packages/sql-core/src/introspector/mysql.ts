@@ -50,7 +50,7 @@ export class MysqlIntrospector implements SchemaIntrospector {
 
   constructor(
     connectionString: string,
-    private readonly dialect: SqlDialect = 'mysql',
+    private readonly dialect: SqlDialect = 'mysql'
   ) {
     this.pool = createPool({
       uri: connectionString,

@@ -207,7 +207,7 @@ export class OracleIntrospector implements SchemaIntrospector {
       };
     } catch (err) {
       throw new IntrospectionError(
-        `Oracle introspection failed: ${(err as Error).message ?? String(err)}`,
+        `Oracle introspection failed: ${(err as Error).message ?? String(err)}`
       );
     } finally {
       await conn?.close();

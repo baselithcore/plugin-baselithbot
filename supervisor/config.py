@@ -114,14 +114,18 @@ def build_supervisor_config(
         logger.warning("[dbview] invalid mode %r, falling back to 'prod'", mode)
         mode = "prod"
 
-    host = overrides.get("host") or os.environ.get("DBVIEW_INTERNAL_HOST") or "127.0.0.1"
+    host = (
+        overrides.get("host") or os.environ.get("DBVIEW_INTERNAL_HOST") or "127.0.0.1"
+    )
 
     port_override = overrides.get("port")
     if port_override is None and "DBVIEW_INTERNAL_PORT" in os.environ:
         try:
             port_override = int(os.environ["DBVIEW_INTERNAL_PORT"])
         except ValueError:
-            logger.warning("[dbview] invalid DBVIEW_INTERNAL_PORT, allocating dynamically")
+            logger.warning(
+                "[dbview] invalid DBVIEW_INTERNAL_PORT, allocating dynamically"
+            )
             port_override = None
 
     return SupervisorConfig(

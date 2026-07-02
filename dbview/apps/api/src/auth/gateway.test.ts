@@ -88,19 +88,19 @@ describe('AuthService in gateway mode', () => {
     await svc.onModuleInit();
     expect(svc.listUsers()).toHaveLength(0);
     await expect(
-      svc.login('x@example.com', 'irrelevant-pw', { ip: null, userAgent: null }),
+      svc.login('x@example.com', 'irrelevant-pw', { ip: null, userAgent: null })
     ).rejects.toThrow(ForbiddenError);
     await expect(
       svc.register(
         { email: 'y@example.com', password: 'p'.repeat(12) },
-        { ip: null, userAgent: null },
-      ),
+        { ip: null, userAgent: null }
+      )
     ).rejects.toThrow(ForbiddenError);
     expect(() => svc.rotate('some-refresh-token', { ip: null, userAgent: null })).toThrow(
-      ForbiddenError,
+      ForbiddenError
     );
     await expect(svc.changePassword(CLAIMS.id, 'a'.repeat(12), 'b'.repeat(12))).rejects.toThrow(
-      ForbiddenError,
+      ForbiddenError
     );
   });
 

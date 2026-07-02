@@ -46,7 +46,7 @@ describe('writeSqliteDbFile', () => {
     const seed = new Database(seedPath);
     runBatch(
       seed,
-      "CREATE TABLE t (id INTEGER PRIMARY KEY, n TEXT); INSERT INTO t (n) VALUES ('a');",
+      "CREATE TABLE t (id INTEGER PRIMARY KEY, n TEXT); INSERT INTO t (n) VALUES ('a');"
     );
     seed.close();
     const buf = readFileSync(seedPath);
@@ -63,7 +63,7 @@ describe('writeSqliteDbFile', () => {
   it('rejects non-sqlite buffer', () => {
     const dir = mkTmp();
     expect(() => writeSqliteDbFile(join(dir, 'x.db'), Buffer.from('garbage'))).toThrow(
-      /not a valid SQLite/,
+      /not a valid SQLite/
     );
   });
 });
@@ -89,7 +89,7 @@ describe('applySqliteSqlDump', () => {
   it('throws if dump produces no tables', () => {
     const dir = mkTmp();
     expect(() => applySqliteSqlDump(join(dir, 'empty.db'), 'SELECT 1;')).toThrow(
-      /did not create any tables/,
+      /did not create any tables/
     );
   });
 
@@ -115,7 +115,7 @@ CREATE TABLE public.users (id integer NOT NULL);
     const target = join(dir, 'pre.db');
     applySqliteSqlDump(target, 'CREATE TABLE a (x INTEGER);');
     expect(() => applySqliteSqlDump(target, 'CREATE TABLE b (y INTEGER);')).toThrow(
-      /already exists/,
+      /already exists/
     );
   });
 });

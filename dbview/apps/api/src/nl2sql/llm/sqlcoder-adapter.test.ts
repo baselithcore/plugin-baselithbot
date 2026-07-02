@@ -80,13 +80,13 @@ describe('extractSql', () => {
 
   it('handles plain raw output', () => {
     expect(extractSql('SELECT id, name FROM shop.customers LIMIT 3')).toBe(
-      'SELECT id, name FROM shop.customers LIMIT 3',
+      'SELECT id, name FROM shop.customers LIMIT 3'
     );
   });
 
   it('strips leading prose before SELECT', () => {
     expect(extractSql('Sure, here is the query:\nSELECT id FROM t LIMIT 5')).toBe(
-      'SELECT id FROM t LIMIT 5',
+      'SELECT id FROM t LIMIT 5'
     );
   });
 
@@ -97,7 +97,7 @@ describe('extractSql', () => {
 
   it('drops trailing prose after blank line', () => {
     expect(extractSql('SELECT brand_id FROM Brands LIMIT 5\n\nNote: limit was applied.')).toBe(
-      'SELECT brand_id FROM Brands LIMIT 5',
+      'SELECT brand_id FROM Brands LIMIT 5'
     );
   });
 

@@ -93,7 +93,9 @@ def can_access_dbview_tab(user: AuthUser) -> bool:
         from plugins.auth.rbac.service import get_rbac_service
 
         return bool(
-            get_rbac_service().can_access_tab(user.user_id, user.roles, PLUGIN_NAME, TAB_ID)
+            get_rbac_service().can_access_tab(
+                user.user_id, user.roles, PLUGIN_NAME, TAB_ID
+            )
         )
     except Exception:  # noqa: BLE001
         return True

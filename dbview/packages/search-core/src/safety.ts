@@ -73,7 +73,7 @@ export function validateElasticEnvelope(env: ElasticEnvelope): void {
     for (const key of Object.keys(env.body)) {
       if (!ALLOWED_BODY_KEYS.has(key)) {
         throw new Error(
-          `Body key '${key}' is not allowed. Permitted: ${[...ALLOWED_BODY_KEYS].join(', ')}.`,
+          `Body key '${key}' is not allowed. Permitted: ${[...ALLOWED_BODY_KEYS].join(', ')}.`
         );
       }
     }

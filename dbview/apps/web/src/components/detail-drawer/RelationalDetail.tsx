@@ -38,15 +38,15 @@ export function RelationalDetail({
 }: Props) {
   const table = useMemo(
     () => (tableId ? schema.tables.find((t) => t.id === tableId) : undefined),
-    [schema, tableId],
+    [schema, tableId]
   );
   const fkOut = useMemo(
     () => (tableId ? schema.edges.filter((e) => e.source === tableId) : []),
-    [schema, tableId],
+    [schema, tableId]
   );
   const fkIn = useMemo(
     () => (tableId ? schema.edges.filter((e) => e.target === tableId) : []),
-    [schema, tableId],
+    [schema, tableId]
   );
 
   const [tab, setTab] = useState<'columns' | 'relations' | 'sample'>('columns');
@@ -62,7 +62,7 @@ export function RelationalDetail({
     const q = colFilter.trim().toLowerCase();
     if (!q || !table) return table?.columns ?? [];
     return table.columns.filter(
-      (c) => c.name.toLowerCase().includes(q) || c.dataType.toLowerCase().includes(q),
+      (c) => c.name.toLowerCase().includes(q) || c.dataType.toLowerCase().includes(q)
     );
   }, [table, colFilter]);
 
@@ -163,7 +163,7 @@ export function RelationalDetail({
                   key={c.name}
                   className={cn(
                     'flex items-center justify-between px-3 py-2 rounded-md text-[12px] font-mono transition-colors',
-                    isFocused ? 'ring-1 ring-accent/60' : 'hover:bg-surface-2',
+                    isFocused ? 'ring-1 ring-accent/60' : 'hover:bg-surface-2'
                   )}
                   style={{
                     background: isFocused

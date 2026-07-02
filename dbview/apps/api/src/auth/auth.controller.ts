@@ -40,7 +40,7 @@ function cookieOpts(maxAge?: number): Record<string, unknown> {
 export class AuthController {
   constructor(
     private readonly auth: AuthService,
-    private readonly reflector: Reflector,
+    private readonly reflector: Reflector
   ) {
     void this.reflector;
   }
@@ -52,7 +52,7 @@ export class AuthController {
   async login(
     @Body(new ZodPipe(LoginRequestSchema)) body: LoginRequest,
     @Req() req: FastifyRequest,
-    @Res({ passthrough: true }) reply: FastifyReply,
+    @Res({ passthrough: true }) reply: FastifyReply
   ): Promise<LoginResponse> {
     const result = await this.auth.login(body.email, body.password, {
       ip: req.ip ?? null,
@@ -82,7 +82,7 @@ export class AuthController {
   async register(
     @Body(new ZodPipe(RegisterRequestSchema)) body: RegisterRequest,
     @Req() req: FastifyRequest,
-    @Res({ passthrough: true }) reply: FastifyReply,
+    @Res({ passthrough: true }) reply: FastifyReply
   ): Promise<LoginResponse> {
     const result = await this.auth.register(body, {
       ip: req.ip ?? null,
@@ -102,7 +102,7 @@ export class AuthController {
   @Post('refresh')
   refresh(
     @Req() req: FastifyRequest,
-    @Res({ passthrough: true }) reply: FastifyReply,
+    @Res({ passthrough: true }) reply: FastifyReply
   ): LoginResponse {
     const raw = readRefreshCookie(req);
     if (!raw) throw new UnauthorizedError('No refresh token present.');
@@ -122,7 +122,7 @@ export class AuthController {
   @Post('logout')
   logout(
     @Req() req: FastifyRequest,
-    @Res({ passthrough: true }) reply: FastifyReply,
+    @Res({ passthrough: true }) reply: FastifyReply
   ): { ok: true } {
     const raw = readRefreshCookie(req);
     this.auth.logout(raw);
@@ -159,7 +159,7 @@ export class AuthController {
     @Body(new ZodPipe(ChangePasswordRequestSchema)) body: ChangePasswordRequest,
     @CurrentUser() principal: AuthPrincipal | undefined,
     @Req() req: FastifyRequest,
-    @Res({ passthrough: true }) reply: FastifyReply,
+    @Res({ passthrough: true }) reply: FastifyReply
   ): Promise<LoginResponse> {
     if (!principal || principal.source !== 'jwt') {
       throw new UnauthorizedError('JWT session required.');
@@ -167,7 +167,7 @@ export class AuthController {
     const updated: UserPublic = await this.auth.changePassword(
       principal.id,
       body.currentPassword,
-      body.newPassword,
+      body.newPassword
     );
     // Issue a fresh session so the access token reflects mustChangePassword=false
     // immediately. Refresh cookie is rotated to invalidate the prior token chain.

@@ -18,7 +18,7 @@ interface Props {
 export function VectorDetail({ open, onClose, connectionId, schema, collectionId }: Props) {
   const collection = useMemo(
     () => (collectionId ? schema.collections.find((c) => c.id === collectionId) : undefined),
-    [schema, collectionId],
+    [schema, collectionId]
   );
 
   const sample = useQuery({

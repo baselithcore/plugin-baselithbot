@@ -14,7 +14,7 @@ describe('parseSummaryJson', () => {
         summary: '5 brands found.',
         highlights: ['Acme — $1.2M', 'TopCo — $980k'],
         followUps: ['Top brand last quarter?', 'Revenue trend?'],
-      }),
+      })
     );
     expect(r).toEqual({
       summary: '5 brands found.',
@@ -25,7 +25,7 @@ describe('parseSummaryJson', () => {
 
   it('accepts snake_case follow_ups alias', () => {
     const r = parseSummaryJson(
-      '{"summary":"x","follow_ups":["Top brand last quarter?","Revenue trend by month?"]}',
+      '{"summary":"x","follow_ups":["Top brand last quarter?","Revenue trend by month?"]}'
     );
     expect(r?.followUps).toEqual(['Top brand last quarter?', 'Revenue trend by month?']);
   });
@@ -42,7 +42,7 @@ describe('parseSummaryJson', () => {
           'Average order value last year?',
           'Customers by segment in 2024?',
         ],
-      }),
+      })
     );
     expect(r?.highlights.length).toBe(4);
     expect(r?.followUps.length).toBe(3);
@@ -83,7 +83,7 @@ describe('parseSummaryJson', () => {
         summary: 'x',
         highlights: ['valid', 42, null, '   ', 'also valid'],
         followUps: [{}, 'Top brand last quarter?'],
-      }),
+      })
     );
     expect(r?.highlights).toEqual(['valid', 'also valid']);
     expect(r?.followUps).toEqual(['Top brand last quarter?']);
@@ -98,7 +98,7 @@ describe('sanitizeFollowUps', () => {
         'What are the details of these sales?',
         'Show the top three by revenue last quarter',
         'Which of those customers are recurring?',
-      ]),
+      ])
     ).toEqual(['Show the top three by revenue last quarter']);
   });
 
@@ -109,7 +109,7 @@ describe('sanitizeFollowUps', () => {
         'Quali sono i dettagli di queste vendite?',
         'Mostra i top 3 modelli per fatturato 2024',
         'Quali di questi clienti sono ricorrenti?',
-      ]),
+      ])
     ).toEqual(['Mostra i top 3 modelli per fatturato 2024']);
   });
 
@@ -121,7 +121,7 @@ describe('sanitizeFollowUps', () => {
         '  Top  brand   last quarter?  ',
         'TOP BRAND LAST QUARTER?',
         'Revenue trend by month?',
-      ]),
+      ])
     ).toEqual(['Top brand last quarter?', 'Revenue trend by month?']);
   });
 });
@@ -156,7 +156,7 @@ describe('isGroundedInSchema', () => {
   it('accepts questions that only reference known identifiers', async () => {
     const { isGroundedInSchema } = await import('./summarizer.js');
     expect(isGroundedInSchema('Show top model_name by sales_count in car_options', vocab)).toBe(
-      true,
+      true
     );
   });
 
@@ -165,8 +165,8 @@ describe('isGroundedInSchema', () => {
     expect(
       isGroundedInSchema(
         'Compare option_set_price between 2019 and 2023 by manufactured_date',
-        vocab,
-      ),
+        vocab
+      )
     ).toBe(false);
   });
 
@@ -175,8 +175,8 @@ describe('isGroundedInSchema', () => {
     expect(
       isGroundedInSchema(
         'Show car_options where model_name = "F12 Berlinetta" and sales_count > 10',
-        vocab,
-      ),
+        vocab
+      )
     ).toBe(true);
   });
 });
@@ -184,7 +184,7 @@ describe('isGroundedInSchema', () => {
 describe('detectAllNullColumns', () => {
   const baseResult = (
     rows: unknown[][],
-    columns = ['id', 'name', 'metric'],
+    columns = ['id', 'name', 'metric']
   ): ExecuteQueryResponse => ({
     columns,
     rows,
@@ -227,7 +227,7 @@ describe('detectAllNullColumns', () => {
         ['1', null, null],
         ['2', null, null],
       ],
-      ['id', 'a', 'b'],
+      ['id', 'a', 'b']
     );
     expect(detectAllNullColumns(r)).toEqual(['a', 'b']);
   });

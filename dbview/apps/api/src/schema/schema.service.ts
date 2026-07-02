@@ -32,13 +32,13 @@ export class SchemaService {
 
   constructor(
     private readonly connections: ConnectionsService,
-    private readonly enginePool: EnginePool,
+    private readonly enginePool: EnginePool
   ) {}
 
   async getGraph(
     connectionId: string,
     principal: AuthPrincipal,
-    force = false,
+    force = false
   ): Promise<UnifiedSchema> {
     const now = Date.now();
     const cached = this.cache.get(connectionId);
@@ -64,7 +64,7 @@ export class SchemaService {
       // the degradation is visible in observability.
       if (cached && cached.staleUntil > now) {
         this.logger.warn(
-          `serving stale schema connection=${connectionId} dialect=${dialect}: ${(err as Error).message}`,
+          `serving stale schema connection=${connectionId} dialect=${dialect}: ${(err as Error).message}`
         );
         return cached.graph;
       }
@@ -103,20 +103,20 @@ function classifyError(err: unknown, connectionString: string): Error {
 function toUnreachable(
   message: string,
   code: string,
-  connectionString: string,
+  connectionString: string
 ): ConnectionUnreachableError {
   const cause = causeFromCode(code, message);
   const { host, port } = extractHostPort(connectionString);
   const target = host ? `${host}${port ? `:${port}` : ''}` : 'database';
   return new ConnectionUnreachableError(
     `Database at ${target} is unreachable (${cause}). Verify it is running and the host/port are correct.`,
-    { cause, host, port },
+    { cause, host, port }
   );
 }
 
 function causeFromCode(
   code: string,
-  message: string,
+  message: string
 ): 'refused' | 'timeout' | 'dns' | 'tls' | 'auth' | 'unknown' {
   if (code === 'ECONNREFUSED') return 'refused';
   if (code === 'ETIMEDOUT' || /timeout/i.test(message)) return 'timeout';

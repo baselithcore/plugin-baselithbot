@@ -160,12 +160,12 @@ export function validateRedisCommand(input: string): ValidateCommandResult {
   const warnings: string[] = [];
   if (!READ_COMMANDS.has(parsed.command)) {
     throw new Error(
-      `Command '${parsed.command}' is not allowed. dbview only permits read-only Redis commands.`,
+      `Command '${parsed.command}' is not allowed. dbview only permits read-only Redis commands.`
     );
   }
   if (parsed.command === 'KEYS') {
     warnings.push(
-      'KEYS scans the entire keyspace and blocks Redis. Prefer SCAN with COUNT for production data.',
+      'KEYS scans the entire keyspace and blocks Redis. Prefer SCAN with COUNT for production data.'
     );
   }
   if (parsed.command === 'CONFIG' && parsed.args[0]?.toUpperCase() !== 'GET') {

@@ -130,13 +130,13 @@ describe('pruneRelationalSchema', () => {
 
   it('uses displayName tokens to ground entities with opaque technical names', () => {
     const tables = Array.from({ length: 10 }, (_, i) =>
-      table(`s.t${i}`, [col('id')], { displayName: `Entity ${i}` }),
+      table(`s.t${i}`, [col('id')], { displayName: `Entity ${i}` })
     );
     tables.push(
       table('s.unifiedindividual__dlm', [col('Id__c')], {
         displayName: 'Unified Individual',
         description: 'Unified profile of a person across systems',
-      }),
+      })
     );
     const graph = makeGraph(tables);
     const r = pruneRelationalSchema(graph, 'count unified individuals', opts);

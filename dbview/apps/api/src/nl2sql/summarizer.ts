@@ -136,7 +136,7 @@ interface SummaryJson {
 export async function summarizeResult(
   adapter: LlmAdapter,
   model: string,
-  input: SummarizerInput,
+  input: SummarizerInput
 ): Promise<SummarizerResult> {
   const vocab = input.schema ? collectSchemaVocabulary(input.schema) : null;
   try {
@@ -146,7 +146,7 @@ export async function summarizeResult(
         user: buildUserPrompt(input),
         temperature: 0.1,
       },
-      model,
+      model
     );
     const parsed = parseSummaryJson(completion.text);
     if (parsed && parsed.summary) {
@@ -181,14 +181,14 @@ function buildUserPrompt(input: SummarizerInput): string {
   if (allNullCols.length > 0) {
     lines.push(
       '',
-      `IMPORTANT — column(s) [${allNullCols.join(', ')}] are NULL in every returned row. The query did not filter NULL values out, so the rows shown are not meaningful answers to the user question. State this explicitly in the summary (e.g. "the query returned ${result.rowCount} rows but the metric is NULL on all of them — likely the column is unpopulated for those records or the query should filter \`IS NOT NULL\`") instead of pretending the values exist or that the result is empty.`,
+      `IMPORTANT — column(s) [${allNullCols.join(', ')}] are NULL in every returned row. The query did not filter NULL values out, so the rows shown are not meaningful answers to the user question. State this explicitly in the summary (e.g. "the query returned ${result.rowCount} rows but the metric is NULL on all of them — likely the column is unpopulated for those records or the query should filter \`IS NOT NULL\`") instead of pretending the values exist or that the result is empty.`
     );
   }
   if (input.schema) {
     lines.push(
       '',
       'AVAILABLE SCHEMA — every table, column, label, relationship type, property, collection and payload field that follow-up questions may reference. Inventing any identifier outside this list is a critical error. Do NOT mention timestamps, dates, geographies, categories or any concept whose backing identifier is not present here.',
-      renderSchemaDigest(input.schema),
+      renderSchemaDigest(input.schema)
     );
   }
   lines.push('', 'Now produce the JSON object answering the user.');
@@ -599,7 +599,7 @@ export function parseSummaryJson(text: string): SummarizerResult | null {
     const followUpsRaw = obj.followUps ?? obj.follow_ups;
     const followUps = sanitizeFollowUps(pickStringArray(followUpsRaw, MAX_FOLLOW_UPS * 2)).slice(
       0,
-      MAX_FOLLOW_UPS,
+      MAX_FOLLOW_UPS
     );
     return { summary, highlights, followUps };
   } catch {
@@ -653,7 +653,7 @@ export function sanitizeFollowUps(items: string[]): string[] {
 
 function deterministicFallback(
   result: ExecuteQueryResponse,
-  locale: ResponseLocale | undefined,
+  locale: ResponseLocale | undefined
 ): string {
   if (locale === 'it') {
     if (result.rowCount === 0) {

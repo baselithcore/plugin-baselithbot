@@ -77,7 +77,7 @@ describe('SalesforceDataCloudClient', () => {
     expect(queryHeaders.Authorization).toBe('Bearer cdp-tok');
     expect(queryHeaders['Content-Type']).toBe('application/json');
     expect(queryInit.body).toBe(
-      JSON.stringify({ sql: 'SELECT Id, Name FROM Account__dlm LIMIT 1' }),
+      JSON.stringify({ sql: 'SELECT Id, Name FROM Account__dlm LIMIT 1' })
     );
   });
 

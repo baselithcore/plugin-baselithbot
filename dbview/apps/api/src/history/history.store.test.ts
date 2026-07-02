@@ -75,7 +75,7 @@ describe('HistoryStore', () => {
         limit: 10,
         offset: 0,
       },
-      OWNER_A,
+      OWNER_A
     );
     expect(out.total).toBe(1);
     expect(out.entries[0]!.connectionId).toBe('00000000-0000-0000-0000-000000000002');
@@ -179,7 +179,7 @@ describe('HistoryStore', () => {
             createdAt: '2025-01-01T00:00:00.000Z',
           },
         ],
-      }),
+      })
     );
     const s = new HistoryStore(path);
     expect(s.pendingLegacyIds()).toHaveLength(1);

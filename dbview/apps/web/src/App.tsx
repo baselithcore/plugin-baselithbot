@@ -25,16 +25,16 @@ import { useAppStore } from './store/app.js';
 // unmounts immediately so we never keep heavy editor / table machinery in
 // the tree while the user is back on the canvas.
 const CommandPalette = lazy(() =>
-  import('./components/CommandPalette.js').then((m) => ({ default: m.CommandPalette })),
+  import('./components/CommandPalette.js').then((m) => ({ default: m.CommandPalette }))
 );
 const SettingsDialog = lazy(() =>
-  import('./components/SettingsDialog.js').then((m) => ({ default: m.SettingsDialog })),
+  import('./components/SettingsDialog.js').then((m) => ({ default: m.SettingsDialog }))
 );
 const UsersDialog = lazy(() =>
-  import('./components/UsersDialog.js').then((m) => ({ default: m.UsersDialog })),
+  import('./components/UsersDialog.js').then((m) => ({ default: m.UsersDialog }))
 );
 const HistoryPanel = lazy(() =>
-  import('./components/HistoryPanel.js').then((m) => ({ default: m.HistoryPanel })),
+  import('./components/HistoryPanel.js').then((m) => ({ default: m.HistoryPanel }))
 );
 
 function ResizeHandle({ hidden = false }: { hidden?: boolean }) {

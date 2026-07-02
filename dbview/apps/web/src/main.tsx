@@ -41,5 +41,5 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         </AuthGate>
       </MotionConfig>
     </QueryClientProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );

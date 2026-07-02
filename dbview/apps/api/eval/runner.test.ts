@@ -52,7 +52,7 @@ describe('runEvalCase — happy paths', () => {
     const adapter = stubAdapter({
       'Top 5 customers by total revenue': envelope(
         'SELECT c.id, c.name, SUM(o.total_amount) AS revenue FROM shop.customers c JOIN shop.orders o ON o.customer_id = c.id WHERE o.total_amount IS NOT NULL GROUP BY c.id, c.name ORDER BY revenue DESC LIMIT 5',
-        ['shop.customers', 'shop.orders'],
+        ['shop.customers', 'shop.orders']
       ),
     });
     const r = await runEvalCase(c, SHOP_SCHEMA, adapter);
@@ -75,7 +75,7 @@ describe('runEvalCase — happy paths', () => {
       'Top 5 products by price': envelope(
         // The model "forgot" the IS NOT NULL — sanitize must inject it.
         'SELECT id, name, price FROM shop.products ORDER BY price DESC LIMIT 5',
-        ['shop.products'],
+        ['shop.products']
       ),
     });
     const r = await runEvalCase(c, SHOP_SCHEMA, adapter);
@@ -129,7 +129,7 @@ describe('runEvalCase — failure modes', () => {
         if (calls === 1) {
           return envelope(
             'SELECT s.id, c.name FROM shop.shipments s JOIN shop.customers c ON c.id = s.id LIMIT 10',
-            ['shop.shipments', 'shop.customers'],
+            ['shop.shipments', 'shop.customers']
           );
         }
         return envelope('SELECT id, tracking_number FROM shop.shipments LIMIT 10', [

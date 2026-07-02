@@ -23,7 +23,7 @@ async function main(): Promise<void> {
 
   if (provider === 'ollama' && !isCodingOllamaModel(model)) {
     console.warn(
-      `[eval] warning: ${model} is not in the curated coding-Ollama allowlist; results may be poor.`,
+      `[eval] warning: ${model} is not in the curated coding-Ollama allowlist; results may be poor.`
     );
   }
 

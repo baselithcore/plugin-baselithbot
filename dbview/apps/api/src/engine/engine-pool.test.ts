@@ -13,7 +13,7 @@ beforeAll(() => {
   dbPath = join(tmpDir, 'fixture.db');
   applySqliteSqlDump(
     dbPath,
-    "CREATE TABLE t (id INTEGER PRIMARY KEY, name TEXT); INSERT INTO t (name) VALUES ('a');",
+    "CREATE TABLE t (id INTEGER PRIMARY KEY, name TEXT); INSERT INTO t (name) VALUES ('a');"
   );
 });
 

@@ -43,11 +43,11 @@ describe('AuthService', () => {
 
     // Replay old token must throw and revoke family.
     expect(() => svc.rotate(first.refreshToken, { ip: null, userAgent: null })).toThrow(
-      TokenReplayError,
+      TokenReplayError
     );
     // Rotated (second) token also unusable: it's now revoked → replay path.
     expect(() => svc.rotate(second.refreshToken, { ip: null, userAgent: null })).toThrow(
-      TokenReplayError,
+      TokenReplayError
     );
   });
 
@@ -55,7 +55,7 @@ describe('AuthService', () => {
     const svc = new AuthService();
     await svc.onModuleInit();
     await expect(
-      svc.login('admin@test.local', 'wrong', { ip: null, userAgent: null }),
+      svc.login('admin@test.local', 'wrong', { ip: null, userAgent: null })
     ).rejects.toThrow();
   });
 });

@@ -65,7 +65,7 @@ interface ExplainerJson {
 export async function explainQuery(
   adapter: LlmAdapter,
   model: string,
-  ctx: ExplainerInput,
+  ctx: ExplainerInput
 ): Promise<ExplainerResult> {
   try {
     const completion = await adapter.complete(
@@ -74,7 +74,7 @@ export async function explainQuery(
         user: buildExplainerUserPrompt(ctx),
         temperature: 0,
       },
-      model,
+      model
     );
     return parseExplainerJson(completion.text);
   } catch {

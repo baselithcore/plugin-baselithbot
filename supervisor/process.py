@@ -336,7 +336,9 @@ class NodeSupervisor:
             return
         try:
             await asyncio.wait_for(proc.wait(), timeout=self._config.shutdown_grace_s)
-            logger.info("[dbview] child exited cleanly (returncode=%s)", proc.returncode)
+            logger.info(
+                "[dbview] child exited cleanly (returncode=%s)", proc.returncode
+            )
             return
         except asyncio.TimeoutError:
             logger.warning(

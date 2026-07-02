@@ -77,7 +77,7 @@ describe('sanitize SQLite schema prefixes', () => {
   it('strips bogus prefix in JOIN', () => {
     const r = sanitize(
       'SELECT b.brand_id FROM main.Brands b JOIN main.Models m ON b.brand_id = m.brand_id',
-      opts,
+      opts
     );
     expect(r.query).not.toContain('main.');
   });
@@ -116,7 +116,7 @@ describe('sanitize SQL — top-N NULL guard', () => {
   it('injects IS NOT NULL when ORDER BY metric DESC LIMIT n has no WHERE', () => {
     const r = sanitize('SELECT id, name, total FROM accounts ORDER BY total DESC LIMIT 5', opts);
     expect(r.query).toBe(
-      'SELECT id, name, total FROM accounts WHERE total IS NOT NULL ORDER BY total DESC LIMIT 5',
+      'SELECT id, name, total FROM accounts WHERE total IS NOT NULL ORDER BY total DESC LIMIT 5'
     );
     expect(r.fixes.some((f) => f.includes('IS NOT NULL'))).toBe(true);
   });
@@ -124,10 +124,10 @@ describe('sanitize SQL — top-N NULL guard', () => {
   it('appends IS NOT NULL to existing WHERE clause', () => {
     const r = sanitize(
       "SELECT id, total FROM accounts WHERE region = 'EU' ORDER BY total DESC LIMIT 5",
-      opts,
+      opts
     );
     expect(r.query).toBe(
-      "SELECT id, total FROM accounts WHERE region = 'EU' AND total IS NOT NULL ORDER BY total DESC LIMIT 5",
+      "SELECT id, total FROM accounts WHERE region = 'EU' AND total IS NOT NULL ORDER BY total DESC LIMIT 5"
     );
   });
 
@@ -178,7 +178,7 @@ describe('sanitize SQL — top-N NULL guard', () => {
   it('handles FETCH NEXT n ROWS ONLY (T-SQL)', () => {
     const r = sanitize(
       'SELECT id, total FROM accounts ORDER BY total DESC OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY',
-      opts,
+      opts
     );
     expect(r.query).toContain('WHERE total IS NOT NULL');
   });

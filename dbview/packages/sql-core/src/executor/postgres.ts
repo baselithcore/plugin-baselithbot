@@ -26,7 +26,7 @@ export class PostgresExecutor implements QueryExecutor {
         `SELECT nspname FROM pg_namespace
          WHERE nspname NOT LIKE 'pg\\_%' ESCAPE '\\'
            AND nspname <> 'information_schema'
-         ORDER BY nspname`,
+         ORDER BY nspname`
       );
       const schemas = nsRes.rows.map((r) => `"${r.nspname.replace(/"/g, '""')}"`).join(', ');
       if (schemas) await client.query(`SET LOCAL search_path TO ${schemas}`);

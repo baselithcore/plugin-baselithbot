@@ -32,12 +32,12 @@ export class SqlcoderAdapter implements LlmAdapter {
   async complete(input: LlmCompletionInput, model: string): Promise<LlmCompletionResult> {
     if (!input.structured) {
       throw new LlmProviderError(
-        `sqlcoder adapter requires structured context (schema, dialect, userPrompt).`,
+        `sqlcoder adapter requires structured context (schema, dialect, userPrompt).`
       );
     }
     if (input.structured.schema.kind !== 'relational') {
       throw new LlmProviderError(
-        `sqlcoder only supports relational schemas; got '${input.structured.schema.kind}'.`,
+        `sqlcoder only supports relational schemas; got '${input.structured.schema.kind}'.`
       );
     }
 
@@ -70,7 +70,7 @@ export class SqlcoderAdapter implements LlmAdapter {
       if (!res.ok) {
         const text = await res.text().catch(() => '');
         throw new LlmProviderError(
-          `sqlcoder (${model}) returned ${res.status}: ${text.slice(0, 200) || res.statusText}`,
+          `sqlcoder (${model}) returned ${res.status}: ${text.slice(0, 200) || res.statusText}`
         );
       }
       const json = (await res.json()) as { response?: string; error?: string };
@@ -81,7 +81,7 @@ export class SqlcoderAdapter implements LlmAdapter {
       const sql = extractSql(raw);
       if (!sql) {
         throw new ModelOutputError(
-          `sqlcoder (${model}) output did not contain a SELECT/WITH statement; got: ${raw.slice(0, 200).replace(/\n/g, ' ')}`,
+          `sqlcoder (${model}) output did not contain a SELECT/WITH statement; got: ${raw.slice(0, 200).replace(/\n/g, ' ')}`
         );
       }
       const wrapped = JSON.stringify({
@@ -177,7 +177,7 @@ function renderPriorTurns(history: readonly Nl2ConversationTurn[] | undefined): 
     }
   });
   lines.push(
-    '-- Treat the new question as a follow-up; resolve references ("these", "previous", "now", "il precedente") against these turns. Re-emit a full new SQL — do not copy verbatim.',
+    '-- Treat the new question as a follow-up; resolve references ("these", "previous", "now", "il precedente") against these turns. Re-emit a full new SQL — do not copy verbatim.'
   );
   lines.push('');
   return lines.join('\n');

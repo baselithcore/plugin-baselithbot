@@ -40,7 +40,7 @@ export class UltipaIntrospector {
         throw new Error(
           `Ultipa server returned no node/edge types for graph '${graph}'. ` +
             `Available graphs: [${available.join(', ') || '<none visible>'}]. ` +
-            `Verify the graph name matches one on the server and that the user has read permissions.`,
+            `Verify the graph name matches one on the server and that the user has read permissions.`
         );
       }
 
@@ -72,7 +72,7 @@ export class UltipaIntrospector {
             name: p.name,
             types: [normalizeType(p.type)],
             nullable: true,
-          })),
+          }))
         );
       }
 
@@ -170,7 +170,7 @@ export class UltipaIntrospector {
   private async discoverRelationships(
     client: GqldbClient,
     graph: string,
-    edgeProps: Map<string, PropertyKey[]>,
+    edgeProps: Map<string, PropertyKey[]>
   ): Promise<RelationshipType[]> {
     if (edgeProps.size === 0) return [];
     // Per-edge-type sampling in parallel. One bounded DISTINCT scan per
@@ -232,7 +232,7 @@ function normalizeType(t: string): string {
 async function mapConcurrent<T, U>(
   items: readonly T[],
   concurrency: number,
-  fn: (item: T) => Promise<U>,
+  fn: (item: T) => Promise<U>
 ): Promise<U[]> {
   const out: U[] = new Array(items.length);
   let next = 0;
@@ -246,7 +246,7 @@ async function mapConcurrent<T, U>(
           if (i >= items.length) return;
           out[i] = await fn(items[i]!);
         }
-      })(),
+      })()
     );
   }
   await Promise.all(workers);
@@ -261,7 +261,7 @@ async function mapConcurrent<T, U>(
 async function runShowTypes(
   client: GqldbClient,
   graph: string,
-  kind: 'NODE' | 'EDGE',
+  kind: 'NODE' | 'EDGE'
 ): Promise<NodeTypeRow[]> {
   const queries =
     kind === 'NODE'
@@ -300,7 +300,7 @@ function findColumnIndex(cols: string[], candidates: string[]): number {
 async function sampleNodeProperties(
   client: GqldbClient,
   graph: string,
-  label: string,
+  label: string
 ): Promise<Array<{ name: string; type: string }>> {
   try {
     const res = await client.gql(`MATCH (n:\`${label}\`) RETURN n LIMIT 5`, {
@@ -365,12 +365,12 @@ function jsTypeOf(v: unknown): string {
 async function sampleEdgeCombos(
   client: GqldbClient,
   graph: string,
-  edgeType: string,
+  edgeType: string
 ): Promise<Array<{ source: string; target: string }>> {
   try {
     const res = await client.gql(
       `MATCH (a)-[r:\`${edgeType}\`]->(b) RETURN DISTINCT labels(a) AS src, labels(b) AS tgt LIMIT 25`,
-      { graphName: graph, readOnly: true, timeout: 30000 },
+      { graphName: graph, readOnly: true, timeout: 30000 }
     );
     const seen = new Set<string>();
     const out: Array<{ source: string; target: string }> = [];
@@ -390,7 +390,7 @@ async function sampleEdgeCombos(
 
 async function discoverNodeTypesFromData(
   client: GqldbClient,
-  graph: string,
+  graph: string
 ): Promise<NodeTypeRow[]> {
   try {
     const res = await client.gql('MATCH (n) RETURN DISTINCT labels(n) AS labels LIMIT 200', {
@@ -415,7 +415,7 @@ async function discoverNodeTypesFromData(
 
 async function discoverEdgeTypesFromData(
   client: GqldbClient,
-  graph: string,
+  graph: string
 ): Promise<EdgeTypeRow[]> {
   try {
     const res = await client.gql('MATCH ()-[r]->() RETURN DISTINCT type(r) AS t LIMIT 200', {

@@ -49,7 +49,7 @@ export class LlmCredentialsService {
   upsert(
     provider: RemoteLlmProvider,
     apiKey: string,
-    principal: AuthPrincipal,
+    principal: AuthPrincipal
   ): LlmCredentialStatus {
     const now = new Date().toISOString();
     const existing = this.store.get(principal.id, provider);
@@ -63,7 +63,7 @@ export class LlmCredentialsService {
     };
     this.store.upsert(next);
     this.logger.log(
-      `credential_${existing ? 'updated' : 'created'} user=${principal.id} provider=${provider}`,
+      `credential_${existing ? 'updated' : 'created'} user=${principal.id} provider=${provider}`
     );
     return {
       provider,
@@ -95,7 +95,7 @@ export class LlmCredentialsService {
         return decryptString(stored.cipher);
       } catch (err) {
         this.logger.error(
-          `credential_decrypt_failed user=${principal.id} provider=${provider}: ${(err as Error).message}`,
+          `credential_decrypt_failed user=${principal.id} provider=${provider}: ${(err as Error).message}`
         );
       }
     }

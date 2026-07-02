@@ -10,7 +10,7 @@ import type { SchemaIntrospector } from './types.js';
 
 export function createIntrospector(
   dialect: SqlDialect,
-  connectionString: string,
+  connectionString: string
 ): SchemaIntrospector {
   switch (dialect) {
     case 'postgres':

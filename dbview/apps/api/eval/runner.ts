@@ -34,7 +34,7 @@ export async function runEvalCase(
   evalCase: EvalCase,
   schema: SchemaGraph,
   adapter: RunnerAdapter,
-  opts: RunnerOptions = {},
+  opts: RunnerOptions = {}
 ): Promise<EvalResult> {
   const t0 = Date.now();
   const prune = opts.prune ?? true;
@@ -87,7 +87,7 @@ export async function runEvalCase(
       rowLimit,
       language: parsed.language === 'cypher' ? 'cypher' : 'sql',
       knownTables: new Set(
-        activeGraph.kind === 'relational' ? activeGraph.tables.map((t) => t.id) : [],
+        activeGraph.kind === 'relational' ? activeGraph.tables.map((t) => t.id) : []
       ),
     });
     const sql = sanitized.query;

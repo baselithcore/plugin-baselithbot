@@ -55,9 +55,9 @@ The pipeline burns up to `MAX_RETRIES + 1` LLM calls.
 
 - Configured via `DBVIEW_NL2SQL_MAX_RETRIES`, clamped to `0..4`, default `2`.
 - Triggered on:
-  - JSON parse failure (`ModelOutputError`).
-  - Safety validator failure (`UnsafeSqlError`).
-  - Unknown table / column / label / sObject / field.
+    - JSON parse failure (`ModelOutputError`).
+    - Safety validator failure (`UnsafeSqlError`).
+    - Unknown table / column / label / sObject / field.
 
 On retry, the user prompt includes a feedback block listing each unknown identifier and up to three nearest candidates from the schema, ranked by Levenshtein distance with a `<= 40%` distance-to-length ratio. See [apps/api/src/nl2sql/grounding/suggest.ts](../apps/api/src/nl2sql/grounding/suggest.ts).
 

@@ -195,10 +195,10 @@ describe('ConnectionsService visibility', () => {
 
   it('get() throws NotFound for connection the user cannot see (no enumeration)', () => {
     expect(() => svc.get('11111111-1111-1111-1111-111111111111', userPrincipal(USER_A))).toThrow(
-      NotFoundException,
+      NotFoundException
     );
     expect(() => svc.get('33333333-3333-3333-3333-333333333333', userPrincipal(USER_B))).toThrow(
-      NotFoundException,
+      NotFoundException
     );
   });
 
@@ -212,8 +212,8 @@ describe('ConnectionsService visibility', () => {
       svc.updateSharing(
         '22222222-2222-2222-2222-222222222222',
         { sharing: { mode: 'private', userIds: [] } },
-        userPrincipal(USER_A),
-      ),
+        userPrincipal(USER_A)
+      )
     ).toThrow(/admin/);
   });
 
@@ -221,7 +221,7 @@ describe('ConnectionsService visibility', () => {
     svc.updateSharing(
       '22222222-2222-2222-2222-222222222222',
       { sharing: { mode: 'private', userIds: [] } },
-      adminPrincipal(ADMIN_ID),
+      adminPrincipal(ADMIN_ID)
     );
     const visibleA = svc.list(userPrincipal(USER_A)).map((c) => c.id);
     expect(visibleA).not.toContain('22222222-2222-2222-2222-222222222222');
@@ -229,7 +229,7 @@ describe('ConnectionsService visibility', () => {
     svc.updateSharing(
       '22222222-2222-2222-2222-222222222222',
       { sharing: { mode: 'all', userIds: [] } },
-      adminPrincipal(ADMIN_ID),
+      adminPrincipal(ADMIN_ID)
     );
   });
 
@@ -238,7 +238,7 @@ describe('ConnectionsService visibility', () => {
     svc.updateSharing(
       '22222222-2222-2222-2222-222222222222',
       { sharing: { mode: 'private', userIds: [] } },
-      adminPrincipal(ADMIN_ID),
+      adminPrincipal(ADMIN_ID)
     );
     const visible = svc.list(adminPrincipal(ADMIN_2)).map((c) => c.id);
     // conn 1 was v1 'private' → migrated to 'admins' → ADMIN_2 sees it
@@ -253,7 +253,7 @@ describe('ConnectionsService visibility', () => {
     svc.updateSharing(
       '22222222-2222-2222-2222-222222222222',
       { sharing: { mode: 'all', userIds: [] } },
-      adminPrincipal(ADMIN_ID),
+      adminPrincipal(ADMIN_ID)
     );
   });
 
@@ -262,15 +262,15 @@ describe('ConnectionsService visibility', () => {
     svc.updateSharing(
       '22222222-2222-2222-2222-222222222222',
       { sharing: { mode: 'private', userIds: [] } },
-      adminPrincipal(ADMIN_ID),
+      adminPrincipal(ADMIN_ID)
     );
     expect(() => svc.get('22222222-2222-2222-2222-222222222222', adminPrincipal(ADMIN_2))).toThrow(
-      NotFoundException,
+      NotFoundException
     );
     svc.updateSharing(
       '22222222-2222-2222-2222-222222222222',
       { sharing: { mode: 'all', userIds: [] } },
-      adminPrincipal(ADMIN_ID),
+      adminPrincipal(ADMIN_ID)
     );
   });
 
@@ -279,8 +279,8 @@ describe('ConnectionsService visibility', () => {
       svc.updateSharing(
         '33333333-3333-3333-3333-333333333333',
         { sharing: { mode: 'users', userIds: ['00000000-0000-0000-0000-0000000000ff'] } },
-        adminPrincipal(ADMIN_ID),
-      ),
+        adminPrincipal(ADMIN_ID)
+      )
     ).toThrow(/unknown or inactive/);
   });
 });

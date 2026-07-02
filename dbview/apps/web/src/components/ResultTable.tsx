@@ -102,7 +102,7 @@ export function ResultTable({ result, embedded = false, searchable = false }: Pr
           ? searchable
             ? 'flex flex-col h-full min-h-0'
             : 'contents'
-          : 'panel flex flex-col h-full min-h-0',
+          : 'panel flex flex-col h-full min-h-0'
       )}
     >
       {!embedded && (
@@ -183,7 +183,7 @@ export function ResultTable({ result, embedded = false, searchable = false }: Pr
                     onClick={() => toggleSort(i)}
                     className={cn(
                       'text-left px-3 py-2.5 font-semibold cursor-pointer select-none border-b group whitespace-nowrap',
-                      isSorted ? 'text-accent' : 'text-text-muted hover:text-text',
+                      isSorted ? 'text-accent' : 'text-text-muted hover:text-text'
                     )}
                     style={{ borderColor: 'rgb(var(--border-subtle))' }}
                   >
@@ -228,7 +228,7 @@ export function ResultTable({ result, embedded = false, searchable = false }: Pr
               ? virtualItems
                   .map((vi) => ({ row: rows[vi.index], i: vi.index }))
                   .filter(
-                    (x): x is { row: (typeof rows)[number]; i: number } => x.row !== undefined,
+                    (x): x is { row: (typeof rows)[number]; i: number } => x.row !== undefined
                   )
               : rows.map((row, i) => ({ row, i }))
             ).map(({ row, i }) => {

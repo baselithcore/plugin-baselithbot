@@ -109,7 +109,9 @@ def test_filter_response_headers_drops_hop_by_hop_and_content_length():
     )
     filtered = _filter_response_headers(headers, cookie_path_rewriter=rewrite)
     keys = {name.lower() for name, _ in filtered}
-    assert "content-length" not in keys, "stale Content-Length corrupts streaming bodies"
+    assert "content-length" not in keys, (
+        "stale Content-Length corrupts streaming bodies"
+    )
     assert "transfer-encoding" not in keys
     cookies = [value for name, value in filtered if name.lower() == "set-cookie"]
     assert any("Path=/api/dbview/auth" in c for c in cookies)
@@ -167,7 +169,9 @@ def _install_stub_client(response: _StubResponse) -> dict[str, Any]:
             captured["headers"] = kwargs.get("headers")
             return stream_ctx
 
-    captured["_patcher"] = patch("plugins.dbview.proxy_router.httpx.AsyncClient", _StubClient)
+    captured["_patcher"] = patch(
+        "plugins.dbview.proxy_router.httpx.AsyncClient", _StubClient
+    )
     return captured
 
 
@@ -218,15 +222,20 @@ def test_proxy_forwards_url_with_global_api_prefix_and_injects_identity():
     captured["_patcher"].start()
     try:
         app = _build_app(user=_make_user(admin=True))
-        with patch(
-            "plugins.dbview.proxy_router.can_access_dbview_tab", return_value=True
-        ), patch(
-            "plugins.dbview.identity.is_effective_admin_cached", return_value=True
-        ), patch(
-            "plugins.dbview.identity.resolve_tenant_key", return_value="tenant-1"
-        ), patch(
-            "plugins.dbview.identity.lookup_central_profile",
-            return_value=(None, None),
+        with (
+            patch(
+                "plugins.dbview.proxy_router.can_access_dbview_tab", return_value=True
+            ),
+            patch(
+                "plugins.dbview.identity.is_effective_admin_cached", return_value=True
+            ),
+            patch(
+                "plugins.dbview.identity.resolve_tenant_key", return_value="tenant-1"
+            ),
+            patch(
+                "plugins.dbview.identity.lookup_central_profile",
+                return_value=(None, None),
+            ),
         ):
             with TestClient(app) as client:
                 resp = client.get(
@@ -293,7 +302,10 @@ def test_proxy_rewrites_set_cookie_path():
         status_code=200,
         headers=[
             ("content-type", "application/json"),
-            ("set-cookie", "dbview_refresh=abc; Path=/api/auth; HttpOnly; SameSite=Strict"),
+            (
+                "set-cookie",
+                "dbview_refresh=abc; Path=/api/auth; HttpOnly; SameSite=Strict",
+            ),
         ],
         body=b"{}",
     )
@@ -301,7 +313,9 @@ def test_proxy_rewrites_set_cookie_path():
     captured["_patcher"].start()
     try:
         app = _build_app(user=_make_user())
-        with patch("plugins.dbview.proxy_router.can_access_dbview_tab", return_value=True):
+        with patch(
+            "plugins.dbview.proxy_router.can_access_dbview_tab", return_value=True
+        ):
             with TestClient(app) as client:
                 resp = client.post("/api/dbview/auth/refresh")
     finally:
@@ -334,7 +348,9 @@ def test_proxy_502s_when_upstream_connect_fails():
 
     with patch("plugins.dbview.proxy_router.httpx.AsyncClient", _ExplodingClient):
         app = _build_app(user=_make_user())
-        with patch("plugins.dbview.proxy_router.can_access_dbview_tab", return_value=True):
+        with patch(
+            "plugins.dbview.proxy_router.can_access_dbview_tab", return_value=True
+        ):
             with TestClient(app) as client:
                 resp = client.get("/api/dbview/health")
 

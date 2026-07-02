@@ -22,10 +22,10 @@ import { DATA_PREVIEW_QUERY_KEY, useDataPreview } from './graph-viewport/use-dat
 import { useDebouncedValue } from '../lib/use-debounced-value.js';
 
 const ResultGraph2DView = lazy(() =>
-  import('../graph/ResultGraph2DView.js').then((m) => ({ default: m.ResultGraph2DView })),
+  import('../graph/ResultGraph2DView.js').then((m) => ({ default: m.ResultGraph2DView }))
 );
 const ResultGraph3DView = lazy(() =>
-  import('../graph/ResultGraph3DView.js').then((m) => ({ default: m.ResultGraph3DView })),
+  import('../graph/ResultGraph3DView.js').then((m) => ({ default: m.ResultGraph3DView }))
 );
 
 export function GraphViewport() {
@@ -108,7 +108,7 @@ export function GraphViewport() {
   const { query: dataPreview, counts: dataPreviewCounts } = useDataPreview(
     connId,
     schema.data,
-    showDataPreview,
+    showDataPreview
   );
 
   const matched = useMemo<Set<string> | undefined>(() => {
@@ -266,7 +266,7 @@ export function GraphViewport() {
                 primary: `${data.collections.length} collections`,
                 secondary: `${data.collections.reduce(
                   (acc: number, c) => acc + (c.pointCount ?? 0),
-                  0,
+                  0
                 )} pts`,
               }
           : data.kind === 'keyvalue'
@@ -279,14 +279,14 @@ export function GraphViewport() {
                   primary: `${data.indices.length} indices`,
                   secondary: `${data.indices.reduce(
                     (acc: number, i) => acc + (i.docCount ?? 0),
-                    0,
+                    0
                   )} docs`,
                 }
               : {
                   primary: `${data.collections.length} collections`,
                   secondary: `${data.collections.reduce(
                     (acc: number, c) => acc + (c.docCount ?? 0),
-                    0,
+                    0
                   )} docs`,
                 };
   const matchCount = matched?.size ?? null;

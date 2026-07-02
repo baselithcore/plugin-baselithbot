@@ -62,7 +62,7 @@ export function HistoryPanel() {
       (e) =>
         e.prompt.toLowerCase().includes(q) ||
         e.query.toLowerCase().includes(q) ||
-        e.connectionName.toLowerCase().includes(q),
+        e.connectionName.toLowerCase().includes(q)
     );
   }, [list.data, search]);
 
@@ -170,7 +170,7 @@ export function HistoryPanel() {
         )}
       </AnimatePresence>
     </>,
-    document.body,
+    document.body
   );
 }
 
@@ -262,7 +262,7 @@ function Controls({
           <button
             className={cn(
               'segmented-item font-mono text-[10px]',
-              scope === 'all' && 'segmented-item-active',
+              scope === 'all' && 'segmented-item-active'
             )}
             onClick={() => setScope('all')}
           >
@@ -271,7 +271,7 @@ function Controls({
           <button
             className={cn(
               'segmented-item font-mono text-[10px]',
-              scope === 'connection' && 'segmented-item-active',
+              scope === 'connection' && 'segmented-item-active'
             )}
             onClick={() => setScope('connection')}
             disabled={!hasConnection}
@@ -283,7 +283,7 @@ function Controls({
         <button
           className={cn(
             'h-7 px-2 inline-flex items-center gap-1.5 rounded-md text-[10px] font-mono border transition-colors',
-            favoritesOnly ? 'text-accent' : 'text-text-muted',
+            favoritesOnly ? 'text-accent' : 'text-text-muted'
           )}
           style={{
             background: favoritesOnly ? 'rgb(var(--accent) / 0.12)' : 'rgb(var(--surface-2) / 0.6)',

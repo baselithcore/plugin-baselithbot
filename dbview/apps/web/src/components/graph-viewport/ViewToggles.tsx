@@ -40,7 +40,7 @@ export function ViewToggles({
           onClick={onToggleLegend}
           className={cn(
             'toolbar-surface btn-icon w-8 h-8 transition-colors',
-            legendVisible ? 'text-accent' : 'text-text-muted',
+            legendVisible ? 'text-accent' : 'text-text-muted'
           )}
           aria-label={legendVisible ? 'Hide legend' : 'Show legend'}
           aria-pressed={legendVisible}
@@ -55,7 +55,7 @@ export function ViewToggles({
           onClick={onToggleMinimap}
           className={cn(
             'toolbar-surface btn-icon w-8 h-8 transition-colors',
-            minimapVisible ? 'text-accent' : 'text-text-muted',
+            minimapVisible ? 'text-accent' : 'text-text-muted'
           )}
           aria-label={minimapVisible ? 'Hide minimap' : 'Show minimap'}
           aria-pressed={minimapVisible}

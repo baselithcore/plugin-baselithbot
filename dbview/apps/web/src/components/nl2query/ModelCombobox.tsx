@@ -56,7 +56,7 @@ export function ModelCombobox({ value, onChange }: ModelComboboxProps) {
 
   const visible = useMemo(
     () => (showAll ? (models.data?.models ?? []) : coding),
-    [showAll, models.data?.models, coding],
+    [showAll, models.data?.models, coding]
   );
   const grouped = useMemo(() => groupByFamily(visible), [visible]);
 
@@ -90,7 +90,7 @@ export function ModelCombobox({ value, onChange }: ModelComboboxProps) {
             'group inline-flex items-center gap-1.5 h-7 px-2 rounded-md border text-[12px] font-mono',
             'transition-colors min-w-[132px] max-w-[190px]',
             'bg-surface-2/60 border-border-subtle hover:bg-surface-3/70 hover:border-accent/40',
-            open && 'border-accent/60 ring-1 ring-accent/40',
+            open && 'border-accent/60 ring-1 ring-accent/40'
           )}
           title={value ? `Model: ${value}` : 'Auto-select coding model'}
         >
@@ -255,7 +255,7 @@ function ModelRow({
       <span
         className={cn(
           'w-1.5 h-1.5 rounded-full shrink-0',
-          coding ? 'bg-emerald-400' : 'bg-amber-400/70',
+          coding ? 'bg-emerald-400' : 'bg-amber-400/70'
         )}
         title={coding ? 'Coding model' : 'Not classified as coding model'}
       />

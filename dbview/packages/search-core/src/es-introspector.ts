@@ -66,7 +66,7 @@ export class ElasticsearchIntrospector {
       };
     } catch (err) {
       throw new IntrospectionError(
-        `Elasticsearch introspection failed: ${(err as Error).message ?? String(err)}`,
+        `Elasticsearch introspection failed: ${(err as Error).message ?? String(err)}`
       );
     }
   }

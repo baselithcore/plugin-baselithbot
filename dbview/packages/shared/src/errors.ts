@@ -2,7 +2,7 @@ export class DbviewError extends Error {
   constructor(
     message: string,
     readonly code: string,
-    readonly status = 400,
+    readonly status = 400
   ) {
     super(message);
     this.name = 'DbviewError';
@@ -34,7 +34,7 @@ export class ConnectionUnreachableError extends DbviewError {
       cause: 'refused' | 'timeout' | 'dns' | 'tls' | 'auth' | 'unknown';
       host?: string;
       port?: number;
-    },
+    }
   ) {
     super(message, 'connection_unreachable', 503);
   }
@@ -55,7 +55,7 @@ export class LlmProviderError extends DbviewError {
 export class QueryTimeoutError extends DbviewError {
   constructor(
     message: string,
-    readonly details: { dialect?: string; timeoutMs?: number } = {},
+    readonly details: { dialect?: string; timeoutMs?: number } = {}
   ) {
     super(message, 'query_timeout', 504);
   }
@@ -120,7 +120,7 @@ export interface SchemaMismatchDetails {
 export class SchemaMismatchError extends DbviewError {
   constructor(
     message: string,
-    readonly details: SchemaMismatchDetails,
+    readonly details: SchemaMismatchDetails
   ) {
     super(message, 'schema_mismatch', 422);
   }

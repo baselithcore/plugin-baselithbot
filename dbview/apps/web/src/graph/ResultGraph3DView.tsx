@@ -304,7 +304,7 @@ export function ResultGraph3DView({ result }: Props) {
                   z: (node.z ?? 0) * distRatio,
                 },
                 { x: node.x ?? 0, y: node.y ?? 0, z: node.z ?? 0 },
-                800,
+                800
               );
             }
             setSelected(node);
@@ -438,7 +438,7 @@ function NodeDetailDrawer({ node, onClose }: NodeDetailDrawerProps) {
         )}
       </AnimatePresence>
     </>,
-    document.body,
+    document.body
   );
 }
 

@@ -56,7 +56,7 @@ export function HoverToggle({ mode, enabled, onChange, bottomPx = 12 }: Props) {
             }
             className={cn(
               'segmented-item font-mono text-[10px]',
-              active && 'segmented-item-active',
+              active && 'segmented-item-active'
             )}
           >
             {it.icon}

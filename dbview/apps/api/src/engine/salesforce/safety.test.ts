@@ -37,13 +37,13 @@ describe('SalesforceSafetyValidator', () => {
     expect(() => validate('UPDATE Account SET Name = "x"')).toThrow(/Only SELECT/i);
     expect(() => validate('DELETE FROM Account')).toThrow(/Only SELECT|DELETE/i);
     expect(() => validate('INSERT INTO Account (Name) VALUES ("x")')).toThrow(
-      /Only SELECT|INSERT/i,
+      /Only SELECT|INSERT/i
     );
   });
 
   it('rejects multiple statements via embedded semicolon', () => {
     expect(() => validate('SELECT Id FROM Account; SELECT Id FROM Contact')).toThrow(
-      /Multiple statements/i,
+      /Multiple statements/i
     );
   });
 
@@ -67,13 +67,13 @@ describe('SalesforceSafetyValidator', () => {
 
   it('rejects unknown bare field reference', () => {
     expect(() => validate('SELECT Id, Bogus FROM Account')).toThrow(
-      /Field 'Bogus' not in schema for sObject 'Account'/,
+      /Field 'Bogus' not in schema for sObject 'Account'/
     );
   });
 
   it('rejects unknown field in WHERE clause', () => {
     expect(() => validate("SELECT Id FROM Account WHERE InventedColumn = 'x'")).toThrow(
-      /Field 'InventedColumn' not in schema/,
+      /Field 'InventedColumn' not in schema/
     );
   });
 

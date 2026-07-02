@@ -193,7 +193,7 @@ export function ConnectionSharingDialog({ connection, onClose }: Props) {
                               key={u.id}
                               className={cn(
                                 'flex items-center gap-2 px-3 py-2 cursor-pointer border-b last:border-b-0 text-[12px]',
-                                checked && 'bg-accent/5',
+                                checked && 'bg-accent/5'
                               )}
                               style={{ borderColor: 'rgb(var(--border-subtle))' }}
                             >
@@ -276,7 +276,7 @@ function ModeCard({
       onClick={onClick}
       className={cn(
         'flex flex-col items-start gap-1 rounded-md border px-3 py-2 text-left transition-all',
-        active ? 'ring-1 ring-accent/40 border-accent/40 bg-accent/5' : 'hover:bg-surface-2/60',
+        active ? 'ring-1 ring-accent/40 border-accent/40 bg-accent/5' : 'hover:bg-surface-2/60'
       )}
       style={{ borderColor: active ? undefined : 'rgb(var(--border-subtle))' }}
     >

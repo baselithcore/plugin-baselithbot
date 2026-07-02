@@ -78,7 +78,7 @@ export class MongoIntrospector {
       };
     } catch (err) {
       throw new IntrospectionError(
-        `MongoDB introspection failed: ${(err as Error).message ?? String(err)}`,
+        `MongoDB introspection failed: ${(err as Error).message ?? String(err)}`
       );
     }
   }

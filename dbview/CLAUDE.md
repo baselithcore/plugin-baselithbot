@@ -202,13 +202,13 @@ Same stack as `agent-jira`, ported to NestJS/TypeScript. Configs under `deploy/o
 - **Request IDs**: Fastify `onRequest` hook reads `X-Request-Id` (or generates UUIDv4), stores it in an `AsyncLocalStorage` context, echoes back via response header, and pino bindings emit it on every log line.
 - **OpenTelemetry tracing**: opt-in via `OTEL_EXPORTER_OTLP_ENDPOINT`. Auto-instruments `http`, `fastify`, `pg`, `redis`, etc. Batch span processor → OTLP HTTP exporter. Health and `/api/metrics` excluded.
 - **Prometheus metrics**: `prom-client` registry exposed at `GET /api/metrics`, admin-only. Default Node + process metrics + custom `dbview_*` counters/histograms:
-  - `dbview_http_request_latency_seconds{method, route, status_bucket}`
-  - `dbview_http_request_errors_total{method, route, status_bucket, reason}`
-  - `dbview_llm_calls_total{provider, model, mode, status}` + latency histogram + tokens counter
-  - `dbview_query_executions_total{dialect, status}` + latency histogram
-  - `dbview_schema_introspection_failures_total{dialect, reason}`
-  - `dbview_auth_events_total{event}` — login_success, login_fail, token_replay, token_rotate
-  - `dbview_connections_up{connection_id, dialect}` (gauge, reserved for future periodic probe)
+    - `dbview_http_request_latency_seconds{method, route, status_bucket}`
+    - `dbview_http_request_errors_total{method, route, status_bucket, reason}`
+    - `dbview_llm_calls_total{provider, model, mode, status}` + latency histogram + tokens counter
+    - `dbview_query_executions_total{dialect, status}` + latency histogram
+    - `dbview_schema_introspection_failures_total{dialect, reason}`
+    - `dbview_auth_events_total{event}` — login_success, login_fail, token_replay, token_rotate
+    - `dbview_connections_up{connection_id, dialect}` (gauge, reserved for future periodic probe)
 - **Health probes**: `GET /api/health` (legacy), `GET /api/health/live`, `GET /api/health/ready` (deep — checks data dir writability, `DBVIEW_JWT_SECRET`, `DBVIEW_SECRET`). Ready returns HTTP 503 when degraded.
 - **Frontend telemetry**: `@grafana/faro-web-sdk` + `@grafana/faro-web-tracing`. Init in `apps/web/src/lib/observability.ts`. No-op unless `VITE_OTLP_ENDPOINT` set at build/dev time. Captures web vitals, navigation, fetch, errors, console.
 

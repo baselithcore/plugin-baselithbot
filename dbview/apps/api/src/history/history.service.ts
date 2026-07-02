@@ -80,7 +80,7 @@ export class HistoryService implements OnModuleInit {
     const admin = this.auth.listUsers().find((u) => u.role === 'admin' && u.isActive);
     if (!admin) {
       this.logger.warn(
-        `legacy_history_pending count=${pending.length} no_admin_yet — entries hidden until backfill`,
+        `legacy_history_pending count=${pending.length} no_admin_yet — entries hidden until backfill`
       );
       return;
     }

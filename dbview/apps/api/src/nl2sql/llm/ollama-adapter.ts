@@ -13,7 +13,7 @@ export class OllamaAdapter implements LlmAdapter {
   async complete(input: LlmCompletionInput, model: string): Promise<LlmCompletionResult> {
     if (isIncompatibleOllamaModel(model)) {
       throw new LlmProviderError(
-        `ollama model "${model}" is not chat/JSON-tuned and cannot generate structured queries. Pick a chat-tuned model (e.g. codellama:7b, mistral:latest, llama3.2:latest).`,
+        `ollama model "${model}" is not chat/JSON-tuned and cannot generate structured queries. Pick a chat-tuned model (e.g. codellama:7b, mistral:latest, llama3.2:latest).`
       );
     }
     const url = `${normalizeBase(this.baseUrl)}/chat`;
@@ -43,7 +43,7 @@ export class OllamaAdapter implements LlmAdapter {
       if (!res.ok) {
         const text = await res.text().catch(() => '');
         throw new LlmProviderError(
-          `ollama (${model}) returned ${res.status}: ${text.slice(0, 200) || res.statusText}`,
+          `ollama (${model}) returned ${res.status}: ${text.slice(0, 200) || res.statusText}`
         );
       }
       const json = (await res.json()) as {
@@ -57,7 +57,7 @@ export class OllamaAdapter implements LlmAdapter {
       const text = json.message?.content ?? json.response ?? '';
       if (!text) {
         throw new LlmProviderError(
-          `ollama (${model}) returned empty content. The model likely does not support chat/JSON output. Pick a chat-tuned model (e.g. codellama:7b, mistral:latest, llama3.2:latest) in Settings.`,
+          `ollama (${model}) returned empty content. The model likely does not support chat/JSON output. Pick a chat-tuned model (e.g. codellama:7b, mistral:latest, llama3.2:latest) in Settings.`
         );
       }
       return { text, model };

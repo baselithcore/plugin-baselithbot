@@ -36,7 +36,7 @@ export class QueryService {
   constructor(
     private readonly connections: ConnectionsService,
     private readonly schema: SchemaService,
-    private readonly enginePool: EnginePool,
+    private readonly enginePool: EnginePool
   ) {}
 
   /**
@@ -47,7 +47,7 @@ export class QueryService {
   private async withEngine<T>(
     dialect: Dialect,
     connectionString: string,
-    fn: (engine: QueryEngine) => Promise<T>,
+    fn: (engine: QueryEngine) => Promise<T>
   ): Promise<T> {
     const pooled = this.enginePool.acquire(dialect, connectionString);
     const engine = pooled ?? createQueryEngine(dialect, connectionString);
@@ -61,7 +61,7 @@ export class QueryService {
   async sample(req: SampleRequest, principal: AuthPrincipal): Promise<ExecuteQueryResponse> {
     const { dialect, connectionString } = this.connections.resolvePlain(
       req.connectionId,
-      principal,
+      principal
     );
     const graph = await this.schema.getGraph(req.connectionId, principal);
 
@@ -170,7 +170,7 @@ export class QueryService {
   async execute(req: ExecuteQueryRequest, principal: AuthPrincipal): Promise<ExecuteQueryResponse> {
     const { dialect, connectionString } = this.connections.resolvePlain(
       req.connectionId,
-      principal,
+      principal
     );
     const graph = await this.schema.getGraph(req.connectionId, principal);
 
@@ -205,7 +205,7 @@ export class QueryService {
         for (const t of graph.tables) {
           knownFields.set(
             t.name.toLowerCase(),
-            new Set(t.columns.map((c) => c.name.toLowerCase())),
+            new Set(t.columns.map((c) => c.name.toLowerCase()))
           );
         }
         const r = this.soqlValidator.validate(req.query, {
@@ -241,7 +241,7 @@ export class QueryService {
     const start = process.hrtime.bigint();
     try {
       const res = await this.withEngine(dialect, connectionString, (e) =>
-        e.execute(sanitizedQuery, req.rowLimit),
+        e.execute(sanitizedQuery, req.rowLimit)
       );
       const seconds = Number(process.hrtime.bigint() - start) / 1e9;
       queryExecutionLatency.labels({ dialect }).observe(seconds);

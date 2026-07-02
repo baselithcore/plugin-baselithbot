@@ -4,7 +4,7 @@ import { buildRepairPrompt, isFixableSqlError } from './ask.service.js';
 describe('isFixableSqlError', () => {
   it('repairs column-not-found errors', () => {
     expect(
-      isFixableSqlError({ code: 'execution_failed', message: 'column "totl" does not exist' }),
+      isFixableSqlError({ code: 'execution_failed', message: 'column "totl" does not exist' })
     ).toBe(true);
   });
 
@@ -13,13 +13,13 @@ describe('isFixableSqlError', () => {
       isFixableSqlError({
         code: 'execution_failed',
         message: 'column reference "id" is ambiguous',
-      }),
+      })
     ).toBe(true);
   });
 
   it('repairs syntax errors', () => {
     expect(
-      isFixableSqlError({ code: 'execution_failed', message: 'syntax error at or near "FROOM"' }),
+      isFixableSqlError({ code: 'execution_failed', message: 'syntax error at or near "FROOM"' })
     ).toBe(true);
   });
 
@@ -28,13 +28,13 @@ describe('isFixableSqlError', () => {
       isFixableSqlError({
         code: 'execution_failed',
         message: 'DataSourceEntity not found: data_cloud.UnifiedThing__dlm',
-      }),
+      })
     ).toBe(true);
   });
 
   it('skips connection refused', () => {
     expect(
-      isFixableSqlError({ code: 'execution_failed', message: 'ECONNREFUSED 127.0.0.1:5432' }),
+      isFixableSqlError({ code: 'execution_failed', message: 'ECONNREFUSED 127.0.0.1:5432' })
     ).toBe(false);
   });
 
@@ -44,14 +44,14 @@ describe('isFixableSqlError', () => {
 
   it('skips auth/permission errors', () => {
     expect(
-      isFixableSqlError({ code: 'execution_failed', message: 'permission denied for relation x' }),
+      isFixableSqlError({ code: 'execution_failed', message: 'permission denied for relation x' })
     ).toBe(false);
     expect(isFixableSqlError({ code: 'unauthorized', message: 'invalid api key' })).toBe(false);
   });
 
   it('skips rate limits', () => {
     expect(isFixableSqlError({ code: 'execution_failed', message: 'rate limit exceeded' })).toBe(
-      false,
+      false
     );
   });
 
@@ -65,7 +65,7 @@ describe('buildRepairPrompt', () => {
     const out = buildRepairPrompt(
       'top 5 accounts by total',
       'SELECT id, totl FROM accounts ORDER BY totl DESC LIMIT 5',
-      'column "totl" does not exist',
+      'column "totl" does not exist'
     );
     expect(out).toContain('top 5 accounts by total');
     expect(out).toContain('SELECT id, totl FROM accounts');

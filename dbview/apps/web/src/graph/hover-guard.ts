@@ -39,7 +39,7 @@ interface MinimalNode {
  *   - auto-disable: on `auto` mode, large graphs (> threshold) skip hover entirely
  */
 export function useHoverGuard<TNode extends MinimalNode>(
-  opts: UseHoverGuardOptions,
+  opts: UseHoverGuardOptions
 ): UseHoverGuardResult<TNode> {
   const { containerRef, nodeCount, autoDisableAbove, delayMs = 120, cooldownMs = 220 } = opts;
   const [hoverId, setHoverId] = useState<string | null>(null);
@@ -94,7 +94,7 @@ export function useHoverGuard<TNode extends MinimalNode>(
         commit(pendingIdRef.current);
       }, delayMs);
     },
-    [enabled, delayMs, clearPending, commit],
+    [enabled, delayMs, clearPending, commit]
   );
 
   useEffect(() => {

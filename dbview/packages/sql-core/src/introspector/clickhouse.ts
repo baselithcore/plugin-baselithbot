@@ -93,7 +93,7 @@ export class ClickhouseIntrospector implements SchemaIntrospector {
       };
     } catch (err) {
       throw new IntrospectionError(
-        `ClickHouse introspection failed: ${(err as Error).message ?? String(err)}`,
+        `ClickHouse introspection failed: ${(err as Error).message ?? String(err)}`
       );
     }
   }
