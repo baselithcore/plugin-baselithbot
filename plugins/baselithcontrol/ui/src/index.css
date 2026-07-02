@@ -226,24 +226,29 @@ body {
   border-color: var(--border-strong);
 }
 
-.control-icon-button {
-  display: inline-flex;
-  height: 2rem;
-  width: 2rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  transition:
-    background-color 0.14s ease,
-    border-color 0.14s ease,
-    color 0.14s ease;
-}
-.control-icon-button:hover {
-  background: var(--surface-2);
-  border-color: var(--border-strong);
-  color: var(--text);
+/* Layered so responsive utilities (e.g. `sm:hidden`) win over it — an
+   unlayered rule setting `display` would otherwise beat Tailwind's utilities
+   layer regardless of source order, keeping `sm:hidden` elements visible. */
+@layer components {
+  .control-icon-button {
+    display: inline-flex;
+    height: 2rem;
+    width: 2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    transition:
+      background-color 0.14s ease,
+      border-color 0.14s ease,
+      color 0.14s ease;
+  }
+  .control-icon-button:hover {
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
 }
 
 .ph-faint::placeholder {
