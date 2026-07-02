@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="240" height="64" viewBox="0 0 240 64" fill="none">
-  <rect x="2" y="2" width="60" height="60" rx="12" fill="currentColor" opacity="0.12"/>
-  <path d="M18 22 L32 18 L46 22 L46 46 L32 50 L18 46 Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" fill="none"/>
-  <line x1="32" y1="18" x2="32" y2="50" stroke="currentColor" stroke-width="2.5"/>
-  <text x="78" y="40" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="600" fill="currentColor">LLM Wiki</text>
-</svg>
