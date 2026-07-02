@@ -160,6 +160,44 @@ class UserPersistenceMixin:
 
         return row_to_user(row) if row else user
 
+    def consume_totp_step(self, user_id: str, step: int) -> bool:
+        """Atomically record an accepted TOTP time-step; reject replays.
+
+        Returns True when ``step`` is newer than the last accepted step (and
+        stores it), False when it was already used (a replay). Degrades **open**
+        when no DB pool is initialized (single-process dev/tests) so it never
+        blocks a legitimate login there — cross-worker replay defense only
+        matters once a shared Postgres backend exists.
+        """
+        from core.db import connection
+
+        if connection._POOL is None:
+            return True
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    UPDATE auth_users SET mfa_last_totp_step = %s
+                    WHERE id = %s
+                      AND (mfa_last_totp_step IS NULL OR mfa_last_totp_step < %s)
+                    """,
+                    (step, user_id, step),
+                )
+                consumed = cur.rowcount > 0
+            conn.commit()
+        return consumed
+
+    def update_password_hash(self, user_id: str, password_hash: str) -> None:
+        """Persist a new password hash only (e.g. transparent rehash-on-login)."""
+        with get_connection() as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "UPDATE auth_users SET password_hash = %s, updated_at = NOW() "
+                    "WHERE id = %s",
+                    (password_hash, user_id),
+                )
+            conn.commit()
+
     def delete_user(self, user_id: str) -> bool:
         """Delete a user by ID."""
         with get_connection() as conn:

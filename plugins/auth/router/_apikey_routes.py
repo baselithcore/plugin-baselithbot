@@ -69,6 +69,18 @@ async def create_my_key(
     if not config.api_keys_enabled:
         raise HTTPException(status_code=403, detail="API keys are disabled")
 
+    # An admin-scoped key can act as admin, so only an effective admin may mint
+    # one — otherwise a lower-privileged user could self-escalate via a key.
+    requested_scopes = set(body.scopes or [])
+    if requested_scopes & {"*", "admin"}:
+        from plugins.auth.rbac.service import is_effective_admin
+
+        if not is_effective_admin(user.user_id, user.roles):
+            raise HTTPException(
+                status_code=403,
+                detail="You cannot create an API key with admin scope",
+            )
+
     expires_at = None
     max_days = config.api_key_max_lifetime_days
     days = body.expires_in_days

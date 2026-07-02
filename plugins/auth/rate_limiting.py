@@ -249,22 +249,16 @@ def get_rate_limiter() -> EnhancedRateLimiter:
 
 
 def get_client_identifier(request: Request) -> str:
+    """Extract the client identifier used to key rate-limit buckets.
+
+    Trusted-proxy-aware: ``X-Forwarded-For`` is honoured only when the socket
+    peer is a configured trusted proxy (``AUTH_TRUSTED_PROXIES``). Reading the
+    header unconditionally let an attacker rotate it per request for a fresh
+    bucket, defeating the login/MFA/reset throttles.
     """
-    Extract client identifier from request.
+    from plugins.auth.client_ip import trusted_client_ip
 
-    Uses X-Forwarded-For if behind proxy, otherwise direct IP.
-    """
-    # Check X-Forwarded-For header (if behind proxy)
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        # Take first IP (original client)
-        return forwarded.split(",")[0].strip()
-
-    # Use direct client IP
-    if request.client:
-        return request.client.host
-
-    return "unknown"
+    return trusted_client_ip(request) or "unknown"
 
 
 async def check_rate_limit(
@@ -301,37 +295,41 @@ async def check_rate_limit(
 
 
 class RateLimit:
-    """
-    Rate limiter dependency compatible with FastAPI Depends.
-    Uses core.resilience.RateLimiter backend.
+    """Rate-limiter dependency compatible with FastAPI ``Depends``.
+
+    Backed by the Redis-distributed :class:`EnhancedRateLimiter` (via
+    :func:`get_rate_limiter`) so per-IP limits hold across workers/instances and
+    survive restarts, degrading to an in-memory window only when Redis is
+    absent. It previously used the in-memory ``core.resilience`` limiter, which
+    multiplied every limit by the worker count and reset on restart — so the
+    login/MFA/reset throttles were effectively unbounded in production.
     """
 
-    def __init__(self, times: int = 100, seconds: int = 60):
-        from core.resilience.rate_limiter import RateLimiter as CoreRateLimiter
-
+    def __init__(
+        self, times: int = 100, seconds: int = 60, endpoint: str | None = None
+    ):
         self.times = times
         self.seconds = seconds
-        self.limiter = CoreRateLimiter(limit=times, window=seconds)
+        self.endpoint = endpoint
 
     async def __call__(self, request: Request):
         identifier = get_client_identifier(request)
-        logger.debug(
-            f"RateLimit check for {identifier} (limit={self.times}, window={self.seconds})"
+        endpoint = self.endpoint or request.url.path
+        config = RateLimitConfig(requests=self.times, window_seconds=self.seconds)
+        limiter = get_rate_limiter()
+        is_limited, retry_after = await limiter.is_rate_limited(
+            identifier, endpoint, config
         )
-
-        result = self.limiter.check(identifier)
-
-        if not result.allowed:
-            retry_after = int(result.retry_after) if result.retry_after else 1
+        if is_limited:
+            wait = retry_after or 1
             logger.warning(
-                f"Rate limit exceeded for {identifier}. Retry after {retry_after}s"
+                "Rate limit exceeded for %s on %s. Retry after %ss",
+                identifier,
+                endpoint,
+                wait,
             )
             raise HTTPException(
                 status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail=f"Rate limit exceeded. Retry after {retry_after} seconds.",
-                headers={"Retry-After": str(retry_after)},
+                detail=f"Rate limit exceeded. Retry after {wait} seconds.",
+                headers={"Retry-After": str(wait)},
             )
-
-        logger.debug(
-            f"RateLimit allowed for {identifier}. Remaining: {result.remaining}"
-        )

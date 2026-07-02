@@ -104,8 +104,12 @@ class WebAuthnManager:
         self.require_resident_key = require_resident_key
         self.require_user_verification = require_user_verification
 
-        # Challenge storage (should use Redis in production)
-        self._challenges: Dict[str, bytes] = {}
+        # Cross-worker challenge store (Postgres + in-memory fast path) with a
+        # server-side TTL. A per-process dict here silently broke passkeys under
+        # WEB_CONCURRENCY>1 and let abandoned challenges linger.
+        from plugins.auth.webauthn_challenges import get_webauthn_challenge_store
+
+        self._challenges = get_webauthn_challenge_store()
 
     def generate_registration_options(
         self,
@@ -129,8 +133,8 @@ class WebAuthnManager:
         # Generate challenge
         challenge = secrets.token_bytes(32)
 
-        # Store challenge (should use Redis with TTL in production)
-        self._challenges[user_id] = challenge
+        # Store challenge in the shared, TTL-bounded store (keyed by user).
+        self._challenges.put(user_id, challenge)
 
         # Exclude existing credentials
         exclude_credentials = []
@@ -180,8 +184,9 @@ class WebAuthnManager:
         Raises:
             ValueError: If verification fails
         """
-        # Get stored challenge
-        expected_challenge = self._challenges.get(user_id)
+        # Pop the challenge before verifying (single-use; also removes it on a
+        # failed/abandoned attempt so it cannot be retried).
+        expected_challenge = self._challenges.take(user_id)
         if not expected_challenge:
             raise ValueError("Challenge not found or expired")
 
@@ -196,9 +201,6 @@ class WebAuthnManager:
             expected_rp_id=self.rp_id,
             require_user_verification=self.require_user_verification,
         )
-
-        # Clean up challenge
-        del self._challenges[user_id]
 
         # Create credential object
         return WebAuthnCredential(
@@ -229,9 +231,9 @@ class WebAuthnManager:
         # Generate challenge
         challenge = secrets.token_bytes(32)
 
-        # For simplicity, store with a unique ID (should use session in production)
+        # Store under a unique, TTL-bounded id returned to the client.
         challenge_id = secrets.token_urlsafe(16)
-        self._challenges[challenge_id] = challenge
+        self._challenges.put(challenge_id, challenge)
 
         # Allow credentials
         allow_credentials = []
@@ -280,8 +282,8 @@ class WebAuthnManager:
         Raises:
             ValueError: If verification fails
         """
-        # Get stored challenge
-        expected_challenge = self._challenges.get(challenge_id)
+        # Pop the challenge before verifying (single-use, removed on failure too).
+        expected_challenge = self._challenges.take(challenge_id)
         if not expected_challenge:
             raise ValueError("Challenge not found or expired")
 
@@ -298,9 +300,6 @@ class WebAuthnManager:
             credential_current_sign_count=stored_credential.sign_count,
             require_user_verification=self.require_user_verification,
         )
-
-        # Clean up challenge
-        del self._challenges[challenge_id]
 
         # Update credential
         stored_credential.sign_count = verification.new_sign_count

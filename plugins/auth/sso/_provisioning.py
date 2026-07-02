@@ -31,13 +31,23 @@ def provision_sso_user(
     email: Optional[str],
     name: Optional[str],
     allow_signup: bool,
+    email_verified: bool = False,
 ):
     """Resolve an SSO identity to a local user, provisioning if permitted.
 
     Order: existing link → match by email → JIT create. Returns the local user
     (a :class:`plugins.auth.models.User`).
+
+    Auto-linking to a **pre-existing** local (password) account by email is a
+    takeover vector: a misconfigured or malicious IdP asserting a victim's
+    address would seize their account. So step 2 links to an existing account
+    only when the email is authoritative — the IdP asserted ``email_verified``
+    (OIDC), or the provider is explicitly marked ``trusted_email`` in its config
+    (typically SAML, whose signed assertions carry no verified-email claim).
+    Fresh JIT provisioning (step 3) is unaffected.
     """
     provider_id = str(provider["id"])
+    provider_trusts_email = bool((provider.get("config") or {}).get("trusted_email"))
 
     # 1) Already linked.
     identity = persistence.get_sso_identity(provider_id, subject)
@@ -47,10 +57,16 @@ def provision_sso_user(
             persistence.link_sso_identity(provider_id, user.id, subject, email)
             return user
 
-    # 2) Match an existing local account by email.
+    # 2) Match an existing local account by email (only when authoritative).
     if email:
         existing = persistence.get_user_by_email(email)
         if existing:
+            if not (email_verified or provider_trusts_email):
+                raise ProvisioningError(
+                    "An account with this email already exists but the identity "
+                    "provider did not assert a verified email; refusing to link "
+                    "automatically"
+                )
             persistence.link_sso_identity(provider_id, existing.id, subject, email)
             logger.info("Linked SSO identity to existing user %s", existing.id)
             return existing

@@ -187,6 +187,34 @@ class SecureTokenStore:
         self._db_delete(token)
         return existed
 
+    def register_failure(self, token: str, max_attempts: int = 5) -> bool:
+        """Count a failed challenge attempt; burn the token past ``max_attempts``.
+
+        Returns True when the token is now invalid (deleted) and the caller must
+        force a fresh login. This bounds MFA/TOTP brute force to a handful of
+        guesses per 5-minute challenge instead of the full ~10^6 code space that
+        an IP-only rate limit (bypassable via header spoofing) allowed. The
+        bumped counter is persisted in both tiers, preserving the original TTL.
+        """
+        data = self.get(token)
+        if data is None:
+            return True
+        attempts = int(data.get("attempts", 0)) + 1
+        if attempts >= max_attempts:
+            self.delete(token)
+            return True
+        exp = data.get("expires_at")
+        now = datetime.now(timezone.utc)
+        ttl = (
+            max(1, int((exp - now).total_seconds()))
+            if isinstance(exp, datetime)
+            else 120
+        )
+        payload = {k: v for k, v in data.items() if k != "expires_at"}
+        payload["attempts"] = attempts
+        self.store(token, payload, ttl_seconds=ttl)
+        return False
+
     def size(self) -> int:
         """Get current number of in-memory tokens."""
         self._cleanup()

@@ -154,12 +154,20 @@ async def oidc_callback(
         logger.warning("OIDC callback failed for %s: %s", slug, exc)
         return _clear_sso_cookies(_err_redirect("verification_failed"))
 
-    subject, email, name = extract_identity(claims, userinfo)
+    subject, email, name, email_verified = extract_identity(claims, userinfo)
     if not subject:
         return _clear_sso_cookies(_err_redirect("no_subject"))
     # _finish_sso clears the cookies on the success redirect.
     return _finish_sso(
-        persistence, config, provider, subject, email, name, request, slug
+        persistence,
+        config,
+        provider,
+        subject,
+        email,
+        name,
+        request,
+        slug,
+        email_verified=email_verified,
     )
 
 
@@ -187,8 +195,19 @@ async def saml_acs(
     subject, email, name = extract_saml_identity(nameid, attrs)
     if not subject:
         return _err_redirect("no_subject")
+    # SAML assertions carry no verified-email claim; a signed assertion from a
+    # provider explicitly marked ``trusted_email`` is treated as authoritative.
+    saml_trusts_email = bool((provider.get("config") or {}).get("trusted_email"))
     return _finish_sso(
-        persistence, config, provider, subject, email, name, request, slug
+        persistence,
+        config,
+        provider,
+        subject,
+        email,
+        name,
+        request,
+        slug,
+        email_verified=saml_trusts_email,
     )
 
 
@@ -211,13 +230,29 @@ async def saml_metadata(
     return Response(content=xml, media_type="application/xml")
 
 
-def _finish_sso(persistence, config, provider, subject, email, name, request, slug):
+def _finish_sso(
+    persistence,
+    config,
+    provider,
+    subject,
+    email,
+    name,
+    request,
+    slug,
+    email_verified: bool = False,
+):
     """Provision/link the identity and issue a session, then redirect to the app."""
     from plugins.auth.sso import ProvisioningError
 
     try:
         user = provision_sso_user(
-            persistence, provider, subject, email, name, config.sso_allow_signup
+            persistence,
+            provider,
+            subject,
+            email,
+            name,
+            config.sso_allow_signup,
+            email_verified=email_verified,
         )
     except ProvisioningError as exc:
         logger.info("SSO provisioning rejected for %s: %s", slug, exc)

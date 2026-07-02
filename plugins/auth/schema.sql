@@ -115,6 +115,17 @@ CREATE INDEX IF NOT EXISTS idx_webauthn_credentials_user ON auth_webauthn_creden
 CREATE INDEX IF NOT EXISTS idx_webauthn_credentials_credential_id ON auth_webauthn_credentials(credential_id);
 CREATE INDEX IF NOT EXISTS idx_webauthn_credentials_last_used ON auth_webauthn_credentials(last_used DESC);
 
+-- Cross-worker WebAuthn challenge store (registration + authentication). The
+-- previous in-process dict broke passkeys under WEB_CONCURRENCY>1 and never
+-- expired abandoned challenges; this shared tier is single-use (popped on
+-- verify) with a server-side TTL.
+CREATE TABLE IF NOT EXISTS auth_webauthn_challenges (
+    challenge_key TEXT PRIMARY KEY,
+    challenge BYTEA NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_auth_webauthn_challenges_expires ON auth_webauthn_challenges(expires_at);
+
 -- =============================================================================
 -- RBAC: granular permissions, custom roles, role/user assignments, tab policy.
 -- Additive layer on top of the legacy auth_users.roles[] column (compat shim):
@@ -214,6 +225,8 @@ CREATE INDEX IF NOT EXISTS idx_auth_group_roles_group ON auth_group_roles(group_
 
 -- Account lifecycle + security metadata on the user record.
 ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE;
+-- Last accepted TOTP time-step, for single-use / replay rejection (NIST 800-63B).
+ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS mfa_last_totp_step BIGINT;
 ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'active';
 ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS password_changed_at TIMESTAMPTZ;
 ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS last_login_ip VARCHAR(45);

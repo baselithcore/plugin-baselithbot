@@ -151,9 +151,16 @@ class OidcClient:
 
 
 def extract_identity(claims: Dict[str, Any], userinfo: Optional[Dict[str, Any]] = None):
-    """Normalize (subject, email, name) from id_token claims + userinfo."""
+    """Normalize (subject, email, name, email_verified) from claims + userinfo.
+
+    ``email_verified`` gates auto-linking to a pre-existing local account
+    (see :func:`plugins.auth.sso.provision_sso_user`). Providers send it as a
+    real bool or the string ``"true"``; both are coerced.
+    """
     merged = {**(userinfo or {}), **claims}
     subject = merged.get("sub")
     email = merged.get("email")
     name = merged.get("name") or merged.get("preferred_username")
-    return subject, email, name
+    ev = merged.get("email_verified")
+    email_verified = ev is True or str(ev).strip().lower() == "true"
+    return subject, email, name, email_verified

@@ -14,6 +14,23 @@ logger = get_logger(__name__)
 
 _KEY_PREFIX = "bsk_"
 
+#: Scopes that let a key retain its owner's elevated (admin) system role. A key
+#: minted without one of these must never wield admin, so a leaked ordinary key
+#: cannot reach admin routes even though it belongs to an admin.
+_ADMIN_SCOPES = {"*", "admin"}
+
+
+def scoped_roles(roles, scopes):
+    """Cap an API key's system roles by its scopes (least privilege).
+
+    Keys inherited the owner's full role set, so an admin's key was a full admin
+    key regardless of the scopes chosen at mint time. Unless the key carries an
+    explicit admin scope, drop :class:`AuthRole.ADMIN` from the effective roles.
+    """
+    if _ADMIN_SCOPES & set(scopes or []):
+        return roles
+    return {r for r in roles if r != AuthRole.ADMIN}
+
 
 def extract_api_key(headers) -> Optional[str]:
     """Pull an API key from request headers, if present."""
@@ -36,14 +53,15 @@ def authenticate_api_key(persistence, key: str) -> Optional[AuthUser]:
     db_user = persistence.get_user_by_id(str(record["user_id"]))
     if not db_user or not db_user.is_active or db_user.is_locked():
         return None
+    scopes = list(record.get("scopes") or [])
     return AuthUser(
         user_id=db_user.id,
         email=db_user.email,
-        roles=db_user.roles,
+        roles=scoped_roles(db_user.roles, scopes),
         metadata={
             "auth_method": "api_key",
             "api_key_id": str(record["id"]),
-            "scopes": list(record.get("scopes") or []),
+            "scopes": scopes,
             "allowed_tabs": db_user.allowed_tabs,
         },
     )
@@ -66,5 +84,6 @@ __all__ = [
     "extract_api_key",
     "authenticate_api_key",
     "maybe_authenticate_api_key",
+    "scoped_roles",
     "AuthRole",
 ]

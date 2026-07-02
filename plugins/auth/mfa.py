@@ -8,7 +8,9 @@ Compatible with Google Authenticator, Authy, and similar apps.
 import hashlib
 from core.observability.logging import get_logger
 import secrets
-from typing import List, Tuple
+import time
+from datetime import datetime, timezone
+from typing import List, Optional, Tuple
 
 try:
     import pyotp
@@ -113,6 +115,31 @@ def verify_totp(secret: str, code: str) -> bool:
     except Exception as e:
         logger.warning(f"TOTP verification error: {e}")
         return False
+
+
+def verify_totp_with_step(
+    secret: str, code: str, valid_window: int = 1
+) -> Optional[int]:
+    """Verify a TOTP code and return the matched time-step counter, else None.
+
+    Returning the concrete step lets the caller record it and reject replay:
+    NIST SP 800-63B §5.1.4.2 requires that a previously-used authenticator
+    output not be accepted a second time. ``valid_window=1`` accepts the code
+    for the current and adjacent 30-second steps (drift tolerance).
+    """
+    try:
+        totp = pyotp.TOTP(secret)
+        interval = totp.interval
+        now = int(time.time())
+        for offset in range(-valid_window, valid_window + 1):
+            for_time = now + offset * interval
+            moment = datetime.fromtimestamp(for_time, tz=timezone.utc)
+            if totp.verify(code, for_time=moment, valid_window=0):
+                return for_time // interval
+        return None
+    except Exception as e:
+        logger.warning(f"TOTP verification error: {e}")
+        return None
 
 
 def generate_backup_codes(count: int = 10) -> Tuple[List[str], List[str]]:

@@ -7,6 +7,7 @@ from fastapi import Request, Response
 
 from core.auth import AuthManager
 from core.observability.logging import get_logger
+from plugins.auth.client_ip import trusted_client_ip
 from plugins.auth.config import AuthConfig
 from plugins.auth.persistence import AuthPersistence
 from plugins.auth.router._models import TokenResponse
@@ -24,31 +25,14 @@ def resolve_locale(request: Request) -> str:
 
 
 def client_ip(request: Request) -> str | None:
-    """Best-effort client IP.
+    """Best-effort client IP (trusted-proxy-aware).
 
-    Forwarded headers (``X-Forwarded-For`` / ``X-Real-IP``) are spoofable, so
-    they are honoured ONLY when the direct socket peer is a configured trusted
-    proxy (``AUTH_TRUSTED_PROXIES``; ``*`` trusts all). Otherwise the real
-    socket peer is returned, preventing an attacker from forging the IP recorded
-    in audit/login history.
+    Thin re-export of :func:`plugins.auth.client_ip.trusted_client_ip`, kept as
+    a name here for the many route handlers that import it. Forwarded headers
+    are honoured only from a configured trusted proxy, so an attacker cannot
+    forge the IP recorded in audit/login history.
     """
-    if not request:
-        return None
-    peer = request.client.host if request.client else None
-    try:
-        from core.di.container import ServiceRegistry
-
-        trusted = ServiceRegistry.get(AuthConfig).trusted_proxies
-    except Exception:
-        trusted = []
-    if peer and ("*" in trusted or peer in trusted):
-        fwd = request.headers.get("x-forwarded-for")
-        if fwd:
-            return fwd.split(",")[0].strip()
-        real = request.headers.get("x-real-ip")
-        if real:
-            return real.strip()
-    return peer
+    return trusted_client_ip(request)
 
 
 def log_login_success(

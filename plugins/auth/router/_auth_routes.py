@@ -14,7 +14,6 @@ from plugins.auth.dependencies import (
     get_auth_persistence_dep,
     get_current_active_user,
 )
-from plugins.auth.mfa import verify_totp
 from plugins.auth.password import verify_password
 from plugins.auth.persistence import AuthPersistence
 from plugins.auth.rate_limiting import RateLimit as RateLimiter
@@ -23,7 +22,6 @@ from plugins.auth.router._helpers import (
     issue_tokens,
     log_login_failure,
     log_login_success,
-    verify_backup_code,
 )
 from plugins.auth.router._mfa_enroll_routes import build_mfa_enrollment_challenge
 from plugins.auth.router._models import (
@@ -32,7 +30,6 @@ from plugins.auth.router._models import (
     MessageResponse,
     MFAEnrollmentRequiredResponse,
     MFARequiredResponse,
-    MFAVerifyRequest,
     RegisterRequest,
     TokenResponse,
     UserInfoResponse,
@@ -148,6 +145,29 @@ async def login(
 
         logger.debug("Password verification successful")
 
+        # Transparent hash upgrade: if the stored hash predates the current
+        # Argon2 parameters, re-hash the just-verified password and persist it.
+        from plugins.auth.password import hash_password, needs_rehash
+
+        if needs_rehash(user.password_hash):
+            try:
+                persistence.update_password_hash(
+                    user.id, hash_password(login_request.password)
+                )
+                logger.info(f"Upgraded password hash on login for user {user.id}")
+            except Exception as exc:  # noqa: BLE001 - never block login on rehash
+                logger.warning(f"Password rehash-on-login skipped: {exc}")
+
+        # Enforce email verification when the deployment requires it: an
+        # unverified (e.g. self-registered) account must not obtain a session.
+        if config.email_verification_required and not user.email_verified:
+            logger.warning(f"Login blocked: unverified email for {safe_identifier}")
+            log_login_failure(request, persistence, user.id, "email_unverified")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Email address not verified. Check your inbox for the link.",
+            )
+
         # Check if MFA is required
         if user.mfa_enabled and user.mfa_secret:
             # Generate temporary token for MFA flow using secure store
@@ -254,76 +274,6 @@ async def register(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error during registration",
         )
-
-
-@router.post(
-    "/mfa/verify",
-    dependencies=[Depends(RateLimiter(times=10, seconds=60))],
-    response_model=TokenResponse,
-    responses={429: {"description": "Too many requests"}},
-)
-async def verify_mfa(
-    mfa_request: MFAVerifyRequest,
-    request: Request,
-    response: Response,
-    persistence: AuthPersistence = Depends(get_auth_persistence_dep),
-    auth_manager: AuthManager = Depends(get_auth_manager_dep),
-):
-    """
-    Complete MFA verification after initial login.
-
-    Accepts either a TOTP code or a backup code.
-    """
-
-    # Validate temp token using secure store
-    token_data = mfa_token_store.get(mfa_request.temp_token)
-    if not token_data:
-        logger.warning("MFA verify failed: Invalid or expired token")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired temporary token",
-        )
-
-    user = persistence.get_user_by_id(token_data["user_id"])
-    if not user or not user.mfa_secret:
-        mfa_token_store.delete(mfa_request.temp_token)
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid user or MFA not configured",
-        )
-
-    # Try TOTP verification first
-    code = mfa_request.code.replace("-", "").replace(" ", "")
-    if len(code) == 6 and verify_totp(user.mfa_secret, code):
-        # Valid TOTP code
-        mfa_token_store.delete(mfa_request.temp_token)
-        logger.info(f"MFA TOTP verification successful for user {user.id}")
-        log_login_success(request, persistence, user.id, "mfa")
-        add_security_headers(response)
-        config = await get_auth_config_dep()
-        return await issue_tokens(
-            user.id, user.roles, response, persistence, auth_manager, config
-        )
-
-    # Try backup code using secure comparison
-    if verify_backup_code(mfa_request.code, user.id, persistence):
-        # Valid backup code
-        mfa_token_store.delete(mfa_request.temp_token)
-        remaining = persistence.get_unused_backup_codes_count(user.id)
-        logger.info(f"User used backup code. {remaining} remaining.")
-        logger.info(f"MFA backup code verification successful for user {user.id}")
-        log_login_success(request, persistence, user.id, "mfa")
-        add_security_headers(response)
-        config = await get_auth_config_dep()
-        return await issue_tokens(
-            user.id, user.roles, response, persistence, auth_manager, config
-        )
-
-    logger.warning(f"MFA invalid code for user {user.id}")
-    raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid MFA code",
-    )
 
 
 @router.post("/logout", response_model=MessageResponse)

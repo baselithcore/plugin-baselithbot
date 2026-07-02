@@ -31,12 +31,30 @@ def sp_urls(base_url: str, slug: str) -> Dict[str, str]:
 
 
 def build_settings(provider: Dict[str, Any], base_url: str) -> Dict[str, Any]:
-    """Assemble python3-saml settings from provider config."""
+    """Assemble python3-saml settings from provider config.
+
+    ``security.wantAssertionsSigned`` is forced ``True``: python3-saml's
+    ``strict`` mode only *validates* a signature when one is present, it does
+    not *require* one — so without this block an unsigned/forged assertion
+    POSTed to the ACS would authenticate (an authentication bypass). Message
+    signing is required by default too (an IdP that only signs the assertion can
+    opt out per-provider via ``want_messages_signed: false``), and deprecated
+    (SHA-1) signature/digest algorithms are rejected.
+    """
     cfg = provider.get("config") or {}
     urls = sp_urls(base_url, provider["slug"])
     return {
         "strict": True,
         "debug": False,
+        "security": {
+            # Assertion signatures are mandatory — this is the anti-bypass gate.
+            "wantAssertionsSigned": True,
+            "wantMessagesSigned": bool(cfg.get("want_messages_signed", True)),
+            "wantNameId": True,
+            "rejectDeprecatedAlgorithm": True,
+            "signatureAlgorithm": ("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"),
+            "digestAlgorithm": "http://www.w3.org/2001/04/xmlenc#sha256",
+        },
         "sp": {
             "entityId": cfg.get("sp_entity_id") or urls["entity_id"],
             "assertionConsumerService": {

@@ -97,10 +97,39 @@ def test_admin_can_grant_wildcard(patch_rbac):
     _escalation.guard_wildcard_grant(_user(), [WILDCARD])
 
 
-def test_grant_without_wildcard_is_unrestricted(patch_rbac):
+def test_can_grant_a_permission_you_hold(patch_rbac):
+    patch_rbac(
+        effective={Permission.RBAC_MANAGE, Permission.USERS_READ}, is_admin=False
+    )
+    # The operator holds users.read, so putting it on a role is allowed.
+    _escalation.guard_permission_grant(_user(), [Permission.USERS_READ])
+
+
+def test_cannot_grant_a_permission_you_lack(patch_rbac):
+    # Grant-only-what-you-hold: an rbac.manage operator that does NOT hold
+    # audit.read (or the gate perms) can no longer hand it to a role — this is
+    # the escalation fix (previously any non-wildcard slug was unrestricted, so
+    # an operator could grant rbac.assign.admin and self-elevate).
     patch_rbac(effective={Permission.RBAC_MANAGE}, is_admin=False)
-    # No wildcard in the set -> no escalation check at all.
-    _escalation.guard_wildcard_grant(_user(), [Permission.USERS_READ])
+    for slug in (Permission.AUDIT_READ, Permission.RBAC_ASSIGN_ADMIN):
+        with pytest.raises(HTTPException) as exc:
+            _escalation.guard_permission_grant(_user(), [slug])
+        assert exc.value.status_code == 403
+
+
+def test_unknown_slug_is_rejected(patch_rbac):
+    patch_rbac(effective={Permission.RBAC_MANAGE}, is_admin=False)
+    with pytest.raises(HTTPException) as exc:
+        _escalation.guard_permission_grant(_user(), ["totally.made.up"])
+    assert exc.value.status_code == 400
+
+
+def test_admin_can_grant_anything(patch_rbac):
+    patch_rbac(effective={WILDCARD}, is_admin=True)
+    # Effective admin short-circuits: any catalog slug is grantable.
+    _escalation.guard_permission_grant(
+        _user(), [Permission.AUDIT_READ, Permission.RBAC_ASSIGN_ADMIN]
+    )
 
 
 # --------------------------------------------------------------------------- #

@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from core.auth import AuthUser
 from plugins.auth.audit import AuditAction
 from plugins.auth.dependencies import require_permission
-from plugins.auth.rbac.permissions import Permission
+from plugins.auth.rbac.permissions import Permission, required_assign_permission
 from plugins.auth.rbac.service import RBACService, get_rbac_service
 from plugins.auth.rbac_router._audit import audit_rbac
 from plugins.auth.rbac_router._escalation import guard_role_assignment
@@ -27,6 +27,28 @@ router = APIRouter()
 
 def _service() -> RBACService:
     return get_rbac_service()
+
+
+def _guard_group_membership(store, actor: AuthUser, group_id: str) -> None:
+    """Gate membership changes on groups that confer admin.
+
+    Adding/removing a member of a group that carries a wildcard/``admin`` role
+    instantly makes (or unmakes) that user an admin — the same escalation vector
+    as a direct user-role grant. ``assign_group_role`` was already gated but
+    ``add_member`` was not, so an operator holding only ``groups.manage`` could
+    add themselves to a pre-existing "Platform Admins" group and self-elevate.
+    Require the admin assign-permission (``rbac.assign.admin``, which an
+    effective admin always satisfies) whenever any of the group's roles is
+    admin-conferring; ordinary groups are unaffected.
+    """
+    group = store.get_group(group_id)
+    if not group:
+        return
+    for slug in group.get("roles", []):
+        role = store.get_role_by_slug(slug)
+        if role and required_assign_permission(role) == Permission.RBAC_ASSIGN_ADMIN:
+            guard_role_assignment(actor, group_id, role)
+            return
 
 
 @router.get("/groups", response_model=List[GroupOut])
@@ -122,7 +144,9 @@ async def add_member(
     ),
 ):
     """Add a user to a group."""
-    _service().store.add_member(group_id, body.user_id, added_by=user.user_id)
+    store = _service().store
+    _guard_group_membership(store, user, group_id)
+    store.add_member(group_id, body.user_id, added_by=user.user_id)
     audit_rbac(
         request,
         user.user_id,
@@ -142,7 +166,9 @@ async def remove_member(
     ),
 ):
     """Remove a user from a group."""
-    _service().store.remove_member(group_id, user_id)
+    store = _service().store
+    _guard_group_membership(store, user, group_id)
+    store.remove_member(group_id, user_id)
     audit_rbac(
         request,
         user.user_id,

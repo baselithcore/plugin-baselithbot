@@ -18,10 +18,12 @@ from fastapi import HTTPException, status
 
 from core.auth import AuthUser
 from plugins.auth.rbac.permissions import (
+    ALL_PERMISSIONS,
     WILDCARD,
     Permission,
     has_any,
     has_permission,
+    is_tab_permission,
     required_assign_permission,
 )
 from plugins.auth.rbac.service import get_rbac_service, is_effective_admin
@@ -31,20 +33,46 @@ def _actor_permissions(actor: AuthUser) -> set[str]:
     return get_rbac_service().effective_permissions(actor.user_id, actor.roles)
 
 
-def guard_wildcard_grant(actor: AuthUser, slugs: list[str]) -> None:
-    """Refuse to grant the wildcard to a role unless the actor is an admin.
+def guard_permission_grant(actor: AuthUser, slugs: list[str]) -> None:
+    """Enforce "you can only grant what you hold" when writing a role's perms.
 
-    Only an effective admin (literal admin role or a wildcard-bearing custom
-    role) may confer ``*`` on any role. A plain ``rbac.manage`` operator is
-    blocked — this is the core anti-escalation rule.
+    An effective admin (literal admin role or a wildcard-bearing custom role)
+    may grant anything and short-circuits. Every other actor — including a plain
+    ``rbac.manage`` operator — may put a slug on a role only if that slug is in
+    their **own** effective permission set. This closes the escalation where an
+    ``rbac.manage`` operator granted ``rbac.assign.admin`` (or any other
+    privileged slug they did not hold) to a fresh custom role and then assigned
+    it: the gate permissions themselves were previously ungated because
+    :func:`guard_wildcard_grant` only blocked the literal ``*``. Unknown /
+    non-catalog slugs are rejected outright so junk cannot be injected into
+    ``auth_permissions``.
     """
-    if WILDCARD not in slugs:
+    if is_effective_admin(actor.user_id, actor.roles):
         return
-    if not is_effective_admin(actor.user_id, actor.roles):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only an administrator may grant the '*' (full access) permission",
-        )
+    perms = _actor_permissions(actor)
+    for slug in slugs:
+        if slug == WILDCARD:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=(
+                    "Only an administrator may grant the '*' (full access) permission"
+                ),
+            )
+        if not (is_tab_permission(slug) or slug in ALL_PERMISSIONS):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unknown permission: {slug}",
+            )
+        if slug not in perms:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"You cannot grant a permission you do not hold: {slug}",
+            )
+
+
+#: Backwards-compatible alias — the guard now enforces the full
+#: grant-only-what-you-hold rule (a superset of the old wildcard-only check).
+guard_wildcard_grant = guard_permission_grant
 
 
 def guard_role_assignment(actor: AuthUser, target_user_id: str, role: dict) -> None:
@@ -79,4 +107,8 @@ def guard_role_assignment(actor: AuthUser, target_user_id: str, role: dict) -> N
         )
 
 
-__all__ = ["guard_wildcard_grant", "guard_role_assignment"]
+__all__ = [
+    "guard_permission_grant",
+    "guard_wildcard_grant",
+    "guard_role_assignment",
+]

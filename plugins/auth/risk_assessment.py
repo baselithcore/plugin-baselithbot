@@ -93,14 +93,11 @@ class RiskAssessor:
 
     def _extract_context(self, request: Request, user_id: str) -> AuthenticationContext:
         """Extract authentication context from request."""
-        # Get IP address
-        forwarded = request.headers.get("X-Forwarded-For")
-        if forwarded:
-            ip_address = forwarded.split(",")[0].strip()
-        elif request.client:
-            ip_address = request.client.host
-        else:
-            ip_address = "unknown"
+        # Trusted-proxy-aware IP: an untrusted client cannot forge X-Forwarded-For
+        # to poison the risk score (or dodge IP-change detection).
+        from plugins.auth.client_ip import trusted_client_ip
+
+        ip_address = trusted_client_ip(request) or "unknown"
 
         # Get User-Agent
         user_agent = request.headers.get("User-Agent", "unknown")
