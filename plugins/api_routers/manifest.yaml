@@ -1,6 +1,4 @@
 name: api_routers
-# Platform infrastructure: hidden from the user-facing nav (admin-only tabs) and
-# segregated into the control plane's "system" bucket.
 system: true
 version: 0.2.0
 description: Default FastAPI routers for chat, admin, feedback, tenant, indexing,
@@ -11,6 +9,6 @@ tags:
 - routers
 - fastapi
 category: infrastructure
-integrity_sha256: 6c43edf85fdbf3bdb28101efc673fc8718bddcbae3492d190263bffc1b1e8b37
+integrity_sha256: e9e7b9ac77866910e5e4dc7cbc961f2216bdefc799d5884b5886689e19ecf91d
 control:
   tier: system

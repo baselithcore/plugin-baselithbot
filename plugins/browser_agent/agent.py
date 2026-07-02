@@ -12,8 +12,11 @@ from core.services.vision.service import VisionService
 
 from ._guards import (
     _hostname_is_blocked,
+    _hostname_resolves_to_internal,
+    _ip_is_internal,
     _normalize_selector,
     _ssrf_guard_disabled,
+    _url_is_blocked,
     assert_navigation_allowed,
 )
 from .types import BrowserAction, BrowserActionType, BrowserAgentResult, PageState
@@ -25,7 +28,10 @@ logger = get_logger(__name__)
 __all__ = [
     "BrowserAgent",
     "_hostname_is_blocked",
+    "_hostname_resolves_to_internal",
+    "_ip_is_internal",
     "_ssrf_guard_disabled",
+    "_url_is_blocked",
     "assert_navigation_allowed",
 ]
 
@@ -134,6 +140,14 @@ IMPORTANT:
             **self.context_options,
         }
         self._context = await self._browser.new_context(**context_options)
+
+        # Re-validate every navigation (including server-driven redirects, which
+        # Playwright follows internally and which bypass the one-shot pre-goto
+        # check). Aborts navigations to internal/blocked hosts at the network
+        # layer. DNS resolution runs off the event loop.
+        if not _ssrf_guard_disabled():
+            await self._context.route("**/*", self._ssrf_route_guard)
+
         self._page = await self._context.new_page()
 
         logger.info(
@@ -141,6 +155,32 @@ IMPORTANT:
             headless=self.headless,
             viewport=f"{self.viewport_width}x{self.viewport_height}",
         )
+
+    async def _ssrf_route_guard(self, route: Any, request: Any) -> None:
+        """Playwright route handler: abort requests to blocked/internal hosts.
+
+        Scoped to navigation requests (main frame + sub-frame document loads,
+        which is where redirects land) to keep asset loading fast. DNS
+        resolution runs in a worker thread so it never blocks the event loop.
+        """
+        try:
+            is_nav = bool(request.is_navigation_request())
+        except Exception:
+            is_nav = True  # fail-closed: treat unknown as a navigation
+        if not is_nav:
+            await route.continue_()
+            return
+        try:
+            blocked = await asyncio.to_thread(
+                _url_is_blocked, request.url, resolve_dns=True
+            )
+        except Exception:
+            blocked = True  # fail-closed
+        if blocked:
+            logger.warning("browser_ssrf_blocked_navigation", url=request.url)
+            await route.abort("blockedbyclient")
+            return
+        await route.continue_()
 
     async def stop(self) -> None:
         """Stop the browser."""

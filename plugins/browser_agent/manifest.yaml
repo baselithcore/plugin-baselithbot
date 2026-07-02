@@ -1,6 +1,4 @@
 name: browser_agent
-# Platform infrastructure: hidden from the user-facing nav (admin-only tabs) and
-# segregated into the control plane's "system" bucket.
 system: true
 version: 0.1.0
 description: Browser automation and MCP browser tools powered by Playwright and VisionService
@@ -17,6 +15,6 @@ required_resources:
 - llm
 optional_resources:
 - internet
-integrity_sha256: dee3bc727f60fc7d4cc46d7760ec899e86cbd8eeba10a0d32993f636d10b317a
+integrity_sha256: ef54315b61e59b6ae36344f9ed1e6f0ae51c64cb81603b4871c2eb7b82b19bd2
 control:
   tier: system
