@@ -18,6 +18,7 @@ core/orchestration/
 ├── contract.py              # AgentContract / ContractValidator
 ├── autonomy.py              # AutonomyPolicy / AutonomyUpgradeGate
 ├── task_classifier.py       # TaskClassifier (agentic vs deterministic)
+├── budget_context.py        # ContextVar-based ambient LoopBudget
 ├── mixins/                  # intent / handlers / execution mixins
 └── handlers/                # Built-in flow handlers
 ```
@@ -313,6 +314,22 @@ budget.charge(0.0008)                  # after each LLM completion
 A breach raises `BudgetExceededError`, which `ExecutionMixin` catches
 and converts into a structured failure reply with `budget_exceeded` and
 a snapshot of the state at the breach.
+
+#### Ambient budget & enforced USD cost
+
+`core/orchestration/budget_context.py` publishes the per-request `LoopBudget`
+as a `ContextVar`. `ExecutionMixin.process` binds it at request start, so code
+far from the handler — notably `LLMService` — can charge against it without
+threading the budget through every call. After each generation `LLMService`
+charges the call's **real USD cost** (via `core/models/pricing`), which makes
+`LoopLimits.budget_usd` an **enforced** cap rather than advisory. Models absent
+from the pricing table are not charged, so self-hosted models never abort a
+request on an unknown price.
+
+Additionally, `ExecutionMixin.process` overlaps I/O at the request boundaries:
+the request-start memory reads (`recall` + `get_context_async`) run
+**concurrently**, and post-response memory writes run as a **tracked background
+task** instead of delaying the reply.
 
 ### `AgentContract` — declarative spec
 

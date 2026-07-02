@@ -26,12 +26,8 @@ def _deterministic_flags(monkeypatch: pytest.MonkeyPatch) -> None:
     installer is constructed, so env-var control is unreliable here. Patch the
     predicate functions directly: skip disabled, strict off by default.
     """
-    monkeypatch.setattr(
-        "core.plugins.integrity.is_skip_check_enabled", lambda: False
-    )
-    monkeypatch.setattr(
-        "core.plugins.integrity.is_strict_mode_enabled", lambda: False
-    )
+    monkeypatch.setattr("core.plugins.integrity.is_skip_check_enabled", lambda: False)
+    monkeypatch.setattr("core.plugins.integrity.is_strict_mode_enabled", lambda: False)
 
 
 @pytest.fixture
@@ -55,9 +51,7 @@ def _make_plugin(root: Path, *, with_hash: bool | str = False) -> Path:
         manifest_data["integrity_sha256"] = compute_plugin_hash(root)
     elif isinstance(with_hash, str):
         manifest_data["integrity_sha256"] = with_hash
-    (root / "manifest.yaml").write_text(
-        yaml.safe_dump(manifest_data), encoding="utf-8"
-    )
+    (root / "manifest.yaml").write_text(yaml.safe_dump(manifest_data), encoding="utf-8")
     return root
 
 
@@ -74,9 +68,7 @@ def test_tampered_hash_rejected(installer: PluginInstaller, tmp_path: Path) -> N
 def test_strict_mode_rejects_unsigned(
     installer: PluginInstaller, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(
-        "core.plugins.integrity.is_strict_mode_enabled", lambda: True
-    )
+    monkeypatch.setattr("core.plugins.integrity.is_strict_mode_enabled", lambda: True)
     plugin = _make_plugin(tmp_path / "demo", with_hash=False)
     assert installer._verify_integrity_pre_install(plugin) is False
 
@@ -89,7 +81,5 @@ def test_errors_fail_closed(
     def _boom(*_args: object, **_kwargs: object) -> bool:
         raise RuntimeError("verifier exploded")
 
-    monkeypatch.setattr(
-        "core.plugins.integrity.verify_plugin_integrity", _boom
-    )
+    monkeypatch.setattr("core.plugins.integrity.verify_plugin_integrity", _boom)
     assert installer._verify_integrity_pre_install(plugin) is False

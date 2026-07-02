@@ -9,6 +9,6 @@ tags:
 - routers
 - fastapi
 category: infrastructure
-integrity_sha256: e9e7b9ac77866910e5e4dc7cbc961f2216bdefc799d5884b5886689e19ecf91d
+integrity_sha256: a9d46eb4e87e58c1a740f4ce3d64e63c01ad3ff4fd769bd2698620476fea0c61
 control:
   tier: system
