@@ -43,7 +43,7 @@ introduces **no** new `core -> plugins` import.
 | Safe UI trees | [core/a2a/a2ui.py:182](../../core/a2a/a2ui.py#L182) | `validate_blueprint()`, sealed 12-component whitelist, depth ≤ 16 / nodes ≤ 256 |
 | AuthZ | [plugins/auth/dependencies.py:220](../../plugins/auth/dependencies.py#L220) | `require_roles(AuthRole.ADMIN)`, `AuthRole.GUEST` (read-only) |
 | Autonomy gating | [core/orchestration/autonomy.py:56](../../core/orchestration/autonomy.py#L56) | `AutonomyPolicy.requires_approval()`, `enforce_approval()`, `ApprovalRequiredError` |
-| Sub-app mount | [plugins/baselithwiki/plugin.py](../../plugins/baselithwiki/plugin.py) | `setup_app_middleware()` → `app.mount()`, lifespan in bg task |
+| Sub-app mount | [plugins/baselithbrain/plugin.py](../../plugins/baselithbrain/plugin.py) | `setup_app_middleware()` → `app.mount()`, lifespan in bg task |
 
 ---
 
@@ -446,7 +446,7 @@ def build_actions_router(get_service) -> APIRouter:
 ### 3.6 Plugin entrypoint — `plugin.py`
 
 `RouterPlugin` assembles the sub-routers; `setup_app_middleware()` mounts the
-built SPA before the middleware stack freezes (baselithwiki pattern). The
+built SPA before the middleware stack freezes (baselithbrain pattern). The
 registry handle is read from `app.state` at request time, never captured early.
 
 ```python

@@ -159,16 +159,14 @@ def reset_user_context_between_tests():
 
 @pytest.fixture(autouse=True)
 def _restore_isolated_env_toggles():
-    """Restore env toggles that plugin bootstraps clobber process-wide.
+    """Restore env toggles that plugin bootstraps or tests clobber process-wide.
 
-    The BaselithWiki plugin bootstrap (``plugins/baselithwiki/_bootstrap.py``)
-    pins ``POSTGRES_ENABLED`` / ``APP_DOMAIN`` / ``AUTH_REQUIRED`` to setup-mode
-    defaults directly in ``os.environ`` and never restores them — it is
-    ``_done``-guarded by design and its own tests assert the mutation. When an
-    integration test loads that plugin the change bleeds into every later test
-    (e.g. flips ``POSTGRES_ENABLED`` to ``"false"``, so a fresh ``StorageConfig``
-    reports Postgres disabled and unrelated DB tests fail). Snapshot and restore
-    those keys around each test so the bleed cannot cross test boundaries.
+    Some plugin bootstraps and tests pin ``POSTGRES_ENABLED`` / ``APP_DOMAIN`` /
+    ``AUTH_REQUIRED`` directly in ``os.environ`` without restoring them, so the
+    change bleeds into every later test (e.g. flipping ``POSTGRES_ENABLED`` to
+    ``"false"`` makes a fresh ``StorageConfig`` report Postgres disabled and
+    unrelated DB tests fail). Snapshot and restore those keys around each test
+    so the bleed cannot cross test boundaries.
     """
     keys = ("POSTGRES_ENABLED", "APP_DOMAIN", "AUTH_REQUIRED")
     saved = {key: os.environ.get(key) for key in keys}

@@ -206,42 +206,8 @@ version = {attr = "core._version.__version__"}
     "prompts/*.md",
     # Backend i18n message catalogs (e.g. baselithtwin/locales/{en,it}.json).
     "locales/*.json",
-    # BaselithWiki: compiled SPA + vendored engine data (domain packs and
-    # Alembic migrations are loaded from disk, not import, so they ship as
-    # package-data). ``llm_wiki`` itself is pure-Python and ships as code.
-    "frontend/dist/**/*",
-    "domains/**/*",
-    "alembic/**/*",
-    "alembic.ini",
 ]
 [tool.setuptools.exclude-package-data]
-# BaselithWiki: only the compiled SPA (``frontend/dist/**``) ships. The
-# TypeScript source, node_modules and build config are excluded; operators
-# rebuild via ``npm run build`` only when they fork the plugin. Runtime data
-# (vaults, qdrant_data, logs) and the egg-info marker never ship.
-baselithwiki = [
-    "frontend/node_modules/**",
-    "frontend/components/**",
-    "frontend/contexts/**",
-    "frontend/hooks/**",
-    "frontend/lib/**",
-    "frontend/pages/**",
-    "frontend/types/**",
-    "frontend/embed/**",
-    "frontend/embed-loader/**",
-    "frontend/public/**",
-    "frontend/tests/**",
-    "frontend/*.ts",
-    "frontend/*.tsx",
-    "frontend/*.json",
-    "frontend/*.css",
-    "frontend/*.html",
-    "frontend/*.mjs",
-    "vaults/**",
-    "qdrant_data/**",
-    "logs/**",
-    "tests/**",
-]
 # Only the compiled SPA (``ui/dist/**``) ships in the confessgpt wheel.
 # The TypeScript source and node_modules are excluded — operators
 # rebuild via ``npm run build`` only when they fork the plugin.

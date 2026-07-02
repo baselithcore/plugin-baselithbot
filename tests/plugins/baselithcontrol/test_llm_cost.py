@@ -94,7 +94,7 @@ def test_attribute_without_plugin_is_unbound() -> None:
 
 
 def test_resolve_plugin_matches_mounted_subapp() -> None:
-    # Sub-app-mounted plugins (baselithbrain, baselithwiki, …) have no router
+    # Sub-app-mounted plugins (baselithbrain, …) have no router
     # prefix, so the meter must recover them from the app's Mount routes — else
     # their LLM spend is mis-attributed to "unbound".
     from starlette.applications import Starlette

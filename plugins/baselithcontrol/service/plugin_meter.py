@@ -109,7 +109,7 @@ def _mounted_plugins(app: object) -> dict[str, str]:
     """Map mounted sub-app path prefixes → plugin name (cached on ``app.state``).
 
     Plugins integrated via the sub-app-mount pattern (``app.mount("/name",
-    sub_app, name="name")`` — e.g. baselithbrain, baselithwiki) have no router
+    sub_app, name="name")`` — e.g. baselithbrain) have no router
     prefix in the registry, so ``match_plugin_route`` can't see them. We recover
     them from the app's own ``Mount`` routes: their mount name is the plugin name.
     Built once (all mounts exist before requests flow) and cached.
