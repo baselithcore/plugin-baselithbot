@@ -1,155 +1,88 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="media/full-white-og.png">
-    <source media="(prefers-color-scheme: light)" srcset="media/full-black-og.png">
-    <img alt="BaselithCore Logo" src="media/full-black-og.png" width="500">
-  </picture>
-</p>
+# dbview — Database Visualisation + NL→Query Workbench
 
-# BaselithCore
+BaselithCore plugin hosting the upstream **dbview** TypeScript stack (NestJS +
+Fastify API, React 19 + Vite SPA, 7 workspace packages) as a supervised Node
+child process behind an authenticated FastAPI reverse proxy.
 
-> **The Research-Backed Engine for Production-Grade Agentic AI.**
+Supports **18 engines**: PostgreSQL, MySQL, MariaDB, MSSQL, SQLite, Oracle,
+ClickHouse, DuckDB, CockroachDB, Neo4j, FalkorDB, Ultipa, MongoDB, Redis,
+Elasticsearch, Qdrant, Salesforce (SOQL), Salesforce Data Cloud — with schema
+graph visualisation, AST-level query safety, NL→SQL/Cypher/SOQL translation
+(Ollama/OpenAI/Anthropic), history/favorites and per-user encrypted
+connection storage.
 
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg?style=for-the-badge)](LICENSE)
-[![Code Style: Ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg?style=for-the-badge)](https://github.com/astral-sh/ruff)
-[![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue.svg?style=for-the-badge)](http://mypy-lang.org/)
-[![Tests: 2105/2105 | 70%](https://img.shields.io/badge/Tests-2105%2F2105_--_70%25-brightgreen.svg?style=for-the-badge)](tests/)
-[![PyPI version](https://img.shields.io/pypi/v/baselith-core.svg?style=for-the-badge&logo=pypi&logoColor=white)](https://pypi.org/p/baselith-core/)
+## Architecture
 
-[![World Model: MCTS](https://img.shields.io/badge/World_Model-MCTS-teal.svg?style=for-the-badge)](mkdocs-site/docs/core-modules/world-model.md)
-[![Swarm Intelligence](https://img.shields.io/badge/Swarm-Intelligence-indigo.svg?style=for-the-badge)](mkdocs-site/docs/core-modules/swarm.md)
-[![Agentic Patterns](https://img.shields.io/badge/Patterns-20+_Agentic-orange.svg?style=for-the-badge)](mkdocs-site/docs/architecture/agentic-patterns.md)
-[![Native MCP](https://img.shields.io/badge/Native-MCP-blue.svg?style=for-the-badge)](mkdocs-site/docs/core-modules/mcp.md)
-[![Docker Ready](https://img.shields.io/badge/docker-ready-blue.svg?style=for-the-badge&logo=docker&logoColor=white)](https://github.com/baselithcore/baselithcore/blob/main/Dockerfile-full)
-
----
-
-**BaselithCore** is a high-performance orchestration engine designed to transition agentic AI from experimental prototypes to resilient, production-ready infrastructure. Built on a modular architecture, it provides an agnostic foundation for engineering scalable multi-agent systems.
-
-<div align="center">
-
-[**Quick Start**](#quick-start) | [**Architecture**](https://docs.baselithcore.xyz/architecture/) | [**Plugin System**](https://docs.baselithcore.xyz/plugins/) | [**API Reference**](https://docs.baselithcore.xyz/api/)
-
-</div>
-
----
-
-## Core Philosophy
-
-BaselithCore is governed by a strict architectural separation:
-
-1. **Sacred Core**: The `core/` directory contains exclusively agnostic logic—orchestration, infrastructure, and utilities. It remains untainted by domain-specific logic.
-2. **Plugin-First**: All business logic, external integrations, and specialized capabilities are implemented as **Plugins**, ensuring secondary features never bloat the primary engine.
-3. **Agentic by Design**: Native adherence to the Agentic Design Patterns (Memory, Reflection, Tool Use, etc.) is baked into the orchestrator.
-
-### Architecture Overview
-
-```mermaid
-graph TD
-    subgraph "Sacred Core (Agnostic Engine)"
-        A["Core Orchestrator"]
-        M["Memory Hierarchy (STM/MTM/LTM)"]
-        S["Storage Layer (DB/Vector)"]
-        R["Plugin Registry"]
-    end
-
-    R --> C["Custom Agent Plugins"]
-    R --> D["Capability Extensions"]
-    
-    A --> M
-    M --> S
-    A --> F["Flow Handlers"]
-    
-    R -.->|Inject Handlers| A
-    R -.->|Inject Routers| G["API Gateway"]
-    
-    A --> H["LLM Layer (Anthropic, OpenAI, Ollama, HF)"]
-    F --> H
+```
+browser ── /dbview            (built SPA, static mount)
+        └─ /api/dbview/…      (FastAPI reverse proxy, streaming)
+                │  central auth: get_current_user → require-tab policy
+                │  identity → x-dbview-gateway-user + per-boot secret
+                ▼
+        127.0.0.1:<ephemeral>  (supervised `node dist/main.js`)
+                └─ NestJS GatewayAuthGuard → JIT user mirror → engines
 ```
 
----
+* **Wrapper** ([plugin.py](plugin.py)) — lifecycle, env composition, tabs.
+* **Supervisor** ([supervisor/](supervisor/)) — spawn, health gate, restart
+  backoff, SIGTERM→SIGKILL. Loopback bind only.
+* **Proxy** ([proxy_router.py](proxy_router.py)) — prefix re-rooting
+  (`/api/dbview/X` → `/api/X`), hop-by-hop stripping, `Set-Cookie` path
+  rewriting, upstream-down 503 / connect-fail 502.
+* **Identity bridge** ([identity.py](identity.py)) — central `AuthUser` →
+  gateway header; **effective-admin** (wildcard-aware, degrades closed) →
+  dbview `admin` role; identity-derived **tenancy scope key** via
+  `resolve_plugin_tenant_key("dbview", "shared")`.
 
-## Key Capabilities
+## Central auth & RBAC (platform conventions)
 
-### Cognitive Orchestration
+* All identity lives in the platform **auth** plugin. dbview's local
+  login/registration/password endpoints return 403 in plugin (gateway) mode;
+  users are JIT-mirrored (id = central user id, unusable password sentinel).
+* The proxy enforces the central per-tab policy for `(dbview, dbview)` —
+  manage access from the auth console's Access Control matrix.
+* The SPA reads the shared central token (`localStorage['auth_access_token']`)
+  and re-resolves the session on cross-tab `storage` events; without a session
+  it shows a bilingual (en/it) "sign in from the console" screen.
+* Admin decisions use the **effective permission set** (wildcard custom roles
+  count as admin), never the literal role alone.
 
-We manage the complexity of agentic reasoning so you can focus on domain value.
+## Tenancy
 
-* **Strategic Optimization**: Native **Monte Carlo Tree Search (MCTS)** and **Tree of Thoughts** for advanced decision-making and "What-If" simulations.
-* **Swarm Intelligence**: Decentralized **Auction Protocols** for optimal task allocation and resource efficiency across agent collectives.
-* **Multilayered Memory**: Research-grade memory hierarchy (STM → MTM → LTM) with intelligent context consolidation.
-* **Interoperability**: Built with native **Model Context Protocol (MCP)** support for seamless tool and data integration.
+Declared `tenancy: shared` (admin can flip to `personal` at runtime from the
+auth console). The proxy forwards the resolved scope key per request:
 
----
+* every mirrored user carries a `tenantKey`;
+* connection **sharing** (`all` / `admins` / explicit users) never crosses a
+  tenant scope; explicit share targets are validated same-tenant;
+* history and LLM credentials are strictly per-owner (per central user id)
+  under both modes.
 
-## <span id="quick-start"></span> Quick Start
-
-### 1. Prerequisites
-
-* **Python**: 3.12+
-* **Docker**: For Redis, Qdrant, and PostgreSQL infrastructure.
-* **Vector/Relational Storage**: Managed via Docker Compose.
-
-### 2. Installation
-
-Install the core engine via pip:
+## Operator setup
 
 ```bash
-pip install baselith-core
+# 1) Build once (Node ≥ 20, pnpm ≥ 11)
+cd plugins/dbview/dbview
+pnpm install && pnpm -r build            # packages + api
+VITE_API_BASE_URL=/api/dbview VITE_BASE_PATH=/dbview/ VITE_AUTH_MODE=gateway \
+  pnpm --filter @dbview/web build        # plugin-mode SPA
+
+# 2) Mandatory env (stable across restarts — encrypts stored connections)
+export DBVIEW_SECRET="<random ≥16 chars>"
+
+# 3) Enable in configs/plugins.yaml (already registered)
+# dbview: { enabled: true, mode: prod }
 ```
 
-Install optional capabilities only when needed:
+Runtime data lives in `plugins/dbview/var/data` (override with
+`DBVIEW_DATA_DIR`). See [manifest.yaml](manifest.yaml) for the full env
+contract. A standalone build (no `VITE_*`/gateway env) reproduces upstream
+behaviour byte-for-byte — local JWT login, refresh-cookie rotation and the
+Vite root base all stay intact.
+
+## Tests
 
 ```bash
-# RAG / embedding / reranking
-pip install "baselith-core[rag]"
-
-# Browser automation and JS rendering
-pip install "baselith-core[browser,web]"
-
-# Document ingestion and OCR
-pip install "baselith-core[documents,ocr,nlp]"
-
-# Hugging Face provider support
-pip install "baselith-core[huggingface]"
+python -m pytest plugins/dbview/tests -q         # wrapper: proxy/supervisor/identity
+cd plugins/dbview/dbview && pnpm -r test         # upstream + gateway guard suites
 ```
-
-Or clone for extension development:
-
-```bash
-git clone https://github.com/baselithcore/baselithcore.git
-cd baselith-core
-docker compose up -d
-```
-
-### 3. Verification
-
-```bash
-baselith doctor  # Validate environment and configuration
-```
-
----
-
-## Resources
-
-| Resource                                                                             | Description                                           |
-| :----------------------------------------------------------------------------------- | :---------------------------------------------------- |
-| [**Official Website**](https://baselithcore.xyz)                                     | The core landing page for the BaselithCore framework. |
-| [**Official Documentation**](https://docs.baselithcore.xyz)                          | The official docs for the BaselithCore framework.     |
-| [**Architecture**](https://docs.baselithcore.xyz/architecture/overview/)             | Deep dive into the "Sacred Core" and design choices.  |
-| [**Plugin Guide**](https://docs.baselithcore.xyz/plugins/architecture/)              | How to extend BaselithCore using the plugin system.   |
-| [**Agentic Patterns**](https://docs.baselithcore.xyz/architecture/agentic-patterns/) | Implementation of Agentic Design Patterns.            |
-| [**Deployment**](https://docs.baselithcore.xyz/advanced/deployment/)                 | Production-ready deployment strategies.               |
-
----
-
-## Contributing & License
-
-We welcome contributions that adhere to our code standards. Please review [CONTRIBUTING.md](CONTRIBUTING.md).
-
-BaselithCore is licensed under the **GNU Affero General Public License v3.0 (AGPL v3)**.
-See [LICENSE](LICENSE) for full details.
-
----
-Copyright © 2026 BaselithCore Team.

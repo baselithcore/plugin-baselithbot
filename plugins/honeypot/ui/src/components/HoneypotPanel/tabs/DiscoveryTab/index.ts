@@ -1,1 +1,0 @@
-export { DiscoveryTab } from './DiscoveryTab';

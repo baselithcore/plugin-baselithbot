@@ -1,0 +1,163 @@
+---
+# Observability stack for dbview. Mirrors agent-jira's layout.
+# Run: `docker compose --env-file .env up -d` from this directory.
+# The dbview-api container should join `dbview-obs-net` (override file) and
+# expose `observability.scrape=true` label for Promtail discovery.
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
+networks:
+  obs:
+    name: dbview-obs-net
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+  tempo_data:
+  alertmanager_data:
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: dbview-prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}
+      - --storage.tsdb.retention.size=${PROMETHEUS_MAX_SIZE:-10GB}
+      - --web.enable-lifecycle
+      - --web.enable-remote-write-receiver
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus_data:/prometheus
+    environment:
+      DBVIEW_METRICS_TOKEN: ${DBVIEW_METRICS_TOKEN:-}
+    ports:
+      - '127.0.0.1:9090:9090'
+    networks: [obs]
+    restart: unless-stopped
+    logging: *default-logging
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: dbview-alertmanager
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+      - --storage.path=/alertmanager
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager_data:/alertmanager
+    ports:
+      - '127.0.0.1:9093:9093'
+    networks: [obs]
+    restart: unless-stopped
+    logging: *default-logging
+
+  grafana:
+    image: grafana/grafana:11.3.1
+    container_name: dbview-grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-change-me-grafana}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+      GF_ANALYTICS_REPORTING_ENABLED: 'false'
+      GF_ANALYTICS_CHECK_FOR_UPDATES: 'false'
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3000}
+      GF_INSTALL_PLUGINS: 'grafana-piechart-panel'
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - '3000:3000'
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+    networks: [obs]
+    restart: unless-stopped
+    logging: *default-logging
+
+  loki:
+    image: grafana/loki:3.2.1
+    container_name: dbview-loki
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki_data:/loki
+    ports:
+      - '127.0.0.1:3100:3100'
+    networks: [obs]
+    restart: unless-stopped
+    logging: *default-logging
+
+  promtail:
+    image: grafana/promtail:3.2.1
+    container_name: dbview-promtail
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - ./promtail/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log:/var/log:ro
+    depends_on:
+      - loki
+    networks: [obs]
+    restart: unless-stopped
+    logging: *default-logging
+
+  tempo:
+    image: grafana/tempo:2.6.1
+    container_name: dbview-tempo
+    command: ['-config.file=/etc/tempo/tempo-config.yml']
+    volumes:
+      - ./tempo/tempo-config.yml:/etc/tempo/tempo-config.yml:ro
+      - tempo_data:/var/tempo
+    ports:
+      - '127.0.0.1:3200:3200'
+      - '127.0.0.1:4317:4317'
+      - '127.0.0.1:4318:4318'
+    networks: [obs]
+    restart: unless-stopped
+    logging: *default-logging
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.113.0
+    container_name: dbview-otelcol
+    command: ['--config=/etc/otelcol/config.yaml']
+    volumes:
+      - ./otel-collector/otel-collector-config.yaml:/etc/otelcol/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - '4319:4318'
+      - '127.0.0.1:4320:4317'
+      - '127.0.0.1:8889:8889'
+    depends_on:
+      - tempo
+    networks: [obs]
+    restart: unless-stopped
+    logging: *default-logging
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: dbview-node-exporter
+    command:
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --path.rootfs=/rootfs
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    pid: host
+    networks: [obs]
+    restart: unless-stopped
+    logging: *default-logging

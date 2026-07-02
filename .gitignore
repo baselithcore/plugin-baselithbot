@@ -1,109 +1,11 @@
-# --- IDEs and Editors ---
-.vscode/
-.idea/
-*.swp
-*.swo
-.serena/
-.agent/
-.claude/
+# Runtime state (users/sessions/connections/history JSON stores, uploads)
+var/
 
-
-# --- Python and Packaging ---
-__pycache__/
-*.py[cod]
-*$py.class
-.venv/
-env/
-venv/
-ENV/
-dist/
-build/
-*.egg-info/
-
-# --- Local caches (marketplace registry, etc.) ---
-# NB: 'cache/' is unanchored => it also matched the SOURCE packages core/cache/
-# and tests/unit/core/cache/. Re-include them explicitly (negation after the rule).
-cache/
-!core/cache/
-!tests/unit/core/cache/
-
-# --- Testing and Coverage ---
-.pytest_cache/
-.tox/
-.nox/
-.coverage
-.coverage.*
-htmlcov/
-nosetests.xml
-coverage.xml
-coverage.json
-coverage_full.txt
-*.cover
-.cache
-.mypy_cache/
-.ruff_cache/
-EXTERNAL/
-
-# --- Environment and Secrets ---
-# NEVER commit real credentials
-.env
-.env.*
-plugins/*/.state/
-!.env.example
-!.env.*.example
-configs/.env
-configs/.env.*
-!configs/.env.example
-!configs/.env.*.example
-!configs/.env.base
-!configs/.env.development
-!configs/.env.production
-!configs/.env.test
-
-# --- Project Specific Data/Logs ---
-data/*
-!data/.gitkeep
-documents/*
-!documents/.gitkeep
-logs/*
-!logs/.gitkeep
-qdrant_data/
-model_cache/
-feedback.db
-demo_workspace/
-
-# --- JavaScript / Node ---
-node_modules/
-# package-lock.json files are COMMITTED for reproducible plugin UI builds — a
-# consumer UI compiles the auth plugin's shared source via @auth, so a stale
-# lock anywhere in the chain breaks `npm ci` on deploy. Exceptions below
-# (inline comments are NOT allowed in .gitignore, hence each on its own line).
-# repo root: not a deploy artifact
-/package-lock.json
-# red_agent is pnpm-managed (pnpm-lock.yaml is its source of truth)
-plugins/red_agent/ui/package-lock.json
-
-# --- Browser / OS ---
-.DS_Store
-Thumbs.db
-
-# --- Infrastructure ---
-.cloudflared/
-
-# --- Build Artifacts ---
-mkdocs-site/site/
-app/static/frontend/
-
-# BaselithBrain runtime vault (user notes — never committed)
-plugins/baselithbrain/vault/
-/vault/
-
-# BaselithTwin — WhatsApp gateway runtime artifacts (never commit sessions)
-.wwebjs_auth/
-.wwebjs_cache/
-plugins/baselithtwin/sidecar/.wwebjs_auth/
-plugins/baselithtwin/sidecar/.wwebjs_cache/
-# Legacy @open-wa/wa-automate session + debug output
-_IGNORE_*/
-**/session*.data.json
-**/screenshot_session_*.png
+# Vendored monorepo build artifacts — rebuilt by the operator, never committed
+dbview/**/node_modules/
+dbview/**/dist/
+dbview/**/.turbo/
+dbview/**/*.tsbuildinfo
+dbview/apps/api/data/
+dbview/**/.env
+dbview/**/logs/

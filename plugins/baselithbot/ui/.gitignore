@@ -1,6 +1,0 @@
-node_modules
-.vite
-.tsbuildinfo
-*.log
-.env
-.env.local

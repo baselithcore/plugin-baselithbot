@@ -1,0 +1,85 @@
+name: dbview
+version: 0.2.0
+description: Database visualisation + Natural-Language-to-Query workbench for 18 engines
+  (PostgreSQL, MySQL, MariaDB, MSSQL, SQLite, Oracle, ClickHouse, DuckDB, CockroachDB,
+  Neo4j, FalkorDB, Ultipa, MongoDB, Redis, Elasticsearch, Qdrant, Salesforce, Salesforce
+  Data Cloud). Bundles the upstream dbview NestJS API and React/Vite SPA verbatim under
+  ``dbview/``; the plugin process-supervises the Node backend and fronts it with an
+  authenticated FastAPI reverse proxy at ``/api/dbview`` (built SPA served at ``/dbview``).
+  Identity, RBAC and tenancy are centralised in the platform ``auth`` plugin via a
+  trusted-gateway seam — dbview's local login is disabled and users are JIT-mirrored
+  from the central identity provider.
+author: Giovanni Ippolito <g.ippolito@gdservices.tech>
+homepage: https://github.com/giovanni-ippolito/dbview
+license: Proprietary
+category: Knowledge
+readiness: beta
+tenancy: shared
+tags:
+- database
+- nl2sql
+- nl2cypher
+- soql
+- visualisation
+- postgres
+- neo4j
+- mongo
+- elasticsearch
+- qdrant
+- salesforce
+- sso
+integrity_sha256: 80f0339f28ee535d7fff4c47f9fb138e18c62bcf02414acd9a17e355bd6fd6fc
+plugin_dependencies:
+  auth: '>=2.0.0'
+python_dependencies:
+- httpx>=0.27.0
+runtime_prerequisites:
+- "Node.js ≥ 20 on PATH (mandatory)"
+- "pnpm ≥ 11 on PATH (only when DBVIEW_PLUGIN_MODE=dev)"
+- "apps/api/dist/main.js built (prod mode — run `pnpm install && pnpm -r build` once)"
+- "apps/web/dist/index.html built for the SPA — `VITE_API_BASE_URL=/api/dbview
+  VITE_BASE_PATH=/dbview/ VITE_AUTH_MODE=gateway pnpm --filter @dbview/web build`"
+environment_variables:
+- name: DBVIEW_SECRET
+  description: "AES-256-GCM key for stored connection strings, ≥ 16 chars. Mandatory
+    and must stay stable across restarts."
+  required: true
+- name: DBVIEW_JWT_SECRET
+  description: "Local JWT signing key (≥ 32 chars). Optional under central gateway
+    auth — auto-generated per boot when unset (the local login flow is disabled)."
+  required: false
+- name: DBVIEW_DATA_DIR
+  description: Runtime data directory (users/sessions/connections/history JSON stores).
+    Default ``plugins/dbview/var/data``.
+  required: false
+- name: DBVIEW_PLUGIN_MODE
+  description: '``prod`` (default, runs node dist/main.js) or ``dev`` (runs pnpm dev).'
+  required: false
+- name: DBVIEW_INTERNAL_HOST
+  description: Bind host for the embedded Node API. Default ``127.0.0.1``.
+  required: false
+- name: DBVIEW_INTERNAL_PORT
+  description: Bind port for the embedded Node API. Default = ephemeral allocation.
+  required: false
+- name: DBVIEW_STARTUP_TIMEOUT_S
+  description: Max seconds the supervisor waits for /api/health before failing. Default 90.
+  required: false
+- name: DBVIEW_RESTART_MAX_ATTEMPTS
+  description: Cap on consecutive child restarts (0 = unlimited). Default 0.
+  required: false
+- name: DBVIEW_API_KEY
+  description: Optional upstream service key (Prometheus scrape / CI automation hitting
+    the loopback API directly). Central platform API keys (bsk_) work through the proxy.
+  required: false
+- name: OLLAMA_BASE_URL
+  description: "Local Ollama endpoint for NL→Query (default http://localhost:11434/api)."
+  required: false
+- name: OPENAI_API_KEY
+  description: "Optional OpenAI provider for NL→Query."
+  required: false
+- name: ANTHROPIC_API_KEY
+  description: "Optional Anthropic provider for NL→Query."
+  required: false
+- name: OTEL_EXPORTER_OTLP_ENDPOINT
+  description: OTLP collector base URL. Tracing is a no-op when unset.
+  required: false

@@ -1,0 +1,89 @@
+---
+groups:
+  - name: dbview-slo
+    interval: 30s
+    rules:
+      - alert: HttpLatencyP95High
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum by (le, route) (
+              rate(dbview_http_request_latency_seconds_bucket[5m])
+            )
+          ) > 2.5
+        for: 10m
+        labels:
+          severity: warning
+          slo: http_latency
+        annotations:
+          summary: 'HTTP P95 > 2.5s on {{ $labels.route }}'
+          description: 'Latency P95 = {{ $value | humanizeDuration }}'
+
+      - alert: HttpErrorRateHigh
+        expr: |
+          sum by (route) (rate(dbview_http_request_errors_total[5m]))
+            / sum by (route) (rate(dbview_http_request_latency_seconds_count[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Error rate > 5% on {{ $labels.route }}'
+          description: 'Error rate = {{ $value | humanizePercentage }}'
+
+      - alert: LlmCallErrorRateHigh
+        expr: |
+          sum by (provider, model) (rate(dbview_llm_calls_total{status="error"}[5m]))
+            / sum by (provider, model) (rate(dbview_llm_calls_total[5m])) > 0.10
+        for: 10m
+        labels:
+          severity: warning
+          slo: llm_reliability
+        annotations:
+          summary: 'LLM error rate > 10% for {{ $labels.provider }}/{{ $labels.model }}'
+          description: 'Error rate = {{ $value | humanizePercentage }}'
+
+      - alert: AuthLoginFailSpike
+        expr: rate(dbview_auth_events_total{event="login_fail"}[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Sustained login failures > 1/s'
+
+      - alert: TokenReplayDetected
+        expr: increase(dbview_auth_events_total{event="token_replay"}[5m]) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: 'Refresh token replay detected — credential compromise possible'
+
+  - name: dbview-infra
+    interval: 30s
+    rules:
+      - alert: ContainerDown
+        expr: up{job="dbview"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'dbview-api unreachable'
+
+      - alert: HostDiskAlmostFull
+        expr: |
+          (node_filesystem_avail_bytes{mountpoint="/"}
+            / node_filesystem_size_bytes{mountpoint="/"}) < 0.15
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Host disk / below 15% free on {{ $labels.instance }}'
+
+      - alert: HostMemoryHigh
+        expr: |
+          (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes)
+            / node_memory_MemTotal_bytes > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Host RAM > 90% on {{ $labels.instance }}'

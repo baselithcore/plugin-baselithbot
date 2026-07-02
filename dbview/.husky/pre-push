@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+# Heavy gates run before push, not commit, to keep iteration fast.
+set -e
+echo "▸ typecheck"
+pnpm -r typecheck
+echo "▸ tests"
+pnpm -r test
+echo "▸ lint"
+pnpm lint

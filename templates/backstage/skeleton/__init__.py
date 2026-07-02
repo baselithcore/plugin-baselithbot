@@ -1,1 +1,0 @@
-"""${{ values.pluginName }} — BaselithCore plugin."""
