@@ -1,10 +1,12 @@
 packages:
   - 'apps/*'
   - 'packages/*'
-# pnpm >= 11 refuses to run dependency build scripts unless explicitly
-# approved here. These are the native/postinstall deps dbview needs compiled
+# pnpm >= 10 refuses to run dependency build scripts unless explicitly
+# approved. These are the native/postinstall deps dbview needs compiled
 # (argon2 for password hashing, better-sqlite3 for the SQLite engine and
 # dump import, esbuild/swc for the toolchain, oracledb optional client).
+# Both syntaxes kept: ``allowBuilds`` map is pnpm 11+, the
+# ``onlyBuiltDependencies`` list is what pnpm 10 honours (node 20 hosts).
 allowBuilds:
   '@nestjs/core': true
   '@swc/core': true
@@ -13,3 +15,11 @@ allowBuilds:
   esbuild: true
   oracledb: true
   protobufjs: true
+onlyBuiltDependencies:
+  - '@nestjs/core'
+  - '@swc/core'
+  - argon2
+  - better-sqlite3
+  - esbuild
+  - oracledb
+  - protobufjs
