@@ -19,6 +19,7 @@ import type { InviteRequest, Role, UpdateUserRequest, UserPublic } from '@dbview
 import { useAppStore } from '../store/app.js';
 import { api } from '../lib/api.js';
 import { getCurrentUser } from '../lib/auth.js';
+import { GATEWAY_AUTH } from '../lib/runtime-config.js';
 import { cn } from '../lib/cn.js';
 
 type Mode = 'list' | 'invite' | { kind: 'edit'; user: UserPublic };
@@ -118,12 +119,16 @@ function UserList({ onInvite, onEdit }: { onInvite: () => void; onEdit: (u: User
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
         <p className="text-[12px] text-text-muted">
-          Invite-only. Admins can create, edit, and remove accounts.
+          {GATEWAY_AUTH
+            ? 'Identities are managed by the central identity console. This is a read-only view of the users in your tenant.'
+            : 'Invite-only. Admins can create, edit, and remove accounts.'}
         </p>
-        <button onClick={onInvite} className="btn-primary text-[12px]">
-          <UserPlus className="w-3.5 h-3.5" />
-          Invite
-        </button>
+        {!GATEWAY_AUTH && (
+          <button onClick={onInvite} className="btn-primary text-[12px]">
+            <UserPlus className="w-3.5 h-3.5" />
+            Invite
+          </button>
+        )}
       </div>
 
       {isLoading && (
@@ -152,7 +157,7 @@ function UserList({ onInvite, onEdit }: { onInvite: () => void; onEdit: (u: User
                 <th className="text-left px-3 py-2 font-medium">Display name</th>
                 <th className="text-left px-3 py-2 font-medium">Role</th>
                 <th className="text-left px-3 py-2 font-medium">Status</th>
-                <th className="text-right px-3 py-2 font-medium">Actions</th>
+                {!GATEWAY_AUTH && <th className="text-right px-3 py-2 font-medium">Actions</th>}
               </tr>
             </thead>
             <tbody>
@@ -187,40 +192,45 @@ function UserList({ onInvite, onEdit }: { onInvite: () => void; onEdit: (u: User
                         {u.isActive ? 'Active' : 'Disabled'}
                       </span>
                     </td>
-                    <td className="px-3 py-2 text-right">
-                      <div className="inline-flex items-center gap-1">
-                        <button
-                          onClick={() => onEdit(u)}
-                          className="btn-icon w-7 h-7"
-                          aria-label={`Edit ${u.email}`}
-                          title="Edit"
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (isSelf) {
-                              toast.error('Cannot delete your own account');
-                              return;
-                            }
-                            if (!confirm(`Delete ${u.email}?`)) return;
-                            del.mutate(u.id);
-                          }}
-                          className="btn-icon w-7 h-7"
-                          aria-label={`Delete ${u.email}`}
-                          title={isSelf ? 'Cannot delete self' : 'Delete'}
-                          disabled={isSelf || del.isPending}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
+                    {!GATEWAY_AUTH && (
+                      <td className="px-3 py-2 text-right">
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            onClick={() => onEdit(u)}
+                            className="btn-icon w-7 h-7"
+                            aria-label={`Edit ${u.email}`}
+                            title="Edit"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (isSelf) {
+                                toast.error('Cannot delete your own account');
+                                return;
+                              }
+                              if (!confirm(`Delete ${u.email}?`)) return;
+                              del.mutate(u.id);
+                            }}
+                            className="btn-icon w-7 h-7"
+                            aria-label={`Delete ${u.email}`}
+                            title={isSelf ? 'Cannot delete self' : 'Delete'}
+                            disabled={isSelf || del.isPending}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })}
               {data.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-3 py-6 text-center text-text-muted">
+                  <td
+                    colSpan={GATEWAY_AUTH ? 4 : 5}
+                    className="px-3 py-6 text-center text-text-muted"
+                  >
                     No users yet.
                   </td>
                 </tr>
