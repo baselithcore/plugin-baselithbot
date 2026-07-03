@@ -61,7 +61,8 @@ auth console). The proxy forwards the resolved scope key per request:
 ## Operator setup
 
 ```bash
-# 1) Build once (Node ≥ 20, pnpm ≥ 11)
+# 1) Build once (Node ≥ 20; pnpm auto-provisioned as 10.15.0 via packageManager.
+#    Do NOT pin pnpm 11.x on Node 20 — pnpm 11 needs Node ≥ 22.13.)
 cd plugins/dbview/dbview
 pnpm install && pnpm -r build            # packages + api
 VITE_API_BASE_URL=/api/dbview VITE_BASE_PATH=/dbview/ VITE_AUTH_MODE=gateway \

@@ -34,7 +34,9 @@ confines connection sharing to the identity-derived tenancy scope key
 
 Operational notes
 -----------------
-* Node ≥ 20 on PATH (and pnpm ≥ 11 for ``DBVIEW_PLUGIN_MODE=dev``).
+* Node ≥ 20 on PATH. pnpm is auto-provisioned as 10.15.0 via the vendored
+  ``package.json`` ``packageManager`` field (Node-20 compatible) — do not pin
+  pnpm 11.x while on Node 20 (pnpm 11 needs Node ≥ 22.13).
 * ``DBVIEW_SECRET`` (≥ 16 chars) is **mandatory** — it keys the AES-256-GCM
   encryption of stored connection strings and must stay stable across boots.
 * ``DBVIEW_JWT_SECRET`` is auto-generated per boot when unset (the local JWT

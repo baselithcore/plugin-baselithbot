@@ -28,14 +28,16 @@ tags:
 - qdrant
 - salesforce
 - sso
-integrity_sha256: 8d4793ca3548f72f64cf85d233065b5ad778435b5f0198ce34f485c4a8cb08b0
+integrity_sha256: b083db29a5733329ed6b421ed0cf50572431dd2197d2138532a39d5b0f1eeb68
 plugin_dependencies:
   auth: '>=2.0.0'
 python_dependencies:
 - httpx>=0.27.0
 runtime_prerequisites:
-- "Node.js \u2265 20 on PATH (mandatory)"
-- "pnpm \u2265 11 on PATH (only when DBVIEW_PLUGIN_MODE=dev)"
+- "Node.js \u2265 20 on PATH (mandatory; \u2265 22.13 only if pnpm is upgraded to 11.x)"
+- "pnpm (auto-provisioned as 10.15.0 via the packageManager field; Node-20 compatible).\
+  \ Corepack/pnpm self-manage the version \u2014 do not pin pnpm 11.x while on Node 20\
+  \ (pnpm 11 requires Node \u2265 22.13). Needed for DBVIEW_PLUGIN_MODE=dev and builds."
 - "apps/api/dist/main.js built (prod mode \u2014 run `pnpm install && pnpm -r build`\
   \ once)"
 - "apps/web/dist/index.html built for the SPA \u2014 `VITE_API_BASE_URL=/api/dbview\
