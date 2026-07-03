@@ -28,7 +28,7 @@ tags:
 - qdrant
 - salesforce
 - sso
-integrity_sha256: 80f0339f28ee535d7fff4c47f9fb138e18c62bcf02414acd9a17e355bd6fd6fc
+integrity_sha256: 8d4793ca3548f72f64cf85d233065b5ad778435b5f0198ce34f485c4a8cb08b0
 plugin_dependencies:
   auth: '>=2.0.0'
 python_dependencies:
