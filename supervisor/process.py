@@ -68,6 +68,7 @@ class NodeSupervisor:
         self._config = config
         self._process: asyncio.subprocess.Process | None = None
         self._keepalive_task: asyncio.Task[None] | None = None
+        self._follower_task: asyncio.Task[None] | None = None
         self._stdout_task: asyncio.Task[None] | None = None
         self._stderr_task: asyncio.Task[None] | None = None
         self._stopped = asyncio.Event()
@@ -117,15 +118,49 @@ class NodeSupervisor:
             self._keepalive_loop(), name="dbview-supervisor-keepalive"
         )
 
+    async def start_follower(self) -> None:
+        """Attach to a Node child owned by the leader worker (no spawn).
+
+        Under a multi-worker deployment exactly one worker (the leadership
+        winner) spawns the Node child on the shared loopback port; every other
+        worker runs in *follower* mode: it never spawns or restarts the child,
+        it only tracks the shared child's health by probing the fixed port so
+        the proxy 503s cleanly until the leader's child is up. Requires a fixed
+        shared port (``DBVIEW_INTERNAL_PORT`` / the plugin default) so the
+        forward target is known without any cross-worker port publication.
+        """
+        if self._port is None:
+            raise RuntimeError(
+                "follower supervisor requires a fixed shared port "
+                "(DBVIEW_INTERNAL_PORT); none was configured"
+            )
+        logger.info(
+            "[dbview] supervisor in follower mode (upstream=%s) — the leader "
+            "worker owns the Node child",
+            self.base_url,
+        )
+        self._healthy = await self._probe_health()
+        self._follower_task = asyncio.create_task(
+            self._follower_loop(), name="dbview-supervisor-follower"
+        )
+
+    async def _follower_loop(self) -> None:
+        """Track the leader-owned child's health without ever spawning it."""
+        while not self._stopped.is_set():
+            await asyncio.sleep(max(self._config.health_probe_interval_s, 2.0))
+            self._healthy = await self._probe_health()
+
     async def stop(self) -> None:
         """Best-effort shutdown: cancel keep-alive, SIGTERM, SIGKILL."""
         self._stopped.set()
 
-        if self._keepalive_task is not None:
-            self._keepalive_task.cancel()
-            with contextlib.suppress(asyncio.CancelledError):
-                await self._keepalive_task
-            self._keepalive_task = None
+        for task_attr in ("_keepalive_task", "_follower_task"):
+            task = getattr(self, task_attr)
+            if task is not None:
+                task.cancel()
+                with contextlib.suppress(asyncio.CancelledError):
+                    await task
+                setattr(self, task_attr, None)
 
         await self._terminate_child()
 
