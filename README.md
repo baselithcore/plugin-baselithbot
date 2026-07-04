@@ -77,7 +77,6 @@ plugin. It respects the Sacred Core rule: all domain logic lives under
 ```text
 plugin-baselithbot/
 ├── manifest.yaml              # Marketplace metadata (id, entry_point, …)
-├── catalog-info.yaml          # Backstage catalog entry
 ├── pyproject.toml             # PEP-621 package metadata
 ├── requirements.txt           # Runtime pins (mirrors python_dependencies)
 ├── README.md  LICENSE  CHANGELOG.md  CONTRIBUTING.md
