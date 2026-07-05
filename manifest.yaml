@@ -9,7 +9,7 @@ description: "Database visualisation + Natural-Language-to-Query workbench for 1
   \ SPA served at ``/dbview``). Identity, RBAC and tenancy are centralised in the\
   \ platform ``auth`` plugin via a trusted-gateway seam \u2014 dbview's local login\
   \ is disabled and users are JIT-mirrored from the central identity provider."
-author: Giovanni Ippolito <g.ippolito@gdservices.tech>
+author: "BaselithCore Team"
 homepage: https://github.com/giovanni-ippolito/dbview
 license: Proprietary
 category: Knowledge
