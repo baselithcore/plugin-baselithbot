@@ -9,7 +9,7 @@ author: "BaselithCore Team"
 repository: https://github.com/baselithcore/plugin-baselithbot
 homepage: https://docs.baselithcore.xyz/plugins/baselithbot
 license: AGPL-3.0-only
-readiness: beta
+readiness: stable
 icon: assets/logobg-baselithbot500.png
 category: agent
 min_core_version: 0.7.0
