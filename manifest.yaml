@@ -11,7 +11,7 @@ description: "Database visualisation + Natural-Language-to-Query workbench for 1
   \ is disabled and users are JIT-mirrored from the central identity provider."
 author: "BaselithCore Team"
 homepage: https://github.com/giovanni-ippolito/dbview
-license: Proprietary
+license: LicenseRef-Proprietary
 category: Knowledge
 readiness: beta
 tenancy: shared
