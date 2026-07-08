@@ -1,0 +1,39 @@
+site_name: dbview — Database Visualisation & NL→Query
+site_description: >-
+  Schema visualisation and safe Natural-Language-to-Query workbench for 18
+  engines — SQL, graph, document, vector, key-value, search and Salesforce —
+  fronted by a central-auth gateway over the vendored NestJS/React stack.
+
+# Rendered by the Backstage TechDocs generator (techdocs-core provides the
+# Material theme + Backstage addons). The catalog Component's
+# `backstage.io/techdocs-ref` annotation is emitted automatically by the core
+# BackstageProvider because this mkdocs.yml exists — no catalog-info.yaml.
+plugins:
+  - techdocs-core
+
+nav:
+  - Overview: index.md
+  - Getting started: getting-started.md
+  - User guide:
+      - Connections & sharing: guide/connections.md
+      - Schema graph: guide/schema-graph.md
+      - Ask (NL → Query): guide/nl2query.md
+      - Query, results & history: guide/query-results-history.md
+  - Reference:
+      - Architecture: reference/architecture.md
+      - Configuration: reference/configuration.md
+      - API: reference/api.md
+      - Security & RBAC: reference/security.md
+      - Multi-tenancy: reference/tenancy.md
+  - Operations:
+      - Runbook & troubleshooting: operations/runbook.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
