@@ -31,7 +31,7 @@ Prometheus metrics from the upstream (`dbview_*` — request latency/errors,
 LLM calls, query executions, introspection failures, auth events) are exposed
 at `/api/dbview/metrics`, gated admin/API-key.
 
-## The "Connection not found" bug — root cause & fix
+## Connection Not Found Bug
 
 **Symptom**: a connection created successfully immediately shows *"Could not
 load schema — Connection `<id>` not found"* on the very next request.
@@ -88,7 +88,7 @@ follower-signed identity headers. Fix: ensure `DBVIEW_SECRET` (and, if set,
 | Plugin fails to activate: `DBVIEW_SECRET ... required` | Set `DBVIEW_SECRET` (≥ 16 chars) in the host environment before boot. |
 | `NodeNotAvailableError` at startup | `node` (or, in dev mode, `pnpm`) is missing from `PATH` on the host that's trying to become leader. |
 | `StartupTimeoutError` | The Node child never answered `/api/health` within `DBVIEW_STARTUP_TIMEOUT_S`. Check supervisor logs (`[dbview-node] ...` lines) for the underlying failure — commonly a missing prod bundle (`pnpm -r build` not run) or a port collision. |
-| Connection created on one request, "not found" on the next | See [The "Connection not found" bug](#the-connection-not-found-bug-root-cause--fix) above. |
+| Connection created on one request, "not found" on the next | See [Connection Not Found Bug](#connection-not-found-bug) above. |
 | `403 dbview_tab_denied` | The caller's central RBAC policy for `(dbview, dbview)` denies the tab — check the Access Control matrix, not this plugin. |
 | Local login doesn't work | Expected under gateway mode — identities are owned by the central `auth` plugin; local login is intentionally inert. |
 
