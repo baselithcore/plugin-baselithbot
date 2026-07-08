@@ -114,7 +114,7 @@ aggregator. The singleton browser agent starts lazily on first use
 | Security | [`security/`](../../security/) | `secret_store.py` (Fernet-encrypted provider keys), `redaction.py` |
 | Policies | [`policies/`](../../policies/) | `dashboard_auth.py` (bearer guard), `rate_limit.py`, `dm_policy.py`, `host_acl.py` |
 | Config | [`config/`](../../config/) | `models.py` (`ModelPreferenceStore`), `runtime.py` (Computer Use / Stealth overlay) |
-| OpenClaw parity | [`channels/`](../../channels/) (24 adapters), [`voice/`](../../voice/), [`canvas/`](../../canvas/), [`sessions/`](../../sessions/), [`skills/`](../../skills/), [`nodes/`](../../nodes/), [`gateway/`](../../gateway/), [`cron/`](../../cron/), [`chat/`](../../chat/), [`inbound/`](../../inbound/), [`agents/`](../../agents/) |
+| OpenClaw parity | [`channels/`](../../channels/) (24 adapters), [`voice/`](../../voice/), [`canvas/`](../../canvas/), [`sessions/`](../../sessions/), [`skills/`](../../skills/), [`nodes/`](../../nodes/), [`gateway/`](../../gateway/), [`cron/`](../../cron/), [`chat/`](../../chat/), [`inbound/`](../../inbound/), [`agents/`](../../agents/) | Subsystems implementing feature parity with OpenClaw |
 | API | [`api/`](../../api/) | `router.py` (core routes + UI mount), `ui_api.py`, `handlers.py` |
 | Dashboard | [`dashboard/`](../../dashboard/) | `app.py` (route composition), `routes/` (one router per surface) |
 | Diagnostics | [`diagnostics/`](../../diagnostics/) | `doctor.py`-style probes |
