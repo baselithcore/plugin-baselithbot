@@ -120,6 +120,7 @@ envelopes above and never raises. Groups: **Browser (7)** — navigate,
 click, type, scroll, screenshot, `eval_js_safe` (sanitized via
 `core.services.sanitization.InputSanitizer`), `run_task`. **Computer Use
 (12)** — desktop screenshot/screen size, mouse, keyboard, shell (allowlist
+
 - `allow_shell` gated), filesystem (root + `allow_filesystem` gated).
 **OpenClaw parity (17)** — channels, sessions, chat commands, doctor,
 skills, voice TTS, canvas render, cron list, Tailscale status, node
