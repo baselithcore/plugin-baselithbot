@@ -8,7 +8,11 @@ import {
 } from '@dbview/shared';
 import type { AuthPrincipal } from '../auth/auth.types.js';
 import { LlmCredentialsService } from './credentials.service.js';
-import { defaultExplainModel, defaultModelFor, type LlmAdapterAuth } from '../nl2sql/llm/factory.js';
+import {
+  defaultExplainModel,
+  defaultModelFor,
+  type LlmAdapterAuth,
+} from '../nl2sql/llm/factory.js';
 
 /**
  * Central LLM-governance enforcement for the dbview engine.
@@ -70,7 +74,9 @@ export class LlmGovernanceService {
   ): { provider: LlmProvider; model: string; auth: LlmAdapterAuth } {
     const pinned = this.enforcedProvider('translate');
     const provider = pinned ?? requested;
-    const model = pinned ? defaultModelFor(provider, kind) : (requestedModel ?? defaultModelFor(provider, kind));
+    const model = pinned
+      ? defaultModelFor(provider, kind)
+      : (requestedModel ?? defaultModelFor(provider, kind));
     return { provider, model, auth: this.resolveAuth(provider, principal, pinned !== undefined) };
   }
 
