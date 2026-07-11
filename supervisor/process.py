@@ -210,6 +210,20 @@ class NodeSupervisor:
             if required in os.environ and required not in env:
                 env[required] = os.environ[required]
         env.update(self._config.extra_env)
+        if self._config.env_provider is not None:
+            # Resolved at every spawn so a restart picks up current values
+            # (e.g. a governed LLM re-pin). Best-effort by contract: a failing
+            # provider must never block the child from starting.
+            try:
+                env.update(
+                    {str(k): str(v) for k, v in self._config.env_provider().items()}
+                )
+            except Exception:  # noqa: BLE001 — spawn must survive a bad provider
+                logger.warning(
+                    "[dbview] dynamic env provider failed; spawning without "
+                    "its overrides",
+                    exc_info=True,
+                )
         return env
 
     def _build_command(self) -> list[str]:

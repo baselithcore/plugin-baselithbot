@@ -1,0 +1,134 @@
+"""Central LLM governance: dbview honours the per-plugin LLM pin.
+
+Exercises :mod:`plugins.dbview.llm_governance` — the seam that translates the
+operator's pin (auth console; scopes ``nl2sql``/``explain``) into env
+overrides for the vendored Node child, while unpinned/unserviceable cases
+yield **no** overrides (child keeps its own env, zero behaviour change).
+"""
+
+from __future__ import annotations
+
+import pytest
+
+from core.config.services import LLMConfig
+from core.services.llm.policy import PluginLLMPolicy, set_plugin_llm_policy_resolver
+from plugins.dbview import llm_governance
+from plugins.dbview.llm_governance import governed_child_env
+
+_OLLAMA_KIND_VARS = llm_governance._OLLAMA_KIND_MODEL_VARS
+
+# Env that can leak host credentials into LLMConfig (fields with a
+# validation_alias ignore same-named init kwargs, so scrub these first).
+_LLM_ENV_VARS = (
+    "LLM_PROVIDER",
+    "LLM_MODEL",
+    "LLM_API_BASE",
+    "LLM_API_KEY",
+    "LLM_OPENAI_API_KEY",
+    "LLM_ANTHROPIC_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "OPENAI_API_KEY",
+    "LLM_HUGGINGFACE_API_KEY",
+    "HF_TOKEN",
+)
+
+
+@pytest.fixture(autouse=True)
+def _hermetic_policy(monkeypatch):
+    """Isolate the resolver and pin a deterministic central LLMConfig."""
+    for var in _LLM_ENV_VARS:
+        monkeypatch.delenv(var, raising=False)
+    set_plugin_llm_policy_resolver(None)
+    cfg = LLMConfig(
+        provider="ollama",
+        model="base-model",
+        enable_cache=False,
+        api_base="http://central-ollama:11434",
+    )
+    monkeypatch.setattr("core.services.llm.governed.get_llm_config", lambda: cfg)
+    yield
+    set_plugin_llm_policy_resolver(None)
+
+
+def _pin(policies: dict[str | None, PluginLLMPolicy]) -> None:
+    """Install a scope-aware resolver: ``{scope-or-None: policy}`` for dbview."""
+
+    def resolver(name: str, scope: str | None = None) -> PluginLLMPolicy | None:
+        if name != "dbview":
+            return None
+        return policies.get(scope)
+
+    set_plugin_llm_policy_resolver(resolver)
+
+
+def test_unpinned_yields_no_overrides():
+    assert governed_child_env() == {}
+
+
+def test_default_ollama_pin_governs_both_scopes():
+    _pin({None: PluginLLMPolicy(provider="ollama", model="llama3.1:8b")})
+    env = governed_child_env()
+    # Central endpoint + the pinned model as the default for every dialect
+    # kind (nl2sql scope) and for the explain pipeline (inherited fallback).
+    assert env["OLLAMA_BASE_URL"] == "http://central-ollama:11434"
+    for var in _OLLAMA_KIND_VARS:
+        assert env[var] == "llama3.1:8b"
+    assert env["OLLAMA_MODEL_EXPLAIN"] == "llama3.1:8b"
+    assert "OPENAI_API_KEY" not in env
+    assert "ANTHROPIC_API_KEY" not in env
+
+
+def test_per_scope_pins_route_independently(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-openai-central")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-anthropic-central")
+    cfg = LLMConfig(
+        provider="ollama", model="base-model", enable_cache=False, api_base=None
+    )
+    monkeypatch.setattr("core.services.llm.governed.get_llm_config", lambda: cfg)
+    _pin(
+        {
+            "nl2sql": PluginLLMPolicy(provider="openai", model="gpt-4o"),
+            "explain": PluginLLMPolicy(provider="anthropic", model="claude-x"),
+        }
+    )
+    env = governed_child_env()
+    assert env["OPENAI_API_KEY"] == "sk-openai-central"
+    assert env["OPENAI_MODEL"] == "gpt-4o"
+    assert env["ANTHROPIC_API_KEY"] == "sk-anthropic-central"
+    assert env["ANTHROPIC_MODEL_EXPLAIN"] == "claude-x"
+    # The other scope's model vars stay untouched.
+    assert "OPENAI_MODEL_EXPLAIN" not in env
+    assert "ANTHROPIC_MODEL" not in env
+    for var in _OLLAMA_KIND_VARS:
+        assert var not in env
+
+
+def test_same_provider_pin_without_model_inherits_central_default_model():
+    # A same-provider pin with no model resolves to the central default model
+    # (LLMConfig.model) — the funnel contract, mirrored by GovernedClientConfig.
+    _pin({None: PluginLLMPolicy(provider="ollama", model=None)})
+    env = governed_child_env()
+    assert env["OLLAMA_BASE_URL"] == "http://central-ollama:11434"
+    for var in (*_OLLAMA_KIND_VARS, "OLLAMA_MODEL_EXPLAIN"):
+        assert env[var] == "base-model"
+
+
+def test_unserviceable_provider_pin_is_ignored():
+    # The Node child has no HuggingFace SDK → keep its own configuration.
+    _pin({None: PluginLLMPolicy(provider="huggingface", model="some-model")})
+    assert governed_child_env() == {}
+
+
+def test_cross_provider_pin_without_model_is_dropped():
+    # Central default provider is ollama; an openai pin without a model would
+    # inherit a meaningless default model → dropped centrally, no overrides.
+    _pin({None: PluginLLMPolicy(provider="openai", model=None)})
+    assert governed_child_env() == {}
+
+
+def test_resolver_failure_degrades_to_no_overrides():
+    def exploding(name: str, scope: str | None = None) -> PluginLLMPolicy | None:
+        raise RuntimeError("policy store down")
+
+    set_plugin_llm_policy_resolver(exploding)
+    assert governed_child_env() == {}

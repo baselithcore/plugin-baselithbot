@@ -48,6 +48,32 @@ provider selection or a **standalone** (non-gateway) deployment.
 | `DBVIEW_ADMIN_EMAIL` / `DBVIEW_ADMIN_PASSWORD` | `admin@dbview.local` / random | Bootstrap admin for **standalone** (non-gateway) deployments only; under gateway mode local admin bootstrap is skipped entirely (identities are owned by the central IdP). |
 | `DBVIEW_ALLOW_REGISTRATION` | `false` | Self-signup on the local login screen — irrelevant under gateway mode, where local login is inert. |
 
+## Central LLM governance (auth console)
+
+LLM routing follows the platform's per-plugin LLM policy, like every other
+plugin: an operator pin for `dbview` set from the **auth console** overrides
+the provider env above. The plugin declares two `llm_scopes` so the two
+pipelines can be pinned independently:
+
+| Scope | Pipeline | Model env it governs |
+|---|---|---|
+| `nl2sql` | NL→Query translation | `OLLAMA_MODEL_SQL/GRAPH/DOCUMENT/VECTOR/KEYVALUE/SEARCH/SAAS`, `OPENAI_MODEL`, `ANTHROPIC_MODEL` |
+| `explain` | Explain / summarize | `OLLAMA_MODEL_EXPLAIN`, `OPENAI_MODEL_EXPLAIN`, `ANTHROPIC_MODEL_EXPLAIN` |
+
+A scope with no pin of its own inherits the plugin's default pin; unpinned,
+the child keeps the env-driven configuration above — zero behaviour change.
+The pinned provider's **central credential/endpoint** (`OPENAI_API_KEY`,
+`ANTHROPIC_API_KEY`, `OLLAMA_BASE_URL`) also comes from central config; a
+pinned model replaces that scope's default-model vars. What a pin never
+touches: the per-request provider/model chosen in the Ask UI and per-user
+stored (BYOK) keys — explicit caller choices remain a product feature.
+Supported pins: `openai`, `anthropic`, `ollama` (the child bundles exactly
+those SDKs; a `huggingface` pin is ignored).
+
+Governed values are injected into the child environment **at spawn**, so a
+crash-restart picks up the current pin automatically; to propagate a re-pin
+to a healthy child, reload the plugin (or restart the backend).
+
 ## Runtime prerequisites
 
 - Node.js ≥ 20 on `PATH` (mandatory; ≥ 22.13 only if pnpm is upgraded to

@@ -168,3 +168,34 @@ def test_build_env_applies_extra_env_last(tmp_path: Path):
         out = sup._build_env()
     assert out["DBVIEW_GATEWAY_AUTH"] == "true"
     assert out["DBVIEW_GATEWAY_SECRET"] == "z" * 32
+
+
+def test_build_env_applies_env_provider_after_extra_env(tmp_path: Path):
+    # Dynamic (per-spawn) overrides — e.g. the governed LLM routing — must win
+    # over both the passthrough env and the static extra_env.
+    cfg = SupervisorConfig(
+        plugin_dir=tmp_path,
+        dbview_root=tmp_path / "dbview",
+        extra_env={"OPENAI_MODEL": "engine-default"},
+        env_provider=lambda: {"OPENAI_MODEL": "governed-model"},
+    )
+    sup = NodeSupervisor(cfg)
+    sup._port = 4242
+    with patch.dict(os.environ, {"OPENAI_MODEL": "host-env"}, clear=False):
+        out = sup._build_env()
+    assert out["OPENAI_MODEL"] == "governed-model"
+
+
+def test_build_env_survives_raising_env_provider(tmp_path: Path):
+    def exploding() -> dict[str, str]:
+        raise RuntimeError("policy store down")
+
+    cfg = SupervisorConfig(
+        plugin_dir=tmp_path,
+        dbview_root=tmp_path / "dbview",
+        env_provider=exploding,
+    )
+    sup = NodeSupervisor(cfg)
+    sup._port = 4242
+    out = sup._build_env()
+    assert out["PORT"] == "4242"  # spawn env still assembled

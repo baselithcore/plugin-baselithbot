@@ -34,6 +34,10 @@ confines connection sharing to the identity-derived tenancy scope key
 (:func:`core.context.resolve_plugin_tenant_key` — honours the runtime
 ``shared``/``personal`` override from the auth console).
 
+LLM routing is centrally governed the same way: the operator's per-plugin LLM
+pin (auth console; scopes ``nl2sql``/``explain``) is translated into child env
+overrides at every spawn — see :mod:`.llm_governance`.
+
 Multi-worker model (single Node child)
 --------------------------------------
 The embedded dbview app is single-instance: its state (connections, mirrored
@@ -81,6 +85,7 @@ from fastapi import APIRouter
 from core.plugins import RouterPlugin
 
 from .leader import DbviewLeadership, acquire_dbview_leadership
+from .llm_governance import governed_child_env
 from .proxy_router import build_proxy_router
 from .supervisor import (
     NodeNotAvailableError,
@@ -292,6 +297,9 @@ class DbviewPlugin(RouterPlugin):
         supervisor_config = build_supervisor_config(
             _PLUGIN_DIR,
             extra_env=self._compose_child_env(),
+            # Central LLM governance: the operator's per-plugin pin (auth
+            # console) is translated into child env overrides at every spawn.
+            env_provider=governed_child_env,
             overrides=supervisor_overrides,
         )
         supervisor = NodeSupervisor(supervisor_config)

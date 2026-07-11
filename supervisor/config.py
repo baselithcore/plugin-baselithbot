@@ -10,7 +10,7 @@ import logging
 import os
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Callable, Mapping
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +68,13 @@ class SupervisorConfig:
     extra_env: Mapping[str, str] = field(default_factory=dict)
     """Plugin-controlled overrides merged on top of the passthrough env."""
 
+    env_provider: Callable[[], Mapping[str, str]] | None = None
+    """Dynamic env overrides resolved at **every** child spawn (after
+    ``extra_env``, so they win). Used for values that may change between
+    restarts — e.g. the centrally governed LLM routing
+    (:func:`plugins.dbview.llm_governance.governed_child_env`). Must be cheap
+    and never raise; a raising provider is logged and skipped."""
+
 
 def _env_int(name: str, default: int) -> int:
     raw = os.environ.get(name)
@@ -95,6 +102,7 @@ def build_supervisor_config(
     plugin_dir: Path,
     *,
     extra_env: Mapping[str, str] | None = None,
+    env_provider: Callable[[], Mapping[str, str]] | None = None,
     overrides: Mapping[str, Any] | None = None,
 ) -> SupervisorConfig:
     """Compose a :class:`SupervisorConfig` from plugin dir + env + overrides.
@@ -139,6 +147,7 @@ def build_supervisor_config(
         shutdown_grace_s=_env_float("DBVIEW_SHUTDOWN_GRACE_S", 10.0),
         restart_max_attempts=_env_int("DBVIEW_RESTART_MAX_ATTEMPTS", 0),
         extra_env=dict(extra_env or {}),
+        env_provider=env_provider,
     )
 
 

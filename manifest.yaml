@@ -28,7 +28,15 @@ tags:
 - qdrant
 - salesforce
 - sso
-integrity_sha256: d5707dee73cf1d468e946b7d8707af86178d335f69b3cc601cd1998d3816b51c
+integrity_sha256: 3f180b1df42d895cbbebf5ee845570bcb83d7d0cb62842c9488378b3659f4ab3
+llm_scopes:
+- id: nl2sql
+  label: NL→Query translation
+- id: explain
+  label: Explain / summarize
+optional_resources:
+- llm
+- postgres
 plugin_dependencies:
   auth: '>=2.0.0'
 python_dependencies:

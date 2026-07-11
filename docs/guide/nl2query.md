@@ -18,6 +18,12 @@ Three interchangeable providers, selected per request:
 Temperature is fixed at `0` for determinism. Pick provider/model from the Ask
 panel's selector.
 
+Deployment **defaults** (provider credentials/endpoint and default models) can
+be centrally pinned by an operator from the auth console — per pipeline, via
+the `nl2sql` and `explain` LLM scopes; your explicit per-request choice in the
+Ask panel always wins. See
+[Configuration → Central LLM governance](../reference/configuration.md#central-llm-governance-auth-console).
+
 ## What happens on generate
 
 1. The connection's schema is introspected (cached unless refreshed) and
