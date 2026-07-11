@@ -1,6 +1,15 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, CheckCircle2, Eye, EyeOff, KeyRound, Loader2, Trash2 } from 'lucide-react';
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  KeyRound,
+  Loader2,
+  Lock,
+  Trash2,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import type { RemoteLlmProvider } from '@dbview/shared';
 import { api } from '../../lib/api.js';
@@ -36,11 +45,45 @@ const PROVIDERS: {
  *     from the live catalogue rather than guessing model ids.
  */
 export function AiProvidersSection() {
+  const governance = useQuery({
+    queryKey: ['llm-governance'],
+    queryFn: () => api.getLlmGovernance(),
+    retry: false,
+    staleTime: 60_000,
+  });
+
+  // When the host operator has centrally pinned the LLM provider, per-user
+  // keys are ignored server-side — hide the BYOK controls and explain why.
+  if (governance.data?.enforced) {
+    return <GovernedNotice provider={governance.data.translate.provider} />;
+  }
+
   return (
     <div className="flex flex-col gap-3">
       {PROVIDERS.map((p) => (
         <ProviderCard key={p.id} provider={p} />
       ))}
+    </div>
+  );
+}
+
+function GovernedNotice({ provider }: { provider: string | null }) {
+  return (
+    <div
+      className="flex items-start gap-2.5 rounded-lg border p-3"
+      style={{
+        background: 'rgb(var(--surface-2) / 0.4)',
+        borderColor: 'rgb(var(--border-subtle))',
+      }}
+    >
+      <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-text-dim" />
+      <div className="flex flex-col gap-1">
+        <span className="text-[13px] font-medium">LLM managed centrally</span>
+        <p className="text-[11px] leading-relaxed text-text-dim">
+          The LLM provider{provider ? ` (${provider})` : ''} and model for this workspace are set by
+          your administrator in the platform console. Per-user API keys are not used here.
+        </p>
+      </div>
     </div>
   );
 }

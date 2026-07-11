@@ -13,6 +13,7 @@ import {
   SetLlmCredentialSchema,
   TestLlmCredentialSchema,
   type LlmCredentialStatus,
+  type LlmGovernanceState,
   type OllamaModelsResponse,
   type RemoteLlmProvider,
   type RemoteModelsResponse,
@@ -24,14 +25,26 @@ import type { AuthPrincipal } from '../auth/auth.types.js';
 import { OllamaService } from './ollama.service.js';
 import { LlmCredentialsService } from './credentials.service.js';
 import { RemoteProviderService } from './remote-provider.service.js';
+import { LlmGovernanceService } from './governance.service.js';
 
 @Controller('llm')
 export class LlmController {
   constructor(
     private readonly ollama: OllamaService,
     private readonly credentials: LlmCredentialsService,
-    private readonly remote: RemoteProviderService
+    private readonly remote: RemoteProviderService,
+    private readonly governance: LlmGovernanceService
   ) {}
+
+  /**
+   * Central LLM-governance state. When a scope is enforced (operator pinned
+   * the provider from the auth console), the SPA hides the matching per-user
+   * LLM controls — the pin already wins server-side regardless.
+   */
+  @Get('governance')
+  governanceState(): LlmGovernanceState {
+    return this.governance.state();
+  }
 
   @Get('ollama/models')
   async listOllama(): Promise<OllamaModelsResponse> {

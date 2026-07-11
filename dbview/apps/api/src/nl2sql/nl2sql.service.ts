@@ -6,10 +6,8 @@ import {
   UnsafeSqlError,
   dialectKind,
   isGraphDialect,
-  isRemoteLlmProvider,
   isSaasDialect,
   isSqlDialect,
-  type LlmProvider,
   type Nl2SqlRequest,
   type Nl2SqlResponse,
   type QueryLanguage,
@@ -22,15 +20,9 @@ import { SalesforceSafetyValidator } from '../engine/salesforce/safety.js';
 import { SalesforceDataCloudSafetyValidator } from '../engine/salesforce-data-cloud/safety.js';
 import { SchemaService } from '../schema/schema.service.js';
 import { ConnectionsService } from '../connections/connections.service.js';
-import { LlmCredentialsService } from '../llm/credentials.service.js';
+import { LlmGovernanceService } from '../llm/governance.service.js';
 import type { AuthPrincipal } from '../auth/auth.types.js';
-import {
-  createChatAdapter,
-  createLlmAdapter,
-  defaultExplainModel,
-  defaultModelFor,
-  type LlmAdapterAuth,
-} from './llm/factory.js';
+import { createChatAdapter, createLlmAdapter } from './llm/factory.js';
 import type { StructuredContext } from './llm/provider.js';
 import {
   buildSystemPrompt,
@@ -109,16 +101,22 @@ export class Nl2SqlService {
   constructor(
     private readonly connections: ConnectionsService,
     private readonly schema: SchemaService,
-    private readonly credentials: LlmCredentialsService
+    private readonly governance: LlmGovernanceService
   ) {}
 
   async translate(req: Nl2SqlRequest, principal: AuthPrincipal): Promise<Nl2SqlResponse> {
     const conn = this.connections.get(req.connectionId, principal);
     const fullGraph = await this.schema.getGraph(req.connectionId, principal);
     const kind = dialectKind(conn.dialect);
-    const model = req.model ?? defaultModelFor(req.provider, kind);
-    const auth = this.resolveAuth(req.provider, principal);
-    const adapter = instrumentLlmAdapter(createLlmAdapter(req.provider, model, auth), 'translate');
+    // Central governance: an operator-enforced pin overrides the request's
+    // provider/model and any per-user BYOK key; otherwise the caller's choice
+    // (and stored key) apply unchanged.
+    const {
+      provider: llmProvider,
+      model,
+      auth,
+    } = this.governance.resolveTranslate(req.provider, req.model, kind, principal);
+    const adapter = instrumentLlmAdapter(createLlmAdapter(llmProvider, model, auth), 'translate');
 
     // Wide relational schemas dilute the LLM's attention. Prune to the tables
     // matching the question; keep the full graph available so the retry loop
@@ -231,8 +229,12 @@ export class Nl2SqlService {
           (explanationMissing || joinNotesMissing) &&
           (annotated.language === 'sql' || annotated.language === 'cypher')
         ) {
-          const explainer = instrumentLlmAdapter(createChatAdapter(req.provider, auth), 'explain');
-          const explainModel = defaultExplainModel(req.provider);
+          const explainGov = this.governance.resolveExplain(req.provider, principal);
+          const explainer = instrumentLlmAdapter(
+            createChatAdapter(explainGov.provider, explainGov.auth),
+            'explain'
+          );
+          const explainModel = explainGov.model;
           const explainStart = Date.now();
           const enriched = await explainQuery(explainer, explainModel, {
             query: annotated.query,
@@ -257,7 +259,7 @@ export class Nl2SqlService {
         return {
           ...annotated,
           dialect: conn.dialect,
-          provider: req.provider,
+          provider: llmProvider,
           model: completion.model,
           retries: attempt,
         };
@@ -341,17 +343,6 @@ export class Nl2SqlService {
     throw new LlmProviderError(
       `NL2Query failed after ${attempts} attempts: ${lastError?.message ?? 'unknown'}.${tail}`
     );
-  }
-
-  /**
-   * Resolve adapter auth for a request. Ollama (local) needs none; remote
-   * providers get a per-user key if stored, else fall back to env (preserves
-   * the original deployment-level configuration path so existing installs
-   * keep working without per-user onboarding).
-   */
-  resolveAuth(provider: LlmProvider, principal: AuthPrincipal): LlmAdapterAuth {
-    if (!isRemoteLlmProvider(provider)) return {};
-    return { apiKey: this.credentials.resolveApiKey(provider, principal) };
   }
 
   private validate(

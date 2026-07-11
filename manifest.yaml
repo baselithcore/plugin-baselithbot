@@ -9,7 +9,7 @@ description: "Database visualisation + Natural-Language-to-Query workbench for 1
   \ SPA served at ``/dbview``). Identity, RBAC and tenancy are centralised in the\
   \ platform ``auth`` plugin via a trusted-gateway seam \u2014 dbview's local login\
   \ is disabled and users are JIT-mirrored from the central identity provider."
-author: "BaselithCore Team"
+author: BaselithCore Team
 homepage: https://github.com/giovanni-ippolito/dbview
 license: LicenseRef-Proprietary
 min_core_version: 1.0.0
@@ -29,10 +29,10 @@ tags:
 - qdrant
 - salesforce
 - sso
-integrity_sha256: dc2cf08e5b98bc773d58cbd662bacdd771df9f5749637a2b5a7f5700597c955c
+integrity_sha256: e2af6a5624509ca6b3eb48cf8367abd50ad1caafec38fd4aee620dba65d8d420
 llm_scopes:
 - id: nl2sql
-  label: NL→Query translation
+  label: "NL\u2192Query translation"
 - id: explain
   label: Explain / summarize
 optional_resources:

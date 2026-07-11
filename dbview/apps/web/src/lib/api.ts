@@ -17,6 +17,7 @@ import type {
   LoginRequest,
   LoginResponse,
   LlmCredentialStatus,
+  LlmGovernanceState,
   Nl2QueryAskRequest,
   Nl2QueryAskResponse,
   Nl2SqlRequest,
@@ -126,6 +127,7 @@ export const api = {
     http.post<ExecuteQueryResponse>('/query/execute', req).then((r) => r.data),
   sample: (req: { connectionId: string; tableId: string; rowLimit?: number }) =>
     http.post<ExecuteQueryResponse>('/query/sample', req).then((r) => r.data),
+  getLlmGovernance: () => http.get<LlmGovernanceState>('/llm/governance').then((r) => r.data),
   listOllamaModels: () => http.get<OllamaModelsResponse>('/llm/ollama/models').then((r) => r.data),
   getLlmCredential: (provider: RemoteLlmProvider) =>
     http.get<LlmCredentialStatus>(`/llm/providers/${provider}/credential`).then((r) => r.data),

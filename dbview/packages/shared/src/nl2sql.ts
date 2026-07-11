@@ -148,6 +148,33 @@ export const LlmCredentialStatusSchema = z.object({
 });
 export type LlmCredentialStatus = z.infer<typeof LlmCredentialStatusSchema>;
 
+/**
+ * Central LLM-governance state for one pipeline scope.
+ *
+ * When the BaselithCore host operator pins this plugin's LLM provider/model
+ * from the central auth console, the pin is *enforced*: it overrides the
+ * per-request provider/model and any per-user BYOK credential, and the UI
+ * hides the corresponding controls. `enforced=false` means the scope is
+ * ungoverned and the user's own choices apply (default behaviour).
+ */
+export const LlmGovernanceScopeSchema = z.object({
+  enforced: z.boolean(),
+  /** The provider the pin forces, or `null` when not enforced. */
+  provider: LlmProviderSchema.nullable(),
+});
+export type LlmGovernanceScope = z.infer<typeof LlmGovernanceScopeSchema>;
+
+/** Response for `GET /api/llm/governance`. */
+export const LlmGovernanceStateSchema = z.object({
+  /** True when any pipeline scope is centrally enforced. */
+  enforced: z.boolean(),
+  /** NL→Query translation pipeline. */
+  translate: LlmGovernanceScopeSchema,
+  /** Explain/summarize pipeline. */
+  explain: LlmGovernanceScopeSchema,
+});
+export type LlmGovernanceState = z.infer<typeof LlmGovernanceStateSchema>;
+
 /** Body for `PUT /api/llm/providers/:provider/credential`. */
 export const SetLlmCredentialSchema = z.object({
   apiKey: z.string().min(8).max(512),

@@ -1,7 +1,9 @@
 import { motion } from 'framer-motion';
-import { Loader2, Send, SlidersHorizontal, Wand2, Zap } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Loader2, Lock, Send, SlidersHorizontal, Wand2, Zap } from 'lucide-react';
 import { isRemoteLlmProvider, type LlmProvider } from '@dbview/shared';
 import type { KeyboardEvent, ReactNode, RefObject } from 'react';
+import { api } from '../../lib/api.js';
 import { cn } from '../../lib/cn.js';
 import { ModelCombobox } from './ModelCombobox.js';
 import { RemoteModelCombobox } from './RemoteModelCombobox.js';
@@ -12,6 +14,12 @@ const PROVIDERS: { value: LlmProvider; label: string }[] = [
   { value: 'openai', label: 'OpenAI' },
   { value: 'anthropic', label: 'Claude' },
 ];
+
+const PROVIDER_LABEL: Record<string, string> = {
+  ollama: 'Ollama',
+  openai: 'OpenAI',
+  anthropic: 'Claude',
+};
 
 interface QueryComposerProps {
   prompt: string;
@@ -43,6 +51,16 @@ export function QueryComposer({
   onKeyDown,
 }: QueryComposerProps) {
   const canSend = prompt.trim().length > 0 && !busy;
+  // Central governance: when the operator has pinned the NL→Query provider,
+  // the per-request provider/model are ignored server-side — show a read-only
+  // badge instead of the picker so the UI never implies a choice that has none.
+  const governance = useQuery({
+    queryKey: ['llm-governance'],
+    queryFn: () => api.getLlmGovernance(),
+    retry: false,
+    staleTime: 60_000,
+  });
+  const enforced = governance.data?.translate;
 
   return (
     <div
@@ -94,34 +112,49 @@ export function QueryComposer({
               >
                 <SlidersHorizontal className="h-3.5 w-3.5" />
               </span>
-              <select
-                className="select h-7 text-[12px]"
-                value={provider}
-                onChange={(event) => {
-                  onProviderChange(event.target.value as LlmProvider);
-                  onModelChange(undefined);
-                }}
-                aria-label="LLM provider"
-                title="LLM provider"
-              >
-                {PROVIDERS.map((p) => (
-                  <option key={p.value} value={p.value}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
-              {provider === 'ollama' ? (
-                <ModelCombobox
-                  value={model}
-                  onChange={(value) => onModelChange(value || undefined)}
-                />
-              ) : isRemoteLlmProvider(provider) ? (
-                <RemoteModelCombobox
-                  provider={provider}
-                  value={model}
-                  onChange={(value) => onModelChange(value || undefined)}
-                />
-              ) : null}
+              {enforced?.enforced ? (
+                <span
+                  className="inline-flex h-7 items-center gap-1.5 rounded-md border border-border-subtle px-2 text-[11px] text-text-dim"
+                  title="LLM provider is managed centrally by your administrator"
+                >
+                  <Lock className="h-3 w-3" />
+                  {enforced.provider
+                    ? (PROVIDER_LABEL[enforced.provider] ?? enforced.provider)
+                    : 'Managed'}
+                  <span className="text-text-dim/70">· managed</span>
+                </span>
+              ) : (
+                <>
+                  <select
+                    className="select h-7 text-[12px]"
+                    value={provider}
+                    onChange={(event) => {
+                      onProviderChange(event.target.value as LlmProvider);
+                      onModelChange(undefined);
+                    }}
+                    aria-label="LLM provider"
+                    title="LLM provider"
+                  >
+                    {PROVIDERS.map((p) => (
+                      <option key={p.value} value={p.value}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
+                  {provider === 'ollama' ? (
+                    <ModelCombobox
+                      value={model}
+                      onChange={(value) => onModelChange(value || undefined)}
+                    />
+                  ) : isRemoteLlmProvider(provider) ? (
+                    <RemoteModelCombobox
+                      provider={provider}
+                      value={model}
+                      onChange={(value) => onModelChange(value || undefined)}
+                    />
+                  ) : null}
+                </>
+              )}
             </div>
           </div>
 

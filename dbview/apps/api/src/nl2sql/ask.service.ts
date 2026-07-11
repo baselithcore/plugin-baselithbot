@@ -12,6 +12,7 @@ import { QueryService } from '../query/query.service.js';
 import { ConnectionsService } from '../connections/connections.service.js';
 import { HistoryService } from '../history/history.service.js';
 import { SchemaService } from '../schema/schema.service.js';
+import { LlmGovernanceService } from '../llm/governance.service.js';
 import type { AuthPrincipal } from '../auth/auth.types.js';
 import { createChatAdapter, defaultExplainModel } from './llm/factory.js';
 import { summarizeResult } from './summarizer.js';
@@ -33,7 +34,8 @@ export class Nl2QueryAskService {
     private readonly query: QueryService,
     private readonly connections: ConnectionsService,
     private readonly history: HistoryService,
-    private readonly schemaService: SchemaService
+    private readonly schemaService: SchemaService,
+    private readonly governance: LlmGovernanceService
   ) {}
 
   async ask(req: Nl2QueryAskRequest, principal: AuthPrincipal): Promise<Nl2QueryAskResponse> {
@@ -131,11 +133,17 @@ export class Nl2QueryAskService {
     let followUps: string[] = [];
     if (result) {
       try {
+        // Explain/summarize scope: an enforced central pin overrides the
+        // request's provider/model and per-user BYOK; otherwise keep the
+        // caller's summary-model preference.
+        const explainGov = this.governance.resolveExplain(req.provider, principal);
         const adapter = instrumentLlmAdapter(
-          createChatAdapter(req.provider, this.nl2sql.resolveAuth(req.provider, principal)),
+          createChatAdapter(explainGov.provider, explainGov.auth),
           'ask'
         );
-        const model = pickSummaryModel(req.provider, req.model, translation.model);
+        const model = this.governance.state().explain.enforced
+          ? explainGov.model
+          : pickSummaryModel(req.provider, req.model, translation.model);
         // Ground follow-ups in the actual schema so the model cannot invent
         // columns/tables. Use the cached graph; do not force a refresh.
         const schema = await this.schemaService

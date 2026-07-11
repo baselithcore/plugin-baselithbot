@@ -113,6 +113,15 @@ def _credential_env(gov: GovernedClientConfig) -> dict[str, str]:
     return env
 
 
+# Env var the child reads to know a scope's pin is *enforced* (must win over
+# the per-request provider/model and per-user BYOK, and hide the UI controls).
+# Keyed by scope: ``DBVIEW_LLM_ENFORCED_NL2SQL`` / ``DBVIEW_LLM_ENFORCED_EXPLAIN``.
+_ENFORCED_ENV_VAR: dict[str, str] = {
+    NL2SQL_SCOPE: "DBVIEW_LLM_ENFORCED_NL2SQL",
+    EXPLAIN_SCOPE: "DBVIEW_LLM_ENFORCED_EXPLAIN",
+}
+
+
 def governed_child_env() -> dict[str, str]:
     """Child env overrides for the operator's dbview LLM pin (may be empty).
 
@@ -120,6 +129,10 @@ def governed_child_env() -> dict[str, str]:
     and the plugin's own ``extra_env``), so governed values always win.
     Cheap and total: any resolution failure degrades to ``{}`` — the child
     spawns with its own configuration, exactly as if unpinned.
+
+    A pinned scope also emits ``DBVIEW_LLM_ENFORCED_<SCOPE>=<provider>`` so the
+    Node engine enforces the pin over the per-request provider/model and any
+    per-user BYOK credential, and the SPA hides the matching LLM controls.
     """
     try:
         env: dict[str, str] = {}
@@ -127,6 +140,7 @@ def governed_child_env() -> dict[str, str]:
             gov = _governed(scope)
             if gov is None:
                 continue
+            env[_ENFORCED_ENV_VAR[scope]] = gov.provider
             env.update(_credential_env(gov))
             if gov.model:
                 for var in _MODEL_VARS[scope][gov.provider]:

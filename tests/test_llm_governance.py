@@ -62,7 +62,11 @@ def _pin(policies: dict[str | None, PluginLLMPolicy]) -> None:
 
 
 def test_unpinned_yields_no_overrides():
-    assert governed_child_env() == {}
+    env = governed_child_env()
+    assert env == {}
+    # No pin ⇒ no enforcement signal ⇒ the child keeps per-request + BYOK.
+    assert "DBVIEW_LLM_ENFORCED_NL2SQL" not in env
+    assert "DBVIEW_LLM_ENFORCED_EXPLAIN" not in env
 
 
 def test_default_ollama_pin_governs_both_scopes():
@@ -76,6 +80,10 @@ def test_default_ollama_pin_governs_both_scopes():
     assert env["OLLAMA_MODEL_EXPLAIN"] == "llama3.1:8b"
     assert "OPENAI_API_KEY" not in env
     assert "ANTHROPIC_API_KEY" not in env
+    # Both scopes are enforced on the pinned provider (child locks the UI +
+    # overrides per-request/BYOK for each).
+    assert env["DBVIEW_LLM_ENFORCED_NL2SQL"] == "ollama"
+    assert env["DBVIEW_LLM_ENFORCED_EXPLAIN"] == "ollama"
 
 
 def test_per_scope_pins_route_independently(monkeypatch):
@@ -101,6 +109,19 @@ def test_per_scope_pins_route_independently(monkeypatch):
     assert "ANTHROPIC_MODEL" not in env
     for var in _OLLAMA_KIND_VARS:
         assert var not in env
+    # Each scope is enforced on its own provider — the UI locks translate to
+    # openai and explain to anthropic independently.
+    assert env["DBVIEW_LLM_ENFORCED_NL2SQL"] == "openai"
+    assert env["DBVIEW_LLM_ENFORCED_EXPLAIN"] == "anthropic"
+
+
+def test_unserviceable_pin_emits_no_enforcement_signal():
+    # A provider the child can't serve is ignored — no override AND no
+    # enforcement flag, so the UI keeps the per-user controls.
+    _pin({None: PluginLLMPolicy(provider="huggingface", model="some-model")})
+    env = governed_child_env()
+    assert "DBVIEW_LLM_ENFORCED_NL2SQL" not in env
+    assert "DBVIEW_LLM_ENFORCED_EXPLAIN" not in env
 
 
 def test_same_provider_pin_without_model_inherits_central_default_model():
