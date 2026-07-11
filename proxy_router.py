@@ -194,6 +194,47 @@ def _make_cookie_path_rewriter(
     return _rewrite
 
 
+# Plugin-authored user-facing errors, localized en (default) + it per the
+# platform backend-i18n rule; resolved from ``Accept-Language``.
+_ERROR_MESSAGES: dict[str, dict[str, str]] = {
+    "dbview_upstream_down": {
+        "en": (
+            "dbview NestJS API is not currently healthy. "
+            "Check the plugin supervisor logs."
+        ),
+        "it": (
+            "L'API NestJS di dbview non è al momento in salute. "
+            "Controlla i log del supervisor del plugin."
+        ),
+    },
+    "dbview_tab_denied": {
+        "en": "Access to 'dbview:dbview' is not permitted",
+        "it": "Accesso a 'dbview:dbview' non consentito",
+    },
+    "dbview_upstream_error": {
+        "en": "upstream request failed: {exc}",
+        "it": "richiesta verso l'upstream fallita: {exc}",
+    },
+}
+
+
+def _locale(request: Request) -> str:
+    """First supported language in ``Accept-Language`` (default ``en``)."""
+    for part in request.headers.get("accept-language", "").split(","):
+        code = part.split(";")[0].strip().lower()
+        if code.startswith("it"):
+            return "it"
+        if code.startswith("en"):
+            return "en"
+    return "en"
+
+
+def _msg(request: Request, code: str, **fmt: object) -> str:
+    catalog = _ERROR_MESSAGES[code]
+    text = catalog.get(_locale(request), catalog["en"])
+    return text.format(**fmt) if fmt else text
+
+
 def build_proxy_router(
     *,
     upstream_base_url_provider: Callable[[], str],
@@ -234,10 +275,7 @@ def build_proxy_router(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 content={
                     "code": "dbview_upstream_down",
-                    "detail": (
-                        "dbview NestJS API is not currently healthy. "
-                        "Check the plugin supervisor logs."
-                    ),
+                    "detail": _msg(request, "dbview_upstream_down"),
                 },
             )
 
@@ -250,7 +288,7 @@ def build_proxy_router(
                     status_code=status.HTTP_403_FORBIDDEN,
                     content={
                         "code": "dbview_tab_denied",
-                        "detail": "Access to 'dbview:dbview' is not permitted",
+                        "detail": _msg(request, "dbview_tab_denied"),
                     },
                 )
             secret = gateway_secret_provider()
@@ -296,7 +334,7 @@ def build_proxy_router(
                 status_code=status.HTTP_502_BAD_GATEWAY,
                 content={
                     "code": "dbview_upstream_error",
-                    "detail": f"upstream request failed: {exc}",
+                    "detail": _msg(request, "dbview_upstream_error", exc=exc),
                 },
             )
 

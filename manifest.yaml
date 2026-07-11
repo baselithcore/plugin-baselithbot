@@ -12,6 +12,7 @@ description: "Database visualisation + Natural-Language-to-Query workbench for 1
 author: "BaselithCore Team"
 homepage: https://github.com/giovanni-ippolito/dbview
 license: LicenseRef-Proprietary
+min_core_version: 1.0.0
 category: Knowledge
 readiness: beta
 tenancy: shared
@@ -28,7 +29,7 @@ tags:
 - qdrant
 - salesforce
 - sso
-integrity_sha256: 3f180b1df42d895cbbebf5ee845570bcb83d7d0cb62842c9488378b3659f4ab3
+integrity_sha256: dc2cf08e5b98bc773d58cbd662bacdd771df9f5749637a2b5a7f5700597c955c
 llm_scopes:
 - id: nl2sql
   label: NL→Query translation

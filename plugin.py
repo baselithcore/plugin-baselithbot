@@ -81,6 +81,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter
+from pydantic import SecretStr
 
 from core.plugins import RouterPlugin
 
@@ -106,6 +107,24 @@ _PROXY_PREFIX = "/api/dbview"
 # degraded single worker keeps the historical ephemeral allocation.
 _DEFAULT_INTERNAL_PORT = 43117
 
+_WEB_DIST = _PLUGIN_DIR / "dbview" / "apps" / "web" / "dist"
+_SPA_MOUNT_PATH = "/dbview"
+
+_UI_UNBUILT_HTML = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>DBView — UI not built</title>
+<style>body{font-family:system-ui,sans-serif;max-width:44rem;margin:4rem auto;
+padding:0 1rem;line-height:1.5}code,pre{background:#f2f2f2;border-radius:4px;
+padding:.1rem .35rem}pre{padding:.75rem;overflow-x:auto}</style></head><body>
+<h1>DBView UI is not built / UI di DBView non compilata</h1>
+<p><strong>EN</strong> — The dbview SPA bundle is missing, so only the API is
+served. Build it, then restart the backend:</p>
+<p><strong>IT</strong> — Il bundle SPA di dbview è assente: viene servita solo
+l'API. Compilalo e riavvia il backend:</p>
+<pre>cd plugins/dbview/dbview &amp;&amp; pnpm install &amp;&amp; pnpm -r build
+VITE_API_BASE_URL=/api/dbview VITE_BASE_PATH=/dbview/ \\
+  VITE_AUTH_MODE=gateway pnpm --filter @dbview/web build</pre>
+</body></html>"""
+
 
 class DbviewConfigurationError(RuntimeError):
     """Raised when a mandatory operator setting is missing or invalid."""
@@ -118,7 +137,9 @@ class DbviewPlugin(RouterPlugin):
         super().__init__()
         self._supervisor: NodeSupervisor | None = None
         self._proxy_router: APIRouter | None = None
-        self._gateway_secret: str | None = None
+        # SecretStr: signs gateway identity headers — must never leak via
+        # ``repr()``/Sentry frames (platform secrets convention).
+        self._gateway_secret: SecretStr | None = None
         self._leadership: DbviewLeadership | None = None
 
     # ------------------------------------------------------------------
@@ -163,16 +184,41 @@ class DbviewPlugin(RouterPlugin):
         ``/plugins/dbview/static`` and — because the SPA ships an
         ``index.html`` — also at ``/dbview`` with HTML auto-routing.
         """
-        dist = _PLUGIN_DIR / "dbview" / "apps" / "web" / "dist"
-        if dist.exists():
-            return dist
+        if _WEB_DIST.exists():
+            return _WEB_DIST
         logger.info(
             "[dbview] web bundle not found at %s — SPA will not be mounted. "
             "Build it with: VITE_API_BASE_URL=/api/dbview VITE_BASE_PATH=/dbview/ "
             "VITE_AUTH_MODE=gateway pnpm --filter @dbview/web build",
-            dist,
+            _WEB_DIST,
         )
         return None
+
+    @classmethod
+    def setup_app_middleware(cls, app: Any) -> None:
+        """Degrade ``/dbview`` to a self-diagnosing 503 when the SPA is unbuilt.
+
+        Runs once during ``create_app()`` (NOT hot-reloadable). When
+        ``apps/web/dist`` exists this does nothing — the SPA is mounted via
+        :meth:`get_static_assets_path`. When it is missing (fresh checkout,
+        ``git clean``) the registry silently skips that mount, which would
+        surface as an opaque framework 404; mount an explanatory placeholder
+        instead (the ``plugins/aura`` pattern mandated by CLAUDE.md).
+        """
+        if _WEB_DIST.exists():
+            return
+        logger.warning("[dbview] SPA dist missing — mounting 503 placeholder")
+        try:
+            from starlette.responses import HTMLResponse
+
+            async def _placeholder(scope: Any, receive: Any, send: Any) -> None:
+                await HTMLResponse(_UI_UNBUILT_HTML, status_code=503)(
+                    scope, receive, send
+                )
+
+            app.mount(_SPA_MOUNT_PATH, _placeholder, name="dbview_unbuilt")
+        except Exception as exc:  # noqa: BLE001 — never break app construction
+            logger.error("[dbview] placeholder mount failed: %s", exc)
 
     # ------------------------------------------------------------------
     # Lifecycle
@@ -255,7 +301,7 @@ class DbviewPlugin(RouterPlugin):
 
         assert self._gateway_secret is not None  # set in initialize()
         extra_env["DBVIEW_GATEWAY_AUTH"] = "true"
-        extra_env["DBVIEW_GATEWAY_SECRET"] = self._gateway_secret
+        extra_env["DBVIEW_GATEWAY_SECRET"] = self._gateway_secret.get_secret_value()
 
         if len(os.environ.get("DBVIEW_JWT_SECRET", "")) < 32:
             extra_env["DBVIEW_JWT_SECRET"] = secrets.token_urlsafe(48)
@@ -281,7 +327,7 @@ class DbviewPlugin(RouterPlugin):
         coordinated = not leadership.degraded
 
         # Shared identity-signing secret (must precede _compose_child_env).
-        self._gateway_secret = self._resolve_gateway_secret()
+        self._gateway_secret = SecretStr(self._resolve_gateway_secret())
 
         internal_port = self._resolve_internal_port(
             coordinated=coordinated, config=config
@@ -329,7 +375,11 @@ class DbviewPlugin(RouterPlugin):
         self._proxy_router = build_proxy_router(
             upstream_base_url_provider=lambda: supervisor.base_url,
             healthy_provider=supervisor.is_healthy,
-            gateway_secret_provider=lambda: self._gateway_secret,
+            gateway_secret_provider=lambda: (
+                self._gateway_secret.get_secret_value()
+                if self._gateway_secret is not None
+                else None
+            ),
             proxy_prefix=_PROXY_PREFIX,
         )
         logger.info(

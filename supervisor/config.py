@@ -65,8 +65,12 @@ class SupervisorConfig:
     restart_max_attempts: int = 0
     """0 = restart forever. >0 = stop after that many consecutive failures."""
 
-    extra_env: Mapping[str, str] = field(default_factory=dict)
-    """Plugin-controlled overrides merged on top of the passthrough env."""
+    extra_env: Mapping[str, str] = field(default_factory=dict, repr=False)
+    """Plugin-controlled overrides merged on top of the passthrough env.
+
+    ``repr=False``: carries the gateway/JWT secrets — they must never leak
+    through ``repr()`` (logs, Sentry frames).
+    """
 
     env_provider: Callable[[], Mapping[str, str]] | None = None
     """Dynamic env overrides resolved at **every** child spawn (after
