@@ -70,9 +70,14 @@ stored (BYOK) keys — explicit caller choices remain a product feature.
 Supported pins: `openai`, `anthropic`, `ollama` (the child bundles exactly
 those SDKs; a `huggingface` pin is ignored).
 
-Governed values are injected into the child environment **at spawn**, so a
-crash-restart picks up the current pin automatically; to propagate a re-pin
-to a healthy child, reload the plugin (or restart the backend).
+**Live propagation (no restart).** The pin reaches the running Node child two
+ways, live-first: the proxy resolves the current pin **per request** and
+forwards it as trusted `x-dbview-gov-*` headers (stripped inbound, so a client
+can't spoof them), which the engine prefers over its spawn env — so a re-pin
+takes effect within the policy-snapshot TTL with **no** respawn (hard-refresh
+the SPA, or wait for its 60 s governance cache, to see the controls lock). The
+spawn-time env injection remains as a fallback for requests that don't traverse
+the proxy and so a crash-restart still picks up the current pin.
 
 ## Runtime prerequisites
 

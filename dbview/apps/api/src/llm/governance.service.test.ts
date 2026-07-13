@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { AuthPrincipal } from '../auth/auth.types.js';
+import { runWithContext } from '../common/request-context.js';
 import { LlmGovernanceService } from './governance.service.js';
 
 /**
@@ -85,5 +86,58 @@ describe('LlmGovernanceService', () => {
     const r = makeService().resolveExplain('ollama', PRINCIPAL);
     expect(r.provider).toBe('openai');
     expect(r.auth.apiKey).toBeUndefined();
+  });
+
+  describe('live per-request governance (proxy headers)', () => {
+    const ctx = { requestId: 'r1' };
+
+    it('live pin enforces the scope and its model + central key', () => {
+      runWithContext(
+        {
+          ...ctx,
+          governance: {
+            translate: { provider: 'openai', model: 'gpt-4o-mini' },
+            openaiKey: 'sk-central',
+          },
+        },
+        () => {
+          const svc = makeService();
+          expect(svc.state().translate).toEqual({ enforced: true, provider: 'openai' });
+          // Caller asks ollama; the live pin wins with its model + central key.
+          const r = svc.resolveTranslate('ollama', undefined, 'sql', PRINCIPAL);
+          expect(r.provider).toBe('openai');
+          expect(r.model).toBe('gpt-4o-mini');
+          expect(r.auth.apiKey).toBe('sk-central');
+        }
+      );
+    });
+
+    it('live pin wins over the spawn env for the same scope', () => {
+      process.env.DBVIEW_LLM_ENFORCED_NL2SQL = 'anthropic';
+      runWithContext(
+        { ...ctx, governance: { translate: { provider: 'openai' } } },
+        () => {
+          expect(makeService().state().translate.provider).toBe('openai');
+        }
+      );
+    });
+
+    it('a scope absent from the live context falls back to the spawn env', () => {
+      process.env.DBVIEW_LLM_ENFORCED_EXPLAIN = 'openai';
+      runWithContext(
+        { ...ctx, governance: { translate: { provider: 'anthropic' } } },
+        () => {
+          const state = makeService().state();
+          expect(state.translate.provider).toBe('anthropic'); // live
+          expect(state.explain.provider).toBe('openai'); // env fallback
+        }
+      );
+    });
+
+    it('no governance in context → env path unaffected', () => {
+      runWithContext({ ...ctx }, () => {
+        expect(makeService().state().enforced).toBe(false);
+      });
+    });
   });
 });

@@ -52,6 +52,7 @@ from .identity import (
     build_gateway_user_header,
     can_access_dbview_tab,
 )
+from .llm_governance import GOV_REQUEST_HEADERS, governed_request_headers
 
 logger = logging.getLogger(__name__)
 
@@ -72,11 +73,17 @@ _HOP_BY_HOP_HEADERS: frozenset[str] = frozenset(
     }
 )
 
-_STRIPPED_REQUEST_HEADERS: frozenset[str] = _HOP_BY_HOP_HEADERS | {
-    "host",
-    GATEWAY_USER_HEADER,
-    GATEWAY_SECRET_HEADER,
-}
+_STRIPPED_REQUEST_HEADERS: frozenset[str] = (
+    _HOP_BY_HOP_HEADERS
+    | {
+        "host",
+        GATEWAY_USER_HEADER,
+        GATEWAY_SECRET_HEADER,
+    }
+    # Governed-LLM headers are minted by this proxy per request; a client must
+    # never smuggle one in (it would spoof the pinned provider/model/key).
+    | GOV_REQUEST_HEADERS
+)
 
 # OPTIONS included so CORS preflights reach the NestJS controller logic.
 _PROXIED_METHODS: tuple[str, ...] = (
@@ -295,6 +302,12 @@ def build_proxy_router(
             if secret:
                 headers.append((GATEWAY_SECRET_HEADER, secret))
                 headers.append((GATEWAY_USER_HEADER, build_gateway_user_header(user)))
+
+        # Live per-request LLM governance: the operator's current dbview pin,
+        # resolved fresh so a re-pin reaches the running child with no respawn.
+        # Injected for every caller (the pin governs the plugin, not a user);
+        # empty when unpinned. Inbound copies were stripped above (anti-spoof).
+        headers.extend(governed_request_headers().items())
 
         upstream_base = upstream_base_url_provider().rstrip("/")
         normalised_path = sub_path.lstrip("/")

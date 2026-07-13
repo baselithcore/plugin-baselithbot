@@ -36,10 +36,18 @@ framework precedent (see ``core.services.llm.governed``). Only ``openai``,
 ``anthropic`` and ``ollama`` pins are honoured — the child bundles SDKs for
 exactly those three; a ``huggingface`` pin is ignored.
 
-Env values are resolved **at every child (re)spawn** (see
-``SupervisorConfig.env_provider``), so a crash-restart picks up the current
-pin; propagating a re-pin to a healthy child requires a plugin reload or
-backend restart (documented in the plugin TechDocs).
+Two propagation paths, live-first:
+
+* **Live (no restart)** — the proxy (:mod:`plugins.dbview.proxy_router`) also
+  resolves the pin **per request** via :func:`governed_request_headers` and
+  forwards it to the running child as trusted ``x-dbview-gov-*`` headers, which
+  the Node engine prefers over its spawn env. A re-pin therefore takes effect
+  within the policy-snapshot TTL with no respawn. The proxy strips any inbound
+  copy of these headers, so a client can never spoof the pinned routing.
+* **Spawn env (fallback)** — :func:`governed_child_env` resolves the pin at
+  every child (re)spawn (see ``SupervisorConfig.env_provider``), covering
+  requests that do not traverse the proxy and giving a crash-restart the
+  current pin.
 """
 
 from __future__ import annotations
@@ -122,6 +130,80 @@ _ENFORCED_ENV_VAR: dict[str, str] = {
 }
 
 
+# --- live per-request propagation (proxy → child headers) -------------------
+#
+# ``governed_child_env`` only reaches the child at *spawn*, so a re-pin needs a
+# child respawn to take effect. The proxy (:mod:`plugins.dbview.proxy_router`)
+# additionally resolves the pin **per request** and forwards it to the running
+# child as trusted headers, which the Node engine prefers over its spawn env —
+# so a re-pin propagates live (within the policy snapshot TTL) with no restart.
+# The proxy strips any inbound copy of these so a client can never spoof them.
+_H_NL2SQL_PROVIDER = "x-dbview-gov-nl2sql-provider"
+_H_NL2SQL_MODEL = "x-dbview-gov-nl2sql-model"
+_H_EXPLAIN_PROVIDER = "x-dbview-gov-explain-provider"
+_H_EXPLAIN_MODEL = "x-dbview-gov-explain-model"
+_H_OPENAI_KEY = "x-dbview-gov-openai-key"
+_H_ANTHROPIC_KEY = "x-dbview-gov-anthropic-key"
+_H_OLLAMA_BASE = "x-dbview-gov-ollama-base"
+
+#: Every governance request header — the proxy strips all inbound copies.
+GOV_REQUEST_HEADERS: frozenset[str] = frozenset(
+    {
+        _H_NL2SQL_PROVIDER,
+        _H_NL2SQL_MODEL,
+        _H_EXPLAIN_PROVIDER,
+        _H_EXPLAIN_MODEL,
+        _H_OPENAI_KEY,
+        _H_ANTHROPIC_KEY,
+        _H_OLLAMA_BASE,
+    }
+)
+
+_SCOPE_HEADERS: tuple[tuple[str, str, str], ...] = (
+    (NL2SQL_SCOPE, _H_NL2SQL_PROVIDER, _H_NL2SQL_MODEL),
+    (EXPLAIN_SCOPE, _H_EXPLAIN_PROVIDER, _H_EXPLAIN_MODEL),
+)
+
+
+def governed_request_headers() -> dict[str, str]:
+    """Per-request governance headers for the current dbview LLM pin (may be empty).
+
+    Resolved **live** on every proxied request, so a re-pin propagates to the
+    already-running child without a respawn. Emits, per governed scope, the
+    enforced provider + model, plus the central credential/endpoint for that
+    provider. Cheap and total: any resolution failure degrades to ``{}`` — the
+    child then falls back to its spawn env, exactly as before.
+    """
+    try:
+        headers: dict[str, str] = {}
+        for scope, provider_h, model_h in _SCOPE_HEADERS:
+            gov = _governed(scope)
+            if gov is None:
+                continue
+            headers[provider_h] = gov.provider
+            if gov.model:
+                headers[model_h] = gov.model
+            headers.update(_credential_headers(gov))
+        return headers
+    except Exception:  # noqa: BLE001 — governance must never break the proxy
+        logger.warning(
+            "[dbview] governed LLM request-header resolution failed — the child "
+            "falls back to its spawn env",
+            exc_info=True,
+        )
+        return {}
+
+
+def _credential_headers(gov: GovernedClientConfig) -> dict[str, str]:
+    """Central credential/endpoint header for *gov*'s provider."""
+    if gov.provider == "ollama":
+        return {_H_OLLAMA_BASE: gov.api_base} if gov.api_base else {}
+    key = gov.key()
+    if not key:
+        return {}
+    return {(_H_OPENAI_KEY if gov.provider == "openai" else _H_ANTHROPIC_KEY): key}
+
+
 def governed_child_env() -> dict[str, str]:
     """Child env overrides for the operator's dbview LLM pin (may be empty).
 
@@ -160,4 +242,10 @@ def governed_child_env() -> dict[str, str]:
         return {}
 
 
-__all__ = ["EXPLAIN_SCOPE", "NL2SQL_SCOPE", "governed_child_env"]
+__all__ = [
+    "EXPLAIN_SCOPE",
+    "GOV_REQUEST_HEADERS",
+    "NL2SQL_SCOPE",
+    "governed_child_env",
+    "governed_request_headers",
+]

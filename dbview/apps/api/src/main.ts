@@ -8,6 +8,7 @@ import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module.js';
 import { DbviewExceptionFilter } from './common/dbview-exception.filter.js';
 import { newRequestId, runWithContext } from './common/request-context.js';
+import { parseGovernanceHeaders } from './llm/governance-headers.js';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -35,7 +36,10 @@ async function bootstrap(): Promise<void> {
     const incoming = (req.headers['x-request-id'] as string | undefined) ?? null;
     const requestId = newRequestId(incoming);
     reply.header('x-request-id', requestId);
-    runWithContext({ requestId }, () => done());
+    // Live LLM governance forwarded by the BaselithCore proxy (trusted: inbound
+    // copies are stripped proxy-side). Preferred over the spawn-time env pin.
+    const governance = parseGovernanceHeaders(req.headers);
+    runWithContext({ requestId, governance }, () => done());
   });
   app.enableCors({
     origin: true,

@@ -13,7 +13,11 @@ import pytest
 from core.config.services import LLMConfig
 from core.services.llm.policy import PluginLLMPolicy, set_plugin_llm_policy_resolver
 from plugins.dbview import llm_governance
-from plugins.dbview.llm_governance import governed_child_env
+from plugins.dbview.llm_governance import (
+    GOV_REQUEST_HEADERS,
+    governed_child_env,
+    governed_request_headers,
+)
 
 _OLLAMA_KIND_VARS = llm_governance._OLLAMA_KIND_MODEL_VARS
 
@@ -153,3 +157,65 @@ def test_resolver_failure_degrades_to_no_overrides():
 
     set_plugin_llm_policy_resolver(exploding)
     assert governed_child_env() == {}
+
+
+# --- live per-request headers (proxy → running child, no respawn) -----------
+
+
+def test_request_headers_empty_when_unpinned():
+    assert governed_request_headers() == {}
+
+
+def test_request_headers_openai_pin_carries_provider_model_and_key(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-openai-central")
+    cfg = LLMConfig(
+        provider="ollama", model="base-model", enable_cache=False, api_base=None
+    )
+    monkeypatch.setattr("core.services.llm.governed.get_llm_config", lambda: cfg)
+    _pin({None: PluginLLMPolicy(provider="openai", model="gpt-4o-mini")})
+    headers = governed_request_headers()
+    # Both scopes inherit the default pin → both enforced live.
+    assert headers["x-dbview-gov-nl2sql-provider"] == "openai"
+    assert headers["x-dbview-gov-nl2sql-model"] == "gpt-4o-mini"
+    assert headers["x-dbview-gov-explain-provider"] == "openai"
+    assert headers["x-dbview-gov-explain-model"] == "gpt-4o-mini"
+    assert headers["x-dbview-gov-openai-key"] == "sk-openai-central"
+
+
+def test_request_headers_ollama_pin_carries_base_not_key():
+    _pin({None: PluginLLMPolicy(provider="ollama", model="llama3.1:8b")})
+    headers = governed_request_headers()
+    assert headers["x-dbview-gov-nl2sql-provider"] == "ollama"
+    assert headers["x-dbview-gov-ollama-base"] == "http://central-ollama:11434"
+    assert "x-dbview-gov-openai-key" not in headers
+
+
+def test_request_headers_per_scope_independent(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-openai-central")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-anthropic-central")
+    cfg = LLMConfig(
+        provider="ollama", model="base-model", enable_cache=False, api_base=None
+    )
+    monkeypatch.setattr("core.services.llm.governed.get_llm_config", lambda: cfg)
+    _pin(
+        {
+            "nl2sql": PluginLLMPolicy(provider="openai", model="gpt-4o"),
+            "explain": PluginLLMPolicy(provider="anthropic", model="claude-x"),
+        }
+    )
+    headers = governed_request_headers()
+    assert headers["x-dbview-gov-nl2sql-provider"] == "openai"
+    assert headers["x-dbview-gov-nl2sql-model"] == "gpt-4o"
+    assert headers["x-dbview-gov-explain-provider"] == "anthropic"
+    assert headers["x-dbview-gov-explain-model"] == "claude-x"
+    assert headers["x-dbview-gov-openai-key"] == "sk-openai-central"
+    assert headers["x-dbview-gov-anthropic-key"] == "sk-anthropic-central"
+
+
+def test_request_headers_are_all_in_the_proxy_strip_set():
+    # Anti-spoof: every header the proxy mints must also be stripped inbound.
+    assert GOV_REQUEST_HEADERS >= {
+        "x-dbview-gov-nl2sql-provider",
+        "x-dbview-gov-explain-provider",
+        "x-dbview-gov-openai-key",
+    }
