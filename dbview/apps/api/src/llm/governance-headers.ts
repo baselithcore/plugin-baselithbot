@@ -1,8 +1,5 @@
 import { LlmProviderSchema } from '@dbview/shared';
-import type {
-  GovernanceContext,
-  GovernedScope,
-} from '../common/request-context.js';
+import type { GovernanceContext, GovernedScope } from '../common/request-context.js';
 
 /**
  * Parse the live LLM-governance headers the BaselithCore proxy mints per
@@ -33,19 +30,9 @@ function readScope(
   return { provider: parsed.data, model: readHeader(headers, modelHeader) };
 }
 
-export function parseGovernanceHeaders(
-  headers: RawHeaders
-): GovernanceContext | undefined {
-  const translate = readScope(
-    headers,
-    'x-dbview-gov-nl2sql-provider',
-    'x-dbview-gov-nl2sql-model'
-  );
-  const explain = readScope(
-    headers,
-    'x-dbview-gov-explain-provider',
-    'x-dbview-gov-explain-model'
-  );
+export function parseGovernanceHeaders(headers: RawHeaders): GovernanceContext | undefined {
+  const translate = readScope(headers, 'x-dbview-gov-nl2sql-provider', 'x-dbview-gov-nl2sql-model');
+  const explain = readScope(headers, 'x-dbview-gov-explain-provider', 'x-dbview-gov-explain-model');
   const openaiKey = readHeader(headers, 'x-dbview-gov-openai-key');
   const anthropicKey = readHeader(headers, 'x-dbview-gov-anthropic-key');
   const ollamaBase = readHeader(headers, 'x-dbview-gov-ollama-base');

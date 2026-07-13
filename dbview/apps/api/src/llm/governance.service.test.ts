@@ -114,24 +114,18 @@ describe('LlmGovernanceService', () => {
 
     it('live pin wins over the spawn env for the same scope', () => {
       process.env.DBVIEW_LLM_ENFORCED_NL2SQL = 'anthropic';
-      runWithContext(
-        { ...ctx, governance: { translate: { provider: 'openai' } } },
-        () => {
-          expect(makeService().state().translate.provider).toBe('openai');
-        }
-      );
+      runWithContext({ ...ctx, governance: { translate: { provider: 'openai' } } }, () => {
+        expect(makeService().state().translate.provider).toBe('openai');
+      });
     });
 
     it('a scope absent from the live context falls back to the spawn env', () => {
       process.env.DBVIEW_LLM_ENFORCED_EXPLAIN = 'openai';
-      runWithContext(
-        { ...ctx, governance: { translate: { provider: 'anthropic' } } },
-        () => {
-          const state = makeService().state();
-          expect(state.translate.provider).toBe('anthropic'); // live
-          expect(state.explain.provider).toBe('openai'); // env fallback
-        }
-      );
+      runWithContext({ ...ctx, governance: { translate: { provider: 'anthropic' } } }, () => {
+        const state = makeService().state();
+        expect(state.translate.provider).toBe('anthropic'); // live
+        expect(state.explain.provider).toBe('openai'); // env fallback
+      });
     });
 
     it('no governance in context → env path unaffected', () => {

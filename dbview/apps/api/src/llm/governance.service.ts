@@ -53,9 +53,8 @@ export class LlmGovernanceService {
    * the spawn-time env. `provider: undefined` when ungoverned.
    */
   private enforced(scope: Scope): EnforcedScope {
-    const live = scope === 'translate'
-      ? currentGovernance()?.translate
-      : currentGovernance()?.explain;
+    const live =
+      scope === 'translate' ? currentGovernance()?.translate : currentGovernance()?.explain;
     if (live) return { provider: live.provider, model: live.model };
     return { provider: this.envProvider(scope), model: undefined };
   }
