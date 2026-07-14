@@ -29,7 +29,7 @@ tags:
 - qdrant
 - salesforce
 - sso
-integrity_sha256: 82369499ad1b309a99e5a6317d97ab73ee1182bcf4fe3492f1ef41a9b94ec57c
+integrity_sha256: 121d64f46480ea8a0b5cb97f2ab99b95648252b1b4b68fe1979d9057c146f841
 llm_scopes:
 - id: nl2sql
   label: "NL\u2192Query translation"

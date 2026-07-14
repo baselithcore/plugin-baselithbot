@@ -84,6 +84,7 @@ from fastapi import APIRouter
 from pydantic import SecretStr
 
 from core.plugins import RouterPlugin
+from core.plugins.env import load_plugin_dotenv
 
 from .leader import DbviewLeadership, acquire_dbview_leadership
 from .llm_governance import governed_child_env
@@ -98,6 +99,12 @@ from .supervisor import (
 logger = logging.getLogger(__name__)
 
 _PLUGIN_DIR = Path(__file__).resolve().parent
+
+# Plugin-scoped operator config (DBVIEW_SECRET & friends) lives in
+# plugins/dbview/.env, not the repo-root .env — existing process env wins.
+# Loaded at import: before activation reads os.environ and before the Node
+# child inherits the process env.
+load_plugin_dotenv(_PLUGIN_DIR)
 _PROXY_PREFIX = "/api/dbview"
 
 # Fixed loopback rendezvous port used when cross-worker leadership is active:
