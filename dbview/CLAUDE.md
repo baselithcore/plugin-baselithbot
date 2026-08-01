@@ -181,17 +181,6 @@ Implemented in `apps/api/src/auth/`. Mirrors the design of `agent-jira` (FastAPI
 - **Service-to-service**: `DBVIEW_API_KEY` still works. The `ApiKeyGuard` attaches a synthetic admin principal so JWT guard short-circuits. Use for CI/automation only.
 - **Env vars**: `DBVIEW_JWT_SECRET` (≥32 chars, **required**), `DBVIEW_JWT_ACCESS_TTL` (seconds, default 900), `DBVIEW_JWT_REFRESH_TTL` (seconds, default 2592000), `DBVIEW_ADMIN_EMAIL`, `DBVIEW_ADMIN_PASSWORD`.
 
-### Auth endpoints
-
-- `POST /api/auth/login` — `{email, password}` → `{accessToken, expiresIn, user}` + sets refresh cookie. Public.
-- `POST /api/auth/refresh` — reads cookie, rotates, returns new access token. Public.
-- `POST /api/auth/logout` — revokes family, clears cookie. Public.
-- `GET  /api/auth/me` — returns current user. Authenticated.
-- `GET  /api/auth/users` — list users. Admin.
-- `POST /api/auth/users` — invite user. Admin.
-- `PATCH /api/auth/users/:id` — update role / displayName / isActive / password. Admin.
-- `DELETE /api/auth/users/:id` — remove user. Admin.
-
 ## Observability
 
 Same stack as `agent-jira`, ported to NestJS/TypeScript. Configs under `deploy/observability/`.
@@ -214,25 +203,7 @@ Same stack as `agent-jira`, ported to NestJS/TypeScript. Configs under `deploy/o
 
 ### What ships in `deploy/observability/`
 
-Identical layout to agent-jira (Prometheus 2.55, Grafana 11.3, Loki 3.2, Promtail 3.2, Tempo 2.6, OTel Collector contrib 0.113, Alertmanager 0.27, node-exporter 1.8):
-
-```text
-deploy/observability/
-├── docker-compose.yml
-├── .env.example
-├── README.md
-├── prometheus/
-│   ├── prometheus.yml.tpl   # envsubst → prometheus.yml
-│   └── alerts.yml           # dbview_* SLO + infra rules
-├── grafana/
-│   ├── provisioning/{datasources,dashboards}/*.yml
-│   └── dashboards/          # add JSON dashboards here
-├── loki/loki-config.yml
-├── promtail/promtail-config.yml
-├── tempo/tempo-config.yml
-├── otel-collector/otel-collector-config.yaml   # tail-sampling + filter/noise
-└── alertmanager/alertmanager.yml
-```
+Identical layout to agent-jira (Prometheus 2.55, Grafana 11.3, Loki 3.2, Promtail 3.2, Tempo 2.6, OTel Collector contrib 0.113, Alertmanager 0.27, node-exporter 1.8).
 
 Bring up: `cd deploy/observability && cp .env.example .env && envsubst < prometheus/prometheus.yml.tpl > prometheus/prometheus.yml && docker compose up -d`. See `deploy/observability/README.md` for wiring details.
 
