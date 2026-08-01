@@ -4,13 +4,7 @@ Project context for AI assistants. Read fully before edits.
 
 ## What this is
 
-Database visualization + NL2SQL MVP. Monorepo (pnpm + Turbo).
-
-- `apps/web` — Vite + React 19 + Tailwind + React Flow (dagre) + TanStack Query + Zustand
-- `apps/api` — NestJS + Fastify
-- `packages/shared` — Zod schemas + types (single source of truth, end-to-end)
-- `packages/sql-core` — DB introspector + safety validator (AST) + read-only executor
-- `infra/seed` — Postgres demo schema (`shop`)
+Database visualization + NL2SQL MVP. Monorepo (pnpm + Turbo) — see the workspace layout and each package's `package.json` for the stack.
 
 ## Hard rules
 
@@ -28,18 +22,7 @@ Database visualization + NL2SQL MVP. Monorepo (pnpm + Turbo).
 
 ### SQL safety (non-negotiable)
 
-These rules live in `packages/sql-core/src/safety/validator.ts`. Tests in `validator.test.ts`. Don't loosen without updating both + getting explicit approval.
-
-1. **Never `SELECT *`** — enumerate columns.
-2. **Block DDL**: DROP, ALTER, TRUNCATE, CREATE, GRANT, REVOKE, SET, USE, RENAME.
-3. **Block DML by default**: INSERT/UPDATE/DELETE/MERGE require `allowDml: true` from caller.
-4. **Single statement only** — no `;` inside.
-5. **Tables must exist in schema** — reject unknown table refs (CTE names auto-allowed).
-6. **Auto-inject `LIMIT`** for SELECT when missing.
-7. **Preserve original SQL identifier case** — never re-`sqlify` (PG-quotes break case-sensitive lookups).
-8. **DB-level read-only enforcement**:
-   - Postgres: `BEGIN READ ONLY; ...; COMMIT` + `statement_timeout: 5_000`
-   - SQLite: open `readonly: true` + `PRAGMA query_only = ON`
+The rules live in `packages/sql-core/src/safety/validator.ts` (read them there); tests in `validator.test.ts`. Don't loosen without updating both + getting explicit approval. Gotcha: **preserve original SQL identifier case — never re-`sqlify`** (PG-quotes break case-sensitive lookups).
 
 ### NL2SQL pipeline
 
@@ -169,54 +152,20 @@ docker compose --profile llm up -d ollama  # optional
 
 Implemented in `apps/api/src/auth/`. Mirrors the design of `agent-jira` (FastAPI) ported to NestJS/TS.
 
-- **Roles**: `admin` / `user`. Default protected: every endpoint requires JWT unless decorated `@Public()`. Admin-only endpoints use `@Roles('admin')`.
-- **Password hashing**: argon2id (OWASP 2024: m=19456 KiB, t=2, p=1). No bcrypt, no PBKDF2.
-- **Access token**: JWT HS256, 15-minute TTL, issuer `dbview-api`. Sent as `Authorization: Bearer`. Stored in memory only on the frontend (XSS-hardened, no localStorage).
-- **Refresh token**: opaque 48-byte random, SHA-256-hashed at rest. httpOnly + Secure (prod) + SameSite=Strict cookie `dbview_refresh`, path `/api/auth`, 30-day TTL. Rotated on every `/auth/refresh` call.
-- **Replay detection**: family_id tracks rotation chain. Presenting a revoked token revokes the entire family (forced re-login).
-- **Persistence**: `users.json` and `sessions.json` in `${DBVIEW_DATA_DIR:-./data}`, atomic write + mode 0600 (same pattern as `connections.json`).
-- **Bootstrap**: on first boot, if no users exist and `DBVIEW_ADMIN_EMAIL` + `DBVIEW_ADMIN_PASSWORD` (≥12 chars) are set, seed admin. Otherwise logs a warning and rejects logins (no default password).
-- **Registration**: invite-only. Admin creates users via `POST /api/auth/users`. No public sign-up.
-- **Rate limits**: login 5/min/IP, refresh 30/min/IP. Existing nl2sql 20/min retained.
-- **Service-to-service**: `DBVIEW_API_KEY` still works. The `ApiKeyGuard` attaches a synthetic admin principal so JWT guard short-circuits. Use for CI/automation only.
-- **Env vars**: `DBVIEW_JWT_SECRET` (≥32 chars, **required**), `DBVIEW_JWT_ACCESS_TTL` (seconds, default 900), `DBVIEW_JWT_REFRESH_TTL` (seconds, default 2592000), `DBVIEW_ADMIN_EMAIL`, `DBVIEW_ADMIN_PASSWORD`.
+Design decisions to preserve (implementation details are in the code):
+
+- **Default protected**: every endpoint requires JWT unless decorated `@Public()`; admin-only via `@Roles('admin')`.
+- **Password hashing**: argon2id only (OWASP 2024 params). No bcrypt, no PBKDF2.
+- **Access token stored in memory only on the frontend** (XSS-hardened) — never localStorage.
+- **Registration is invite-only** (admin creates users). No public sign-up.
+- **No default admin password**: bootstrap seeds admin only from `DBVIEW_ADMIN_EMAIL` + `DBVIEW_ADMIN_PASSWORD`; otherwise logins are rejected.
+- **`DBVIEW_API_KEY`** attaches a synthetic admin principal (`ApiKeyGuard`) — CI/automation only.
 
 ## Observability
 
 Same stack as `agent-jira`, ported to NestJS/TypeScript. Configs under `deploy/observability/`.
 
-### What ships in-process
-
-- **Structured JSON logs**: `nestjs-pino` + `LOG_FORMAT=json` → JSON with `request_id`, `level`, `name`, `msg`. Redact list covers `authorization`, `x-api-key`, `cookie`, `set-cookie`, `connectionString`, `connectionStringCipher`, `password`, `passwordHash`, `accessToken`, `refreshToken`. Set `LOG_FORMAT=json` in prod.
-- **Request IDs**: Fastify `onRequest` hook reads `X-Request-Id` (or generates UUIDv4), stores it in an `AsyncLocalStorage` context, echoes back via response header, and pino bindings emit it on every log line.
-- **OpenTelemetry tracing**: opt-in via `OTEL_EXPORTER_OTLP_ENDPOINT`. Auto-instruments `http`, `fastify`, `pg`, `redis`, etc. Batch span processor → OTLP HTTP exporter. Health and `/api/metrics` excluded.
-- **Prometheus metrics**: `prom-client` registry exposed at `GET /api/metrics`, admin-only. Default Node + process metrics + custom `dbview_*` counters/histograms:
-    - `dbview_http_request_latency_seconds{method, route, status_bucket}`
-    - `dbview_http_request_errors_total{method, route, status_bucket, reason}`
-    - `dbview_llm_calls_total{provider, model, mode, status}` + latency histogram + tokens counter
-    - `dbview_query_executions_total{dialect, status}` + latency histogram
-    - `dbview_schema_introspection_failures_total{dialect, reason}`
-    - `dbview_auth_events_total{event}` — login_success, login_fail, token_replay, token_rotate
-    - `dbview_connections_up{connection_id, dialect}` (gauge, reserved for future periodic probe)
-- **Health probes**: `GET /api/health` (legacy), `GET /api/health/live`, `GET /api/health/ready` (deep — checks data dir writability, `DBVIEW_JWT_SECRET`, `DBVIEW_SECRET`). Ready returns HTTP 503 when degraded.
-- **Frontend telemetry**: `@grafana/faro-web-sdk` + `@grafana/faro-web-tracing`. Init in `apps/web/src/lib/observability.ts`. No-op unless `VITE_OTLP_ENDPOINT` set at build/dev time. Captures web vitals, navigation, fetch, errors, console.
-
-### What ships in `deploy/observability/`
-
-Identical layout to agent-jira (Prometheus 2.55, Grafana 11.3, Loki 3.2, Promtail 3.2, Tempo 2.6, OTel Collector contrib 0.113, Alertmanager 0.27, node-exporter 1.8).
-
-Bring up: `cd deploy/observability && cp .env.example .env && envsubst < prometheus/prometheus.yml.tpl > prometheus/prometheus.yml && docker compose up -d`. See `deploy/observability/README.md` for wiring details.
-
-### Observability env vars
-
-- `LOG_FORMAT` — `json` for prod (Promtail parses it), default pretty in dev.
-- `LOG_LEVEL` — pino level, default `info` prod / `debug` dev.
-- `OTEL_EXPORTER_OTLP_ENDPOINT` — collector base URL (e.g. `http://dbview-otelcol:4318`). Tracing is no-op when unset.
-- `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` — override `/v1/traces` suffix.
-- `OTEL_SERVICE_NAME` — defaults to `dbview-api`.
-- `APP_VERSION` — surfaced as `service.version` resource attr and in `/health` payload.
-- `VITE_OTLP_ENDPOINT`, `VITE_APP_NAME`, `VITE_APP_VERSION`, `VITE_DEPLOY_ENV` — frontend Faro config.
-- `DBVIEW_API_KEY` — also used by Prometheus to scrape `/api/metrics` (same key, service-to-service path).
+In-process: structured pino JSON logs (redacted secrets), request IDs, opt-in OTel tracing, `prom-client` metrics at `GET /api/metrics`, health probes, frontend Faro telemetry — the inventory (metric names, env vars) lives in the code (`apps/web/src/lib/observability.ts`, the metrics module) and in `deploy/observability/README.md`, which also covers bringing up the stack.
 
 ### Operational notes
 
