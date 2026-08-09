@@ -2,12 +2,7 @@ import type { ExecuteQueryResponse, Nl2SqlResponse } from '@dbview/shared';
 
 /** Stage of a single conversation turn. */
 export type TurnStatus =
-  | 'pending'
-  | 'translating'
-  | 'executing'
-  | 'summarizing'
-  | 'ready'
-  | 'error';
+  'pending' | 'translating' | 'executing' | 'summarizing' | 'ready' | 'error';
 
 /**
  * 'ask' = full pipeline (translate → execute → summarize).

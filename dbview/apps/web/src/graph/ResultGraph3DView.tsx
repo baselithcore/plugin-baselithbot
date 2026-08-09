@@ -193,8 +193,7 @@ export function ResultGraph3DView({ result }: Props) {
       if (!fg) return;
       try {
         const charge = fg.d3Force('charge') as
-          | { strength?: (n: number) => unknown; distanceMax?: (n: number) => unknown }
-          | undefined;
+          { strength?: (n: number) => unknown; distanceMax?: (n: number) => unknown } | undefined;
         charge?.strength?.(-200 - Math.min(300, nodeCount * 4));
         charge?.distanceMax?.(700);
         const link = fg.d3Force('link') as { distance?: (n: number) => unknown } | undefined;

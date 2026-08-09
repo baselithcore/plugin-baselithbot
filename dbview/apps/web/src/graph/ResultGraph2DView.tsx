@@ -59,8 +59,7 @@ export function ResultGraph2DView({ result }: Props) {
         // legible from a few dozen up to thousands of nodes.
         const density = Math.sqrt(nodeCount);
         const charge = fg.d3Force('charge') as
-          | { strength?: (n: number) => unknown; distanceMax?: (n: number) => unknown }
-          | undefined;
+          { strength?: (n: number) => unknown; distanceMax?: (n: number) => unknown } | undefined;
         charge?.strength?.(-(120 + density * 18));
         charge?.distanceMax?.(900);
         const link = fg.d3Force('link') as { distance?: (n: number) => unknown } | undefined;

@@ -47,15 +47,13 @@ export class RemoteProviderService {
     const raw = ((payload as { data?: OpenAiModel[] }).data ?? []) as OpenAiModel[];
     return raw
       .filter((m) => typeof m.id === 'string' && m.id.length > 0)
-      .map(
-        (m): RemoteModel => ({
-          id: m.id,
-          displayName: m.id,
-          family: deriveOpenAiFamily(m.id),
-          createdAt:
-            typeof m.created === 'number' ? new Date(m.created * 1000).toISOString() : undefined,
-        })
-      );
+      .map((m): RemoteModel => ({
+        id: m.id,
+        displayName: m.id,
+        family: deriveOpenAiFamily(m.id),
+        createdAt:
+          typeof m.created === 'number' ? new Date(m.created * 1000).toISOString() : undefined,
+      }));
   }
 
   private async listAnthropic(apiKey: string): Promise<RemoteModel[]> {
@@ -72,14 +70,12 @@ export class RemoteProviderService {
     const raw = ((payload as { data?: AnthropicModel[] }).data ?? []) as AnthropicModel[];
     return raw
       .filter((m) => typeof m.id === 'string' && m.id.length > 0)
-      .map(
-        (m): RemoteModel => ({
-          id: m.id,
-          displayName: m.display_name ?? m.id,
-          family: deriveAnthropicFamily(m.id),
-          createdAt: typeof m.created_at === 'string' ? m.created_at : undefined,
-        })
-      );
+      .map((m): RemoteModel => ({
+        id: m.id,
+        displayName: m.display_name ?? m.id,
+        family: deriveAnthropicFamily(m.id),
+        createdAt: typeof m.created_at === 'string' ? m.created_at : undefined,
+      }));
   }
 
   private async fetchJson(

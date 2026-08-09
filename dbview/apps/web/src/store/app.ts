@@ -12,11 +12,7 @@ interface DetailSelection {
 
 export type TourId = 'welcome' | 'connections' | 'nl2sql' | 'graph' | 'account';
 export type ChecklistTaskId =
-  | 'connect'
-  | 'explore-schema'
-  | 'ask-question'
-  | 'open-detail'
-  | 'use-command-palette';
+  'connect' | 'explore-schema' | 'ask-question' | 'open-detail' | 'use-command-palette';
 
 interface AppState {
   activeConnectionId: string | null;

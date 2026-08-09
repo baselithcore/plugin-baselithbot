@@ -8,8 +8,7 @@ export interface QdrantCollectionInfo {
   config: {
     params: {
       vectors:
-        | { size: number; distance: string }
-        | Record<string, { size: number; distance: string }>;
+        { size: number; distance: string } | Record<string, { size: number; distance: string }>;
     };
   };
 }

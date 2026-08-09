@@ -14,13 +14,7 @@
  */
 
 export type MongoOp =
-  | 'collections'
-  | 'count'
-  | 'find'
-  | 'distinct'
-  | 'aggregate'
-  | 'indexes'
-  | 'stats';
+  'collections' | 'count' | 'find' | 'distinct' | 'aggregate' | 'indexes' | 'stats';
 
 const ALLOWED_FIND_KEYS = new Set([
   'filter',

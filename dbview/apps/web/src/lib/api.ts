@@ -61,8 +61,7 @@ http.interceptors.response.use(undefined, async (err) => {
   if (axios.isAxiosError(err)) {
     const status = err.response?.status;
     const data = err.response?.data as
-      | { code?: string; message?: string; error?: string; issues?: unknown }
-      | undefined;
+      { code?: string; message?: string; error?: string; issues?: unknown } | undefined;
     const original = err.config as (AxiosRequestConfig & { _retried?: boolean }) | undefined;
     const isAuthEndpoint = typeof original?.url === 'string' && original.url.includes('/auth/');
 
