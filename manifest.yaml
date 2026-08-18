@@ -52,4 +52,4 @@ python_dependencies:
 - cryptography>=42.0.0
 plugin_dependencies:
   browser_agent: '>=0.1.0'
-integrity_sha256: 532815523f11be59438de9b0760cba6cd11dfcc509329391090842c2d4c46be9
+integrity_sha256: 63784f708aa5fddb9245a5d8a4c5364696b5b69fb5db18f2cdff5ead3d25f68e
