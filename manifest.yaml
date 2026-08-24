@@ -1,7 +1,7 @@
 id: baselithbot
 entry_point: plugin:BaselithbotPlugin
 name: baselithbot
-version: 1.0.0
+version: 1.0.1
 description: Autonomous multi-channel agent with OpenClaw-style skills, stealth browsing,
   desktop control, canvas (A2UI), voice, cron scheduling and secret-managed model
   routing. Composes browser-agent, vision, and MCP subsystems.
