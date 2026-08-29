@@ -6,6 +6,13 @@ var/
 # shipped JS, so an on-host rebuild diverges from the signed bytes and the
 # plugin gets refused in production posture (same rule as ui/dist — see the
 # root .gitignore). Sourcemaps stay out (outside the hashed surface).
+#
+# The tracked @dbview/web bundle MUST be built in plugin mode, or the SPA
+# requests its assets from the host root and the mounted UI stays blank:
+#   VITE_API_BASE_URL=/api/dbview VITE_BASE_PATH=/dbview/ VITE_AUTH_MODE=gateway \
+#     pnpm --filter @dbview/web build
+# (README "Operator setup" carries the full sequence; `pnpm -r build` alone
+# produces the standalone root-base bundle, which is NOT what ships here.)
 dbview/**/node_modules/
 !dbview/apps/*/dist/
 !dbview/apps/*/dist/**

@@ -1,5 +1,5 @@
 name: dbview
-version: 0.2.0
+version: 0.2.1
 description: "Database visualisation + Natural-Language-to-Query workbench for 18\
   \ engines (PostgreSQL, MySQL, MariaDB, MSSQL, SQLite, Oracle, ClickHouse, DuckDB,\
   \ CockroachDB, Neo4j, FalkorDB, Ultipa, MongoDB, Redis, Elasticsearch, Qdrant, Salesforce,\
@@ -29,7 +29,7 @@ tags:
 - qdrant
 - salesforce
 - sso
-integrity_sha256: 9d099ff2d4680b947237e5e48cb08c2ac89cbe9fc2b03125fe84a264ceacfa21
+integrity_sha256: 94a3c0174fd8bbe56166c6cdeda6c008064871dcd69e1fc05eb96b8d82b14f53
 llm_scopes:
 - id: nl2sql
   label: "NL\u2192Query translation"
