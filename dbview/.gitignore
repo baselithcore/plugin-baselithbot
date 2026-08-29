@@ -1,5 +1,7 @@
 node_modules
-dist
+# dist is tracked in the enterprise monorepo: the V3 plugin-integrity hash
+# covers shipped JS, so on-host rebuilds diverge from the signed bytes.
+# (Sourcemaps stay out via plugins/dbview/.gitignore.)
 .next
 .turbo
 coverage

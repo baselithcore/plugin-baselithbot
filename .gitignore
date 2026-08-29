@@ -1,9 +1,17 @@
 # Runtime state (users/sessions/connections/history JSON stores, uploads)
 var/
 
-# Vendored monorepo build artifacts — rebuilt by the operator, never committed
+# Vendored monorepo build artifacts. node_modules/.turbo stay untracked, but
+# the compiled dist/ bundles ARE tracked: the V3 plugin-integrity hash covers
+# shipped JS, so an on-host rebuild diverges from the signed bytes and the
+# plugin gets refused in production posture (same rule as ui/dist — see the
+# root .gitignore). Sourcemaps stay out (outside the hashed surface).
 dbview/**/node_modules/
-dbview/**/dist/
+!dbview/apps/*/dist/
+!dbview/apps/*/dist/**
+!dbview/packages/*/dist/
+!dbview/packages/*/dist/**
+dbview/**/dist/**/*.map
 dbview/**/.turbo/
 dbview/**/*.tsbuildinfo
 dbview/apps/api/data/
