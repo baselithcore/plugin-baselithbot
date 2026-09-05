@@ -75,7 +75,6 @@ CREATE TABLE IF NOT EXISTS steps (
 );
 
 CREATE INDEX IF NOT EXISTS idx_runs_started_at ON runs(started_at);
-CREATE INDEX IF NOT EXISTS idx_runs_tenant ON runs(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_steps_run ON steps(run_id, step_index);
 """
 
@@ -150,7 +149,10 @@ class TaskReplayStore:
         with self._lock:
             self._conn.executescript(_SCHEMA)
             # Upgrade a pre-tenancy DB: SQLite has no ADD COLUMN IF NOT EXISTS,
-            # so attempt it and swallow the duplicate-column error.
+            # so attempt it and swallow the duplicate-column error. The tenant
+            # index is created only after this step, never inside ``_SCHEMA``:
+            # on a pre-tenancy file the column does not exist yet and the
+            # ``executescript`` above would abort the whole open.
             try:
                 self._conn.execute(
                     "ALTER TABLE runs ADD COLUMN tenant_id TEXT NOT NULL DEFAULT 'default'"
