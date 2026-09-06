@@ -28,6 +28,15 @@ _LLM_ENV_VARS = (
     "LLM_MODEL",
     "LLM_API_BASE",
     "LLM_API_KEY",
+    # Per-provider endpoint: it outranks ``LLM_API_BASE`` inside
+    # ``core.services.llm.runtime.api_base_for``, so leaving it set pins every
+    # Ollama route at the developer's own box. ``core/config/env.py`` pushes the
+    # repo-root ``.env`` into ``os.environ`` at import, which is how it gets set
+    # here at all — CI has no such file, which is why this only fails locally.
+    "LLM_OLLAMA_API_BASE",
+    # Last-resort fallback in the same resolver, and commonly exported
+    # machine-wide by the Ollama CLI.
+    "OLLAMA_HOST",
     "LLM_OPENAI_API_KEY",
     "LLM_ANTHROPIC_API_KEY",
     "ANTHROPIC_API_KEY",
