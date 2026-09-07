@@ -9,12 +9,10 @@ export default defineConfig(({ command }) => ({
   plugins: [react()],
   base: command === 'build' ? '/baselithbot/ui/' : '/',
   resolve: {
-    // Central auth context (shared single-source SSO). `@auth/login` MUST
-    // precede `@auth` — first match wins.
-    alias: [
-      { find: '@auth/login', replacement: fromHere('../../auth/ui/src/login.ts') },
-      { find: '@auth', replacement: fromHere('../../auth/ui/src/index.ts') },
-    ],
+    // @baselith/auth is a linked package whose React is a peer dep:
+    // pin one copy rather than relying on symlink resolution.
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
+    alias: [],
   },
   build: {
     outDir: 'dist',

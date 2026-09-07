@@ -2,8 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@auth';
-import { ProtectedRoute } from '@auth/login';
+import { AuthProvider } from '@baselith/auth';
+import { ProtectedRoute } from '@baselith/auth/login';
+// Library build extracts CSS instead of injecting it.
+import '@baselith/auth/style.css';
 import App from './App';
 import { DashboardProvider } from './components/DashboardProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';

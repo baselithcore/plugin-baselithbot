@@ -1,0 +1,1 @@
+import{j as e,L as t}from"./index-uw-l_Ajd.js";import{P as o}from"./PageHeader-yyX3u0v-.js";function i(){return e.jsxs("div",{children:[e.jsx(o,{eyebrow:"404",title:"Route not found",description:"The path you requested is not part of the dashboard."}),e.jsx(t,{to:"/",className:"btn primary",children:"Back to Overview"})]})}export{i as NotFound};
