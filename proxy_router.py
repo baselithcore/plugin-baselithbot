@@ -14,7 +14,7 @@ re-rooted onto the upstream's native ``/api`` namespace::
 Central auth at the seam
 ------------------------
 The router resolves the caller through the **shared auth chokepoint**
-(``plugins.auth.dependencies.get_current_user`` — Bearer / central API key /
+(``plugins.auth.api.get_current_user`` — Bearer / central API key /
 refresh-cookie, tenant context bound as a side effect):
 
 * authenticated → the central per-tab policy for ``(dbview, dbview)`` is
@@ -100,13 +100,13 @@ _PROXIED_METHODS: tuple[str, ...] = (
 def _current_user_dependency() -> Callable[..., Awaitable[AuthUser]]:
     """The shared central-auth chokepoint, with a resilient fallback.
 
-    Uses ``plugins.auth.dependencies.get_current_user`` (guideline: never
+    Uses ``plugins.auth.api.get_current_user`` (guideline: never
     hand-roll auth). If the auth plugin is not importable the fallback treats
     every caller as anonymous — the upstream then rejects everything but its
     ``@Public`` endpoints, which degrades closed.
     """
     try:
-        from plugins.auth.dependencies import get_current_user
+        from plugins.auth.api import get_current_user
 
         return get_current_user
     except Exception:  # noqa: BLE001 — auth plugin absent in this deployment

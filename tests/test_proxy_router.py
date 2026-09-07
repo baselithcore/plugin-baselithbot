@@ -198,7 +198,7 @@ def _build_app(
     )
     app.include_router(router, prefix="/api/dbview")
     if user is not None:
-        from plugins.auth.dependencies import get_current_user
+        from plugins.auth.api import get_current_user
 
         app.dependency_overrides[get_current_user] = lambda: user
     return app

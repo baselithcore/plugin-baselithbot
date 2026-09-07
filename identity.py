@@ -13,7 +13,7 @@ embedded dbview NestJS API consumes in gateway mode (see
 Conventions honoured (CLAUDE.md):
 
 * **Admin is an effective privilege** — the dbview ``admin`` role is derived
-  from :func:`plugins.auth.rbac.service.is_effective_admin` (wildcard-aware),
+  from :func:`plugins.auth.api.is_effective_admin` (wildcard-aware),
   falling back to the literal ``AuthRole.ADMIN`` check when the RBAC service
   is unavailable (degrade closed for elevation).
 * **Tenancy is identity-derived** — the ``tenantKey`` comes from
@@ -70,7 +70,7 @@ def is_effective_admin_cached(user: AuthUser) -> bool:
     if hit is not None and now - hit[0] < _ADMIN_CACHE_TTL_S:
         return hit[1]
     try:
-        from plugins.auth.rbac.service import is_effective_admin
+        from plugins.auth.api import is_effective_admin
 
         verdict = is_effective_admin(user.user_id, user.roles)
     except Exception:  # noqa: BLE001 — auth plugin absent / store down
@@ -84,13 +84,13 @@ def is_effective_admin_cached(user: AuthUser) -> bool:
 def can_access_dbview_tab(user: AuthUser) -> bool:
     """Central per-tab policy for the single ``dbview`` surface.
 
-    Mirrors ``plugins.auth.dependencies.require_tab`` semantics (default-allow
+    Mirrors ``plugins.auth.api.require_tab`` semantics (default-allow
     for unrestricted tabs). Fails open on RBAC outage — tab gating is
     visibility policy, not privilege elevation, and this matches the central
     ``PluginAccessMiddleware`` fail-open stance.
     """
     try:
-        from plugins.auth.rbac.service import get_rbac_service
+        from plugins.auth.api import get_rbac_service
 
         return bool(
             get_rbac_service().can_access_tab(
@@ -116,7 +116,7 @@ def lookup_central_profile(user_id: str) -> tuple[str | None, str | None]:
     email: str | None = None
     name: str | None = None
     try:
-        from plugins.auth.persistence import get_auth_persistence
+        from plugins.auth.api import get_auth_persistence
 
         record = get_auth_persistence().get_user_by_id(user_id)
         if record is not None:
