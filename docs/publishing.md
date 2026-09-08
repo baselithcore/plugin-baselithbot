@@ -228,11 +228,20 @@ git branch -D baselithbot-split
 #    (see §5–§6 above).
 ```
 
-Golden rule: **never edit the standalone repo directly**. Any commit
+Golden rule for Baselithbot: **never edit the standalone repo directly**. Any commit
 landing there (outside the subtree push) will diverge and be overwritten
 by the next `--force-with-lease`. Issue triage and PRs can live on the
 standalone repo (marketplace-visible), but the fix merges into
 `baselithcore` and re-propagates via subtree.
+
+> **Scope.** This output-only rule covers Baselithbot, whose mirror is a
+> marketplace publish target. It does **not** cover the enterprise plugins
+> whose private mirrors external developers commit to — `auth`,
+> `baselithcontrol`, `wikigen`, `docheck`, `dbview`, `agent_jira`. Those are
+> bidirectional: their commits are imported with
+> `scripts/sync_plugin_mirrors.py pull`, and a forced push would destroy a
+> developer's work. See
+> [docs/architecture/plugin_mirrors.md](../../../docs/architecture/plugin_mirrors.md).
 
 ### Discouraged — Git submodule
 
