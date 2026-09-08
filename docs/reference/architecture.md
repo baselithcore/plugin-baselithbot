@@ -108,7 +108,10 @@ rather than failing to boot.
   (`DBVIEW_STARTUP_TIMEOUT_S`), detecting a premature child exit instead of
   polling a dead process.
 - Restarts on unexpected exit with capped exponential backoff, up to
-  `DBVIEW_RESTART_MAX_ATTEMPTS` (0 = unlimited).
+  `DBVIEW_RESTART_MAX_ATTEMPTS` (0 = unlimited). An exit by `SIGTERM` first
+  waits `DBVIEW_SIGTERM_SETTLE_S` for the host's own shutdown, so a
+  control-group kill (systemd, `docker stop`) is classified as a coordinated
+  stop instead of a crash.
 - Stops via SIGTERM with a grace period, escalating to a **process-group**
   SIGKILL (pnpm spawns turbo + Nest children that a bare parent SIGKILL would
   orphan).

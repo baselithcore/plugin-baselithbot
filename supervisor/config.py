@@ -60,6 +60,16 @@ class SupervisorConfig:
     shutdown_grace_s: float = 10.0
     """Seconds between SIGTERM and SIGKILL."""
 
+    sigterm_settle_s: float = 5.0
+    """Grace window for classifying a child killed by ``SIGTERM``.
+
+    A ``SIGTERM``-ed child is ambiguous: either the host is shutting the whole
+    process group down (systemd ``KillMode=control-group``, ``docker stop``)
+    and ``stop()`` is milliseconds behind, or it was a stray external kill and
+    the child really must come back. The supervisor waits this long for the
+    host's own stop before restarting. ``0`` disables the wait (always treat a
+    ``SIGTERM`` exit as a restartable crash)."""
+
     restart_backoff_initial_s: float = 1.0
     restart_backoff_max_s: float = 30.0
     restart_max_attempts: int = 0
@@ -149,6 +159,7 @@ def build_supervisor_config(
         startup_timeout_s=_env_float("DBVIEW_STARTUP_TIMEOUT_S", 90.0),
         health_probe_interval_s=_env_float("DBVIEW_HEALTH_INTERVAL_S", 0.5),
         shutdown_grace_s=_env_float("DBVIEW_SHUTDOWN_GRACE_S", 10.0),
+        sigterm_settle_s=_env_float("DBVIEW_SIGTERM_SETTLE_S", 5.0),
         restart_max_attempts=_env_int("DBVIEW_RESTART_MAX_ATTEMPTS", 0),
         extra_env=dict(extra_env or {}),
         env_provider=env_provider,

@@ -97,6 +97,15 @@ follower-signed identity headers. Fix: ensure `DBVIEW_SECRET` (and, if set,
 - The supervisor restarts a crashed leader-owned child automatically, with
   capped exponential backoff, up to `DBVIEW_RESTART_MAX_ATTEMPTS` (0 =
   unlimited).
+- A child killed by `SIGTERM` is **not** treated as a crash on sight: systemd
+  (`KillMode=control-group`), `docker stop` and a plain `kill` signal the whole
+  process group, so the child usually dies a few milliseconds before the ASGI
+  lifespan reaches the plugin's `shutdown()`. The supervisor waits
+  `DBVIEW_SIGTERM_SETTLE_S` (default 5s) for that coordinated stop and logs
+  `child stopped by SIGTERM as part of a coordinated shutdown — not
+  restarting`. Only if no stop arrives in the window is the exit reported as
+  unexpected and restarted — that case means something outside the backend
+  killed the child.
 - A follower never restarts anything — it only tracks the leader-owned
   child's health and 503s while it's down.
 - If the **leader worker itself** exits, its held advisory lock is released

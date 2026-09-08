@@ -29,6 +29,7 @@ sees unrelated host secrets.
 | `DBVIEW_HEALTH_INTERVAL_S` | `0.5` | Delay between health probes, both during startup and the keep-alive loop. |
 | `DBVIEW_SHUTDOWN_GRACE_S` | `10` | Seconds between SIGTERM and the process-group SIGKILL on stop. |
 | `DBVIEW_RESTART_MAX_ATTEMPTS` | `0` (unlimited) | Cap on consecutive child restarts after an unexpected exit. |
+| `DBVIEW_SIGTERM_SETTLE_S` | `5` | Grace window used to classify a child killed by `SIGTERM`: the supervisor waits this long for the host's own shutdown before treating the exit as a crash worth restarting. `0` disables the wait. |
 | `DBVIEW_API_KEY` | — | Optional upstream service key for direct loopback access (Prometheus scrape, CI automation). Central platform API keys (`bsk_…`) work through the proxy regardless. |
 
 ## Passed through to the vendored app

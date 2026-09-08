@@ -7,7 +7,9 @@ Owns the full child lifecycle:
 * spawns ``node dist/main.js`` (or ``pnpm dev`` in dev mode);
 * drains stdout/stderr into the host logger line by line;
 * gates readiness on ``GET /api/health`` with a bounded timeout;
-* restarts on unexpected exit with capped exponential backoff;
+* restarts on unexpected exit with capped exponential backoff, treating a
+  ``SIGTERM`` exit as a coordinated shutdown when the host's own stop
+  follows within the settle window;
 * stops via SIGTERM, escalating to a process-group SIGKILL on grace expiry.
 
 The child is always spawned via the argv form of ``asyncio``'s subprocess
@@ -333,6 +335,17 @@ class NodeSupervisor:
             if self._stopped.is_set():
                 return
 
+            if exit_code == -signal.SIGTERM and await self._awaits_coordinated_stop():
+                # The signal reached the child before the ASGI lifespan
+                # reached us — respawning would only hand the same shutdown
+                # another child to kill.
+                logger.info(
+                    "[dbview] child stopped by SIGTERM as part of a coordinated "
+                    "shutdown — not restarting"
+                )
+                self._healthy = False
+                return
+
             logger.error(
                 "[dbview] child exited unexpectedly (returncode=%s); "
                 "attempting restart (attempt=%d, backoff=%.1fs)",
@@ -353,6 +366,11 @@ class NodeSupervisor:
                 return
 
             await asyncio.sleep(backoff)
+            if self._stopped.is_set():
+                # The host asked to stop while we were backing off; spawning
+                # now would leak a child past the supervisor's own shutdown.
+                self._healthy = False
+                return
             backoff = min(backoff * 2.0, self._config.restart_backoff_max_s)
 
             try:
@@ -363,6 +381,34 @@ class NodeSupervisor:
             except Exception as exc:  # noqa: BLE001 — keep the loop alive
                 logger.error("[dbview] restart attempt failed: %s", exc)
                 self._healthy = False
+
+    async def _awaits_coordinated_stop(self) -> bool:
+        """Tell a shutdown-driven SIGTERM apart from a stray external kill.
+
+        A child killed by ``SIGTERM`` is ambiguous the instant it dies: either
+        the host is tearing the whole process group down — systemd's
+        ``KillMode=control-group``, ``docker stop``, an operator ``kill`` —
+        and this supervisor's :meth:`stop` is milliseconds behind, or nobody
+        is coming and the child genuinely has to be restarted. Waiting a
+        bounded window for :attr:`_stopped` separates the two without the
+        plugin taking over the host process' signal handlers.
+
+        Returns:
+            ``True`` when a coordinated stop arrived inside the window.
+        """
+        settle_s = self._config.sigterm_settle_s
+        if settle_s <= 0:
+            return False
+        logger.info(
+            "[dbview] child exited on SIGTERM — waiting %.1fs for a coordinated "
+            "shutdown before deciding to restart",
+            settle_s,
+        )
+        try:
+            await asyncio.wait_for(self._stopped.wait(), timeout=settle_s)
+        except asyncio.TimeoutError:
+            return False
+        return True
 
     async def _probe_health(self) -> bool:
         if self._port is None:

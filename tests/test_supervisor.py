@@ -59,6 +59,7 @@ def test_build_supervisor_config_honours_env_overrides(tmp_path: Path):
         "DBVIEW_INTERNAL_PORT": "55555",
         "DBVIEW_STARTUP_TIMEOUT_S": "10",
         "DBVIEW_RESTART_MAX_ATTEMPTS": "3",
+        "DBVIEW_SIGTERM_SETTLE_S": "0",
     }
     with patch.dict(os.environ, env):
         cfg = build_supervisor_config(tmp_path)
@@ -67,6 +68,7 @@ def test_build_supervisor_config_honours_env_overrides(tmp_path: Path):
     assert cfg.port == 55555
     assert cfg.startup_timeout_s == 10.0
     assert cfg.restart_max_attempts == 3
+    assert cfg.sigterm_settle_s == 0.0  # opt out of the shutdown-settle wait
 
 
 def test_build_supervisor_config_rejects_invalid_mode(tmp_path: Path):
