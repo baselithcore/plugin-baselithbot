@@ -4,7 +4,11 @@ Owns the full child lifecycle:
 
 * allocates a loopback port (or honours ``DBVIEW_INTERNAL_PORT``);
 * assembles the child environment (prefix passthrough + plugin overrides);
-* spawns ``node dist/main.js`` (or ``pnpm dev`` in dev mode);
+* refuses to spawn into a port another process still holds (see
+  :mod:`.portguard`);
+* spawns ``node dist/main.js`` (or ``pnpm dev`` in dev mode) through
+  :mod:`.launcher`, so the child cannot outlive this process nor inherit the
+  host's descriptors;
 * drains stdout/stderr into the host logger line by line;
 * gates readiness on ``GET /api/health`` with a bounded timeout;
 * restarts on unexpected exit with capped exponential backoff, treating a
@@ -26,11 +30,11 @@ import os
 import shutil
 import signal
 import socket
-import time
-
-import httpx
 
 from .config import PASSTHROUGH_ENV_PREFIXES, SupervisorConfig
+from .health import StartupTimeoutError, await_health, probe_health
+from .launcher import build_launch_argv
+from .portguard import PortUnavailableError, wait_for_free_port
 
 # Bind the argv-form spawner once (the safe family, analogous to Node's
 # execFile) so the rest of the module never repeats the symbol literally.
@@ -41,10 +45,6 @@ logger = logging.getLogger(__name__)
 
 class NodeNotAvailableError(RuntimeError):
     """Raised when ``node``/``pnpm`` can't be located on ``PATH``."""
-
-
-class StartupTimeoutError(RuntimeError):
-    """Raised when the child process never answers ``/api/health``."""
 
 
 def _allocate_port(host: str = "127.0.0.1") -> int:
@@ -242,13 +242,24 @@ class NodeSupervisor:
         return ["node", str(api_dist)]
 
     async def _spawn(self) -> None:
+        assert self._port is not None
         cwd = self._config.dbview_root
         env = self._build_env()
         cmd = self._build_command()
+        # The port is the real mutex on the single child: spawning into one
+        # somebody else still holds only produces an EADDRINUSE corpse whose
+        # failure the health gate cannot see (the incumbent answers for it).
+        await wait_for_free_port(
+            self._config.host,
+            self._port,
+            timeout_s=self._config.port_release_timeout_s,
+        )
         logger.info("[dbview] spawning %s (cwd=%s)", " ".join(cmd), cwd)
-        # ``_spawn_argv`` is the argv-form spawner — no shell involved.
+        # ``_spawn_argv`` is the argv-form spawner — no shell involved. The
+        # launcher wrapper execs ``cmd`` in the same pid after tying the
+        # child's lifetime to ours and closing inherited descriptors.
         self._process = await _spawn_argv(
-            *cmd,
+            *build_launch_argv(cmd),
             cwd=str(cwd),
             env=env,
             stdout=asyncio.subprocess.PIPE,
@@ -280,39 +291,20 @@ class NodeSupervisor:
             if text:
                 logger.log(level, "[dbview-node] %s", text)
 
+    def _health_url(self) -> str:
+        return f"http://{self._config.host}:{self._port}{self._config.health_path}"
+
     async def _wait_for_health(self) -> None:
         assert self._port is not None
-        url = f"http://{self._config.host}:{self._port}{self._config.health_path}"
-        deadline = time.monotonic() + self._config.startup_timeout_s
-        last_error: str | None = None
-        async with httpx.AsyncClient(timeout=2.0) as client:
-            while time.monotonic() < deadline:
-                # Premature-exit detection: don't keep polling a dead child.
-                if self._process is not None and self._process.returncode is not None:
-                    raise StartupTimeoutError(
-                        f"dbview child exited during startup "
-                        f"(returncode={self._process.returncode}) "
-                        f"before answering {url}"
-                    )
-                try:
-                    resp = await client.get(url)
-                    if resp.status_code < 500:
-                        self._healthy = True
-                        logger.info(
-                            "[dbview] health probe OK in %.2fs (status=%d)",
-                            self._config.startup_timeout_s
-                            - max(0.0, deadline - time.monotonic()),
-                            resp.status_code,
-                        )
-                        return
-                    last_error = f"HTTP {resp.status_code}"
-                except httpx.HTTPError as exc:
-                    last_error = f"{type(exc).__name__}: {exc}"
-                await asyncio.sleep(self._config.health_probe_interval_s)
-        raise StartupTimeoutError(
-            f"dbview API did not become healthy within "
-            f"{self._config.startup_timeout_s:.0f}s (last_error={last_error})"
+        await await_health(
+            self._health_url(),
+            timeout_s=self._config.startup_timeout_s,
+            interval_s=self._config.health_probe_interval_s,
+            child_returncode=lambda: (
+                None if self._process is None else self._process.returncode
+            ),
         )
+        self._healthy = True
 
     async def _keepalive_loop(self) -> None:
         """Watch the child process and the health endpoint.
@@ -413,13 +405,7 @@ class NodeSupervisor:
     async def _probe_health(self) -> bool:
         if self._port is None:
             return False
-        url = f"http://{self._config.host}:{self._port}{self._config.health_path}"
-        try:
-            async with httpx.AsyncClient(timeout=2.0) as client:
-                resp = await client.get(url)
-                return resp.status_code < 500
-        except httpx.HTTPError:
-            return False
+        return await probe_health(self._health_url())
 
     async def _terminate_child(self) -> None:
         proc = self._process
@@ -454,5 +440,6 @@ class NodeSupervisor:
 __all__ = [
     "NodeNotAvailableError",
     "NodeSupervisor",
+    "PortUnavailableError",
     "StartupTimeoutError",
 ]

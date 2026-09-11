@@ -29,6 +29,7 @@ sees unrelated host secrets.
 | `DBVIEW_HEALTH_INTERVAL_S` | `0.5` | Delay between health probes, both during startup and the keep-alive loop. |
 | `DBVIEW_SHUTDOWN_GRACE_S` | `10` | Seconds between SIGTERM and the process-group SIGKILL on stop. |
 | `DBVIEW_RESTART_MAX_ATTEMPTS` | `0` (unlimited) | Cap on consecutive child restarts after an unexpected exit. |
+| `DBVIEW_PORT_RELEASE_TIMEOUT_S` | `15` | How long a predecessor may still hold the upstream port when a child is about to be spawned. A leadership handover releases the advisory lock the instant the old leader worker dies, while its child needs a moment to answer the parent-death `SIGTERM`; past this window the port counts as held by a foreign process and the spawn is refused with a `PortUnavailableError` instead of an endless `EADDRINUSE` restart loop. |
 | `DBVIEW_SIGTERM_SETTLE_S` | `5` | Grace window used to classify a child killed by `SIGTERM`: the supervisor waits this long for the host's own shutdown before treating the exit as a crash worth restarting. `0` disables the wait. |
 | `DBVIEW_API_KEY` | — | Optional upstream service key for direct loopback access (Prometheus scrape, CI automation). Central platform API keys (`bsk_…`) work through the proxy regardless. |
 

@@ -21,6 +21,9 @@ plugins/dbview/
 ├── proxy_router.py    Authenticated, streaming reverse-proxy router
 ├── supervisor/
 │   ├── config.py      SupervisorConfig (env + plugin-YAML overrides)
+│   ├── health.py      readiness/liveness probing + foreign-listener rejection
+│   ├── launcher.py    pre-exec hardening (parent-death signal, fd sweep)
+│   ├── portguard.py   pre-spawn ownership check on the rendezvous port
 │   └── process.py     NodeSupervisor: spawn / health-gate / restart / stop
 └── dbview/            Vendored upstream monorepo (verbatim)
     ├── apps/api/      NestJS + Fastify backend
@@ -101,12 +104,25 @@ rather than failing to boot.
 - Builds the child environment: prefix-passthrough (`DBVIEW_*`, `OLLAMA_*`,
   `OPENAI_*`, `ANTHROPIC_*`, `OTEL_*`, `LOG_*`, `NODE_*`, `APP_VERSION`) plus
   the plugin-owned gateway contract.
+- Refuses to spawn into a port another process still holds, waiting up to
+  `DBVIEW_PORT_RELEASE_TIMEOUT_S` for a predecessor that is still shutting
+  down (`portguard.py`). The port — not the advisory lock — is the real mutex
+  on the single child: the lock is released the instant a leader worker dies,
+  while its child keeps the port until it has actually exited.
 - Spawns `node dist/main.js` (prod) or `pnpm dev` (dev) via the **argv** form
-  of `asyncio`'s subprocess API — no shell, no string interpolation.
+  of `asyncio`'s subprocess API — no shell, no string interpolation — through
+  `launcher.py`, which `execvp`s the command **in the same pid** after tying
+  the child's lifetime to the worker's (`PR_SET_PDEATHSIG`, so a `SIGKILL`ed
+  worker cannot orphan it) and closing every inherited descriptor. Both have
+  to happen between `fork()` and `execve()`, and `preexec_fn` is unavailable
+  under `uvloop` — whose libuv spawn is also what leaks the host's descriptors
+  in the first place.
 - Drains stdout/stderr line by line into the host logger.
 - Gates readiness on `GET /api/health` with a bounded timeout
   (`DBVIEW_STARTUP_TIMEOUT_S`), detecting a premature child exit instead of
-  polling a dead process.
+  polling a dead process — and rejecting a green probe our own child cannot
+  have answered, since the gate sees a port rather than a pid
+  (`health.py`).
 - Restarts on unexpected exit with capped exponential backoff, up to
   `DBVIEW_RESTART_MAX_ATTEMPTS` (0 = unlimited). An exit by `SIGTERM` first
   waits `DBVIEW_SIGTERM_SETTLE_S` for the host's own shutdown, so a

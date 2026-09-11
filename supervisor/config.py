@@ -70,6 +70,14 @@ class SupervisorConfig:
     host's own stop before restarting. ``0`` disables the wait (always treat a
     ``SIGTERM`` exit as a restartable crash)."""
 
+    port_release_timeout_s: float = 15.0
+    """How long a predecessor may still hold the upstream port at spawn time.
+
+    A leadership handover releases the advisory lock the instant the old leader
+    worker dies, while its child needs a moment to answer the parent-death
+    ``SIGTERM``. The new leader waits this long for the port before declaring
+    it held by a foreign process (see :mod:`.portguard`)."""
+
     restart_backoff_initial_s: float = 1.0
     restart_backoff_max_s: float = 30.0
     restart_max_attempts: int = 0
@@ -160,6 +168,7 @@ def build_supervisor_config(
         health_probe_interval_s=_env_float("DBVIEW_HEALTH_INTERVAL_S", 0.5),
         shutdown_grace_s=_env_float("DBVIEW_SHUTDOWN_GRACE_S", 10.0),
         sigterm_settle_s=_env_float("DBVIEW_SIGTERM_SETTLE_S", 5.0),
+        port_release_timeout_s=_env_float("DBVIEW_PORT_RELEASE_TIMEOUT_S", 15.0),
         restart_max_attempts=_env_int("DBVIEW_RESTART_MAX_ATTEMPTS", 0),
         extra_env=dict(extra_env or {}),
         env_provider=env_provider,

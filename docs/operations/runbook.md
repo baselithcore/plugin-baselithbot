@@ -87,6 +87,7 @@ follower-signed identity headers. Fix: ensure `DBVIEW_SECRET` (and, if set,
 | `/dbview/` → 404 or opaque error | Backend started before the plugin/`ui/dist` existed → restart. If `ui/dist` is missing, the framework mounts a self-diagnosing placeholder → build it, then restart. |
 | Plugin fails to activate: `DBVIEW_SECRET ... required` | Set `DBVIEW_SECRET` (≥ 16 chars) in the host environment before boot. |
 | `NodeNotAvailableError` at startup | `node` (or, in dev mode, `pnpm`) is missing from `PATH` on the host that's trying to become leader. |
+| `PortUnavailableError` / repeating `[dbview-node] listen EADDRINUSE` | Another process already holds the upstream port. Almost always a Node child orphaned by a worker that was replaced without running the plugin's shutdown: find it with `ss -lntp` on the upstream port — it is the `node .../apps/api/dist/main.js` whose parent is init (`ps -o ppid= -p <pid>` prints 1) — and terminate it, or point `DBVIEW_INTERNAL_PORT` at a free port. |
 | `StartupTimeoutError` | The Node child never answered `/api/health` within `DBVIEW_STARTUP_TIMEOUT_S`. Check supervisor logs (`[dbview-node] ...` lines) for the underlying failure — commonly a missing prod bundle (`pnpm -r build` not run) or a port collision. |
 | Connection created on one request, "not found" on the next | See [Connection Not Found Bug](#connection-not-found-bug) above. |
 | `403 dbview_tab_denied` | The caller's central RBAC policy for `(dbview, dbview)` denies the tab — check the Access Control matrix, not this plugin. |
@@ -108,6 +109,24 @@ follower-signed identity headers. Fix: ensure `DBVIEW_SECRET` (and, if set,
   killed the child.
 - A follower never restarts anything — it only tracks the leader-owned
   child's health and 503s while it's down.
+- The child is spawned through a small launcher that ties its lifetime to the
+  worker's (`PR_SET_PDEATHSIG` on Linux) and closes every descriptor above
+  stdio before `exec`. Both matter when a worker is **killed** rather than
+  stopped — `uvicorn` replaces a worker that misses its health check with a
+  `SIGKILL`, which runs no lifespan and therefore no `shutdown()`. Without the
+  death signal the child is orphaned and keeps the rendezvous port, so the
+  worker elected in its place can never bind; without the descriptor sweep the
+  same orphan also pins the host's public API socket, and the next
+  `systemctl restart` fails to bind it.
+- Before every spawn the supervisor checks that nothing else holds the upstream
+  port, waiting up to `DBVIEW_PORT_RELEASE_TIMEOUT_S` for a predecessor that is
+  still shutting down. A port still held after that is reported as
+  `PortUnavailableError` and fails activation — deliberately louder than
+  respawning a child that could only ever die with `EADDRINUSE`.
+- The health gate is handed a *port*, not a pid, so it also cross-checks that
+  the child this supervisor spawned is still running. A green probe answered by
+  somebody else's process is rejected rather than logged as a successful
+  restart.
 - If the **leader worker itself** exits, its held advisory lock is released
   (the connection closes), and another worker wins leadership on its next
   `acquire_dbview_leadership()` call — but that only happens at that worker's

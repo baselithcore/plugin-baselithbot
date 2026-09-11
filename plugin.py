@@ -92,6 +92,7 @@ from .proxy_router import build_proxy_router
 from .supervisor import (
     NodeNotAvailableError,
     NodeSupervisor,
+    PortUnavailableError,
     StartupTimeoutError,
     build_supervisor_config,
 )
@@ -370,8 +371,11 @@ class DbviewPlugin(RouterPlugin):
             await self._release_leadership()
             self._supervisor = None
             raise
-        except StartupTimeoutError as exc:
-            logger.error("[dbview] startup timeout: %s", exc)
+        except (StartupTimeoutError, PortUnavailableError) as exc:
+            # A held upstream port is as fatal as a child that never answers:
+            # every spawn into it would die with EADDRINUSE. Fail the plugin
+            # with the diagnosis instead of hiding it under a restart loop.
+            logger.error("[dbview] activation failed: %s", exc)
             try:
                 await supervisor.stop()
             finally:
