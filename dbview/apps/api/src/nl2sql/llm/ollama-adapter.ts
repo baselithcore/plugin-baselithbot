@@ -50,6 +50,8 @@ export class OllamaAdapter implements LlmAdapter {
         message?: { content?: string };
         response?: string;
         error?: string;
+        prompt_eval_count?: number;
+        eval_count?: number;
       };
       if (json.error) {
         throw new LlmProviderError(`ollama (${model}) error: ${json.error}`);
@@ -60,7 +62,14 @@ export class OllamaAdapter implements LlmAdapter {
           `ollama (${model}) returned empty content. The model likely does not support chat/JSON output. Pick a chat-tuned model (e.g. codellama:7b, mistral:latest, llama3.2:latest) in Settings.`
         );
       }
-      return { text, model };
+      return {
+        text,
+        model,
+        usage: {
+          promptTokens: json.prompt_eval_count ?? 0,
+          completionTokens: json.eval_count ?? 0,
+        },
+      };
     } catch (err) {
       if (err instanceof LlmProviderError) throw err;
       if ((err as { name?: string }).name === 'AbortError') {

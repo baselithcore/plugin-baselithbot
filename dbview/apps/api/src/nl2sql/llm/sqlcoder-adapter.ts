@@ -73,7 +73,12 @@ export class SqlcoderAdapter implements LlmAdapter {
           `sqlcoder (${model}) returned ${res.status}: ${text.slice(0, 200) || res.statusText}`
         );
       }
-      const json = (await res.json()) as { response?: string; error?: string };
+      const json = (await res.json()) as {
+        response?: string;
+        error?: string;
+        prompt_eval_count?: number;
+        eval_count?: number;
+      };
       if (json.error) throw new LlmProviderError(`sqlcoder (${model}) error: ${json.error}`);
       const raw = json.response ?? '';
       if (!raw.trim()) throw new LlmProviderError(`sqlcoder (${model}) returned empty content.`);
@@ -91,7 +96,14 @@ export class SqlcoderAdapter implements LlmAdapter {
         joinNotes: [],
         involvedEntities: [],
       });
-      return { text: wrapped, model };
+      return {
+        text: wrapped,
+        model,
+        usage: {
+          promptTokens: json.prompt_eval_count ?? 0,
+          completionTokens: json.eval_count ?? 0,
+        },
+      };
     } catch (err) {
       if (err instanceof LlmProviderError || err instanceof ModelOutputError) throw err;
       if ((err as { name?: string }).name === 'AbortError') {

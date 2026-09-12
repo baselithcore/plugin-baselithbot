@@ -53,6 +53,7 @@ from .identity import (
     can_access_dbview_tab,
 )
 from .llm_governance import GOV_REQUEST_HEADERS, governed_request_headers
+from .usage import USAGE_HEADER, report_upstream_usage
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +146,9 @@ def _filter_response_headers(
     """Strip hop-by-hop headers and rewrite ``Set-Cookie`` paths.
 
     ``Content-Length`` is dropped because ``StreamingResponse`` re-derives it;
-    forwarding a stale upstream value corrupts transformed bodies.
+    forwarding a stale upstream value corrupts transformed bodies. The child's
+    LLM-usage header is gateway-internal (already consumed by the cost report)
+    and never reaches the browser.
     """
     cleaned: list[tuple[str, str]] = []
     for raw_name, raw_value in headers.raw:
@@ -153,6 +156,8 @@ def _filter_response_headers(
         lower = name.lower()
         value = raw_value.decode("latin-1")
         if lower in _HOP_BY_HOP_HEADERS or lower == "content-length":
+            continue
+        if lower == USAGE_HEADER:
             continue
         if lower == "set-cookie":
             value = _rewrite_set_cookie_path(value, cookie_path_rewriter)
@@ -350,6 +355,12 @@ def build_proxy_router(
                     "detail": _msg(request, "dbview_upstream_error", exc=exc),
                 },
             )
+
+        # The child reports what its LLM providers measured for this request.
+        # Reported here — still inside the caller's request — so the host ledger
+        # can attribute the spend to this plugin and to the authenticated user;
+        # the header itself is internal telemetry and is stripped below.
+        report_upstream_usage(upstream_response.headers)
 
         response_headers = _filter_response_headers(
             upstream_response.headers, cookie_path_rewriter=cookie_rewriter

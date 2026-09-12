@@ -358,3 +358,42 @@ def test_proxy_502s_when_upstream_connect_fails():
     body = resp.json()
     assert body["code"] == "dbview_upstream_error"
     assert "refused" in body["detail"]
+
+
+def test_proxy_reports_child_llm_usage_and_hides_the_header():
+    """The child's usage header feeds the cost ledger, then is stripped.
+
+    Reported from inside the caller's request (the only place the host can
+    attribute the spend to this plugin and to the authenticated user), and never
+    forwarded to the browser — it is gateway-internal telemetry.
+    """
+    from core.services.llm import register_token_sink, unregister_token_sink
+
+    from plugins.dbview.usage import USAGE_HEADER
+
+    seen: list[tuple[int, str]] = []
+
+    def sink(count: int, model: str) -> None:
+        seen.append((count, model))
+
+    response = _StubResponse(
+        headers=[
+            ("content-type", "application/json"),
+            (USAGE_HEADER, "codellama:7b;1200;80"),
+        ],
+        body=b"{}",
+    )
+    captured = _install_stub_client(response)
+    app = _build_app(user=_make_user())
+
+    register_token_sink(sink)
+    try:
+        with captured["_patcher"]:
+            with TestClient(app) as client:
+                resp = client.post("/api/dbview/nl2sql", json={"prompt": "x"})
+    finally:
+        unregister_token_sink(sink)
+
+    assert resp.status_code == 200
+    assert seen == [(1200, "input"), (80, "codellama:7b")]
+    assert USAGE_HEADER not in {k.lower() for k in resp.headers}

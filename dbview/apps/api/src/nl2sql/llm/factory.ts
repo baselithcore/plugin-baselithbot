@@ -2,12 +2,23 @@ import { generateObject, generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { LlmProviderError, type DialectKind, type LlmProvider } from '@dbview/shared';
-import type { LlmAdapter, LlmCompletionInput, LlmCompletionResult } from './provider.js';
+import type { LlmAdapter, LlmCompletionInput, LlmCompletionResult, LlmUsage } from './provider.js';
 import { OllamaAdapter } from './ollama-adapter.js';
 import { SqlcoderAdapter } from './sqlcoder-adapter.js';
 import { Nl2QueryOutputSchema } from './output-schema.js';
 
 const SQLCODER_FAMILY = /^sqlcoder/i;
+
+/** The AI SDK's usage block, or undefined when the provider reported none. */
+function sdkUsage(
+  usage: { promptTokens?: number; completionTokens?: number } | undefined
+): LlmUsage | undefined {
+  if (!usage) return undefined;
+  return {
+    promptTokens: usage.promptTokens ?? 0,
+    completionTokens: usage.completionTokens ?? 0,
+  };
+}
 
 const DEFAULT_OLLAMA_MODEL_BY_KIND: Record<DialectKind, string> = {
   sql: process.env.OLLAMA_MODEL_SQL ?? 'sqlcoder:7b',
@@ -67,7 +78,7 @@ class GenericRemoteAdapter implements LlmAdapter {
           prompt: input.user,
           temperature: input.temperature ?? 0,
         });
-        return { text: JSON.stringify(res.object), model };
+        return { text: JSON.stringify(res.object), model, usage: sdkUsage(res.usage) };
       } catch {
         // Fall through to generateText. Reasons we get here:
         //   - NoObjectGeneratedError: model refused to match the schema.
@@ -86,7 +97,7 @@ class GenericRemoteAdapter implements LlmAdapter {
         prompt: input.user,
         temperature: input.temperature ?? 0,
       });
-      return { text: res.text, model };
+      return { text: res.text, model, usage: sdkUsage(res.usage) };
     } catch (err) {
       throw new LlmProviderError(`${this.provider} (${model}) failed: ${(err as Error).message}`);
     }

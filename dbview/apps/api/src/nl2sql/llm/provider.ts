@@ -24,6 +24,15 @@ export interface StructuredContext {
 }
 
 /**
+ * Token counts as the provider reported them. Absent when the provider returns
+ * none — the host ledger prices measured tokens only, never an estimate.
+ */
+export interface LlmUsage {
+  promptTokens: number;
+  completionTokens: number;
+}
+
+/**
  * Adapter output. `text` MUST be a JSON string conforming to the
  * `LlmJson` shape consumed by Nl2SqlService.parseJsonResponse.
  * Adapters that emit raw SQL (sqlcoder) wrap it in synthetic JSON.
@@ -31,6 +40,7 @@ export interface StructuredContext {
 export interface LlmCompletionResult {
   text: string;
   model: string;
+  usage?: LlmUsage;
 }
 
 export interface LlmAdapter {

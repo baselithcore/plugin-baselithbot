@@ -142,6 +142,25 @@ rather than failing to boot.
 | Storage config (for leadership) | `core.config.get_storage_config` |
 | Structured logging | `core.observability.logging.get_logger` |
 | Plugin contract | `core.plugins.RouterPlugin` |
+| Per-plugin LLM cost ledger | `core.services.llm.report_external_usage` |
+
+### LLM cost reporting across the process boundary
+
+The NL→Query and explain pipelines run **inside the Node child**, so the host
+cannot see the tokens they spend and every dbview cost figure read zero. The
+child now accumulates what its providers reported per request
+(`apps/api/src/observability/llm-usage.store.ts`, fed from the single
+`instrumentLlmAdapter` seam) and stamps it on the response as
+`x-dbview-llm-usage` — `model;prompt;completion` rows joined by `,`. The proxy
+parses it (`usage.py`) and reports it to the framework seam **while the
+originating request is still in flight**, which is what keeps the spend
+attributable to this plugin *and* to the authenticated caller; the header is
+gateway-internal and stripped before the response reaches the browser.
+
+The header is parsed defensively (row cap, count bounds, malformed rows
+dropped) because it crosses a process boundary, and streamed responses are not
+covered: their headers are already on the wire when the completion finishes, so
+their usage goes unreported rather than guessed.
 
 ## Extension points
 

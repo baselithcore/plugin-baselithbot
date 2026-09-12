@@ -18,6 +18,7 @@ import { RolesGuard } from './auth/roles.guard.js';
 import { EngineModule } from './engine/engine.module.js';
 import { ObservabilityModule } from './observability/observability.module.js';
 import { MetricsInterceptor } from './observability/metrics.interceptor.js';
+import { LlmUsageInterceptor } from './observability/llm-usage.interceptor.js';
 import { currentRequestId, newRequestId } from './common/request-context.js';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 
@@ -86,6 +87,7 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
     { provide: APP_INTERCEPTOR, useClass: MetricsInterceptor },
+    { provide: APP_INTERCEPTOR, useClass: LlmUsageInterceptor },
   ],
 })
 export class AppModule {}
