@@ -71,7 +71,14 @@ export class SqlcoderAdapter {
                 joinNotes: [],
                 involvedEntities: [],
             });
-            return { text: wrapped, model };
+            return {
+                text: wrapped,
+                model,
+                usage: {
+                    promptTokens: json.prompt_eval_count ?? 0,
+                    completionTokens: json.eval_count ?? 0,
+                },
+            };
         }
         catch (err) {
             if (err instanceof LlmProviderError || err instanceof ModelOutputError)

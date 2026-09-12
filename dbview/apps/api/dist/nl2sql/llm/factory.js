@@ -6,6 +6,15 @@ import { OllamaAdapter } from './ollama-adapter.js';
 import { SqlcoderAdapter } from './sqlcoder-adapter.js';
 import { Nl2QueryOutputSchema } from './output-schema.js';
 const SQLCODER_FAMILY = /^sqlcoder/i;
+/** The AI SDK's usage block, or undefined when the provider reported none. */
+function sdkUsage(usage) {
+    if (!usage)
+        return undefined;
+    return {
+        promptTokens: usage.promptTokens ?? 0,
+        completionTokens: usage.completionTokens ?? 0,
+    };
+}
 const DEFAULT_OLLAMA_MODEL_BY_KIND = {
     sql: process.env.OLLAMA_MODEL_SQL ?? 'sqlcoder:7b',
     graph: process.env.OLLAMA_MODEL_GRAPH ?? 'codellama:7b',
@@ -63,7 +72,7 @@ class GenericRemoteAdapter {
                     prompt: input.user,
                     temperature: input.temperature ?? 0,
                 });
-                return { text: JSON.stringify(res.object), model };
+                return { text: JSON.stringify(res.object), model, usage: sdkUsage(res.usage) };
             }
             catch {
                 // Fall through to generateText. Reasons we get here:
@@ -83,7 +92,7 @@ class GenericRemoteAdapter {
                 prompt: input.user,
                 temperature: input.temperature ?? 0,
             });
-            return { text: res.text, model };
+            return { text: res.text, model, usage: sdkUsage(res.usage) };
         }
         catch (err) {
             throw new LlmProviderError(`${this.provider} (${model}) failed: ${err.message}`);
