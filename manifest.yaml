@@ -29,7 +29,7 @@ tags:
 - qdrant
 - salesforce
 - sso
-integrity_sha256: dd3a015c9dd70c70469cc4c0e9d184dae17704734d72ff63ec34ab04ed99321e
+integrity_sha256: f124bd24ebcac4b18c44af8c6ff9b43bec84895713ceb5803941f57d67d61590
 llm_scopes:
 - id: nl2sql
   label: "NL\u2192Query translation"
@@ -42,7 +42,7 @@ plugin_dependencies:
   auth: '>=2.0.0'
 python_dependencies:
 - httpx>=0.27.0
-runtime_prerequisites:
+x-runtime_prerequisites:
 - "Node.js \u2265 20 on PATH (mandatory; \u2265 22.13 only if pnpm is upgraded to\
   \ 11.x)"
 - "pnpm (auto-provisioned as 10.15.0 via the packageManager field; Node-20 compatible).\
@@ -99,3 +99,4 @@ environment_variables:
 - name: OTEL_EXPORTER_OTLP_ENDPOINT
   description: OTLP collector base URL. Tracing is a no-op when unset.
   required: false
+hash_surface_version: 5
