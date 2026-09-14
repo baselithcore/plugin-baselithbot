@@ -107,11 +107,15 @@ and 200 from the other**, at random, for the same URL.
 2. Followers read that key on the same cadence and repoint their supervisor
    (`NodeSupervisor.set_peer_origin`). Re-reading rather than resolving once is
    what makes a rollout that moves the leader survivable.
-3. The child binds `0.0.0.0` instead of loopback so peers can reach it; the
-   leader's own forward still uses loopback (`base_url` normalises the wildcard,
-   which is a *listening* address and never a destination). Its
-   `timingSafeEqual` gateway-secret check still fronts every identity header, so
-   a peer with no secret gets nothing.
+3. Nothing widens the bind, because nothing has to: the vendored NestJS
+   bootstrap calls `app.listen(port, '0.0.0.0')` and ignores `HOST` entirely, so
+   the child has always been reachable from a peer pod — only the address to
+   dial was missing. (`DBVIEW_INTERNAL_HOST` still drives `base_url`, and a
+   wildcard there is normalised to loopback for dialling: a wildcard is a
+   *listening* address, never a destination.) The child is not open by virtue of
+   being reachable — its `timingSafeEqual` gateway-secret check fronts every
+   identity header, and the chart admits the port only from the release's own
+   pods.
 4. The health probe follows the upstream, not loopback — a follower probing its
    own empty port would report the console down while the leader serves it.
 

@@ -353,24 +353,13 @@ class DbviewPlugin(RouterPlugin):
         # Cross-pod mode: the advisory lock already elects one leader for the
         # whole cluster, but followers used to forward to loopback — which in
         # another pod is a port with nothing behind it, so the console 404'd
-        # from whichever replica lost the election. It needs an address to
-        # advertise AND somewhere to publish it; with either missing the
-        # plugin keeps its single-pod behaviour untouched.
+        # from whichever replica lost the election. Only the *address* was
+        # missing: the child already binds every interface itself
+        # (`app.listen(port, '0.0.0.0')` in the vendored NestJS bootstrap), so
+        # a peer can reach it without the supervisor widening anything. It
+        # needs an address to advertise AND somewhere to publish it; with
+        # either missing the plugin keeps its single-pod behaviour untouched.
         advertised_host = resolve_cross_pod_host()
-        if advertised_host is not None and "host" not in supervisor_overrides:
-            # Wildcard rather than the pod IP alone: peers reach the child on
-            # the routable address while this pod's own forward keeps using
-            # loopback (NodeSupervisor.base_url normalises the wildcard).
-            # Deliberate, and reached only when the deployment already has a
-            # routable address to advertise and a Redis to publish it to. The
-            # child is not open by virtue of being reachable: it validates the
-            # shared gateway secret with timingSafeEqual on every identity
-            # header and 401s everything else, and the chart's NetworkPolicy
-            # admits this port only from the release's own pods
-            # (networkPolicy.selfIngressPorts).
-            supervisor_overrides["host"] = (  # noqa: S104 - see above
-                "0.0.0.0"  # nosec B104 - see above
-            )
 
         supervisor_config = build_supervisor_config(
             _PLUGIN_DIR,
