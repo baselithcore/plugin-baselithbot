@@ -57,6 +57,40 @@ spawning its own child. See [Architecture → Multi-worker leadership](../refere
 | Did every worker resolve the same port? | Confirm no per-worker `DBVIEW_INTERNAL_PORT` override diverges; the default is pinned automatically once leadership is coordinated. |
 | Did every worker derive the same gateway secret? | If `DBVIEW_GATEWAY_SECRET` is set, it must be **identical** across every worker process (it should be — it's inherited from the shared environment). If unset, it's derived from `DBVIEW_SECRET`, which must equally be identical everywhere. A mismatch here doesn't cause "not found" — it causes 401s from followers, a related but distinct symptom (see below). |
 
+## "Plugin dbview: → FAILED — child exited during startup (returncode=0)"
+
+**Symptom**: the plugin never activates. The log shows the supervisor spawning
+the child and, half a second later, giving up:
+
+```text
+[dbview] supervisor starting (mode=prod host=127.0.0.1 port=43117)
+[dbview] spawning node .../apps/api/dist/main.js
+[dbview] activation failed: dbview child exited during startup (returncode=0)
+         before answering http://127.0.0.1:43117/api/health
+```
+
+Exit code 0, in well under a second, and **not one line of child output** —
+which is the tell. A Node process that got as far as running the app prints its
+Nest bootstrap immediately; silence means it never exec'd.
+
+**Root cause (fixed in 0.4.2)**: the pre-exec launcher refused to exec when it
+found itself parented to pid 1, reading that as "my parent died before the
+death signal was armed, I would become an orphan holding the rendezvous port".
+In a container that inference is wrong: the image runs `uvicorn` as the
+entrypoint, so the supervisor **is** pid 1 and the test was true on every
+healthy spawn. dbview therefore could not start in any containerised
+deployment. The launcher now compares its parent against the spawner's actual
+pid, passed on its command line.
+
+**If you see this on 0.4.2 or later**, the cause is something else — check in
+this order:
+
+| Check | How |
+|---|---|
+| Does the child run by hand? | `kubectl exec <pod> -- sh -c 'cd /app/plugins/dbview/dbview && PORT=43199 NODE_ENV=production DBVIEW_DATA_DIR=/app/plugins/dbview/var/data DBVIEW_SECRET=x node apps/api/dist/main.js'`. Omitting `NODE_ENV=production` fails with `unable to determine transport target for "pino-pretty"` — a dev dependency absent from the image, and a convincing red herring: it also exits 0. |
+| Is `DBVIEW_DATA_DIR` writable? | The app creates it at boot; a read-only root filesystem without a volume there gives `ENOENT: mkdir`. |
+| Is the port already held? | A previous child that outlived its supervisor pins 43117. `DBVIEW_PORT_RELEASE_TIMEOUT_S` bounds the wait; past it the spawn is refused with `PortUnavailableError` rather than looping on `EADDRINUSE`. |
+
 ## "The console is 404 from one replica and 200 from another"
 
 **Symptom**: reloading `/dbview/` flips between the working console and a

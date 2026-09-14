@@ -26,7 +26,10 @@ import time
 
 import pytest
 
+from plugins.dbview.supervisor import launcher as _launcher
 from plugins.dbview.supervisor.launcher import build_launch_argv
+
+LAUNCHER = _launcher.__file__
 
 _LINUX_ONLY = pytest.mark.skipif(
     not sys.platform.startswith("linux"),
@@ -38,7 +41,95 @@ def test_build_launch_argv_wraps_the_command_behind_a_separator() -> None:
     argv = build_launch_argv(["node", "/srv/dist/main.js"])
     assert argv[0] == sys.executable
     assert argv[1].endswith("launcher.py")
-    assert argv[2:] == ["--", "node", "/srv/dist/main.js"]
+    assert argv[2:] == [
+        "--parent",
+        str(os.getpid()),
+        "--",
+        "node",
+        "/srv/dist/main.js",
+    ]
+
+
+def test_a_parent_of_pid_1_is_not_an_orphan(monkeypatch) -> None:
+    """The bug this flag exists for.
+
+    In a container the application is pid 1 — the image runs uvicorn as the
+    entrypoint — so the launcher's parent legitimately *is* init. The old check
+    read that as "I have been orphaned" and called ``os._exit(0)`` before exec:
+    every dbview Node child died instantly, with exit code 0 and no output, in
+    every containerised deployment, and the supervisor could only report "child
+    exited during startup".
+    """
+    exits: list[int] = []
+    monkeypatch.setattr(_launcher.os, "getppid", lambda: 1)
+    monkeypatch.setattr(_launcher.os, "_exit", lambda code: exits.append(code))
+
+    _launcher._exit_if_orphaned(1)
+    assert exits == []
+
+
+def test_a_parent_that_changed_is_an_orphan(monkeypatch) -> None:
+    """The property the check is actually for: a parent that died before the
+    death signal was armed leaves an orphan pinning the rendezvous port."""
+    exits: list[int] = []
+    monkeypatch.setattr(_launcher.os, "getppid", lambda: 1)
+    monkeypatch.setattr(_launcher.os, "_exit", lambda code: exits.append(code))
+
+    _launcher._exit_if_orphaned(4242)
+    assert exits == [0]
+
+
+def test_the_command_runs_under_its_real_parent() -> None:
+    """End to end: the spawner's pid is what build_launch_argv passes."""
+    result = subprocess.run(
+        [
+            sys.executable,
+            LAUNCHER,
+            "--parent",
+            str(os.getpid()),
+            "--",
+            sys.executable,
+            "-c",
+            "print('exec happened')",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode == 0
+    assert "exec happened" in result.stdout
+
+
+def test_the_command_does_not_run_when_the_parent_is_gone() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            LAUNCHER,
+            "--parent",
+            "4242",
+            "--",
+            sys.executable,
+            "-c",
+            "print('exec happened')",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode == 0
+    assert "exec happened" not in result.stdout
+
+
+def test_a_launcher_run_by_hand_still_execs() -> None:
+    """Without the flag the check is skipped, not guessed at."""
+    result = subprocess.run(
+        [sys.executable, LAUNCHER, "--", sys.executable, "-c", "print('by hand')"],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode == 0
+    assert "by hand" in result.stdout
 
 
 def test_launcher_closes_descriptors_inherited_from_the_host() -> None:

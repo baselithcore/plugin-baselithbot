@@ -49,7 +49,12 @@ _FIRST_INHERITED_FD = 3
 # (or nothing at all) — one ``close_range`` syscall either way on Linux.
 _MAX_FD_SWEEP = 1 << 20
 
-_USAGE = "dbview child launcher: expected '-- <command> [args...]'"
+_USAGE = "dbview child launcher: expected '--parent <pid> -- <command> [args...]'"
+
+#: Flag carrying the pid of the process that spawned this launcher. See
+#: :func:`_exit_if_orphaned` for why "am I orphaned?" cannot be answered
+#: without it.
+_PARENT_FLAG = "--parent"
 
 
 def build_launch_argv(command: list[str]) -> list[str]:
@@ -62,9 +67,18 @@ def build_launch_argv(command: list[str]) -> list[str]:
     Returns:
         An argv for :func:`asyncio.create_subprocess_exec`. The launcher
         ``execvp``s ``command`` in the same pid, so the caller's process
-        handle still tracks the real child.
+        handle still tracks the real child. The caller's own pid rides along:
+        it is the only way the launcher can tell "my parent died" from "my
+        parent is pid 1" — see :func:`_exit_if_orphaned`.
     """
-    return [sys.executable, os.path.abspath(__file__), "--", *command]
+    return [
+        sys.executable,
+        os.path.abspath(__file__),
+        _PARENT_FLAG,
+        str(os.getpid()),
+        "--",
+        *command,
+    ]
 
 
 def _detach_into_own_session() -> None:
@@ -94,15 +108,33 @@ def _request_parent_death_signal() -> None:
         return
 
 
-def _exit_if_already_orphaned() -> None:
+def _exit_if_orphaned(expected_parent: int | None) -> None:
     """Close the window between ``fork()`` and the ``prctl`` above.
 
     A parent that died in that window has already been reported to the kernel,
-    so the death signal will never be delivered. Re-parenting to init is the
-    observable trace of it: exit rather than become the orphan this launcher
-    exists to prevent.
+    so the death signal will never be delivered. Exiting is then the right
+    move: better no child than the orphan this launcher exists to prevent.
+
+    Detecting it as "``getppid() == 1``" — re-parented to init — is where this
+    went wrong. **In a container the application is normally pid 1**: the image
+    runs ``uvicorn`` as the entrypoint, so the supervisor spawning this
+    launcher *is* pid 1, the test is true on a perfectly healthy spawn, and the
+    launcher killed every Node child before it could exec. Silently, with exit
+    code 0 and no output, which the supervisor could only report as "child
+    exited during startup". dbview never started in any containerised
+    deployment, and nothing said why.
+
+    So the question has to be asked against the parent that actually spawned
+    us, not against a pid that merely looks like init.
+
+    Args:
+        expected_parent: The spawner's pid, passed on the command line. When
+            absent (a hand-run launcher) the check is skipped rather than
+            guessed at — the guess is what broke.
     """
-    if os.getppid() == 1:
+    if expected_parent is None:
+        return
+    if os.getppid() != expected_parent:
         os._exit(0)
 
 
@@ -117,18 +149,31 @@ def _close_inherited_descriptors() -> None:
     os.closerange(_FIRST_INHERITED_FD, min(int(limit), _MAX_FD_SWEEP))
 
 
+def _parse_parent(argv: list[str]) -> int | None:
+    """Read ``--parent <pid>`` from the launcher's own flags, if present."""
+    try:
+        index = argv.index(_PARENT_FLAG)
+    except ValueError:
+        return None
+    try:
+        return int(argv[index + 1])
+    except (IndexError, ValueError):
+        raise SystemExit(_USAGE) from None
+
+
 def _main(argv: list[str]) -> None:
     try:
         separator = argv.index("--")
     except ValueError:
         raise SystemExit(_USAGE) from None
+    expected_parent = _parse_parent(argv[:separator])
     command = argv[separator + 1 :]
     if not command:
         raise SystemExit(_USAGE)
 
     _detach_into_own_session()
     _request_parent_death_signal()
-    _exit_if_already_orphaned()
+    _exit_if_orphaned(expected_parent)
     _close_inherited_descriptors()
     os.execvp(command[0], command)
 
