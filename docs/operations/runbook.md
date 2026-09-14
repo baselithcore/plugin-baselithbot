@@ -57,6 +57,33 @@ spawning its own child. See [Architecture → Multi-worker leadership](../refere
 | Did every worker resolve the same port? | Confirm no per-worker `DBVIEW_INTERNAL_PORT` override diverges; the default is pinned automatically once leadership is coordinated. |
 | Did every worker derive the same gateway secret? | If `DBVIEW_GATEWAY_SECRET` is set, it must be **identical** across every worker process (it should be — it's inherited from the shared environment). If unset, it's derived from `DBVIEW_SECRET`, which must equally be identical everywhere. A mismatch here doesn't cause "not found" — it causes 401s from followers, a related but distinct symptom (see below). |
 
+## "The console is 404 from one replica and 200 from another"
+
+**Symptom**: reloading `/dbview/` flips between the working console and a
+framework 404, for the same URL and the same user. `kubectl logs` shows one API
+pod serving `/api/dbview/...` normally while the other never sees a successful
+request.
+
+**Root cause**: more than one **pod**, not more than one worker. The advisory
+lock elects a single leader for the whole cluster, so only one pod spawns the
+Node child — but before the cross-pod rendezvous, every follower forwarded to
+`http://127.0.0.1:43117`, and in another pod's network namespace there is
+nothing on that port. `replicaCount: 2` is the chart default, so this is the
+out-of-the-box shape.
+
+**Fix**: the leader publishes a dialable origin to Redis and followers forward
+there — see [Architecture → Cross-pod
+rendezvous](../reference/architecture.md#cross-pod-rendezvous).
+
+**If you still see this symptom**, check:
+
+| Check | How |
+|---|---|
+| Is Redis configured? | The rendezvous needs somewhere to publish. Without a cache Redis the plugin stays single-pod on purpose and logs `staying on loopback`. Confirm `CACHE_BACKEND=redis` and a reachable `CACHE_REDIS_URL`. |
+| Does the pod have an address to advertise? | `DBVIEW_ADVERTISE_HOST`, else `POD_IP` (the chart injects it from the downward API). A pod with neither logs nothing and stays on loopback. |
+| Is the rendezvous port allowed between pods? | With `networkPolicy.enabled`, only `containerPort` is open between the release's own pods. Add `networkPolicy.selfIngressPorts: [43117]`, or the forward is dropped at the CNI and you see the same 404. |
+| Which pod holds the key? | `redis-cli get baselith:dbview:leader-origin` returns the leader's origin. An empty result during a rollout is expected for up to 30 s (the TTL); a permanently empty one means the leader cannot publish. |
+
 ## "401 on every follower-forwarded request"
 
 Distinct from the symptom above: if leadership elects correctly but

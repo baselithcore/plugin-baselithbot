@@ -47,6 +47,18 @@ class NodeNotAvailableError(RuntimeError):
     """Raised when ``node``/``pnpm`` can't be located on ``PATH``."""
 
 
+#: Wildcard binds, which say "listen on every interface" and are not addresses
+#: anything can connect to. A child bound to one still answers on loopback.
+# nosec B104 - this set exists to *recognise* a wildcard bind and rewrite it to
+# loopback for dialling; nothing here binds anything.
+_WILDCARD_HOSTS = frozenset({"0.0.0.0", "::", "[::]", ""})  # nosec B104
+
+
+def _dialable(host: str) -> str:
+    """Turn a bind host into one a client can actually connect to."""
+    return "127.0.0.1" if host in _WILDCARD_HOSTS else host
+
+
 def _allocate_port(host: str = "127.0.0.1") -> int:
     """Ask the kernel for a free ephemeral port and release it.
 
@@ -77,6 +89,10 @@ class NodeSupervisor:
         self._healthy = False
         self._restart_attempts = 0
         self._port: int | None = config.port
+        # Set on a follower whose leader lives in ANOTHER pod: loopback then
+        # points at nothing (see plugins.dbview.rendezvous). None keeps the
+        # single-pod behaviour, where loopback is exactly right.
+        self._peer_origin: str | None = None
 
     # ------------------------------------------------------------------
     # Public surface
@@ -84,10 +100,36 @@ class NodeSupervisor:
 
     @property
     def base_url(self) -> str:
-        """HTTP origin the proxy router should forward to."""
+        """Local HTTP origin of this pod's own Node child.
+
+        A wildcard bind is a *listening* address, never a dialable one: with
+        ``DBVIEW_INTERNAL_HOST=0.0.0.0`` (what a multi-pod deployment sets so
+        peers can reach the child) the naive origin would be
+        ``http://0.0.0.0:port``, which is not a destination. Normalise it to
+        loopback, which is where the wildcard listener actually answers.
+        """
         if self._port is None:
             raise RuntimeError("supervisor not started — port unknown")
-        return f"http://{self._config.host}:{self._port}"
+        return f"http://{_dialable(self._config.host)}:{self._port}"
+
+    @property
+    def upstream_url(self) -> str:
+        """Where requests go: a peer leader when there is one, else local."""
+        return self._peer_origin or self.base_url
+
+    def set_peer_origin(self, origin: str | None) -> None:
+        """Point this follower at a leader-owned child in another pod.
+
+        Args:
+            origin: A dialable ``http://host:port``, or ``None`` to fall back
+                to loopback (no leader published, or Redis is gone).
+        """
+        if origin == self._peer_origin:
+            return
+        logger.info(
+            "[dbview] upstream is now %s", origin or "loopback (no peer leader)"
+        )
+        self._peer_origin = origin
 
     @property
     def port(self) -> int:
@@ -292,7 +334,13 @@ class NodeSupervisor:
                 logger.log(level, "[dbview-node] %s", text)
 
     def _health_url(self) -> str:
-        return f"http://{self._config.host}:{self._port}{self._config.health_path}"
+        """Probe the origin requests are actually forwarded to.
+
+        A follower whose leader is in another pod must probe *that* child:
+        probing its own loopback would report the console down while it is up,
+        or — worse, once anything else binds the port — up while it is not.
+        """
+        return f"{self.upstream_url}{self._config.health_path}"
 
     async def _wait_for_health(self) -> None:
         assert self._port is not None

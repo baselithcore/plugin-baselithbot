@@ -85,6 +85,53 @@ The fix, in [`leader.py`](../reference/architecture.md):
 5. On `shutdown()`, the leader releases the advisory lock by closing the held
    connection, letting another worker win it on the next boot.
 
+## Cross-pod rendezvous
+
+Steps 1-5 above are already cluster-wide in one respect and not at all in
+another. The advisory lock lives in the **shared database**, so exactly one
+*process* wins it however many pods are running — but step 2's "fixed loopback
+port" resolves to the leader's child only inside the leader's own network
+namespace. Across uvicorn workers in one pod that is correct. Across two pods it
+is not: with `replicaCount: 2` (the chart default) the pod that lost the
+election had nothing on `43117`, so the console answered **404 from one replica
+and 200 from the other**, at random, for the same URL.
+
+[`rendezvous.py`](../reference/architecture.md) supplies the missing half — the
+*address*:
+
+1. The leader publishes the origin a peer can dial
+   (`http://<advertised host>:<DBVIEW_INTERNAL_PORT>`) to Redis under
+   `baselith:dbview:leader-origin`, with a 30 s TTL it refreshes every 10 s. A
+   leader that is `SIGKILL`ed stops refreshing and the key lapses, so nothing
+   keeps forwarding into a dead pod.
+2. Followers read that key on the same cadence and repoint their supervisor
+   (`NodeSupervisor.set_peer_origin`). Re-reading rather than resolving once is
+   what makes a rollout that moves the leader survivable.
+3. The child binds `0.0.0.0` instead of loopback so peers can reach it; the
+   leader's own forward still uses loopback (`base_url` normalises the wildcard,
+   which is a *listening* address and never a destination). Its
+   `timingSafeEqual` gateway-secret check still fronts every identity header, so
+   a peer with no secret gets nothing.
+4. The health probe follows the upstream, not loopback — a follower probing its
+   own empty port would report the console down while the leader serves it.
+
+Redis carries the address rather than Postgres because it is ephemeral cluster
+state with a TTL (the same reason the rate limiter and the A2A nonce ledger live
+there), and because a plugin must not invent a table — `core.db.ddl` is explicit
+that Alembic owns every one.
+
+It turns on only when there is **both** an address to advertise
+(`DBVIEW_ADVERTISE_HOST`, else the `POD_IP` the chart injects) **and** a Redis to
+publish it to. With either missing the plugin keeps its loopback behaviour
+exactly as before, which is correct for a single pod — no widened bind, no new
+exposure, nothing to configure.
+
+!!! warning "NetworkPolicy"
+    With `networkPolicy.enabled`, the chart allows only `containerPort`
+    between the release's own pods. Add the rendezvous port or every follower's
+    forward is dropped and you are back to the 404:
+    `networkPolicy.selfIngressPorts: [43117]`.
+
 The lock key is a distinct 64-bit constant (`0x4462764368696C64`, ASCII
 `"DbvChild"`), namespaced away from the `auth` plugin's schema-init lock and
 the `honeypot` plugin's listener-leadership lock — the same advisory-lock

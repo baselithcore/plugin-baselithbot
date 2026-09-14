@@ -89,6 +89,7 @@ from core.plugins.env import load_plugin_dotenv
 from .leader import DbviewLeadership, acquire_dbview_leadership
 from .llm_governance import governed_child_env
 from .proxy_router import build_proxy_router
+from .rendezvous import LeaderRendezvous, resolve_cross_pod_host
 from .supervisor import (
     NodeNotAvailableError,
     NodeSupervisor,
@@ -149,6 +150,7 @@ class DbviewPlugin(RouterPlugin):
         # ``repr()``/Sentry frames (platform secrets convention).
         self._gateway_secret: SecretStr | None = None
         self._leadership: DbviewLeadership | None = None
+        self._rendezvous: LeaderRendezvous | None = None
 
     # ------------------------------------------------------------------
     # Router contract
@@ -348,6 +350,28 @@ class DbviewPlugin(RouterPlugin):
         if internal_port is not None:
             supervisor_overrides["port"] = internal_port
 
+        # Cross-pod mode: the advisory lock already elects one leader for the
+        # whole cluster, but followers used to forward to loopback — which in
+        # another pod is a port with nothing behind it, so the console 404'd
+        # from whichever replica lost the election. It needs an address to
+        # advertise AND somewhere to publish it; with either missing the
+        # plugin keeps its single-pod behaviour untouched.
+        advertised_host = resolve_cross_pod_host()
+        if advertised_host is not None and "host" not in supervisor_overrides:
+            # Wildcard rather than the pod IP alone: peers reach the child on
+            # the routable address while this pod's own forward keeps using
+            # loopback (NodeSupervisor.base_url normalises the wildcard).
+            # Deliberate, and reached only when the deployment already has a
+            # routable address to advertise and a Redis to publish it to. The
+            # child is not open by virtue of being reachable: it validates the
+            # shared gateway secret with timingSafeEqual on every identity
+            # header and 401s everything else, and the chart's NetworkPolicy
+            # admits this port only from the release's own pods
+            # (networkPolicy.selfIngressPorts).
+            supervisor_overrides["host"] = (  # noqa: S104 - see above
+                "0.0.0.0"  # nosec B104 - see above
+            )
+
         supervisor_config = build_supervisor_config(
             _PLUGIN_DIR,
             extra_env=self._compose_child_env(),
@@ -383,8 +407,18 @@ class DbviewPlugin(RouterPlugin):
                 self._supervisor = None
             raise
 
+        origin = (
+            None
+            if advertised_host is None or internal_port is None
+            else f"http://{advertised_host}:{internal_port}"
+        )
+        self._rendezvous = LeaderRendezvous(
+            supervisor, is_leader=leadership.is_leader, origin=origin
+        )
+        await self._rendezvous.start()
+
         self._proxy_router = build_proxy_router(
-            upstream_base_url_provider=lambda: supervisor.base_url,
+            upstream_base_url_provider=lambda: supervisor.upstream_url,
             healthy_provider=supervisor.is_healthy,
             gateway_secret_provider=lambda: (
                 self._gateway_secret.get_secret_value()
@@ -395,7 +429,7 @@ class DbviewPlugin(RouterPlugin):
         )
         logger.info(
             "[dbview] plugin ready (upstream=%s, prefix=%s, central-auth=on, role=%s)",
-            supervisor.base_url,
+            supervisor.upstream_url,
             _PROXY_PREFIX,
             "leader" if leadership.is_leader else "follower",
         )
@@ -409,7 +443,20 @@ class DbviewPlugin(RouterPlugin):
                 logger.warning("[dbview] leadership release raised: %s", exc)
             self._leadership = None
 
+    async def _stop_rendezvous(self) -> None:
+        """Stop refreshing, and withdraw this pod's origin if it published one."""
+        if self._rendezvous is None:
+            return
+        try:
+            await self._rendezvous.stop()
+        except Exception as exc:  # pragma: no cover — best-effort cleanup
+            logger.warning("[dbview] rendezvous stop raised: %s", exc)
+        self._rendezvous = None
+
     async def shutdown(self) -> None:
+        # Before the supervisor: a peer must stop being sent here while the
+        # child is still being torn down.
+        await self._stop_rendezvous()
         if self._supervisor is not None:
             try:
                 await self._supervisor.stop()
