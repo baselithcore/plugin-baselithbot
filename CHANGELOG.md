@@ -13,6 +13,10 @@ changes must be tagged `BREAKING CHANGE:` in the commit footer.
 
 ### Fixed
 
+- Reloading the plugin from the control plane failed with `Duplicated
+  timeseries in CollectorRegistry`: the reload re-executes the metrics module
+  while the process-wide Prometheus registry still holds the first import's
+  collectors. They are now reused, so counts carry across a reload (1.0.6).
 - The dashboard answered `503 build pending` even with `ui/dist` built: the
   router moved into `api/` but kept resolving the bundle next to itself
   (`api/ui/dist`). It now resolves `ui/dist` at the plugin root (1.0.5).

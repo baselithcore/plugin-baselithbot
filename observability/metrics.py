@@ -13,6 +13,7 @@ from typing import Any
 try:
     from prometheus_client import (  # type: ignore[import-not-found]
         CONTENT_TYPE_LATEST,
+        REGISTRY,
         Counter,
         Gauge,
         Histogram,
@@ -49,22 +50,32 @@ class _NoopMetric:
         return None
 
 
-def _counter(name: str, doc: str, labels: list[str]) -> Any:
-    if not _HAS_PROM or Counter is None:
+def _register(factory: Any, name: str, doc: str, labels: list[str]) -> Any:
+    """Create a collector, or reuse the one a previous import registered.
+
+    A plugin reload re-executes this module while the process-wide registry
+    still holds the collectors from the first import, so creating them again
+    raises ``Duplicated timeseries``. Reusing them keeps the counts running.
+    """
+    if not _HAS_PROM or factory is None:
         return _NoopMetric()
-    return Counter(f"{_NAMESPACE}_{name}", doc, labels)
+    full_name = f"{_NAMESPACE}_{name}"
+    existing = REGISTRY._names_to_collectors.get(full_name)
+    if existing is not None:
+        return existing
+    return factory(full_name, doc, labels)
+
+
+def _counter(name: str, doc: str, labels: list[str]) -> Any:
+    return _register(Counter, name, doc, labels)
 
 
 def _gauge(name: str, doc: str, labels: list[str]) -> Any:
-    if not _HAS_PROM or Gauge is None:
-        return _NoopMetric()
-    return Gauge(f"{_NAMESPACE}_{name}", doc, labels)
+    return _register(Gauge, name, doc, labels)
 
 
 def _histogram(name: str, doc: str, labels: list[str]) -> Any:
-    if not _HAS_PROM or Histogram is None:
-        return _NoopMetric()
-    return Histogram(f"{_NAMESPACE}_{name}", doc, labels)
+    return _register(Histogram, name, doc, labels)
 
 
 CHANNEL_SEND_TOTAL = _counter(
