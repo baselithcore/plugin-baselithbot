@@ -11,6 +11,12 @@ changes must be tagged `BREAKING CHANGE:` in the commit footer.
 
 ## [Unreleased]
 
+### Fixed
+
+- The dashboard answered `503 build pending` even with `ui/dist` built: the
+  router moved into `api/` but kept resolving the bundle next to itself
+  (`api/ui/dist`). It now resolves `ui/dist` at the plugin root (1.0.5).
+
 ### Added
 
 - Release hygiene scaffolding: `LICENSE`, `requirements.txt`,

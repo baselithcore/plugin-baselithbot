@@ -332,7 +332,8 @@ def create_router(plugin: BaselithbotPlugin) -> APIRouter:
     return router
 
 
-_UI_DIST = Path(__file__).resolve().parent / "ui" / "dist"
+# The router lives in api/; the bundle sits at the plugin root, in ui/dist.
+_UI_DIST = Path(__file__).resolve().parents[1] / "ui" / "dist"
 
 
 def _mount_dashboard_ui(router: APIRouter) -> None:
