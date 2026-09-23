@@ -13,6 +13,11 @@ changes must be tagged `BREAKING CHANGE:` in the commit footer.
 
 ### Fixed
 
+- baselithcontrol showed no "Open interface" button for the plugin: the
+  dashboard is served by the plugin's own router at `/baselithbot/ui/`, not
+  through a static mount, and no UI tab declared it. `get_ui_tabs()` now
+  names that URL, so the control plane and the admin sidebar link to it
+  (1.0.7).
 - Reloading the plugin from the control plane failed with `Duplicated
   timeseries in CollectorRegistry`: the reload re-executes the metrics module
   while the process-wide Prometheus registry still holds the first import's

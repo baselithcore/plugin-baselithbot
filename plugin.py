@@ -352,6 +352,10 @@ class BaselithbotPlugin(AgentPlugin, RouterPlugin):
         """
         return "/baselithbot"
 
+    def get_ui_tabs(self) -> list[dict[str, str]]:
+        """Declare the dashboard (served by the router, not a static mount)."""
+        return [{"id": "baselithbot", "label": "Baselithbot", "url": "/baselithbot/ui/"}]
+
     def get_intent_patterns(self) -> list[dict[str, Any]]:
         """Intent patterns triggering Baselithbot dispatch."""
         return [

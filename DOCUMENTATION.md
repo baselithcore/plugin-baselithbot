@@ -451,7 +451,9 @@ All in [`ui_api.py`](./ui_api.py). Legend: 🔓 read-only, 🔒 bearer-token req
 `GET /baselithbot/ui/{path:path}` serves `ui/dist/`. Unknown paths fall
 back to `index.html` so React Router client-side routes work. When the
 bundle is missing, a graceful 503 with build instructions is returned.
-All responses carry hardened headers:
+`get_ui_tabs()` declares this URL, which is how the control plane
+(`baselithcontrol`) and the admin sidebar find the dashboard: the router
+serves it, so there is no static mount for them to discover. All responses carry hardened headers:
 
 ```http
 X-Content-Type-Options: nosniff
